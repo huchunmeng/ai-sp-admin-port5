@@ -1,4 +1,4 @@
-import { getSpecialty } from "../../../../../packages/shared/data/specialty-registry.js"
+import { getSpecialty } from '@ai-sp/shared/data/specialty-registry'
 // 病种配置数据 — 来源：病种整理 校对版_线上0526.xlsx
 // 掌握度字段来自住培考核大纲：掌握 / 熟悉 / 了解
 // 自动生成于 2026-05-26

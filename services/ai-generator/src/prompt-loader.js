@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getSpecialty } from '../../../packages/shared/data/specialty-registry.js'
+import { getSpecialty } from '@ai-sp/shared/data/specialty-registry'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROMPTS_DIR = path.resolve(__dirname, '../prompts')

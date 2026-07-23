@@ -12,14 +12,10 @@
     "./physical-exam-engine": "./src/physical-exam-engine.js",
     "./test-selection-engine": "./src/test-selection-engine.js",
     "./diagnosis-engine": "./src/diagnosis-engine.js",
-    "./thinking-tracer": "./src/thinking-tracer.js"
+    "./thinking-tracer": "./src/thinking-tracer.js",
+    "./specialty-registry": "./data/specialty-registry.js",
+    "./data/specialty-registry": "./data/specialty-registry.js"
   },
   "files": ["src", "data"],
-  "scripts": {
-    "build:admin": "cd ../.. && npm install && npm run build --workspace=ai-sp-admin",
-    "build:training": "cd ../.. && npm install && npm run build --workspace=ai-sp-training",
-    "build:exam": "cd ../.. && npm install && npm run build --workspace=ai-sp-exam",
-    "build:app-training": "cd ../.. && npm install && npm run build --workspace=ai-sp-app-training",
-    "build:ops": "cd ../.. && npm install && npm run build --workspace=ai-sp-ops"
-  }
+  "scripts": {}
 }
