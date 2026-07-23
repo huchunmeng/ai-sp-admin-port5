@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getSpecialty } from '@ai-sp/shared/data/specialty-registry'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROMPTS_DIR = path.resolve(__dirname, '../prompts')
@@ -39,16 +38,38 @@ export function loadPrompt(name) {
   return promptCache[name]
 }
 
-// ── 专业查找辅助 ── 统一使用 specialty-registry ─────────────
+// ── 专业查找辅助 ── 内联映射（避免 esbuild config 打包时跨包 import 失败）──
+
+const _SP = {
+  '内科':{id:'internal_medicine',abbr:'IM'},'儿科':{id:'pediatrics',abbr:'PD'},
+  '急诊科':{id:'emergency',abbr:'EM'},'精神科':{id:'psychiatry',abbr:'PS'},
+  '全科':{id:'general_practice',abbr:'GP'},'皮肤科':{id:'dermatology',abbr:'DERM'},
+  '神经内科':{id:'neurology',abbr:'NE'},'康复医学科':{id:'rehabilitation',abbr:'REH'},
+  '重症医学科':{id:'critical_care',abbr:'ICU'},'外科':{id:'surgery',abbr:'SU'},
+  '普通外科':{id:'general_surgery',abbr:'SU'},'胸心外科':{id:'cardiothoracic_surgery',abbr:'CTS'},
+  '泌尿外科':{id:'urology',abbr:'URO'},'整形外科':{id:'plastic_surgery',abbr:'PSUR'},
+  '骨科':{id:'orthopedics',abbr:'ORTH'},'儿外科':{id:'pediatric_surgery',abbr:'PDS'},
+  '神经外科':{id:'neurosurgery',abbr:'NS'},'妇产科':{id:'obstetrics_gynecology',abbr:'OB'},
+  '麻醉科':{id:'anesthesiology',abbr:'ANES'},'眼科':{id:'ophthalmology',abbr:'OPH'},
+  '耳鼻咽喉科':{id:'otorhinolaryngology',abbr:'ENT'},'口腔全科':{id:'stomatology',abbr:'STO'},
+  '口腔内科':{id:'oral_medicine',abbr:'STO'},'口腔颌面外科':{id:'oral_maxillofacial',abbr:'STO'},
+  '口腔修复科':{id:'prosthodontics',abbr:'PROS'},'口腔正畸科':{id:'orthodontics',abbr:'STO'},
+  '口腔病理科':{id:'oral_pathology',abbr:'STO'},'口腔颌面影像科':{id:'oral_radiology',abbr:'STO'},
+  '放射科':{id:'radiology',abbr:'RAD'},'超声科':{id:'ultrasound',abbr:'US'},
+  '核医学科':{id:'nuclear_medicine',abbr:'NM'},'临床病理科':{id:'pathology',abbr:'PATH'},
+  '检验医学科':{id:'laboratory_medicine',abbr:'LAB'},'放射肿瘤科':{id:'radiation_oncology',abbr:'RO'},
+  '医学遗传科':{id:'medical_genetics',abbr:'MG'},'预防医学科':{id:'preventive_medicine',abbr:'PM'}
+}
+function getSpecialty(raw) { return _SP[raw] || { id: 'internal_medicine', abbr: 'IM' } }
 
 function specialtyId(raw) {
   const sp = getSpecialty(raw)
-  return sp ? sp.id : 'internal_medicine'
+  return sp.id
 }
 
 function specialtyAbbr(raw) {
   const sp = getSpecialty(raw)
-  return sp ? sp.abbr : 'IM'
+  return sp.abbr
 }
 
 const LEVEL_TO_PHASE = { 'U1': '本科教学', 'U2': '本科教学', 'R1': '住院医师', 'R2': '住院医师', 'R3': '住院医师', 'F1': '专科培训', 'F2': '专科培训' }

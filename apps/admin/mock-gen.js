@@ -1,10 +1,26 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getSpecialty } from '@ai-sp/shared/data/specialty-registry'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CASES_DIR = path.resolve(__dirname, 'public/data/cases')
+
+// 内联专业→缩写映射（避免 esbuild config 打包时跨包 import 解析失败）
+const _SPECIALTY_ABBR = {
+  '内科':'IM','儿科':'PD','急诊科':'EM','精神科':'PS','全科':'GP',
+  '皮肤科':'DERM','神经内科':'NE','康复医学科':'REH','重症医学科':'ICU',
+  '外科':'SU','普通外科':'SU','胸心外科':'CTS','泌尿外科':'URO','整形外科':'PSUR',
+  '骨科':'ORTH','儿外科':'PDS','神经外科':'NS','妇产科':'OB','麻醉科':'ANES',
+  '眼科':'OPH','耳鼻咽喉科':'ENT','口腔全科':'STO','口腔内科':'STO','口腔颌面外科':'STO',
+  '口腔修复科':'PROS','口腔正畸科':'STO','口腔病理科':'STO','口腔颌面影像科':'STO',
+  '放射科':'RAD','超声科':'US','核医学科':'NM','临床病理科':'PATH','检验医学科':'LAB',
+  '放射肿瘤科':'RO','医学遗传科':'MG','预防医学科':'PM'
+}
+function getSpecialty(raw) {
+  if (!raw) return null
+  const abbr = _SPECIALTY_ABBR[raw]
+  return abbr ? { abbr } : { abbr: 'IM' }
+}
 
 // ── Mock 数据模板库 ──────────────────────────────────────
 
