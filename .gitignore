@@ -36,6 +36,7 @@ reports/
 
 # 训练记录落盘目录
 data/
+!apps/admin/src/data/
 
 
 # Claude Code 内部文件

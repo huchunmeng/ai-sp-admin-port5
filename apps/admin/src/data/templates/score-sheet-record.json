@@ -1,0 +1,23 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-3",
+  "name": "病历书写评分表（标准模板）",
+  "type": "record",
+  "specialty": "通用",
+  "description": "适用于病历书写站的考核，评估考生书写病历的规范性、完整性和临床逻辑",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "主诉与现病史",     "item": "主诉简明准确",       "score": 10 },
+    { "id": 2,  "category": "主诉与现病史",     "item": "现病史完整详实",     "score": 20 },
+    { "id": 3,  "category": "既往史与个人史",   "item": "既往史记录完整",     "score": 8 },
+    { "id": 4,  "category": "既往史与个人史",   "item": "个人史与家族史记录", "score": 7 },
+    { "id": 5,  "category": "体格检查记录",     "item": "阳性体征记录",       "score": 8 },
+    { "id": 6,  "category": "体格检查记录",     "item": "阴性体征记录",       "score": 7 },
+    { "id": 7,  "category": "诊断与鉴别诊断",   "item": "初步诊断明确",       "score": 10 },
+    { "id": 8,  "category": "诊断与鉴别诊断",   "item": "鉴别诊断充分",       "score": 10 },
+    { "id": 9,  "category": "诊断与鉴别诊断",   "item": "诊断依据充分",       "score": 5 },
+    { "id": 10, "category": "诊疗计划",         "item": "辅助检查计划",       "score": 5 },
+    { "id": 11, "category": "诊疗计划",         "item": "治疗方案",           "score": 7 },
+    { "id": 12, "category": "诊疗计划",         "item": "健康宣教与随访",     "score": 3 }
+  ]
+}

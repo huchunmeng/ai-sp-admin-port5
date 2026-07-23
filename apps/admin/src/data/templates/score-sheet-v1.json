@@ -1,0 +1,24 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD",
+  "name": "病史采集评分表（标准模板）",
+  "type": "history",
+  "specialty": "通用",
+  "description": "适用于各专业接诊病人站的病史采集考核，评估考生采集病史的完整性、条理性和沟通技巧",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "现病史采集",     "item": "起病情况与诱因",     "score": 8 },
+    { "id": 2,  "category": "现病史采集",     "item": "主要症状特点",       "score": 8 },
+    { "id": 3,  "category": "现病史采集",     "item": "伴随症状与鉴别",     "score": 6 },
+    { "id": 4,  "category": "现病史采集",     "item": "诊疗经过",           "score": 4 },
+    { "id": 5,  "category": "现病史采集",     "item": "发病以来一般状况",   "score": 4 },
+    { "id": 6,  "category": "既往史采集",     "item": "既往疾病史",         "score": 8 },
+    { "id": 7,  "category": "既往史采集",     "item": "手术外伤史",         "score": 6 },
+    { "id": 8,  "category": "既往史采集",     "item": "过敏史",             "score": 6 },
+    { "id": 9,  "category": "个人史与家族史", "item": "个人生活习惯",       "score": 8 },
+    { "id": 10, "category": "个人史与家族史", "item": "家族遗传病史",       "score": 7 },
+    { "id": 11, "category": "系统回顾",       "item": "各系统回顾完整性",   "score": 15 },
+    { "id": 12, "category": "问诊技巧与沟通", "item": "问诊条理与组织",     "score": 8 },
+    { "id": 13, "category": "问诊技巧与沟通", "item": "沟通技巧与人文关怀", "score": 12 }
+  ]
+}

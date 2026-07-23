@@ -1,0 +1,18 @@
+{
+  "version": "v2.0",
+  "code": "TPL-IM-05",
+  "name": "临床思维与决策评分表（内科）",
+  "type": "clinical-reasoning",
+  "specialty": "内科",
+  "description": "浙江省住培结业考核内科临床思维与决策站评分标准，评估考生病史归纳、诊断依据、鉴别诊断、治疗原则、专业知识和沟通表达能力",
+  "total_score": 100,
+  "items": [
+    { "id": 1, "category": "临床思维与决策", "item": "病史特点归纳", "score": 15 },
+    { "id": 2, "category": "临床思维与决策", "item": "诊断及依据", "score": 15 },
+    { "id": 3, "category": "临床思维与决策", "item": "鉴别诊断要点", "score": 15 },
+    { "id": 4, "category": "临床思维与决策", "item": "治疗原则和措施", "score": 15 },
+    { "id": 5, "category": "临床思维与决策", "item": "专业知识提问（根据题量分配）", "score": 15 },
+    { "id": 6, "category": "临床思维与决策", "item": "伦理、人文及职业素养提问（根据题量分配）", "score": 15 },
+    { "id": 7, "category": "临床思维与决策", "item": "提炼概括和沟通表达能力", "score": 10 }
+  ]
+}
