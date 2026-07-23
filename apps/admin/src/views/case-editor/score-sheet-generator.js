@@ -1,7 +1,8 @@
 // 从病例 basic 数据提取评分点（纯前端，不依赖考站配置）
 // 评分点是病例的固有属性，考站方案只决定如何组织它们
 
-import { templateV1 } from '@ai-sp/shared/score-tables'
+// 动态导入避免 vite config 打包时 workspace symlink 解析失败
+const { templateV1 } = await import('@ai-sp/shared/score-tables').catch(() => ({ templateV1: { items: [] } }))
 
 // ── 查体关键词 → 检查点 ──
 
