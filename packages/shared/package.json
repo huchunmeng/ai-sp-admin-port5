@@ -17,5 +17,7 @@
     "./data/specialty-registry": "./data/specialty-registry.js"
   },
   "files": ["src", "data"],
-  "scripts": {}
+  "scripts": {
+    "build": "mkdir -p build"
+  }
 }

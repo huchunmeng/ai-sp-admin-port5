@@ -6,7 +6,8 @@
   "description": "AI-SP 生产服务器 — 统一 API + 五端静态文件服务",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "build": "mkdir -p build"
   },
   "dependencies": {
     "cors": "^2.8.5",
