@@ -1,0 +1,2870 @@
+{
+  "_phase_configs": {
+    "U1": {
+      "station_duration": 20,
+      "task_requirements": "完成简要病史采集，进行重点查体，做出初步诊断",
+      "history_item_count_range": [
+        8,
+        12
+      ],
+      "exam_item_count_range": [
+        5,
+        8
+      ],
+      "communication_focus": "基础医患沟通：自我介绍、说明问诊目的",
+      "qa_script_count_range": [
+        20,
+        30
+      ],
+      "scene_count_range": [
+        1,
+        2
+      ],
+      "psychological_stages_range": [
+        1,
+        2
+      ],
+      "dialogue_turns_range": [
+        6,
+        10
+      ],
+      "sp_emotion_complexity": "平稳合作，不设计复杂情绪转折",
+      "sp_initiative_questions_range": [
+        1,
+        2
+      ]
+    },
+    "U2": {
+      "station_duration": 18,
+      "task_requirements": "完成病史采集和系统查体，做出初步诊断及1个鉴别诊断",
+      "history_item_count_range": [
+        12,
+        18
+      ],
+      "exam_item_count_range": [
+        8,
+        12
+      ],
+      "communication_focus": "基础医患沟通：病情解释、检查必要性说明",
+      "qa_script_count_range": [
+        25,
+        35
+      ],
+      "scene_count_range": [
+        1,
+        2
+      ],
+      "psychological_stages_range": [
+        1,
+        2
+      ],
+      "dialogue_turns_range": [
+        8,
+        12
+      ],
+      "sp_emotion_complexity": "平稳合作为主，可设轻微担忧情绪",
+      "sp_initiative_questions_range": [
+        1,
+        2
+      ]
+    },
+    "R1": {
+      "station_duration": 15,
+      "task_requirements": "完成病史采集和体格检查，做出初步诊断及鉴别诊断",
+      "history_item_count_range": [
+        15,
+        25
+      ],
+      "exam_item_count_range": [
+        10,
+        15
+      ],
+      "communication_focus": "系统性医患沟通：鉴别诊断解释、治疗方案沟通",
+      "qa_script_count_range": [
+        40,
+        50
+      ],
+      "scene_count_range": [
+        2,
+        3
+      ],
+      "psychological_stages_range": [
+        2,
+        3
+      ],
+      "dialogue_turns_range": [
+        10,
+        16
+      ],
+      "sp_emotion_complexity": "可设适度的焦虑/担忧情绪",
+      "sp_initiative_questions_range": [
+        2,
+        3
+      ]
+    },
+    "R2": {
+      "station_duration": 15,
+      "task_requirements": "完成病史采集和体格检查，做出初步诊断及2-3个鉴别诊断",
+      "history_item_count_range": [
+        15,
+        25
+      ],
+      "exam_item_count_range": [
+        10,
+        15
+      ],
+      "communication_focus": "复杂医患沟通：不典型表现解释、合并症管理沟通",
+      "qa_script_count_range": [
+        45,
+        55
+      ],
+      "scene_count_range": [
+        2,
+        3
+      ],
+      "psychological_stages_range": [
+        2,
+        3
+      ],
+      "dialogue_turns_range": [
+        10,
+        16
+      ],
+      "sp_emotion_complexity": "可设焦虑/恐惧情绪及1个质疑性质提问",
+      "sp_initiative_questions_range": [
+        2,
+        4
+      ]
+    },
+    "R3": {
+      "station_duration": 15,
+      "task_requirements": "完成病史采集和体格检查，做出初步诊断、鉴别诊断及治疗决策",
+      "history_item_count_range": [
+        15,
+        25
+      ],
+      "exam_item_count_range": [
+        10,
+        15
+      ],
+      "communication_focus": "高级医患沟通：危重症告知、多学科协作沟通",
+      "qa_script_count_range": [
+        45,
+        60
+      ],
+      "scene_count_range": [
+        2,
+        3
+      ],
+      "psychological_stages_range": [
+        3,
+        4
+      ],
+      "dialogue_turns_range": [
+        12,
+        18
+      ],
+      "sp_emotion_complexity": "多层次情绪递进（如否认→焦虑→接受），含压力性质提问",
+      "sp_initiative_questions_range": [
+        2,
+        4
+      ]
+    },
+    "F1": {
+      "station_duration": 20,
+      "task_requirements": "完成复杂病例的病史采集和体格检查，做出诊断、鉴别诊断及治疗决策",
+      "history_item_count_range": [
+        18,
+        28
+      ],
+      "exam_item_count_range": [
+        12,
+        18
+      ],
+      "communication_focus": "专科沟通：亚专科疑难病解释、MDT方案沟通",
+      "qa_script_count_range": [
+        45,
+        60
+      ],
+      "scene_count_range": [
+        2,
+        4
+      ],
+      "psychological_stages_range": [
+        3,
+        4
+      ],
+      "dialogue_turns_range": [
+        12,
+        20
+      ],
+      "sp_emotion_complexity": "多层次复杂情绪递进，含强烈质疑/压力性质提问",
+      "sp_initiative_questions_range": [
+        3,
+        5
+      ]
+    },
+    "F2": {
+      "station_duration": 20,
+      "task_requirements": "完成疑难病例的系统评估，做出不确定条件下的独立诊断与治疗决策",
+      "history_item_count_range": [
+        18,
+        28
+      ],
+      "exam_item_count_range": [
+        12,
+        18
+      ],
+      "communication_focus": "专家级沟通：不确定条件下的病情解释、循证决策沟通",
+      "qa_script_count_range": [
+        50,
+        60
+      ],
+      "scene_count_range": [
+        2,
+        4
+      ],
+      "psychological_stages_range": [
+        3,
+        4
+      ],
+      "dialogue_turns_range": [
+        12,
+        20
+      ],
+      "sp_emotion_complexity": "多层次复杂情绪递进，含至少2次情绪转折及强烈压力性质提问",
+      "sp_initiative_questions_range": [
+        3,
+        5
+      ]
+    }
+  },
+  "internal_medicine": {
+    "specialty_name": "内科",
+    "extra_fields": [],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "体位",
+          "皮肤黏膜"
+        ]
+      },
+      {
+        "category": "淋巴结",
+        "items": [
+          "颈部淋巴结",
+          "锁骨上淋巴结"
+        ]
+      },
+      {
+        "category": "胸部",
+        "items": [
+          "肺部听诊",
+          "心脏听诊",
+          "心脏叩诊"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部视诊",
+          "腹部触诊",
+          "肝脾触诊",
+          "移动性浊音"
+        ]
+      },
+      {
+        "category": "四肢脊柱",
+        "items": [
+          "双下肢水肿",
+          "足背动脉搏动"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休教师",
+        "退休工人",
+        "退休工程师",
+        "退休会计",
+        "企业管理人员",
+        "个体经营者",
+        "农民",
+        "社区保安",
+        "家庭主妇",
+        "自由职业者",
+        "办公室职员",
+        "出租车司机",
+        "厨师",
+        "清洁工",
+        "退伍军人"
+      ],
+      "trigger_pool": [
+        "劳累后",
+        "情绪激动后",
+        "无明显诱因",
+        "天气变化后",
+        "饮食不当后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      15,
+      25
+    ],
+    "exam_item_count_range": [
+      10,
+      15
+    ]
+  },
+  "surgery": {
+    "specialty_name": "外科",
+    "extra_fields": [
+      {
+        "field": "surgical_history",
+        "label": "手术史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：腹部手术、骨科手术等，需注明具体手术名称及时间"
+      },
+      {
+        "field": "trauma_history",
+        "label": "外伤史",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：车祸、坠落、斗殴等，需注明受力部位及方向"
+      },
+      {
+        "field": "preoperative_preparation",
+        "label": "术前准备",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：禁食禁饮时间、备皮、抗生素皮试、交叉配血等"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "营养状态",
+          "皮肤黏膜（有无贫血、脱水）"
+        ]
+      },
+      {
+        "category": "专科查体-腹部",
+        "items": [
+          "视诊（外形、胃肠蠕动波、腹壁静脉）",
+          "触诊（压痛、反跳痛、肌紧张、Murphy征、麦氏点压痛）",
+          "叩诊（肝浊音界、移动性浊音）",
+          "听诊（肠鸣音、振水音）",
+          "直肠指检"
+        ]
+      },
+      {
+        "category": "专科查体-骨科",
+        "items": [
+          "视诊（畸形、肿胀、皮肤破损）",
+          "触诊（骨擦感、压痛、皮温）",
+          "动诊（主被动活动度）",
+          "量诊（肢体长度、周径）",
+          "特殊试验（直腿抬高试验、抽屉试验等）"
+        ]
+      },
+      {
+        "category": "四肢血管",
+        "items": [
+          "足背动脉搏动",
+          "皮温",
+          "毛细血管再充盈时间"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "建筑工人",
+        "工厂工人",
+        "农民",
+        "司机",
+        "办公室职员",
+        "学生",
+        "运动员",
+        "快递员",
+        "外卖骑手",
+        "个体经营者",
+        "教师",
+        "厨师",
+        "自由职业者",
+        "退休人员",
+        "保安"
+      ],
+      "trigger_pool": [
+        "外伤后",
+        "负重后",
+        "无明显诱因",
+        "术后",
+        "饮食不当后",
+        "剧烈运动后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      22
+    ],
+    "exam_item_count_range": [
+      8,
+      15
+    ]
+  },
+  "pediatrics": {
+    "specialty_name": "儿科",
+    "station_duration": 15,
+    "task_requirements": "完成病史采集（向家属询问），之后进行儿科重点查体，做出初步诊断及2个鉴别诊断",
+    "physical_exam_focus": "儿科系统查体：一般状态、前囟（婴幼儿）、咽部、心肺听诊、腹部触诊、神经系统筛查（肌张力、原始反射等）",
+    "history_item_count_range": [
+      15,
+      25
+    ],
+    "exam_item_count_range": [
+      12,
+      18
+    ],
+    "communication_focus": "向家长交代病情、解释检查必要性、安抚情绪",
+    "sp_role": "family",
+    "extra_fields": [
+      {
+        "field": "feeding_history",
+        "label": "喂养史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：母乳/配方奶喂养情况、辅食添加时间及种类"
+      },
+      {
+        "field": "growth_development",
+        "label": "生长发育史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：抬头、翻身、坐、爬、走、说话等里程碑时间"
+      },
+      {
+        "field": "vaccination_history",
+        "label": "预防接种史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：卡介苗、乙肝、脊灰、百白破、麻疹等接种情况"
+      },
+      {
+        "field": "birth_history",
+        "label": "出生史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：胎次、产次、孕周、分娩方式、出生体重、Apgar评分、有无窒息抢救史"
+      },
+      {
+        "field": "infection_contact_history",
+        "label": "传染病接触史",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：结核、肝炎、麻疹、水痘等患者接触史"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "心率",
+          "呼吸"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "反应",
+          "皮肤弹性",
+          "前囟（小婴儿）"
+        ]
+      },
+      {
+        "category": "头颈部",
+        "items": [
+          "咽部",
+          "扁桃体",
+          "颈软"
+        ]
+      },
+      {
+        "category": "胸部",
+        "items": [
+          "肺部听诊",
+          "心脏听诊"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部触诊",
+          "肝脾触诊",
+          "肠鸣音"
+        ]
+      },
+      {
+        "category": "神经系统",
+        "items": [
+          "肌张力",
+          "原始反射（婴儿）",
+          "病理征"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "学龄前儿童",
+        "婴幼儿",
+        "小学生",
+        "中学生",
+        "幼儿园儿童"
+      ],
+      "trigger_pool": [
+        "受凉",
+        "接触感冒同学",
+        "去游乐场后",
+        "家庭聚会接触咳嗽亲属",
+        "季节交替",
+        "幼儿园/学校交叉感染"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 现代儿童常见姓名风格参考（2010年后出生）：子轩、一诺、梓涵、雨桐、浩然、宇轩、沐辰、奕辰、若汐、语嫣、诗涵、梦瑶、欣怡、子涵、皓轩、天宇、铭泽、嘉懿、煜城、思源。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    }
+  },
+  "obstetrics_gynecology": {
+    "specialty_name": "妇产科",
+    "extra_fields": [
+      {
+        "field": "menstrual_history",
+        "label": "月经史",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：13岁初潮，周期28天，经期5天，末次月经2024-09-20"
+      },
+      {
+        "field": "obstetric_history",
+        "label": "生育史",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：G2P1，顺产1次，人流1次"
+      },
+      {
+        "field": "gynecological_history",
+        "label": "妇科病史",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：无特殊妇科病史"
+      },
+      {
+        "field": "pregnancy_status",
+        "label": "孕期状态",
+        "type": "select",
+        "required": true,
+        "options": ["未怀孕", "孕早期", "孕中期", "孕晚期"],
+        "placeholder": "选择孕期状态"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "营养",
+          "皮肤黏膜"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部视诊",
+          "腹部触诊",
+          "移动性浊音"
+        ]
+      },
+      {
+        "category": "妇科检查",
+        "items": [
+          "外阴",
+          "阴道",
+          "宫颈",
+          "子宫",
+          "附件"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "职员",
+        "教师",
+        "家庭主妇",
+        "个体经营者",
+        "自由职业者",
+        "医护人员",
+        "公务员",
+        "工人",
+        "农民",
+        "销售员",
+        "会计",
+        "设计师"
+      ],
+      "trigger_pool": [
+        "无明显诱因",
+        "劳累后",
+        "经期前后",
+        "同房后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1970-1990年代常见女性姓名风格参考：静怡、雅文、思琪、晓彤、慧敏、丽娟、雪梅、海燕、婷婷、玲玲、美玲、嘉欣、诗涵、梦瑶、欣怡、雨桐、梓涵。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      15,
+      25
+    ],
+    "exam_item_count_range": [
+      10,
+      15
+    ]
+  },
+  "emergency": {
+    "specialty_name": "急诊科",
+    "extra_fields": [
+      {
+        "field": "arrival_mode",
+        "label": "就诊方式",
+        "type": "select",
+        "required": true,
+        "placeholder": "请选择",
+        "options": [
+          "120救护车",
+          "自行来院",
+          "转院",
+          "其他"
+        ]
+      },
+      {
+        "field": "prehospital_treatment",
+        "label": "院前处理",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "院外是否行CPR、用药、止血、固定等"
+      },
+      {
+        "field": "triage_level",
+        "label": "分诊级别",
+        "type": "select",
+        "required": true,
+        "placeholder": "请选择",
+        "options": [
+          "I级（濒危）",
+          "II级（危重）",
+          "III级（急症）",
+          "IV级（非急症）",
+          "V级（非急诊）"
+        ]
+      },
+      {
+        "field": "first_vital_signs",
+        "label": "院前/分诊生命体征",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "T: ℃, P: 次/分, R: 次/分, BP: mmHg, SpO2: %"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征评估",
+        "items": [
+          "体温",
+          "脉搏（注意双侧对比及与心率对比）",
+          "呼吸频率",
+          "血压（正确袖带方法）",
+          "血氧饱和度"
+        ]
+      },
+      {
+        "category": "一般情况与头部",
+        "items": [
+          "神志（GCS评分）",
+          "体位与皮肤黏膜",
+          "瞳孔（大小、对光反射）",
+          "结膜（有无苍白、出血）",
+          "颈项强直"
+        ]
+      },
+      {
+        "category": "心肺检查",
+        "items": [
+          "胸廓有无伤口或淤青",
+          "双侧呼吸音对称性",
+          "啰音（干/湿性）",
+          "心尖搏动位置",
+          "心音（各瓣膜听诊区）",
+          "心率与脉率对比"
+        ]
+      },
+      {
+        "category": "腹部检查",
+        "items": [
+          "视诊有无伤口、膨隆",
+          "压痛、反跳痛、肌紧张",
+          "肝脾触诊",
+          "移动性浊音",
+          "肠鸣音"
+        ]
+      },
+      {
+        "category": "四肢与神经系统快速评估",
+        "items": [
+          "四肢活动度及肌力",
+          "病理征（Babinski等）",
+          "感觉异常",
+          "末梢循环（毛细血管再充盈时间）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "建筑工人",
+        "出租车司机",
+        "办公室职员",
+        "退休人员",
+        "学生",
+        "外卖骑手",
+        "农民",
+        "自由职业者",
+        "工厂工人",
+        "保安",
+        "快递员",
+        "个体经营者",
+        "教师",
+        "厨师",
+        "无业人员",
+        "司机"
+      ],
+      "trigger_pool": [
+        "劳累后",
+        "情绪激动",
+        "饱餐后",
+        "寒冷刺激",
+        "外伤后",
+        "感染后",
+        "无明显诱因",
+        "运动后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      8,
+      14
+    ],
+    "exam_item_count_range": [
+      6,
+      12
+    ]
+  },
+  "neurology": {
+    "specialty_name": "神经内科",
+    "extra_fields": [
+      {
+        "field": "consciousness_assessment",
+        "label": "意识评估（GCS）",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：E3V4M6=13分"
+      },
+      {
+        "field": "stroke_screen",
+        "label": "卒中筛查（FAST）",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：面瘫、肢体无力、言语障碍，发病时间"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "神经系统基础",
+        "items": [
+          "神志（GCS评分）",
+          "精神状态",
+          "语言（流利性、理解、复述）"
+        ]
+      },
+      {
+        "category": "颅神经",
+        "items": [
+          "视力/视野",
+          "瞳孔（对光反射、调节反射）",
+          "眼球运动",
+          "面肌（皱额、闭目、示齿）"
+        ]
+      },
+      {
+        "category": "运动系统",
+        "items": [
+          "肌力（0-V级）",
+          "肌张力",
+          "共济运动（指鼻试验、跟膝胫试验）"
+        ]
+      },
+      {
+        "category": "感觉系统",
+        "items": [
+          "浅感觉（痛、温、触）",
+          "深感觉（震动、位置觉）"
+        ]
+      },
+      {
+        "category": "反射",
+        "items": [
+          "肱二头肌反射",
+          "膝反射",
+          "跟腱反射",
+          "病理征（Babinski等）",
+          "脑膜刺激征（颈项强直、Kernig征、Brudzinski征）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "办公室职员",
+        "教师",
+        "农民",
+        "退休人员",
+        "司机",
+        "建筑工人",
+        "企业管理人员",
+        "个体经营者",
+        "家庭主妇",
+        "自由职业者",
+        "厨师",
+        "退休教师",
+        "退休工人",
+        "保安",
+        "会计"
+      ],
+      "trigger_pool": [
+        "安静状态下",
+        "情绪激动后",
+        "用力排便后",
+        "无明显诱因",
+        "晨起时发现"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      15,
+      25
+    ],
+    "exam_item_count_range": [
+      12,
+      20
+    ]
+  },
+  "psychiatry": {
+    "specialty_name": "精神科",
+    "sp_role": "family",
+    "extra_fields": [
+      {
+        "field": "mental_status_exam",
+        "label": "精神检查所见",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：仪态、接触、意识、感知觉、思维、情绪、行为、自知力等"
+      },
+      {
+        "field": "psychiatric_history",
+        "label": "精神疾病史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：既往诊断、用药、住院史、自伤自杀或冲动伤人史"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "一般躯体检查",
+        "items": [
+          "生命体征",
+          "营养状态",
+          "有无外伤/自伤痕迹"
+        ]
+      },
+      {
+        "category": "神经系统筛查",
+        "items": [
+          "震颤",
+          "肌张力（如排查锥体外系反应）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "职员",
+        "无业",
+        "退休人员",
+        "自由职业",
+        "教师",
+        "工人",
+        "农民",
+        "个体经营者",
+        "司机",
+        "公务员",
+        "医护人员"
+      ],
+      "trigger_pool": [
+        "生活事件后",
+        "无明显诱因",
+        "停药后",
+        "季节变换",
+        "人际冲突后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      15,
+      30
+    ],
+    "exam_item_count_range": [
+      5,
+      10
+    ]
+  },
+  "general_practice": {
+    "specialty_name": "全科",
+    "extra_fields": [
+      {
+        "field": "psychosocial_history",
+        "label": "社会心理史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：家庭结构、经济状况、居住环境、心理压力来源"
+      },
+      {
+        "field": "health_management",
+        "label": "健康管理与咨询",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：疫苗接种、慢病随访、肿瘤筛查、生活方式指导"
+      },
+      {
+        "field": "family_care",
+        "label": "家庭照顾能力评估",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：主要照顾者、家庭支持系统、社区资源利用"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "营养",
+          "皮肤黏膜",
+          "淋巴结"
+        ]
+      },
+      {
+        "category": "头颈部",
+        "items": [
+          "咽部",
+          "甲状腺"
+        ]
+      },
+      {
+        "category": "胸部",
+        "items": [
+          "肺部听诊",
+          "心脏听诊"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部触诊",
+          "肝脾触诊",
+          "移动性浊音"
+        ]
+      },
+      {
+        "category": "四肢脊柱",
+        "items": [
+          "双下肢水肿",
+          "足背动脉搏动"
+        ]
+      },
+      {
+        "category": "神经系统",
+        "items": [
+          "肌力",
+          "肌张力",
+          "病理征"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休人员",
+        "家庭主妇",
+        "个体经营者",
+        "工人",
+        "农民",
+        "办公室职员",
+        "自由职业者",
+        "学生",
+        "教师",
+        "司机",
+        "快递员",
+        "保安",
+        "企业管理人员",
+        "退休教师",
+        "退休工人",
+        "退伍军人"
+      ],
+      "trigger_pool": [
+        "受凉",
+        "劳累后",
+        "饮食不当后",
+        "情绪波动",
+        "季节变化",
+        "无明显诱因"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      15,
+      25
+    ],
+    "exam_item_count_range": [
+      10,
+      18
+    ]
+  },
+  "otorhinolaryngology": {
+    "specialty_name": "耳鼻喉科",
+    "extra_fields": [
+      {
+        "field": "hearing_assessment",
+        "label": "听力评估",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：音叉试验结果、纯音测听"
+      },
+      {
+        "field": "allergy_history",
+        "label": "过敏性疾病史",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：过敏性鼻炎、哮喘、药物过敏"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "耳",
+        "items": [
+          "耳廓",
+          "外耳道",
+          "鼓膜",
+          "音叉试验（Rinne, Weber）"
+        ]
+      },
+      {
+        "category": "鼻",
+        "items": [
+          "鼻前镜（鼻甲、鼻中隔、分泌物）"
+        ]
+      },
+      {
+        "category": "咽喉",
+        "items": [
+          "口咽（扁桃体、咽后壁）",
+          "间接喉镜（会厌、声带）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "教师",
+        "歌手",
+        "工人",
+        "办公室职员",
+        "农民",
+        "退休人员",
+        "自由职业者",
+        "个体经营者",
+        "司机",
+        "厨师",
+        "销售员"
+      ],
+      "trigger_pool": [
+        "受凉",
+        "季节交替",
+        "进食后",
+        "用力擤鼻后",
+        "无明显诱因"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      20
+    ],
+    "exam_item_count_range": [
+      8,
+      12
+    ]
+  },
+  "ophthalmology": {
+    "specialty_name": "眼科",
+    "extra_fields": [
+      {
+        "field": "vision_complaint",
+        "label": "视力主诉",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：视力下降、视物变形、眼前黑影、眼痛等"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "眼科检查",
+        "items": [
+          "视力",
+          "视野（对诊法）",
+          "瞳孔对光反射",
+          "裂隙灯检查",
+          "直接检眼镜检查（眼底）",
+          "眼压（指测）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "办公室职员",
+        "退休人员",
+        "工人",
+        "教师",
+        "司机",
+        "程序员",
+        "会计",
+        "个体经营者",
+        "农民",
+        "设计师",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "用眼过度后",
+        "外伤后",
+        "无明显诱因",
+        "情绪激动后（青光眼）"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      6,
+      12
+    ]
+  },
+  "dermatology": {
+    "specialty_name": "皮肤科",
+    "extra_fields": [
+      {
+        "field": "skin_dermoscopy",
+        "label": "皮肤镜检查",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：皮损镜下特征"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "皮肤黏膜",
+        "items": [
+          "原发疹（斑疹、丘疹、水疱等）",
+          "部位、分布、排列",
+          "口腔/生殖器黏膜",
+          "甲/毛发"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "工人",
+        "农民",
+        "办公室职员",
+        "家庭主妇",
+        "个体经营者",
+        "教师",
+        "退休人员",
+        "自由职业者",
+        "厨师",
+        "司机",
+        "销售员",
+        "保安"
+      ],
+      "trigger_pool": [
+        "接触可疑物质后",
+        "日晒后",
+        "服药后",
+        "饮食后",
+        "无明显诱因"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      20
+    ],
+    "exam_item_count_range": [
+      5,
+      10
+    ]
+  },
+  "oncology": {
+    "specialty_name": "肿瘤科",
+    "extra_fields": [
+      {
+        "field": "performance_status",
+        "label": "体能状态评分",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：ECOG PS 1分或Karnofsky 90分"
+      },
+      {
+        "field": "tumor_stage",
+        "label": "肿瘤分期",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：T2N1M0 III期"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "营养状态（恶液质）",
+          "皮肤黏膜"
+        ]
+      },
+      {
+        "category": "淋巴结",
+        "items": [
+          "颈部淋巴结",
+          "锁骨上淋巴结",
+          "腋窝淋巴结",
+          "腹股沟淋巴结"
+        ]
+      },
+      {
+        "category": "胸部",
+        "items": [
+          "肺部听诊"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部触诊（肝脾肿大、包块）",
+          "移动性浊音"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "农民",
+        "工人",
+        "退休人员",
+        "办公室职员",
+        "教师",
+        "个体经营者",
+        "家庭主妇",
+        "退休教师",
+        "退休工人",
+        "司机",
+        "企业管理人员",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "体检发现",
+        "无明显诱因",
+        "疼痛后",
+        "消瘦后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      22
+    ],
+    "exam_item_count_range": [
+      8,
+      14
+    ]
+  },
+  "anesthesiology": {
+    "specialty_name": "麻醉科",
+    "extra_fields": [
+      {
+        "field": "airway_assessment",
+        "label": "气道评估",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：Mallampati分级、甲颏距离、张口度"
+      },
+      {
+        "field": "asa_class",
+        "label": "ASA分级",
+        "type": "select",
+        "required": true,
+        "placeholder": "请选择",
+        "options": [
+          "I 级：正常健康",
+          "II 级：轻度系统性疾病",
+          "III 级：严重系统性疾病",
+          "IV 级：严重系统性疾病威胁生命",
+          "V 级：濒死",
+          "VI 级：脑死亡器官捐献"
+        ]
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压",
+          "SpO2"
+        ]
+      },
+      {
+        "category": "气道检查",
+        "items": [
+          "张口度",
+          "Mallampati分级",
+          "甲颏距离",
+          "颈部活动度"
+        ]
+      },
+      {
+        "category": "心肺功能评估",
+        "items": [
+          "肺听诊",
+          "心脏听诊",
+          "有无心衰体征"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "工人",
+        "农民",
+        "办公室职员",
+        "退休人员",
+        "学生",
+        "教师",
+        "司机",
+        "个体经营者",
+        "自由职业者",
+        "建筑工人",
+        "厨师",
+        "快递员"
+      ],
+      "trigger_pool": [
+        "择期手术",
+        "急诊手术",
+        "创伤后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      8,
+      15
+    ],
+    "exam_item_count_range": [
+      5,
+      10
+    ]
+  },
+  "orthopedics": {
+    "specialty_name": "骨科",
+    "extra_fields": [
+      {
+        "field": "fracture_classification",
+        "label": "骨折分型",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：Garden III型、AО 32-A3型、Schatzker II型等，需注明分型依据"
+      },
+      {
+        "field": "implant_type",
+        "label": "内固定方式",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：PFNA、DHS、锁定加压钢板、髓内钉等"
+      },
+      {
+        "field": "neurovascular_exam",
+        "label": "神经血管检查",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：桡动脉搏动、尺动脉搏动、手指感觉及活动等，需注明检查结果"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "神志",
+          "营养状态",
+          "体位（强迫体位或自主体位）"
+        ]
+      },
+      {
+        "category": "脊柱",
+        "items": [
+          "生理曲度",
+          "压痛、叩痛",
+          "活动受限",
+          "椎旁肌紧张"
+        ]
+      },
+      {
+        "category": "四肢关节-视诊",
+        "items": [
+          "畸形",
+          "肿胀",
+          "皮肤破损、张力性水泡",
+          "异常姿态"
+        ]
+      },
+      {
+        "category": "四肢关节-触诊",
+        "items": [
+          "骨擦感",
+          "压痛",
+          "皮温",
+          "轴向叩击痛"
+        ]
+      },
+      {
+        "category": "四肢关节-动诊量诊",
+        "items": [
+          "主被动活动度",
+          "肢体长度对比",
+          "周径对比",
+          "关节稳定性"
+        ]
+      },
+      {
+        "category": "特殊试验",
+        "items": [
+          "直腿抬高试验及加强试验",
+          "抽屉试验/Lachman试验",
+          "McMurray征",
+          "Thomas征",
+          "Trendelenburg征"
+        ]
+      },
+      {
+        "category": "神经血管",
+        "items": [
+          "足背动脉搏动",
+          "桡动脉/尺动脉搏动",
+          "末梢毛细血管再充盈时间",
+          "肢体感觉",
+          "肢体运动功能（肌力分级）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "建筑工人",
+        "运动员",
+        "老年退休人员",
+        "学生",
+        "快递员",
+        "外卖骑手",
+        "农民",
+        "工人",
+        "教师",
+        "司机",
+        "自由职业者",
+        "个体经营者",
+        "办公室职员",
+        "保安"
+      ],
+      "trigger_pool": [
+        "跌倒",
+        "交通事故",
+        "运动损伤",
+        "高处坠落",
+        "无明显诱因",
+        "提重物后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 青壮年常见姓名风格参考：志强、伟杰、俊杰、文博、浩然、子涵、宇轩、一鸣、鹏飞、家豪、子豪、伟豪、俊豪、嘉诚、铭泽、皓轩、天宇、泽宇。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      22
+    ],
+    "exam_item_count_range": [
+      10,
+      18
+    ]
+  },
+  "neurosurgery": {
+    "specialty_name": "神经外科",
+    "extra_fields": [
+      {
+        "field": "gcs_score",
+        "label": "GCS评分",
+        "type": "number",
+        "required": true,
+        "placeholder": "如：E1V1M4=6分"
+      },
+      {
+        "field": "decompressive_craniectomy",
+        "label": "去骨瓣减压",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：右侧额颞顶部去骨瓣减压"
+      },
+      {
+        "field": "preoperative_burrhole",
+        "label": "术前钻孔引流",
+        "type": "select",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ],
+        "placeholder": "如：否，直接开颅"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏（注意有无心动过缓）",
+          "呼吸模式",
+          "血压（注意脉压）"
+        ]
+      },
+      {
+        "category": "意识与瞳孔",
+        "items": [
+          "GCS评分",
+          "瞳孔大小及光反射",
+          "眼球位置及运动",
+          "眼底检查"
+        ]
+      },
+      {
+        "category": "运动与反射",
+        "items": [
+          "肢体肌力",
+          "肌张力",
+          "病理征（Babinski）",
+          "脑膜刺激征"
+        ]
+      },
+      {
+        "category": "头皮与脊柱",
+        "items": [
+          "头皮挫伤或裂伤",
+          "颅骨凹陷",
+          "耳鼻漏",
+          "脊柱压痛"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "建筑工人",
+        "司机",
+        "学生",
+        "老年退休人员",
+        "工人",
+        "农民",
+        "运动员",
+        "快递员",
+        "外卖骑手",
+        "自由职业者",
+        "教师",
+        "办公室职员"
+      ],
+      "trigger_pool": [
+        "交通事故",
+        "高处坠落",
+        "跌倒",
+        "暴力打击"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 青壮年常见姓名风格参考：志强、伟杰、俊杰、文博、浩然、子涵、宇轩、一鸣、鹏飞、家豪、子豪、伟豪、俊豪、嘉诚、铭泽、皓轩、天宇、泽宇。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      8,
+      14
+    ]
+  },
+  "cardiothoracic_surgery": {
+    "specialty_name": "胸心外科",
+    "extra_fields": [
+      {
+        "field": "valve_disease",
+        "label": "瓣膜病变",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：二尖瓣狭窄（重度）"
+      },
+      {
+        "field": "prosthetic_planned",
+        "label": "拟置换瓣膜类型",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：机械瓣/生物瓣"
+      },
+      {
+        "field": "euroscore_ii",
+        "label": "EuroSCORE II",
+        "type": "number",
+        "required": false,
+        "placeholder": "如：3.2"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏（注意心律）",
+          "呼吸频率",
+          "血压"
+        ]
+      },
+      {
+        "category": "心脏听诊",
+        "items": [
+          "心尖搏动位置",
+          "震颤",
+          "心音（S1/S2）",
+          "额外心音（开瓣音等）",
+          "心脏杂音（部位、时期、强度、传导）"
+        ]
+      },
+      {
+        "category": "心衰体征",
+        "items": [
+          "颈静脉",
+          "肝颈回流征",
+          "双肺底啰音",
+          "下肢水肿"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "农民",
+        "工人",
+        "职员",
+        "退休人员",
+        "教师",
+        "个体经营者",
+        "司机",
+        "建筑工人",
+        "退休教师",
+        "退休工人",
+        "企业管理人员",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "劳累后",
+        "感染后",
+        "无明显诱因",
+        "妊娠后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      20
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "urology": {
+    "specialty_name": "泌尿外科",
+    "extra_fields": [
+      {
+        "field": "stone_burden",
+        "label": "结石负荷",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：完全性鹿角形结石"
+      },
+      {
+        "field": "stone_analysis",
+        "label": "结石分析",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：一水草酸钙"
+      },
+      {
+        "field": "drainage_plan",
+        "label": "引流计划",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：经皮肾穿刺造瘘"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "肾区检查",
+        "items": [
+          "肾区叩击痛",
+          "输尿管压痛点"
+        ]
+      },
+      {
+        "category": "膀胱与生殖器",
+        "items": [
+          "耻骨上压痛",
+          "膀胱充盈度",
+          "外生殖器视诊",
+          "直肠指检（前列腺）"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "司机",
+        "办公室职员",
+        "工人",
+        "农民",
+        "教师",
+        "个体经营者",
+        "退休人员",
+        "学生",
+        "自由职业者",
+        "快递员",
+        "厨师",
+        "建筑工人",
+        "保安"
+      ],
+      "trigger_pool": [
+        "饮水少",
+        "劳累后",
+        "无明显诱因",
+        "饮食不当后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 青壮年常见姓名风格参考：志强、伟杰、俊杰、文博、浩然、子涵、宇轩、一鸣、鹏飞、家豪、子豪、伟豪、俊豪、嘉诚、铭泽、皓轩、天宇、泽宇。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "plastic_surgery": {
+    "specialty_name": "整形外科",
+    "extra_fields": [
+      {
+        "field": "scar_assessment",
+        "label": "瘢痕评估",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：Vancouver瘢痕量表12分"
+      },
+      {
+        "field": "reconstructive_method",
+        "label": "重建方法",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：全厚植皮+局部皮瓣"
+      },
+      {
+        "field": "donor_site",
+        "label": "供区",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：腹部"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "瘢痕评估",
+        "items": [
+          "色泽",
+          "厚度",
+          "质地",
+          "血管分布"
+        ]
+      },
+      {
+        "category": "功能评估",
+        "items": [
+          "关节活动度",
+          "肌肉力量",
+          "皮肤移动度",
+          "感觉"
+        ]
+      },
+      {
+        "category": "供区评估",
+        "items": [
+          "皮肤松弛度",
+          "颜色",
+          "毛发",
+          "既往瘢痕"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "工人",
+        "家庭主妇",
+        "学生",
+        "自由职业者",
+        "办公室职员",
+        "教师",
+        "个体经营者",
+        "司机",
+        "农民",
+        "快递员",
+        "销售员",
+        "退休人员"
+      ],
+      "trigger_pool": [
+        "烧伤后",
+        "外伤后",
+        "术后",
+        "感染后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "stomatology": {
+    "specialty_name": "口腔科",
+    "extra_fields": [
+      {
+        "field": "dentition_status",
+        "label": "牙列状态",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：左下第一磨牙根尖与骨折线相通"
+      },
+      {
+        "field": "maxillomandibular_fixation",
+        "label": "颌间固定",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：术后颌间弹性牵引2-3周"
+      },
+      {
+        "field": "facial_nerve",
+        "label": "面神经",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：完好"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "面形与肿胀",
+        "items": [
+          "面部对称性",
+          "肿胀区",
+          "皮肤裂伤"
+        ]
+      },
+      {
+        "category": "口内检查",
+        "items": [
+          "张口度",
+          "咬合关系",
+          "牙龈撕裂",
+          "牙齿松动",
+          "台阶感",
+          "骨擦感"
+        ]
+      },
+      {
+        "category": "神经检查",
+        "items": [
+          "面神经各支功能",
+          "舌下神经",
+          "三叉神经感觉"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "快递员",
+        "工人",
+        "自由职业者",
+        "教师",
+        "司机",
+        "办公室职员",
+        "个体经营者",
+        "农民",
+        "运动员",
+        "退休人员",
+        "建筑工人"
+      ],
+      "trigger_pool": [
+        "交通事故",
+        "跌倒",
+        "斗殴",
+        "运动损伤"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 青壮年常见姓名风格参考：志强、伟杰、俊杰、文博、浩然、子涵、宇轩、一鸣、鹏飞、家豪、子豪、伟豪、俊豪、嘉诚、铭泽、皓轩、天宇、泽宇。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      8,
+      15
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "rehabilitation": {
+    "specialty_name": "康复医学科",
+    "extra_fields": [
+      {
+        "field": "rehab_phase",
+        "label": "康复阶段",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：恢复期（2月）"
+      },
+      {
+        "field": "barthel_index",
+        "label": "Barthel指数",
+        "type": "number",
+        "required": true,
+        "placeholder": "如：50"
+      },
+      {
+        "field": "brunnstrom_stage",
+        "label": "Brunnstrom分期",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：右上肢II-下肢III"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "运动功能",
+        "items": [
+          "Brunnstrom分期",
+          "肌张力（改良Ashworth）",
+          "关节活动度",
+          "肌力"
+        ]
+      },
+      {
+        "category": "平衡与转移",
+        "items": [
+          "坐位平衡",
+          "立位平衡",
+          "转移能力"
+        ]
+      },
+      {
+        "category": "步行与步态",
+        "items": [
+          "步行能力",
+          "步态分析",
+          "矫形器/辅助具使用"
+        ]
+      },
+      {
+        "category": "日常生活",
+        "items": [
+          "Barthel指数",
+          "穿衣",
+          "洗漱",
+          "进食"
+        ]
+      },
+      {
+        "category": "言语吞咽",
+        "items": [
+          "洼田饮水试验",
+          "言语清晰度",
+          "认知MMSE"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休人员",
+        "工人",
+        "家庭主妇",
+        "职员",
+        "教师",
+        "农民",
+        "司机",
+        "个体经营者",
+        "自由职业者",
+        "退休教师",
+        "退休工人",
+        "建筑工人",
+        "办公室职员"
+      ],
+      "trigger_pool": [
+        "脑卒中后",
+        "脑外伤后",
+        "脊髓损伤后",
+        "骨科术后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      12,
+      22
+    ],
+    "exam_item_count_range": [
+      10,
+      18
+    ]
+  },
+  "intensive_care": {
+    "specialty_name": "重症医学科",
+    "extra_fields": [
+      {
+        "field": "apache_ii_score",
+        "label": "APACHE II评分",
+        "type": "number",
+        "required": true,
+        "placeholder": "如：22"
+      },
+      {
+        "field": "sofa_score",
+        "label": "SOFA评分",
+        "type": "number",
+        "required": true,
+        "placeholder": "如：9"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征与灌注",
+        "items": [
+          "体温",
+          "心率/律",
+          "血压（含血管活性药剂量）",
+          "SpO2",
+          "尿量"
+        ]
+      },
+      {
+        "category": "意识与瞳孔",
+        "items": [
+          "GCS评分",
+          "瞳孔",
+          "镇静深度（RASS）"
+        ]
+      },
+      {
+        "category": "循环呼吸",
+        "items": [
+          "心音",
+          "双肺啰音",
+          "呼吸机参数"
+        ]
+      },
+      {
+        "category": "腹部与末梢",
+        "items": [
+          "肠鸣音",
+          "腹内压",
+          "末梢凉/花斑",
+          "毛细血管再充盈时间"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休人员",
+        "农民",
+        "工人",
+        "职员",
+        "自由职业",
+        "教师",
+        "司机",
+        "企业管理人员",
+        "个体经营者",
+        "建筑工人",
+        "退休教师",
+        "退休工人",
+        "保安",
+        "快递员"
+      ],
+      "trigger_pool": [
+        "感染后",
+        "术后",
+        "外伤后",
+        "内科疾病加重"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      8,
+      14
+    ]
+  },
+  "radiation_oncology": {
+    "specialty_name": "放射肿瘤科",
+    "extra_fields": [
+      {
+        "field": "radiation_plan",
+        "label": "放疗计划",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：IMRT 70Gy/33次 同步化疗"
+      },
+      {
+        "field": "performance_status",
+        "label": "体能状态评分",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：ECOG PS 1分或Karnofsky 90分"
+      },
+      {
+        "field": "tumor_stage",
+        "label": "肿瘤分期",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：T2N1M0 III期"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "肿瘤专科",
+        "items": [
+          "原发灶部位",
+          "淋巴结区域",
+          "ECOG PS"
+        ]
+      },
+      {
+        "category": "系统回顾",
+        "items": [
+          "体重变化",
+          "疼痛评分"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "农民",
+        "工人",
+        "职员",
+        "退休人员",
+        "教师",
+        "个体经营者",
+        "司机",
+        "企业管理人员",
+        "建筑工人",
+        "退休教师",
+        "退休工人",
+        "家庭主妇",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "体检发现",
+        "症状出现后"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "radiology": {
+    "specialty_name": "放射科",
+    "extra_fields": [
+      {
+        "field": "imaging_protocol",
+        "label": "影像检查方案",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：胸部HRCT+增强"
+      },
+      {
+        "field": "critical_findings",
+        "label": "关键发现",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：右肺上叶恶性特征结节"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "影像相关查体",
+        "items": [
+          "一般情况",
+          "浅表淋巴结"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休人员",
+        "职员",
+        "工人",
+        "教师",
+        "农民",
+        "司机",
+        "个体经营者",
+        "企业管理人员",
+        "退休工人",
+        "退休教师",
+        "自由职业者",
+        "建筑工人"
+      ],
+      "trigger_pool": [
+        "体检发现",
+        "症状引导"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      8,
+      14
+    ],
+    "exam_item_count_range": [
+      4,
+      8
+    ]
+  },
+  "ultrasound": {
+    "specialty_name": "超声医学科",
+    "extra_fields": [
+      {
+        "field": "ultrasound_findings",
+        "label": "超声发现",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：胆囊壁增厚，颈部嵌顿结石"
+      },
+      {
+        "field": "critical_value",
+        "label": "是否危急值",
+        "type": "select",
+        "required": false,
+        "options": [
+          "是",
+          "否"
+        ]
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "超声相关查体",
+        "items": [
+          "生命体征",
+          "腹部压痛等"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "退休人员",
+        "职员",
+        "工人",
+        "教师",
+        "农民",
+        "个体经营者",
+        "司机",
+        "企业管理人员",
+        "办公室职员",
+        "退休工人",
+        "退休教师",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "急腹症",
+        "体检",
+        "症状引导"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      6,
+      12
+    ],
+    "exam_item_count_range": [
+      3,
+      6
+    ]
+  },
+  "pathology": {
+    "specialty_name": "临床病理科",
+    "extra_fields": [
+      {
+        "field": "pathology_report_summary",
+        "label": "病理报告摘要",
+        "type": "text",
+        "required": true,
+        "placeholder": "如：（胃窦）腺癌，肠型，中分化"
+      },
+      {
+        "field": "gross_description",
+        "label": "大体描述",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：灰白色小组织5块"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "临床信息",
+        "items": [
+          "简要病史",
+          "内镜/影像所见"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "手术患者",
+        "体检人员",
+        "门诊病人",
+        "住院病人",
+        "退休人员",
+        "职员",
+        "工人",
+        "农民",
+        "教师",
+        "司机"
+      ],
+      "trigger_pool": [
+        "活检",
+        "手术切除"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      6,
+      12
+    ],
+    "exam_item_count_range": [
+      2,
+      4
+    ]
+  },
+  "pediatric_surgery": {
+    "specialty_name": "儿外科",
+    "extra_fields": [
+      {
+        "field": "feeding_history",
+        "label": "喂养史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：母乳/配方奶喂养情况、辅食添加时间及种类"
+      },
+      {
+        "field": "growth_development",
+        "label": "生长发育史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：抬头、翻身、坐、爬、走、说话等里程碑时间"
+      },
+      {
+        "field": "vaccination_history",
+        "label": "预防接种史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：卡介苗、乙肝、脊灰、百白破等接种情况"
+      },
+      {
+        "field": "birth_history",
+        "label": "出生史",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：胎次、产次、孕周、分娩方式、出生体重、Apgar评分"
+      },
+      {
+        "field": "surgical_history",
+        "label": "手术史",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：既往腹部手术、疝修补等"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "心率",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "一般状态",
+        "items": [
+          "营养发育",
+          "神志反应",
+          "皮肤弹性",
+          "前囟"
+        ]
+      },
+      {
+        "category": "腹部",
+        "items": [
+          "腹部视诊",
+          "浅触诊（压痛、肌卫）",
+          "深触诊（包块）",
+          "肠鸣音"
+        ]
+      },
+      {
+        "category": "腹股沟与生殖器",
+        "items": [
+          "腹股沟区视诊及触诊",
+          "阴囊/外阴检查"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "婴幼儿",
+        "学龄前儿童",
+        "小学生",
+        "中学生"
+      ],
+      "trigger_pool": [
+        "哭闹后发现",
+        "体检发现",
+        "无明显诱因"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 现代儿童常见姓名风格参考（2010年后出生）：子轩、一诺、梓涵、雨桐、浩然、宇轩、沐辰、奕辰、若汐、语嫣、诗涵、梦瑶、欣怡、子涵、皓轩、天宇、铭泽、嘉懿、煜城、思源。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      12,
+      20
+    ],
+    "exam_item_count_range": [
+      8,
+      12
+    ]
+  },
+  "laboratory_medicine": {
+    "specialty_name": "检验医学科",
+    "extra_fields": [],
+    "default_physical_exam_template": [],
+    "variation_rules": {
+      "occupation_pool": [
+        "体检人员",
+        "门诊病人",
+        "退休人员",
+        "职员",
+        "工人",
+        "农民",
+        "学生",
+        "教师",
+        "司机",
+        "个体经营者"
+      ],
+      "trigger_pool": [
+        "体检",
+        "症状引导"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      6,
+      12
+    ],
+    "exam_item_count_range": [
+      0,
+      4
+    ]
+  },
+  "nuclear_medicine": {
+    "specialty_name": "核医学科",
+    "extra_fields": [
+      {
+        "field": "radioisotope_treatment",
+        "label": "核素治疗信息",
+        "type": "text",
+        "required": false,
+        "placeholder": "如：131I治疗剂量、辐射安全指导"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "生命体征",
+        "items": [
+          "体温",
+          "脉搏",
+          "呼吸",
+          "血压"
+        ]
+      },
+      {
+        "category": "针对性查体",
+        "items": [
+          "甲状腺触诊",
+          "骨骼压痛与叩击痛"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "术后随访患者",
+        "体检人员",
+        "退休人员",
+        "职员",
+        "工人",
+        "农民",
+        "教师",
+        "司机",
+        "个体经营者",
+        "办公室职员"
+      ],
+      "trigger_pool": [
+        "术后随访",
+        "体检发现"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      8,
+      14
+    ],
+    "exam_item_count_range": [
+      4,
+      8
+    ]
+  },
+  "prosthodontics": {
+    "specialty_name": "口腔修复科",
+    "extra_fields": [
+      {
+        "field": "dentition_defect",
+        "label": "牙列缺损情况",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：上颌双侧后牙游离缺失(Kennedy I类)"
+      },
+      {
+        "field": "restoration_history",
+        "label": "修复治疗史",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：既往可摘局部义齿/固定义齿修复史、失败原因"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "口腔一般检查",
+        "items": [
+          "面部对称性",
+          "颞下颌关节弹响及压痛",
+          "颌下淋巴结触诊"
+        ]
+      },
+      {
+        "category": "牙列与修复体",
+        "items": [
+          "牙列缺损情况",
+          "余留牙健康评估",
+          "修复体状况"
+        ]
+      },
+      {
+        "category": "咬合与功能",
+        "items": [
+          "正中𬌗位",
+          "前伸𬌗及侧方𬌗",
+          "咀嚼效率评估"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "中老年退休人员",
+        "职员",
+        "退休工人",
+        "退休教师",
+        "教师",
+        "个体经营者",
+        "农民",
+        "工人",
+        "司机",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "拔牙后",
+        "义齿损坏",
+        "咀嚼困难"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 1950-1970年代常见姓名风格参考：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、海生、长生、根发、阿福、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥。 1960-1980年代常见姓名风格参考：志刚、伟强、建平、晓峰、海波、永明、志坚、国平、玉兰、小芳、丽华、红梅、秀云、慧敏、爱珍。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      10,
+      18
+    ],
+    "exam_item_count_range": [
+      6,
+      10
+    ]
+  },
+  "medical_genetics": {
+    "specialty_name": "医学遗传科",
+    "extra_fields": [
+      {
+        "field": "genetic_testing",
+        "label": "遗传学检测",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：染色体核型、CMA、全外显子测序结果"
+      },
+      {
+        "field": "family_pedigree",
+        "label": "家系图谱要点",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：三代亲属患病情况、遗传模式"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "一般状态",
+        "items": [
+          "特殊面容",
+          "发育评估",
+          "多发畸形检查"
+        ]
+      },
+      {
+        "category": "系统检查",
+        "items": [
+          "心脏听诊",
+          "腹部触诊",
+          "神经系统筛查"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "孕妇",
+        "新生儿父母",
+        "儿童家长",
+        "育龄夫妇",
+        "退休人员",
+        "职员",
+        "工人",
+        "农民",
+        "教师"
+      ],
+      "trigger_pool": [
+        "产前筛查异常",
+        "发育迟缓",
+        "多发畸形"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.2
+    },
+    "history_item_count_range": [
+      12,
+      22
+    ],
+    "exam_item_count_range": [
+      6,
+      12
+    ]
+  },
+  "preventive_medicine": {
+    "specialty_name": "预防医学科",
+    "extra_fields": [
+      {
+        "field": "epidemic_investigation",
+        "label": "流行病学调查",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "如：暴发疫情核实、病例定义、流行曲线"
+      },
+      {
+        "field": "control_measures",
+        "label": "控制措施",
+        "type": "textarea",
+        "required": false,
+        "placeholder": "如：消毒隔离、疫苗接种、健康教育"
+      }
+    ],
+    "default_physical_exam_template": [
+      {
+        "category": "一般情况",
+        "items": [
+          "生命体征",
+          "皮肤黏膜"
+        ]
+      }
+    ],
+    "variation_rules": {
+      "occupation_pool": [
+        "学生",
+        "工人",
+        "农民",
+        "餐饮从业人员",
+        "教师",
+        "司机",
+        "个体经营者",
+        "退休人员",
+        "办公室职员",
+        "自由职业者"
+      ],
+      "trigger_pool": [
+        "食源性疾病暴发",
+        "传染病疫情",
+        "职业暴露"
+      ],
+      "name_seed_hint": "以下仅为年代风格参考示例，严禁直接复用列表中的姓名。每次必须生成全新的、不在列表中出现的姓名。 常见姓名风格参考（各年代混合）：国栋、志远、明辉、文斌、建华、振华、海峰、学军、卫东、永强、晓峰、海波、永明、志坚、国平、玉梅、秀珍、桂兰、淑华、美琴、春香、金花、银娣、彩凤、月娥、小芳、丽华、红梅、秀云、慧敏、爱珍、静怡、雅文、思琪、晓彤、婷婷、玲玲。 每次从张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林郑等常见姓氏中随机组合，使每个病例的姓名完全不同。严禁生成与之前任何病例相同或仅姓氏不同的姓名。",
+      "time_fluctuation": 0.3
+    },
+    "history_item_count_range": [
+      8,
+      16
+    ],
+    "exam_item_count_range": [
+      2,
+      6
+    ]
+  }
+}

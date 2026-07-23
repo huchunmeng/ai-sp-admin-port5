@@ -1,0 +1,64 @@
+{
+  "case_id": "IM-20260528-A1B2",
+  "specialty": "内科",
+  "category": "心血管内科",
+  "disease": "高血压",
+  "difficulty": "R1",
+  "training_phase": "住院医师",
+  "version": "v1.0",
+  "title": "高血压（劳累诱发）",
+  "symptoms": ["头晕", "头痛", "心悸"],
+  "patient_info": {
+    "name": "李德胜",
+    "age": "58岁",
+    "sex": "1",
+    "occupation": "企业管理人员",
+    "education": "本科",
+    "marital": "已婚",
+    "address": "浙江省杭州市"
+  },
+  "admission_info": {
+    "admission_time": "2026-05-28 09:30",
+    "admission_department": "心血管内科",
+    "admission_diagnosis": "高血压病2级（高危组）"
+  },
+  "chief_complaint": "反复头晕、头痛2月，加重1周",
+  "present_illness": "患者2月前无明显诱因出现头晕、头痛，以枕部胀痛为主，晨起明显，休息后可缓解。曾在社区卫生服务中心测血压160/95mmHg，未规律服药。近1周因工作压力大，头晕头痛加重，伴心悸，活动耐力下降。无恶心呕吐，无胸闷胸痛，无视物模糊。发病以来精神一般，食欲尚可，睡眠欠佳。",
+  "general_condition": "发病以来精神一般，食欲尚可，睡眠欠佳，大小便正常，体重无明显变化。",
+  "past_history": "否认糖尿病、冠心病史。否认肝炎、结核等传染病史。",
+  "personal_history": "吸烟30年，每日约20支。偶饮酒，每次约50ml白酒。已婚，育有1女。否认疫区接触史。",
+  "family_history": "父亲患高血压病，母亲体健。否认家族遗传病史。",
+  "review_of_systems": "神经系统：头晕头痛，无意识障碍。呼吸系统：无咳嗽咳痰。循环系统：心悸，无胸闷胸痛。消化系统：无异常。泌尿系统：无异常。血液系统：无异常。",
+  "physical_exam": {
+    "vital_signs": "T 36.5℃，P 88次/分，R 18次/分，BP 168/98mmHg",
+    "general": "神志清楚，自主体位，发育正常，营养良好，皮肤黏膜无异常。",
+    "systemic": "颈部淋巴结未触及肿大。双肺呼吸音清，未闻及干湿啰音。心界向左下轻度扩大，心率88次/分，律齐，A2亢进，各瓣膜听诊区未闻及杂音。腹软，无压痛，肝脾未触及，移动性浊音阴性。双下肢无水肿，足背动脉搏动良好。"
+  },
+  "lab_tests": "血常规：WBC 6.8×10^9/L，Hb 142g/L，PLT 210×10^9/L。尿常规：蛋白（-），镜检（-）。生化：K+ 4.1mmol/L，Na+ 140mmol/L，Cr 82μmol/L，BUN 5.6mmol/L，Glu 5.8mmol/L，TC 5.6mmol/L，TG 2.1mmol/L，LDL-C 3.4mmol/L。",
+  "imaging": "心电图：窦性心律，左室高电压，ST-T无异常。胸部X线：心影向左下扩大，肺纹理清晰。",
+  "special_exams": "24小时动态血压：全天平均血压152/92mmHg，白天平均158/96mmHg，夜间平均142/84mmHg。",
+  "diagnosis": {
+    "preliminary": "原发性高血压2级（高危组）",
+    "differential": ["继发性高血压（肾血管性）", "嗜铬细胞瘤"],
+    "basis": ["中年男性，隐匿起病，病程2月", "血压168/98mmHg，达2级标准", "有高血压家族史及吸烟危险因素", "A2亢进、心界扩大提示靶器官损害", "尿常规及肾功能正常，不支持肾性高血压"]
+  },
+  "treatment_plan": "1. 非药物治疗：低盐低脂饮食（每日盐<6g），戒烟限酒，规律运动（每周≥5天，每次30分钟），控制体重。2. 药物治疗：氨氯地平5mg qd + 厄贝沙坦150mg qd，根据血压调整剂量。3. 监测：每日自测血压并记录，1月后复查动态血压。4. 随访：每3月复查血脂、肾功能、心电图。",
+  "teaching_points": ["高血压分级与危险分层", "降压药物选择原则（A+C联合）", "靶器官损害评估方法", "非药物治疗的重要性"],
+  "specialty_focus": "原发性高血压的规范化诊疗流程",
+  "score_sheet": [
+    {"id": 1, "category": "一般项目", "item": "检查者自我介绍", "group_score": 5.0, "key_point": "自我介绍完整规范（姓名+职务+问诊目的）", "score": 2.0, "rules": "完整介绍姓名 (1.0 分)+ 职务/职责 (1.0 分)"},
+    {"id": 2, "category": "一般项目", "item": "患者基本信息确认", "group_score": 5.0, "key_point": "确认患者姓名及年龄", "score": 3.0, "rules": ""},
+    {"id": 3, "category": "现病史", "item": "主诉起病情况", "group_score": 5.0, "key_point": "询问起病时间、缓急、诱因（2月前起病，与劳累相关）", "score": 2.0, "rules": ""},
+    {"id": 4, "category": "现病史", "item": "主要症状特征", "group_score": 5.0, "key_point": "头晕头痛的性质（枕部胀痛）、程度、持续时间", "score": 3.0, "rules": ""},
+    {"id": 5, "category": "现病史", "item": "伴随症状", "group_score": 5.0, "key_point": "有心悸，无恶心呕吐/胸闷胸痛/视物模糊", "score": 2.0, "rules": ""},
+    {"id": 6, "category": "现病史", "item": "诊疗经过", "group_score": 5.0, "key_point": "社区测血压160/95mmHg，未规律服药", "score": 2.0, "rules": ""},
+    {"id": 7, "category": "现病史", "item": "一般状况", "group_score": 5.0, "key_point": "精神食欲睡眠情况", "score": 2.0, "rules": ""},
+    {"id": 8, "category": "既往史", "item": "慢性病史", "group_score": 2.5, "key_point": "否认糖尿病/冠心病", "score": 1.0, "rules": ""},
+    {"id": 9, "category": "既往史", "item": "过敏及用药史", "group_score": 2.5, "key_point": "否认药物过敏史", "score": 1.0, "rules": ""},
+    {"id": 10, "category": "个人史", "item": "吸烟饮酒史", "group_score": 5.0, "key_point": "吸烟30年每日20支，偶饮酒", "score": 3.0, "rules": ""},
+    {"id": 11, "category": "家族史", "item": "家族遗传病史", "group_score": 5.0, "key_point": "父亲高血压", "score": 2.0, "rules": ""},
+    {"id": 12, "category": "问诊技巧", "item": "问诊条理", "group_score": 5.0, "key_point": "按标准问诊顺序展开", "score": 3.0, "rules": ""},
+    {"id": 13, "category": "医患沟通", "item": "总结反馈", "group_score": 5.0, "key_point": "问诊后总结主要发现并向患者反馈", "score": 3.0, "rules": ""}
+  ],
+  "extra_fields": {}
+}

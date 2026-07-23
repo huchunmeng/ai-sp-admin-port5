@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>注入测试数据</title></head>
+<body>
+<h2>训练数据注入工具</h2>
+<p>点击按钮将测试数据写入 localStorage，然后跳转到训练端查看。</p>
+<button onclick="inject()" style="padding:12px 24px;font-size:16px;cursor:pointer;">注入测试数据 → 打开训练端</button>
+<script>
+function inject() {
+  // 训练记录（含消息，与 data/training-records.json 结构一致）
+  const records = {
+    "IM-20260527-A9GW_historyTaking": {
+      id: "IM-20260527-A9GW_historyTaking",
+      caseId: "IM-20260527-A9GW", stationId: "historyTaking",
+      stationName: "接诊病人站", score: 85, duration: 900, time: "2026/6/25 10:38:00",
+      recordedAt: new Date().toISOString(),
+      messages: [
+        {role:"user",content:"您好，我是今天接诊的医生，我姓张。请问您是周晓芳女士吗？"},
+        {role:"sp",content:"是我，张医生您好。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"您今天主要哪里不舒服来看病的？"},
+        {role:"sp",content:"心跳得特别快，手还抖，一动就心慌。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"心跳快大概是什么时候开始的？是突然开始的还是慢慢出现的？"},
+        {role:"sp",content:"大概两个月前开始的。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"发病前有没有什么特别的事情？比如劳累、感冒、情绪波动？"},
+        {role:"sp",content:"最近一周工作压力特别大，就更厉害了。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"心跳快具体是什么感觉？是咚咚跳还是心慌？有没有胸痛胸闷？"},
+        {role:"sp",content:"就是心慌，像要从嗓子眼跳出来似的，没有胸痛。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"除了心悸出汗，还有没有发烧、咳嗽、恶心呕吐这些？"},
+        {role:"sp",content:"没有发烧咳嗽，也没吐，就是爱出汗、手抖。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"您说瘦了10斤，是大概多长时间瘦下来的？吃饭怎么样？"},
+        {role:"sp",content:"这两个月瘦了10斤，饭量比以前还大。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"睡眠怎么样？大便情况您再说说。"},
+        {role:"sp",content:"睡不太好，老醒；大便一天两三次，不成形。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"之前在社区医院做过什么检查吗？有没有开药？"},
+        {role:"sp",content:"在社区医院看过，没吃药。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"以前有没有得过别的病？高血压糖尿病这些？住过院吗？"},
+        {role:"sp",content:"没得过什么大病，也没住过院。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"对什么药物或者食物过敏吗？"},
+        {role:"sp",content:"没有过敏。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"吸烟喝酒吗？做什么工作的？"},
+        {role:"sp",content:"不抽烟，偶尔喝点红酒；在办公室做文员。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"家里人身体怎么样？父母兄弟姐妹有没有类似的情况？"},
+        {role:"sp",content:"我妈脖子好像有点粗。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"我再问几个系统的问题，最近有没有咳嗽咳痰？头晕头痛？肚子疼？"},
+        {role:"sp",content:"没有咳嗽咳痰，也不头晕头痛，肚子也不疼。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"好的，我总结一下您的情况：心慌手抖出汗消瘦两个月，最近加重。之前没吃过药，家里妈妈也有甲状腺问题。是这样吗？"},
+        {role:"sp",content:"您是医生，您问具体点吧",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}}
+      ]
+    },
+    "IM-20260527-A9GW_humanity": {
+      id: "IM-20260527-A9GW_humanity",
+      caseId: "IM-20260527-A9GW", stationId: "humanity",
+      stationName: "人文沟通站", score: 49, duration: 420, time: "2026/6/25 10:40:00",
+      recordedAt: new Date().toISOString(),
+      messages: [
+        {role:"user",content:"周女士您好，您的检查结果出来了，我想跟您详细聊聊。"},
+        {role:"sp",content:"您好医生。我这几天手抖得厉害，心慌得睡不着，想问问这到底是咋回事？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"根据您的症状和检查结果，诊断是甲状腺功能亢进症，也叫Graves病。不是癌症，您放心。"},
+        {role:"sp",content:"啊？您说的这个我不懂，能说大白话吗？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"这个病是因为免疫系统出了问题，导致甲状腺激素分泌过多。需要吃药来控制。"},
+        {role:"sp",content:"免疫系统？啥是免疫系统啊……您能说简单点吗？我就是手抖、心慌、出汗多，还瘦了十斤，这到底是啥病啊？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"给您开的药叫甲巯咪唑，每天吃一次。可能会有一些副作用，我们需要定期抽血监测。"},
+        {role:"sp",content:"甲巯咪唑？这药一天吃几次？饭前还是饭后？有啥忌口的不？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"一般要吃一年半到两年，慢慢减量。期间每个月要来查一次血常规和肝功能。"},
+        {role:"sp",content:"一年半到两年？那我这心慌手抖得熬这么长时间啊？吃上药以后，大概多久能好点？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"饮食上要注意少吃海带紫菜这些含碘高的食物，注意休息，不要太劳累。"},
+        {role:"sp",content:"吃海带紫菜都不行？我平时还喜欢喝紫菜汤呢。那海鲜呢？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"有什么不明白的或者担心的，随时可以问我。坚持治疗，这个病是能控制好的。"},
+        {role:"sp",content:"医生，我这病会不会影响我带孩子、上班啊？我怕一直这样心慌手抖的……",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}}
+      ]
+    }
+  };
+  localStorage.setItem('training_records', JSON.stringify(records));
+
+  // 训练会话 — 注意键名必须与 ScoreReport 期望一致：historyTaking / humanisticComm
+  const trainingSession = {
+    historyTaking: {
+      messages: [
+        {role:"user",content:"您好，我是今天接诊的医生，我姓张。请问您是周晓芳女士吗？"},
+        {role:"sp",content:"是我，张医生您好。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"您今天主要哪里不舒服来看病的？"},
+        {role:"sp",content:"心跳得特别快，手还抖，一动就心慌。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"心跳快大概是什么时候开始的？是突然开始的还是慢慢出现的？"},
+        {role:"sp",content:"大概两个月前开始的。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"发病前有没有什么特别的事情？比如劳累、感冒、情绪波动？"},
+        {role:"sp",content:"最近一周工作压力特别大，就更厉害了。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"心跳快具体是什么感觉？是咚咚跳还是心慌？有没有胸痛胸闷？"},
+        {role:"sp",content:"就是心慌，像要从嗓子眼跳出来似的，没有胸痛。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"除了心悸出汗，还有没有发烧、咳嗽、恶心呕吐这些？"},
+        {role:"sp",content:"没有发烧咳嗽，也没吐，就是爱出汗、手抖。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"您说瘦了10斤，是大概多长时间瘦下来的？吃饭怎么样？"},
+        {role:"sp",content:"这两个月瘦了10斤，饭量比以前还大。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"睡眠怎么样？大便情况您再说说。"},
+        {role:"sp",content:"睡不太好，老醒；大便一天两三次，不成形。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"之前在社区医院做过什么检查吗？有没有开药？"},
+        {role:"sp",content:"在社区医院看过，没吃药。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"以前有没有得过别的病？高血压糖尿病这些？住过院吗？"},
+        {role:"sp",content:"没得过什么大病，也没住过院。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"对什么药物或者食物过敏吗？"},
+        {role:"sp",content:"没有过敏。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"吸烟喝酒吗？做什么工作的？"},
+        {role:"sp",content:"不抽烟，偶尔喝点红酒；在办公室做文员。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"家里人身体怎么样？父母兄弟姐妹有没有类似的情况？"},
+        {role:"sp",content:"我妈脖子好像有点粗。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"我再问几个系统的问题，最近有没有咳嗽咳痰？头晕头痛？肚子疼？"},
+        {role:"sp",content:"没有咳嗽咳痰，也不头晕头痛，肚子也不疼。",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"好的，我总结一下您的情况：心慌手抖出汗消瘦两个月，最近加重。之前没吃过药，家里妈妈也有甲状腺问题。是这样吗？"},
+        {role:"sp",content:"您是医生，您问具体点吧",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}}
+      ]
+    },
+    humanisticComm: {
+      messages: [
+        {role:"user",content:"周女士您好，您的检查结果出来了，我想跟您详细聊聊。"},
+        {role:"sp",content:"您好医生。我这几天手抖得厉害，心慌得睡不着，想问问这到底是咋回事？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"根据您的症状和检查结果，诊断是甲状腺功能亢进症，也叫Graves病。不是癌症，您放心。"},
+        {role:"sp",content:"啊？您说的这个我不懂，能说大白话吗？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"这个病是因为免疫系统出了问题，导致甲状腺激素分泌过多。需要吃药来控制。"},
+        {role:"sp",content:"免疫系统？啥是免疫系统啊……您能说简单点吗？我就是手抖、心慌、出汗多，还瘦了十斤，这到底是啥病啊？",emotion:{anger:0,fear:5,sadness:0,joy:0,state:"fear"}},
+        {role:"user",content:"给您开的药叫甲巯咪唑，每天吃一次。可能会有一些副作用，我们需要定期抽血监测。"},
+        {role:"sp",content:"甲巯咪唑？这药一天吃几次？饭前还是饭后？有啥忌口的不？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"一般要吃一年半到两年，慢慢减量。期间每个月要来查一次血常规和肝功能。"},
+        {role:"sp",content:"一年半到两年？那我这心慌手抖得熬这么长时间啊？吃上药以后，大概多久能好点？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"饮食上要注意少吃海带紫菜这些含碘高的食物，注意休息，不要太劳累。"},
+        {role:"sp",content:"吃海带紫菜都不行？我平时还喜欢喝紫菜汤呢。那海鲜呢？",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}},
+        {role:"user",content:"有什么不明白的或者担心的，随时可以问我。坚持治疗，这个病是能控制好的。"},
+        {role:"sp",content:"医生，我这病会不会影响我带孩子、上班啊？我怕一直这样心慌手抖的……",emotion:{anger:0,fear:0,sadness:0,joy:0,state:"calm"}}
+      ]
+    }
+  };
+  localStorage.setItem('training-session', JSON.stringify(trainingSession));
+
+  // 应用状态
+  localStorage.setItem('training-app-state', JSON.stringify({
+    phase: "resident", specialty: "内科", appVersion: "2.0",
+    currentCase: {
+      id: "IM-20260527-A9GW", title: "Graves病诊疗病例",
+      difficulty: "R1", specialty: "内科", disease: "Graves病",
+      patient: { name: "周晓芳", gender: "女", age: "35", sex: "0" },
+      chiefComplaint: "心悸、多汗、手抖、消瘦2月",
+      symptoms: ["心悸","多汗","手抖","消瘦"]
+    },
+    currentRecord: null
+  }));
+
+  // 清除旧的断点续训标志
+  localStorage.removeItem('active-training-flow');
+
+  // 解析后的评分表（用于实时AI评分）
+  sessionStorage.setItem('aisp_parsed_scoresheet_IM-20260527-A9GW_historyTaking', JSON.stringify([
+    { templateCode: 'history_taking_v1', templateName: '病史采集评分表', items: [
+      { category:'问诊开场', item:'自我介绍（姓名+身份）', score:8, sub_items:[{ point:'主动报出姓名和医生身份', score:8 }] },
+      { category:'基本信息', item:'一般项目（姓名性别年龄职业）', score:10, sub_items:[{ point:'完整收集姓名/性别/年龄/职业', score:10 }] },
+      { category:'主诉', item:'主诉/主要不适询问', score:12, sub_items:[{ point:'开放式提问了解就诊原因', score:12 }] },
+      { category:'现病史', item:'现病史-起病情况', score:10, sub_items:[{ point:'询问起病时间、方式、诱因', score:10 }] },
+      { category:'现病史', item:'现病史-伴随症状', score:10, sub_items:[{ point:'系统询问伴随症状', score:10 }] },
+      { category:'既往史', item:'既往史', score:10, sub_items:[{ point:'询问既往疾病、住院史', score:10 }] },
+      { category:'过敏史', item:'过敏史', score:10, sub_items:[{ point:'询问药物/食物过敏', score:10 }] },
+      { category:'个人史', item:'个人史/生活习惯', score:10, sub_items:[{ point:'询问吸烟、饮酒、职业', score:10 }] },
+      { category:'家族史', item:'家族史', score:10, sub_items:[{ point:'询问家族遗传病史', score:10 }] },
+      { category:'系统回顾', item:'系统回顾', score:5, sub_items:[{ point:'简要其他系统症状排查', score:5 }] },
+      { category:'问诊收尾', item:'总结核对', score:5, sub_items:[{ point:'总结信息并请患者核对补充', score:5 }] }
+    ]}
+  ]));
+
+  sessionStorage.setItem('aisp_parsed_scoresheet_IM-20260527-A9GW_humanisticComm', JSON.stringify([
+    { templateCode: 'humanistic_comm_v1', templateName: '人文沟通评分表', items: [
+      { category:'信息告知', item:'告知诊断结论', score:15, sub_items:[{ point:'明确告知诊断结果', score:15 }] },
+      { category:'信息告知', item:'解释疾病性质（排除癌症等误区）', score:15, sub_items:[{ point:'排除严重疾病，减轻患者焦虑', score:15 }] },
+      { category:'信息告知', item:'用通俗语言解释病因', score:15, sub_items:[{ point:'避免专业术语，用比喻解释', score:15 }] },
+      { category:'治疗沟通', item:'说明治疗方案（药物名称+用法）', score:15, sub_items:[{ point:'说明药名、用法、注意事项', score:15 }] },
+      { category:'治疗沟通', item:'说明治疗时长和预期效果', score:10, sub_items:[{ point:'告知疗程和起效时间', score:10 }] },
+      { category:'生活指导', item:'饮食/生活指导', score:10, sub_items:[{ point:'说明饮食禁忌和生活注意事项', score:10 }] },
+      { category:'人文关怀', item:'鼓励提问/表达关切', score:10, sub_items:[{ point:'鼓励患者提出问题', score:10 }] },
+      { category:'人文关怀', item:'鼓励性/支持性话语', score:10, sub_items:[{ point:'给予患者支持和信心', score:10 }] }
+    ]}
+  ]));
+
+  alert('数据已注入！即将跳转到训练端。\n\n请：\n1. 在病例列表选择内科\n2. 点击"周晓芳"病例\n3. 点击"我的训练记录"查看成绩\n4. 点击"查看报告"进入评分详情');
+  window.location.href = 'http://localhost:5001';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+你是一名OSCE临床思维评估专家。请根据学员的病例分析问答和L1覆盖/L2策略分析结果，进行**L3临床推理过程还原**。
+
+## 学员病例分析问答
+
+{{QA_RECORDS}}
+
+## L1覆盖分析摘要
+
+{{L1_SUMMARY}}
+
+## L2策略分析摘要
+
+{{L2_SUMMARY}}
+
+## 分析指令
+
+你的任务是：**从学员的病例分析回答反推其临床推理过程，评估推理质量。**
+
+### 1. 诊断锚定识别
+
+从学员的回答中识别其诊断锚定过程：
+
+- 学员从哪个线索开始锚定诊断？（症状特征？检查结果？流行病学特征？）
+- 锚定是合理的（基于典型临床表现）还是过早的（在关键信息缺失时已锁定）？
+- 学员是否考虑了与锚定诊断竞争的替代诊断？
+
+### 2. 推理路径追踪
+
+追踪学员的诊断推理路径：
+
+- **正向推理**（从症状→诊断）：学员是否从临床表现出发，逐步缩小诊断范围？
+- **反向推理**（从诊断→验证）：学员是否先提出诊断假设，再寻找支持/反对证据？
+- **混合推理**：是否有正向和反向推理的结合？
+
+判断推理路径中的关键转折点（如某个检查结果改变了诊断方向）。
+
+### 3. 鉴别诊断质量
+
+- 学员的鉴别诊断是否覆盖了与主诊断临床表现重叠的关键疾病？
+- 学员是否说明了如何排除鉴别诊断（具体依据而非"可能性小"）？
+- 是否遗漏了高风险的鉴别诊断（延误将造成严重后果的）？
+
+### 4. 认知偏误检测
+
+- **confirmation_bias（确认偏误）**：只列举支持首选诊断的证据，忽视反对证据
+- **anchoring（锚定效应）**：被某个早期线索锚定，无法考虑替代诊断
+- **premature_closure（过早关闭）**：在充分鉴别前就接受某一诊断
+- **availability（可得性偏误）**：过度受近期经历或常见病影响
+- **base_rate_neglect（基础率忽视）**：忽视疾病的流行病学基础概率
+
+每个检测到的偏误标注type、evidence、severity(high/medium/low)。
+
+### 5. 推理模式判定
+
+- **analytical（分析型）**：系统性地分析每种可能性，推理步骤清晰
+- **intuitive（直觉型）**：基于模式快速识别诊断，推理步骤少但准确
+- **mixed（混合型）**：先直觉识别，再分析验证
+
+## 输出格式
+
+```json
+{
+  "diagnostic_anchor": {
+    "cue": "锚定线索",
+    "timing": "early(过早)/appropriate(恰当)/delayed(延迟)",
+    "alternative_considered": true或false
+  },
+  "reasoning_path": "forward/backward/mixed",
+  "differential_quality": {
+    "breadth": "broad/adequate/narrow",
+    "exclusion_reasoning": "specific(有具体排除依据)/vague(笼统)/absent(无排除推理)",
+    "missed_critical_differential": ["遗漏的关键鉴别诊断"]
+  },
+  "reasoning_mode": "analytical/intuitive/mixed",
+  "premature_closure": true或false,
+  "premature_closure_detail": "过早关闭的证据或说明",
+  "cognitive_biases": [
+    {
+      "type": "confirmation_bias/anchoring/premature_closure/availability/base_rate_neglect",
+      "evidence": "回答中的具体表现",
+      "severity": "high/medium/low"
+    }
+  ],
+  "narrative": "临床推理过程的整体叙述，描述诊断从形成到验证的完整思维轨迹，不超过250字"
+}
+```

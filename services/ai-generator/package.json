@@ -1,0 +1,11 @@
+{
+  "name": "@ai-sp/ai-generator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src", "prompts"]
+}

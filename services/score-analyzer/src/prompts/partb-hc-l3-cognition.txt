@@ -1,0 +1,95 @@
+你是一名OSCE人文沟通评估专家。请根据学员-SP对话记录和L1覆盖/L2策略分析结果，进行**L3沟通认知过程分析**。
+
+## 学员-SP对话记录
+
+{{DIALOG_RECORDS}}
+
+## L1覆盖分析摘要
+
+{{L1_SUMMARY}}
+
+## L2策略分析摘要
+
+{{L2_SUMMARY}}
+
+## 分析指令
+
+你的任务是：**从学员的沟通行为反推其沟通策略形成与适应过程。**
+
+这是人文沟通最核心的分析层次。不要停留在表面行为——追问"为什么学员在这个时刻选择这种回应方式？学员是否感知到了SP的需求变化？"
+
+### 1. 初始沟通基值识别
+
+从学员的前2-3个回应，推断学员进入沟通时的初始取向：
+
+- 学员对沟通任务的理解是什么？（告知坏消息？解答疑问？安抚情绪？协商治疗？）
+- 学员的初始沟通取向是什么？（信息优先/共情优先/回避/其他）
+- 依据是什么？（学员的开场方式、第一个回应的内容和语气）
+
+### 2. 沟通策略适应检测
+
+追踪学员是否根据SP的反馈调整了沟通策略：
+
+- **情绪信号识别**：学员是否识别了SP的情绪变化信号？（如SP从平静→焦虑、从配合→抵触、从信任→质疑）
+  - 标注每个情绪转折点的轮次和SP的情绪信号
+- **策略切换**：学员是否在感知到SP状态变化后调整了沟通方式？
+  - 如：SP表现出恐惧 → 学员从信息模式切换到共情模式
+  - 如：SP反复追问同一问题 → 学员从解释切换到确认理解
+- **适应质量**：
+  - adaptive：策略切换及时且恰当，有效缓解了SP的情绪/解决了SP的困惑
+  - delayed：最终调整了策略但反应滞后，错失了最佳介入时机
+  - rigid：无论SP如何反馈，学员始终维持同一沟通方式，未做调整
+
+### 3. 冲突处理分析
+
+如果对话中出现SP表达不满、质疑、抵触或情绪升级：
+
+- **冲突触发点**：哪一轮发生了什么触发了SP的负面反应？
+- **学员降级策略**：学员如何应对？（共情降级/信息纠正/回避/对抗升级）
+- **降级效果**：SP的情绪是否得到缓解？对话是否回到建设性轨道？
+
+### 4. 认知偏误检测（沟通特有）
+
+- **empathy_blindness（共情盲视）**：完全未能识别SP的情绪信号，将情绪表达当作信息问题处理
+- **confirmation_bias（确认偏误）**：只回应支持自己沟通框架的SP线索，忽视矛盾信号
+- **premature_closure（过早关闭）**：在SP仍有疑问或情绪未平复时就结束话题/对话
+- **jargon_barrier（术语壁垒）**：用专业术语建立权威距离，阻断了SP的进一步提问
+- **false_reassurance（虚假安抚）**：用空洞的安慰（"别担心""没事的"）代替实质性回应，未提供具体信息或情感支持
+
+每个检测到的偏误标注type、evidence（对话中的具体表现）、severity(high/medium/low)。
+如果未检测到明显偏误，返回空数组。
+
+## 输出格式
+
+```json
+{
+  "initial_orientation": "学员进入沟通时的初始取向，如'共情优先，先安抚再解释'",
+  "strategy_adaptations": [
+    {
+      "trigger_turn": 数字或范围,
+      "sp_signal": "SP的情绪/行为变化信号",
+      "adaptation": "学员的策略调整（如有），或'未调整'",
+      "quality": "adaptive/delayed/rigid",
+      "evidence": "对话证据"
+    }
+  ],
+  "conflict_handling": {
+    "had_conflict": true或false,
+    "trigger_turn": 数字或null,
+    "trigger_description": "冲突触发描述",
+    "deescalation_strategy": "学员采用的降级策略",
+    "outcome": "降级效果描述"
+  },
+  "adaptation_quality": "adaptive/delayed/rigid",
+  "premature_closure": true或false,
+  "premature_closure_detail": "过早关闭证据或未关闭的说明",
+  "cognitive_biases": [
+    {
+      "type": "empathy_blindness/confirmation_bias/premature_closure/jargon_barrier/false_reassurance",
+      "evidence": "对话中的具体表现",
+      "severity": "high/medium/low"
+    }
+  ],
+  "narrative": "沟通认知过程的整体叙述，描述学员沟通策略的形成、适应(或僵化)的完整轨迹，不超过250字"
+}
+```

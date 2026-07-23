@@ -1,0 +1,169 @@
+你是一名资深临床医学教育考官。请根据以下对话记录和病例信息，对学员的病史采集过程进行五层递进分析。
+
+## 病例信息
+
+{{CASE_INFO}}
+
+## 对话记录
+
+{{DIALOG_RECORDS}}
+
+## 评分表（参考，非必需）
+
+{{SCORE_SHEET}}
+
+## 分析指令
+
+请严格按照以下五层结构输出JSON。每个层次的分析要具体，引用对话中的实际语句作为证据。不要输出概括性空话。
+
+### L1 信息覆盖分析
+
+从病例信息中提取"关键信息点清单"（症状、病史要素、伴随症状、相关既往史等），逐条对照对话记录判断覆盖情况。
+- 已覆盖：对话中明确问到的信息点
+- 未覆盖：应该问但没问的信息点，标注其临床重要性（高/中/低）
+- 部分覆盖：问了但追问不充分的
+
+### L2 行为策略分析
+
+判断学员的采集策略属于哪种类型，并给出行为特征描述：
+- 假设驱动型：从主诉出发形成假设，定向追问验证
+- 模板覆盖型：按教科书清单逐项问询，缺乏针对性
+- 随机跳跃型：问题之间缺乏逻辑关联
+
+分析维度：问题类型的分布（开放/闭合/追问）、提问序列的逻辑性、时间分配是否合理。
+
+### L3 认知过程还原
+
+这是最核心的分析层次。从提问序列反推学员大脑中的假设活动：
+1. 初始假设：从主诉出发，学员头脑中最可能激活的假设是什么？
+2. 假设演化：追问方向揭示了哪些新假设的生成？哪些假设被放弃了？
+3. 假设收窄：在哪个时间点，追问明显聚焦到某一个方向？是否过早？
+4. 推理模式：直觉型（快速跳至结论）还是分析型（系统排除）？
+5. 认知偏误检测：是否出现确认偏误（只问支持首选诊断的问题）、锚定效应（被某个线索锚定后无法切换）、过早关闭（停止鉴别诊断）？
+
+### L4 安全行为分析
+
+从病例信息中提取"红旗征象清单"（提示危重症的症状/体征/病史要素），分析：
+1. 红旗征象筛查覆盖率：哪些被问到了，哪些被遗漏？
+2. 安全行为与假设活动的时间关联：安全筛查是在假设形成之前还是之后？
+3. 安全行为模式：主动筛查型 / 触发反应型 / 安全忽视型
+
+### L5 关系质量分析
+
+评估学员与患者之间的沟通关系质量：
+1. 情感线索捕捉：患者话语中的情感线索（担忧、恐惧、焦虑、回避等）被学员识别并回应了吗？
+2. 共情质量：学员的共情回应是实质性的还是表面性的？
+3. 关系弧线：从对话开始到结束，医患关系是建立、维持还是疏远？
+
+## 输出格式
+
+```json
+{
+  "profile_type": "history_taking",
+  "coverage": {
+    "total_key_points": 数字,
+    "covered": 数字,
+    "partial": 数字,
+    "missed": 数字,
+    "coverage_rate": 数字(0-1),
+    "key_points": [
+      {
+        "point": "信息点描述",
+        "category": "主诉/现病史/既往史/伴随症状/个人史/家族史",
+        "status": "covered/partial/missed",
+        "clinical_importance": "high/medium/low",
+        "evidence": "对话中对应的语句或'未提及'"
+      }
+    ],
+    "missed_high_importance": ["遗漏的高重要性信息点列表"],
+    "narrative": "对覆盖情况的整体评价，不超过150字"
+  },
+  "strategy": {
+    "type": "hypothesis_driven/template_driven/random_jumping",
+    "confidence": "high/medium/low",
+    "characteristics": {
+      "open_ended_ratio": "开放性问题占比，如'3/12'",
+      "follow_up_depth": "shallow/moderate/deep",
+      "sequence_logic": "coherent/loose/scattered",
+      "time_allocation": "balanced/front_heavy/back_heavy/rushed"
+    },
+    "narrative": "对行为策略的描述，引用对话中的具体例子，不超过200字"
+  },
+  "hypothesis_activity": {
+    "initial_hypotheses": ["从主诉出发的可能初始假设"],
+    "hypothesis_evolution": [
+      {
+        "turn_range": "第几轮到第几轮",
+        "hypothesis": "假设内容",
+        "evidence": "支持这个推断的对话证据",
+        "action": "生成/强化/放弃"
+      }
+    ],
+    "narrowing_point": {
+      "turn": 数字或null,
+      "description": "收窄发生的具体描述，如未发生则说明"
+    },
+    "premature_closure": true或false,
+    "reasoning_mode": "intuitive/analytical/mixed",
+    "cognitive_biases": [
+      {
+        "type": "confirmation_bias/anchoring/premature_closure/availability/其他",
+        "evidence": "具体证据",
+        "severity": "high/medium/low"
+      }
+    ],
+    "narrative": "认知过程的整体描述，不超过200字"
+  },
+  "safety": {
+    "red_flags_total": 数字,
+    "red_flags_screened": 数字,
+    "screening_rate": 数字(0-1),
+    "red_flags": [
+      {
+        "sign": "红旗征象描述",
+        "screened": true或false,
+        "turn": 数字或null,
+        "how_asked": "学员的提问方式或'未筛查'"
+      }
+    ],
+    "safety_pattern": "active_screening/triggered_reactive/safety_neglect",
+    "narrative": "安全行为的整体评价，不超过150字"
+  },
+  "relationship": {
+    "emotional_cues_total": 数字,
+    "emotional_cues_responded": 数字,
+    "response_rate": 数字(0-1),
+    "emotional_cues": [
+      {
+        "turn": 数字,
+        "patient_expression": "患者的情感表达",
+        "student_response": "学员的回应或'未回应'",
+        "response_quality": "substantive/superficial/missed"
+      }
+    ],
+    "empathy_quality": "substantive/superficial/absent",
+    "relationship_arc": "building/maintained/distancing/neutral",
+    "narrative": "关系质量的整体描述，不超过150字"
+  },
+  "intra_profile_patterns": [
+    "剖面内部的关联发现，如'假设收窄的时间点恰好也是安全筛查停止的时间点'"
+  ],
+  "cross_profile_leads": [
+    {
+      "to": "关联到的其他剖面类型，如physical_exam/communication/clinical_reasoning",
+      "question": "值得在其他剖面中进一步验证的问题"
+    }
+  ],
+  "limitations": "本剖面分析的局限性声明，如对话不完整、病例信息不足等"
+}
+```
+
+## 关键原则
+
+1. **证据驱动**：每个判断必须引用对话中的具体语句作为证据
+2. **层次关联**：特别注意L1-L5之间的关联——例如L3的假设收窄如何影响了L4的安全筛查和L5的情感回应
+3. **诚实局限性**：如果对话记录不完整或信息不足以支持某个判断，明确声明，不要猜测
+4. **区分"做了"和"做得好"**：覆盖完整性≠执行质量。一个问题问了但追问深度不够，应标注为"部分覆盖"
+5. **不使用评分表做终审**：评分表的覆盖标记只是参考。以对话记录中的实际表现为最终依据
+
+请严格按照JSON格式输出，不要包含任何解释性文字或Markdown标记。

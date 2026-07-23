@@ -1,0 +1,36 @@
+{
+  "name": "ai-sp-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "services/*"
+  ],
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "playwright": "^1.61.1",
+    "vite": "^6.3.0"
+  },
+  "scripts": {
+    "dev:admin": "npm run dev --workspace=ai-sp-admin",
+    "dev:training": "npm run dev --workspace=ai-sp-training",
+    "dev:exam": "npm run dev --workspace=ai-sp-exam",
+    "dev:app-training": "npm run dev --workspace=ai-sp-app-training",
+    "dev:ops": "npm run dev --workspace=ai-sp-ops",
+    "build:admin": "npm run build --workspace=ai-sp-admin",
+    "build:training": "npm run build --workspace=ai-sp-training",
+    "build:exam": "npm run build --workspace=ai-sp-exam",
+    "build:app-training": "npm run build --workspace=ai-sp-app-training",
+    "build:ops": "npm run build --workspace=ai-sp-ops",
+    "build:all": "npm run build:admin && npm run build:training && npm run build:exam && npm run build:app-training && npm run build:ops",
+    "install:all": "npm install",
+    "prod:start": "node services/prod-server/src/index.js",
+    "prod:sp-api": "node services/sp-api/src/index.js",
+    "pm2:start": "pm2 start services/prod-server/ecosystem.config.js",
+    "pm2:stop": "pm2 stop services/prod-server/ecosystem.config.js",
+    "pm2:restart": "pm2 restart services/prod-server/ecosystem.config.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.0"
+  }
+}

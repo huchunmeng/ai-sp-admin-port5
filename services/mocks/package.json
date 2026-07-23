@@ -1,0 +1,18 @@
+{
+  "name": "@ai-sp/mocks",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "scripts": {
+    "build:admin": "cd ../.. && npm install && npm run build --workspace=ai-sp-admin",
+    "build:training": "cd ../.. && npm install && npm run build --workspace=ai-sp-training",
+    "build:exam": "cd ../.. && npm install && npm run build --workspace=ai-sp-exam",
+    "build:app-training": "cd ../.. && npm install && npm run build --workspace=ai-sp-app-training",
+    "build:ops": "cd ../.. && npm install && npm run build --workspace=ai-sp-ops"
+  }
+}

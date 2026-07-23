@@ -1,0 +1,29 @@
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-lightest: #dbeafe;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --text-main: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --background: #f8fafc;
+  --card-bg: #ffffff;
+  --card-radius: 12px;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --base-size: 14px;
+  --header-height: 60px;
+  --sidebar-width: 200px;
+  --sidebar-collapsed-width: 56px;
+  --tabbar-height: 44px;
+  --content-padding: 24px;
+  --btn-radius: 8px;
+  --btn-height: 36px;
+  --input-radius: 8px;
+  --input-border: #e2e8f0;
+}

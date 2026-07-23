@@ -1,0 +1,47 @@
+{
+  "input": {
+    "case_id": "PS-20260611-DEP1",
+    "patient_info": {
+      "name": "林淑芬",
+      "age": 42,
+      "sex": "女",
+      "occupation": "会计",
+      "education": "大专"
+    },
+    "chief_complaint": "近三个月心情很差，睡不着觉，做事提不起劲",
+    "basic_info": {
+      "specialty": "精神科",
+      "category": "心境障碍",
+      "disease": "抑郁发作（单次）"
+    }
+  },
+  "output": {
+    "disease_type": "抑郁症",
+    "mental_status": {
+      "appearance": "衣着整洁但缺乏修饰，面容憔悴，眼睑下垂，坐姿萎靡，眼神交流少，精神运动性迟滞明显",
+      "speech": "语速缓慢、音量低沉、句子简短，回答前有明显的停顿和延迟，有时仅以单字或叹息回应",
+      "thought_form": "思维迟缓，主诉脑子变慢、思考困难，无明显思维破裂或离题",
+      "thought_content": "有自责自罪妄想，认为自己一事无成、拖累家人；存在自杀观念但无具体计划",
+      "affect": "情感低落，面部表情愁苦，几乎无愉悦反应，快感缺失，谈及负面事件时易哭泣",
+      "perception": "无明显幻觉或错觉",
+      "cognition": "注意力减退，记忆力下降，计算力正常，定向力完整",
+      "insight": "部分自知力，能意识到情绪不好但倾向于归因为躯体不适或外界压力"
+    },
+    "behavior_params": {
+      "tangentiality": 0.2,
+      "verbosity": 0.6,
+      "affective_blunting": 0.65,
+      "irritability": 0.1,
+      "hallucination_interference": 0.0,
+      "insight_level": "部分"
+    },
+    "delusional_system": {
+      "core_belief": "我是一个没有用的人，活着只会拖累家人",
+      "triggers": ["家人", "工作", "经济", "未来", "能力", "对不起"]
+    },
+    "hallucination_profile": {
+      "type": "无",
+      "frequency": 0
+    }
+  }
+}
