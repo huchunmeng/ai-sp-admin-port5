@@ -1,0 +1,25 @@
+{
+  "version": "v2.0",
+  "code": "TPL-PSY-HISTORY",
+  "name": "病史采集评分表（精神科）",
+  "type": "psychiatry-history",
+  "specialty": "精神科",
+  "description": "适用于精神科病史采集考核，涵盖阳性症状、阴性症状、妄想幻觉特征、自知力与风险评估、精神科既往史、物质使用史、家族精神病史等核心评估维度",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "现病史采集",     "item": "起病诱因与病程",         "score": 10 },
+    { "id": 2,  "category": "现病史采集",     "item": "幻听特征评估",           "score": 10 },
+    { "id": 3,  "category": "现病史采集",     "item": "妄想特征评估",           "score": 10 },
+    { "id": 4,  "category": "现病史采集",     "item": "阴性症状与情感障碍",     "score": 8 },
+    { "id": 5,  "category": "现病史采集",     "item": "自知力与风险评估",       "score": 10 },
+    { "id": 6,  "category": "现病史采集",     "item": "行为紊乱与社会功能",     "score": 5 },
+    { "id": 7,  "category": "现病史采集",     "item": "诊疗经过",               "score": 8 },
+    { "id": 8,  "category": "现病史采集",     "item": "发病以来一般状况",       "score": 4 },
+    { "id": 9,  "category": "既往史采集",     "item": "慢性躯体疾病史",         "score": 6 },
+    { "id": 10, "category": "个人史采集",     "item": "物质使用史",             "score": 5 },
+    { "id": 11, "category": "家族史采集",     "item": "精神疾病家族史",         "score": 6 },
+    { "id": 12, "category": "系统回顾",       "item": "神经系统筛查",           "score": 4 },
+    { "id": 13, "category": "问诊技巧与沟通", "item": "问诊条理与组织",         "score": 6 },
+    { "id": 14, "category": "问诊技巧与沟通", "item": "沟通技巧与人文关怀",     "score": 8 }
+  ]
+}

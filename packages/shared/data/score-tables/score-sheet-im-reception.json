@@ -1,0 +1,31 @@
+{
+  "version": "v2.0",
+  "code": "TPL-IM-17",
+  "name": "接诊病人站综合评分表",
+  "type": "composite",
+  "specialty": "通用",
+  "description": "接诊病人站综合评分标准，合并病史采集与沟通(50分)、体格检查项目选择(30分)、初步诊断与鉴别诊断(20分)，总计100分",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "病史采集与沟通", "item": "开场介绍与建立信任", "score": 5 },
+    { "id": 2,  "category": "病史采集与沟通", "item": "起病情况与诱因", "score": 6 },
+    { "id": 3,  "category": "病史采集与沟通", "item": "主要症状特点（部位、性质、程度、持续时间）", "score": 6 },
+    { "id": 4,  "category": "病史采集与沟通", "item": "伴随症状与阴性鉴别症状", "score": 5 },
+    { "id": 5,  "category": "病史采集与沟通", "item": "诊疗经过（诊治单位、检查、用药及效果）", "score": 4 },
+    { "id": 6,  "category": "病史采集与沟通", "item": "一般情况（饮食、睡眠、大小便、体重变化）", "score": 3 },
+    { "id": 7,  "category": "病史采集与沟通", "item": "既往史（疾病史、手术外伤史、过敏史、用药史）", "score": 5 },
+    { "id": 8,  "category": "病史采集与沟通", "item": "个人史、婚育史与家族史", "score": 4 },
+    { "id": 9,  "category": "病史采集与沟通", "item": "问诊条理清晰、逻辑连贯", "score": 4 },
+    { "id": 10, "category": "病史采集与沟通", "item": "使用通俗语言、避免专业术语堆砌", "score": 3 },
+    { "id": 11, "category": "病史采集与沟通", "item": "倾听与共情回应", "score": 3 },
+    { "id": 12, "category": "病史采集与沟通", "item": "适时总结、确认对方理解", "score": 2 },
+    { "id": 13, "category": "体格检查", "item": "一般检查项目选择恰当", "score": 6 },
+    { "id": 14, "category": "体格检查", "item": "主诉相关重点查体项目准确", "score": 8 },
+    { "id": 15, "category": "体格检查", "item": "阳性体征相关检查项目覆盖", "score": 6 },
+    { "id": 16, "category": "体格检查", "item": "鉴别诊断相关查体项目", "score": 5 },
+    { "id": 17, "category": "体格检查", "item": "查体顺序逻辑合理", "score": 5 },
+    { "id": 18, "category": "初步诊断与鉴别诊断", "item": "初步诊断明确", "score": 7 },
+    { "id": 19, "category": "初步诊断与鉴别诊断", "item": "诊断依据充分、逻辑推理清晰", "score": 7 },
+    { "id": 20, "category": "初步诊断与鉴别诊断", "item": "鉴别诊断全面（不少于3个）", "score": 6 }
+  ]
+}

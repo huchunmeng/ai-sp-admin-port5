@@ -1,0 +1,3160 @@
+{
+  "res-inst-3": {
+    "id": "res-inst-3",
+    "name": "仁爱医院住院医师考核方案",
+    "type": "institution",
+    "source": "仁爱医院 (总部)",
+    "phase": "住院医师",
+    "status": false,
+    "majors": [
+      {
+        "name": "内科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ],
+            "_prevName": "接诊病人站"
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ],
+            "_prevName": "病例分析站"
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": true,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": true,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": []
+          }
+        ]
+      },
+      {
+        "name": "外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "妇产科",
+        "stations": [
+          {
+            "name": "接诊和沟通站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "儿科",
+        "stations": [
+          {
+            "name": "病史采集站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "体格检查站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病历书写站",
+            "duration": 40,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "急诊科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "精神科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 45,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病例分析站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔全科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "res-inst-1781375654191": {
+    "id": "res-inst-1781375654191",
+    "name": "2026年全国住培结业考核标准方案 (副本)",
+    "type": "institution",
+    "source": "仁爱医院 (总部)",
+    "phase": "住院医师",
+    "status": true,
+    "majors": [
+      {
+        "name": "内科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "接诊病人站综合评分表",
+                "templateCode": "TPL-IM-17",
+                "bindProjects": [
+                  "病史采集",
+                  "体格检查",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表（标准模板）",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "儿科",
+        "stations": [
+          {
+            "name": "病史采集站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "体格检查站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "体格检查"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病历书写站",
+            "duration": 40,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "急诊科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "精神科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 45,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "精神检查"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（精神科）",
+                "templateCode": "TPL-PSY-HISTORY",
+                "bindProjects": [
+                  "病史采集",
+                  "精神检查"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "全科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 40,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "初步诊断"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析",
+                  "初步诊断"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病历书写站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "皮肤科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病历书写站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "神经内科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "神经系统检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "神经系统检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "神经系统检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "康复医学科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "重症医学科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "普通外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "胸心外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "泌尿外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "整形外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "骨科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "骨科检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "儿外科",
+        "stations": [
+          {
+            "name": "病史采集站",
+            "duration": 12,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "体格检查站",
+            "duration": 25,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "病历书写站",
+            "duration": 25,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 25,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "妇产科",
+        "stations": [
+          {
+            "name": "接诊和沟通站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "初步诊断"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "交流沟通站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "妇产科常规评分表",
+                "templateCode": "TPL-008",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "麻醉科",
+        "stations": [
+          {
+            "name": "接诊和沟通站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "人文沟通"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "眼科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "眼部检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "眼部检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "眼部检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 40,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "耳鼻咽喉科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "专科检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "专科检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "专科检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔全科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔内科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔颌面外科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔修复科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔正畸科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔病理科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "口腔颌面影像科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "放射科",
+        "stations": [
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "超声科",
+        "stations": [
+          {
+            "name": "交流沟通站",
+            "duration": 5,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "核医学科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 25,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "临床病理科",
+        "stations": [
+          {
+            "name": "临床思维站",
+            "duration": 90,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "检验医学科",
+        "stations": [
+          {
+            "name": "交流沟通站",
+            "duration": 10,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "病例分析"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "放射肿瘤科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 20,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 30,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "医学遗传科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 35,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 25,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              },
+              {
+                "name": "病历书写"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              },
+              {
+                "name": "病历书写评分表",
+                "templateCode": "TPL-STD-3",
+                "bindProjects": [
+                  "病历书写"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "预防医学科",
+        "stations": [
+          {
+            "name": "接诊病人站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病史采集"
+              },
+              {
+                "name": "体格检查"
+              },
+              {
+                "name": "人文沟通"
+              },
+              {
+                "name": "初步诊断"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病史采集评分表（标准模板）",
+                "templateCode": "TPL-STD",
+                "bindProjects": [
+                  "病史采集"
+                ]
+              },
+              {
+                "name": "体格检查评分表",
+                "templateCode": "TPL-STD-2",
+                "bindProjects": [
+                  "体格检查"
+                ]
+              },
+              {
+                "name": "人文沟通评分表",
+                "templateCode": "TPL-STD-6",
+                "bindProjects": [
+                  "人文沟通",
+                  "初步诊断"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "临床思维站",
+            "duration": 15,
+            "collapsed": false,
+            "projects": [
+              {
+                "name": "病例分析"
+              }
+            ],
+            "scoreTables": [
+              {
+                "name": "病例分析评分表",
+                "templateCode": "TPL-STD-7",
+                "bindProjects": [
+                  "病例分析"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-5",
+  "name": "辅助检查判读评分表（标准模板）",
+  "type": "exam",
+  "specialty": "通用",
+  "description": "适用于辅助检查及影像学判读站的考核，评估考生对各种辅助检查结果的判读能力",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "检查信息识别",   "item": "患者信息核对",         "score": 5 },
+    { "id": 2,  "category": "检查信息识别",   "item": "检查信息确认",         "score": 10 },
+    { "id": 3,  "category": "图像/结果分析",  "item": "正常结构/结果识别",    "score": 15 },
+    { "id": 4,  "category": "图像/结果分析",  "item": "异常发现识别与定位",   "score": 15 },
+    { "id": 5,  "category": "图像/结果分析",  "item": "综合分析",             "score": 10 },
+    { "id": 6,  "category": "诊断意见",       "item": "主要诊断判断",         "score": 15 },
+    { "id": 7,  "category": "诊断意见",       "item": "鉴别诊断",             "score": 10 },
+    { "id": 8,  "category": "诊断意见",       "item": "建议进一步检查",       "score": 5 },
+    { "id": 9,  "category": "报告规范",       "item": "报告格式规范",         "score": 8 },
+    { "id": 10, "category": "报告规范",       "item": "术语使用准确",         "score": 7 }
+  ]
+}

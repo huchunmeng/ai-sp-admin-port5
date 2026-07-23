@@ -1,0 +1,583 @@
+// 评分表模板注册中心（统一规范来源）
+// 数据来源：卫健委人才交流服务中心《住培结业实践技能考核考核大纲》
+// JSON 模板为规范数据源，JS 构建函数为历史兼容
+
+// ===== JSON 模板导入（规范数据源）=====
+
+import historyJson from './score-sheet-history.json' with { type: 'json' }
+import physicalJson from './score-sheet-physical.json' with { type: 'json' }
+import recordJson from './score-sheet-record.json' with { type: 'json' }
+import procedureJson from './score-sheet-procedure.json' with { type: 'json' }
+import examJson from './score-sheet-exam.json' with { type: 'json' }
+import communicationJson from './score-sheet-communication.json' with { type: 'json' }
+import analysisJson from './score-sheet-analysis.json' with { type: 'json' }
+import psychiatryHistoryJson from './score-sheet-psychiatry.json' with { type: 'json' }
+
+import imHistoryJson from './score-sheet-im-history.json' with { type: 'json' }
+import imPhysicalJson from './score-sheet-im-physical.json' with { type: 'json' }
+import imProgressNoteJson from './score-sheet-im-progress-note.json' with { type: 'json' }
+import imFullRecordJson from './score-sheet-im-full-record.json' with { type: 'json' }
+import imClinicalReasoningJson from './score-sheet-im-clinical-reasoning.json' with { type: 'json' }
+import imCprJson from './score-sheet-im-cpr.json' with { type: 'json' }
+import imIntubationJson from './score-sheet-im-intubation.json' with { type: 'json' }
+import imGastricJson from './score-sheet-im-gastric.json' with { type: 'json' }
+import imAbdomenJson from './score-sheet-im-abdomen.json' with { type: 'json' }
+import imBoneMarrowJson from './score-sheet-im-bone-marrow.json' with { type: 'json' }
+import imCatheterJson from './score-sheet-im-catheter.json' with { type: 'json' }
+import imEcgJson from './score-sheet-im-ecg.json' with { type: 'json' }
+import imThoracicJson from './score-sheet-im-thoracic.json' with { type: 'json' }
+import imLumbarJson from './score-sheet-im-lumbar.json' with { type: 'json' }
+import imIsolationJson from './score-sheet-im-isolation.json' with { type: 'json' }
+import imSuctionJson from './score-sheet-im-suction.json' with { type: 'json' }
+import imReceptionJson from './score-sheet-im-reception.json' with { type: 'json' }
+
+// 旧版历史模板（生成器兼容）
+import templateV1Json from './score-sheet-v1.json' with { type: 'json' }
+
+// ===== 通用评分等级 =====
+
+const UNIVERSAL_GRADING = {
+  excellent: { label: '优秀', description: '完全符合评分标准，操作/回答全面准确' },
+  good: { label: '良好', description: '大部分符合，存在1-2处小缺陷' },
+  pass: { label: '合格', description: '基本符合，存在3-4处缺陷' },
+  fail: { label: '不合格', description: '重大遗漏或原则性错误' }
+}
+
+// ===== JS 构建的标准模板（历史兼容，JSON 优先）=====
+
+function buildTPL_STD() {
+  return {
+    code: 'TPL-STD',
+    name: '病史采集评分表（标准模板）',
+    description: '适用于各专业接诊病人站的病史采集考核，评估考生采集病史的完整性、条理性和沟通技巧。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '现病史采集', maxScore: 30, weight: 30,
+        items: [
+          { name: '发病时间与诱因', maxScore: 8 }, { name: '主要症状特点：部位/性质/程度/持续时间', maxScore: 8 },
+          { name: '伴随症状', maxScore: 6 }, { name: '诊疗经过', maxScore: 4 }, { name: '一般情况', maxScore: 4 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 30, good: 24, pass: 18, fail: 9 } }
+      },
+      {
+        name: '既往史采集', maxScore: 20, weight: 20,
+        items: [
+          { name: '既往疾病史', maxScore: 8 }, { name: '手术外伤史', maxScore: 4 },
+          { name: '过敏史', maxScore: 4 }, { name: '用药史', maxScore: 4 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      },
+      {
+        name: '个人史与家族史', maxScore: 15, weight: 15,
+        items: [
+          { name: '个人生活习惯', maxScore: 5 }, { name: '职业与环境暴露', maxScore: 5 }, { name: '家族遗传病史', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '系统回顾', maxScore: 15, weight: 15,
+        items: [
+          { name: '各系统症状回顾', maxScore: 10 }, { name: '与主诉相关系统重点回顾', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '问诊技巧与沟通', maxScore: 20, weight: 20,
+        items: [
+          { name: '开场与自我介绍', maxScore: 4 }, { name: '开放性问题运用', maxScore: 4 },
+          { name: '倾听与回应', maxScore: 4 }, { name: '条理清晰、逻辑连贯', maxScore: 4 },
+          { name: '恰当使用过渡与总结', maxScore: 4 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_2() {
+  return {
+    code: 'TPL-STD-2',
+    name: '体格检查评分表',
+    description: '适用于各专业接诊病人站的体格检查考核，评估考生的查体手法、完整性和人文关怀。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '检查前准备', maxScore: 15, weight: 15,
+        items: [
+          { name: '洗手/手消毒', maxScore: 5 }, { name: '自我介绍与解释检查目的', maxScore: 5 }, { name: '物品准备齐全', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '检查手法与规范', maxScore: 40, weight: 40,
+        items: [
+          { name: '视诊：充分暴露、光线充足、观察仔细', maxScore: 10 }, { name: '触诊：手法正确、力度适中、顺序合理', maxScore: 10 },
+          { name: '叩诊：手法规范、对比叩诊', maxScore: 10 }, { name: '听诊：听诊器使用正确、听诊部位准确', maxScore: 10 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 40, good: 32, pass: 24, fail: 12 } }
+      },
+      {
+        name: '检查内容完整性', maxScore: 25, weight: 25,
+        items: [
+          { name: '按系统顺序检查', maxScore: 10 }, { name: '重点部位详细检查', maxScore: 10 }, { name: '阳性体征准确识别与描述', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 25, good: 20, pass: 15, fail: 7 } }
+      },
+      {
+        name: '人文关怀', maxScore: 20, weight: 20,
+        items: [
+          { name: '保护患者隐私', maxScore: 5 }, { name: '注意保暖', maxScore: 5 },
+          { name: '检查过程中与患者沟通', maxScore: 5 }, { name: '检查后帮助患者恢复体位', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_3() {
+  return {
+    code: 'TPL-STD-3',
+    name: '病历书写评分表',
+    description: '适用于病历书写站的考核，评估考生书写病历的规范性、完整性和临床逻辑。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '主诉与现病史', maxScore: 30, weight: 30,
+        items: [
+          { name: '主诉精炼准确（症状+时间）', maxScore: 8 }, { name: '现病史完整（起病、演变、诊疗经过）', maxScore: 12 },
+          { name: '鉴别诊断相关阴性症状记录', maxScore: 5 }, { name: '语言规范、逻辑清晰', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 30, good: 24, pass: 18, fail: 9 } }
+      },
+      {
+        name: '既往史与个人史', maxScore: 15, weight: 15,
+        items: [
+          { name: '既往史完整', maxScore: 5 }, { name: '个人史/婚育史/家族史', maxScore: 5 }, { name: '过敏史明确标注', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '体格检查记录', maxScore: 15, weight: 15,
+        items: [
+          { name: '生命体征记录', maxScore: 5 }, { name: '各系统查体记录完整', maxScore: 5 }, { name: '阳性体征详细描述、阴性体征恰当记录', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '诊断与鉴别诊断', maxScore: 25, weight: 25,
+        items: [
+          { name: '初步诊断明确、依据充分', maxScore: 10 }, { name: '鉴别诊断合理', maxScore: 10 }, { name: '诊断排序合理', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 25, good: 20, pass: 15, fail: 7 } }
+      },
+      {
+        name: '诊疗计划', maxScore: 15, weight: 15,
+        items: [
+          { name: '辅助检查选择合理', maxScore: 5 }, { name: '治疗方案具体可行', maxScore: 5 }, { name: '健康教育与随访计划', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_4() {
+  return {
+    code: 'TPL-STD-4',
+    name: '技能操作评分表',
+    description: '适用于各专业技能操作站的考核，评估考生临床操作的规范性、熟练度和无菌观念。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '操作前准备', maxScore: 15, weight: 15,
+        items: [
+          { name: '患者评估与知情同意', maxScore: 5 }, { name: '个人准备（着装、洗手、戴帽子口罩）', maxScore: 5 },
+          { name: '物品准备（器械、耗材、药品）', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '操作过程规范', maxScore: 45, weight: 45,
+        items: [
+          { name: '操作步骤正确、顺序合理', maxScore: 15 }, { name: '操作手法规范、熟练', maxScore: 15 },
+          { name: '操作中患者监测与安全防护', maxScore: 10 }, { name: '异常情况识别与处理', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 45, good: 36, pass: 27, fail: 13 } }
+      },
+      {
+        name: '操作后处理', maxScore: 20, weight: 20,
+        items: [
+          { name: '患者安置与观察', maxScore: 8 }, { name: '器械处理与医疗废物处置', maxScore: 6 }, { name: '操作记录规范', maxScore: 6 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      },
+      {
+        name: '无菌观念与安全', maxScore: 20, weight: 20,
+        items: [
+          { name: '无菌操作规范（铺巾、消毒范围、无菌区维护）', maxScore: 10 },
+          { name: '职业防护（针刺伤预防、放射防护等）', maxScore: 5 }, { name: '操作全程安全意识', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_5() {
+  return {
+    code: 'TPL-STD-5',
+    name: '辅助检查判读评分表',
+    description: '适用于辅助检查及影像学判读站的考核，评估考生对各种辅助检查结果的判读能力。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '检查信息识别', maxScore: 15, weight: 15,
+        items: [
+          { name: '患者信息核对', maxScore: 5 }, { name: '检查类型与技术参数识别', maxScore: 5 }, { name: '检查质量评估（如影像清晰度、标本合格性）', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '图像/结果分析', maxScore: 40, weight: 40,
+        items: [
+          { name: '正常结构/数值识别', maxScore: 10 }, { name: '异常发现定位与描述', maxScore: 15 },
+          { name: '异常程度评估', maxScore: 10 }, { name: '系统性分析方法', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 40, good: 32, pass: 24, fail: 12 } }
+      },
+      {
+        name: '诊断意见', maxScore: 30, weight: 30,
+        items: [
+          { name: '主要异常发现归纳', maxScore: 10 }, { name: '鉴别诊断提示', maxScore: 10 },
+          { name: '进一步检查建议', maxScore: 5 }, { name: '与临床信息关联分析', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 30, good: 24, pass: 18, fail: 9 } }
+      },
+      {
+        name: '报告规范', maxScore: 15, weight: 15,
+        items: [
+          { name: '报告结构完整', maxScore: 5 }, { name: '术语使用规范', maxScore: 5 }, { name: '结论表述准确严谨', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_6() {
+  return {
+    code: 'TPL-STD-6',
+    name: '人文沟通评分表',
+    description: '适用于接诊病人站和交流沟通站的沟通考核，评估考生的医患沟通能力和人文素养。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '沟通准备与开场', maxScore: 15, weight: 15,
+        items: [
+          { name: '环境准备（安静、私密）', maxScore: 5 }, { name: '自我介绍与角色说明', maxScore: 5 }, { name: '建立信任关系', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '信息采集与传达', maxScore: 35, weight: 35,
+        items: [
+          { name: '使用开放性问题引导', maxScore: 8 }, { name: '信息传达清晰准确', maxScore: 8 },
+          { name: '使用通俗易懂的语言', maxScore: 7 }, { name: '确认对方理解（teach-back）', maxScore: 7 }, { name: '适时总结关键信息', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 35, good: 28, pass: 21, fail: 10 } }
+      },
+      {
+        name: '共情与情绪回应', maxScore: 25, weight: 25,
+        items: [
+          { name: '识别对方情绪状态', maxScore: 8 }, { name: '表达共情与理解', maxScore: 8 }, { name: '恰当回应疑问与担忧', maxScore: 9 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 25, good: 20, pass: 15, fail: 7 } }
+      },
+      {
+        name: '共同决策与计划', maxScore: 15, weight: 15,
+        items: [
+          { name: '提供选择方案', maxScore: 5 }, { name: '尊重患者/家属意愿', maxScore: 5 }, { name: '明确后续计划与安排', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '职业素养', maxScore: 10, weight: 10,
+        items: [
+          { name: '仪表端庄、态度和蔼', maxScore: 3 }, { name: '尊重隐私与保密', maxScore: 3 }, { name: '全程保持专业风范', maxScore: 4 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 10, good: 8, pass: 6, fail: 3 } }
+      }
+    ]
+  }
+}
+
+function buildTPL_STD_7() {
+  return {
+    code: 'TPL-STD-7',
+    name: '病例分析评分表',
+    description: '适用于临床思维站的考核，评估考生对临床病例的综合分析能力和临床决策水平。',
+    totalScore: 100,
+    categories: [
+      {
+        name: '病例摘要提炼', maxScore: 15, weight: 15,
+        items: [
+          { name: '关键信息准确提取', maxScore: 5 }, { name: '主次分明、条理清晰', maxScore: 5 }, { name: '时间线索梳理清楚', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 15, good: 12, pass: 9, fail: 4 } }
+      },
+      {
+        name: '诊断与鉴别诊断', maxScore: 35, weight: 35,
+        items: [
+          { name: '主要诊断依据充分', maxScore: 12 }, { name: '鉴别诊断全面（不少于3个）', maxScore: 12 },
+          { name: '诊断与鉴别的逻辑推理', maxScore: 6 }, { name: '危重症排除', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 35, good: 28, pass: 21, fail: 10 } }
+      },
+      {
+        name: '辅助检查选择', maxScore: 20, weight: 20,
+        items: [
+          { name: '首选检查合理', maxScore: 8 }, { name: '备选检查考虑', maxScore: 5 }, { name: '检查结果解读正确', maxScore: 7 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      },
+      {
+        name: '治疗方案', maxScore: 20, weight: 20,
+        items: [
+          { name: '治疗原则正确', maxScore: 8 }, { name: '具体方案可行', maxScore: 7 }, { name: '个体化考虑因素', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 20, good: 16, pass: 12, fail: 6 } }
+      },
+      {
+        name: '预后与预防', maxScore: 10, weight: 10,
+        items: [
+          { name: '预后判断合理', maxScore: 5 }, { name: '健康教育内容恰当', maxScore: 5 }
+        ],
+        grading: { ...UNIVERSAL_GRADING, scores: { excellent: 10, good: 8, pass: 6, fail: 3 } }
+      }
+    ]
+  }
+}
+
+// ===== 合并注册表：JSON 规范数据优先，JS 构建为回退 =====
+
+const JS_TEMPLATES = {
+  'TPL-STD': buildTPL_STD(),
+  'TPL-STD-2': buildTPL_STD_2(),
+  'TPL-STD-3': buildTPL_STD_3(),
+  'TPL-STD-4': buildTPL_STD_4(),
+  'TPL-STD-5': buildTPL_STD_5(),
+  'TPL-STD-6': buildTPL_STD_6(),
+  'TPL-STD-7': buildTPL_STD_7()
+}
+
+const JSON_TEMPLATES = {
+  [historyJson.code]: historyJson,
+  [physicalJson.code]: physicalJson,
+  [recordJson.code]: recordJson,
+  [procedureJson.code]: procedureJson,
+  [examJson.code]: examJson,
+  [communicationJson.code]: communicationJson,
+  [analysisJson.code]: analysisJson,
+  [psychiatryHistoryJson.code]: psychiatryHistoryJson,
+  [imHistoryJson.code]: imHistoryJson,
+  [imPhysicalJson.code]: imPhysicalJson,
+  [imProgressNoteJson.code]: imProgressNoteJson,
+  [imFullRecordJson.code]: imFullRecordJson,
+  [imClinicalReasoningJson.code]: imClinicalReasoningJson,
+  [imCprJson.code]: imCprJson,
+  [imIntubationJson.code]: imIntubationJson,
+  [imGastricJson.code]: imGastricJson,
+  [imAbdomenJson.code]: imAbdomenJson,
+  [imBoneMarrowJson.code]: imBoneMarrowJson,
+  [imCatheterJson.code]: imCatheterJson,
+  [imEcgJson.code]: imEcgJson,
+  [imThoracicJson.code]: imThoracicJson,
+  [imLumbarJson.code]: imLumbarJson,
+  [imIsolationJson.code]: imIsolationJson,
+  [imSuctionJson.code]: imSuctionJson,
+  [imReceptionJson.code]: imReceptionJson
+}
+
+/** 全部评分表模板（JSON 规范数据覆盖同名 JS 构建版本） */
+export const scoreTemplates = {
+  ...JS_TEMPLATES,
+  ...JSON_TEMPLATES
+}
+
+/** 旧版 v1 模板（保留给 score-sheet-generator 兼容） */
+export const templateV1 = templateV1Json
+
+// ===== 查询函数 =====
+
+/** 按模板编码获取评分表（深拷贝） */
+export function getScoreTable(code) {
+  const tpl = scoreTemplates[code]
+  if (!tpl) return null
+  return JSON.parse(JSON.stringify(tpl))
+}
+
+/** 获取模板列表（仅编码+名称，用于下拉选择） */
+export function getTemplateList() {
+  return Object.values(scoreTemplates).map(t => ({
+    code: t.code,
+    name: t.name,
+    description: t.description
+  }))
+}
+
+// ===== 管理员端兼容导出 =====
+
+/** 全部模板数组 */
+export const SCORE_SHEET_TEMPLATES = Object.values(scoreTemplates)
+
+/** 按领域类型索引 */
+export const TEMPLATES_BY_TYPE = Object.fromEntries(
+  SCORE_SHEET_TEMPLATES.filter(t => t.type).map(t => [t.type, t])
+)
+
+/** 按编码索引（同 scoreTemplates，别名） */
+export const TEMPLATES_BY_CODE = scoreTemplates
+
+/** 根据领域类型获取模板 */
+export function getTemplateByType(type) {
+  return TEMPLATES_BY_TYPE[type] || null
+}
+
+/** 根据编码获取模板（别名） */
+export function getTemplateByCode(code) {
+  return scoreTemplates[code] || null
+}
+
+/** 获取模板的评分项列表（兼容 flat/nested 两种格式） */
+export function getTemplateItems(typeOrCode) {
+  const tpl = TEMPLATES_BY_TYPE[typeOrCode] || TEMPLATES_BY_CODE[typeOrCode]
+  if (!tpl) return []
+  if (tpl.items) return tpl.items
+  return flattenTemplateItems(tpl)
+}
+
+// ===== 专业特有评分表命名 =====
+
+export const specialtyTableNames = {
+  '神经内科': { 'TPL-STD-2': '神经系统检查评分表' },
+  '眼科': { 'TPL-STD-2': '眼部检查评分表' },
+  '耳鼻咽喉科': { 'TPL-STD-2': '专科检查评分表' },
+  '口腔全科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔内科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔颌面外科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔修复科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔正畸科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔病理科': { 'TPL-STD-2': '口腔检查评分表' },
+  '口腔颌面影像科': { 'TPL-STD-2': '口腔检查评分表' },
+  '皮肤科': { 'TPL-STD-2': '专科检查评分表' },
+  '骨科': { 'TPL-STD-2': '骨科检查评分表' },
+  '儿外科': { 'TPL-STD-2': '儿外科检查评分表' }
+}
+
+/** 根据专业名获取评分表显示名称 */
+export function getSpecialtyTableName(specialty, templateCode) {
+  const overrides = specialtyTableNames[specialty]
+  if (overrides && overrides[templateCode]) return overrides[templateCode]
+  const tpl = scoreTemplates[templateCode]
+  return tpl ? tpl.name : templateCode
+}
+
+// ===== 专业-考站-评分表绑定关系（回退映射）=====
+
+export const stationScoreTableBindings = {
+  '接诊病人站': {
+    'TPL-STD': { bindProjects: ['病史采集'], applicableMajors: [] },
+    'TPL-PSY-HISTORY': { bindProjects: ['病史采集'], applicableMajors: ['精神科'] },
+    'TPL-STD-2': { bindProjects: ['体格检查'], applicableMajors: [] },
+    'TPL-STD-6': { bindProjects: ['人文沟通'], applicableMajors: [] },
+    'TPL-STD-7': { bindProjects: ['初步诊断'], applicableMajors: [] }
+  },
+  '接诊和沟通站': {
+    'TPL-STD': { bindProjects: ['病史采集'], applicableMajors: [] },
+    'TPL-PSY-HISTORY': { bindProjects: ['病史采集'], applicableMajors: ['精神科'] },
+    'TPL-STD-2': { bindProjects: ['体格检查'], applicableMajors: [] },
+    'TPL-STD-6': { bindProjects: ['人文沟通'], applicableMajors: [] },
+    'TPL-STD-7': { bindProjects: ['初步诊断'], applicableMajors: [] }
+  },
+  '病史采集站': {
+    'TPL-STD': { bindProjects: ['病史采集'], applicableMajors: [] },
+    'TPL-PSY-HISTORY': { bindProjects: ['病史采集'], applicableMajors: ['精神科'] },
+    'TPL-STD-6': { bindProjects: ['人文沟通'], applicableMajors: [] }
+  },
+  '体格检查站': {
+    'TPL-STD-2': { bindProjects: ['体格检查'], applicableMajors: [] }
+  },
+  '临床思维站': {
+    'TPL-STD-7': { bindProjects: ['病例分析'], applicableMajors: [] }
+  },
+  '交流沟通站': {
+    'TPL-STD-6': { bindProjects: ['人文沟通'], applicableMajors: [] }
+  },
+  '病历书写站': {
+    'TPL-STD-3': { bindProjects: ['病历书写'], applicableMajors: [] }
+  },
+  '初步诊断站': {
+    'TPL-STD-7': { bindProjects: ['初步诊断'], applicableMajors: [] }
+  },
+  '治疗计划站': {
+    'TPL-STD-4': { bindProjects: ['治疗计划'], applicableMajors: [] }
+  }
+}
+
+// ===== 条目展平 =====
+
+/** 将 nested categories/items 结构展平为 [{category, item, score}] */
+export function flattenTemplateItems(template) {
+  if (!template) return []
+  const flat = []
+  const categories = template.categories || []
+  for (const cat of categories) {
+    const items = cat.items || []
+    for (const item of items) {
+      flat.push({
+        category: cat.name,
+        item: item.name,
+        score: item.maxScore || 0
+      })
+    }
+  }
+  return flat
+}
+
+/** 根据模板编码获取扁平化条目列表（兼容 flat items 和 nested categories） */
+export function getTemplateFlatItems(code) {
+  const tpl = getScoreTable(code)
+  if (!tpl) return []
+  // Flat 格式：直接返回 items（保留 id）
+  if (tpl.items) {
+    return tpl.items.map(item => ({
+      id: item.id,
+      category: item.category,
+      item: item.item,
+      score: item.score || 0
+    }))
+  }
+  // Nested 格式：展平 categories
+  return flattenTemplateItems(tpl)
+}
+
+// 默认导出
+export default {
+  scoreTemplates,
+  getScoreTable,
+  getTemplateList,
+  SCORE_SHEET_TEMPLATES,
+  TEMPLATES_BY_TYPE,
+  TEMPLATES_BY_CODE,
+  getTemplateByType,
+  getTemplateByCode,
+  getTemplateItems,
+  specialtyTableNames,
+  getSpecialtyTableName,
+  stationScoreTableBindings,
+  flattenTemplateItems,
+  getTemplateFlatItems,
+  templateV1
+}

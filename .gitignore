@@ -34,9 +34,11 @@ apps/app-training/public/logs/
 # 成绩报告落盘目录
 reports/
 
-# 训练记录落盘目录
+# 训练记录落盘目录 (运行时生成)
 data/
 !apps/admin/src/data/
+!apps/ops/src/data/
+!packages/shared/data/
 
 
 # Claude Code 内部文件

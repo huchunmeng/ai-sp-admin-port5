@@ -1,0 +1,24 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-6",
+  "name": "人文沟通评分表（标准模板）",
+  "type": "communication",
+  "specialty": "通用",
+  "description": "适用于接诊病人站和交流沟通站的沟通考核，评估考生的医患沟通能力和人文素养",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "沟通准备与开场", "item": "自我介绍与称呼",       "score": 5 },
+    { "id": 2,  "category": "沟通准备与开场", "item": "说明沟通目的",         "score": 5 },
+    { "id": 3,  "category": "沟通准备与开场", "item": "核实患者身份",         "score": 5 },
+    { "id": 4,  "category": "信息采集与传达", "item": "倾听与提问技巧",       "score": 12 },
+    { "id": 5,  "category": "信息采集与传达", "item": "信息归纳与反馈",       "score": 13 },
+    { "id": 6,  "category": "信息采集与传达", "item": "病情解释清晰易懂",     "score": 10 },
+    { "id": 7,  "category": "共情与情绪回应", "item": "识别患者情绪",         "score": 10 },
+    { "id": 8,  "category": "共情与情绪回应", "item": "表达共情与支持",       "score": 10 },
+    { "id": 9,  "category": "共情与情绪回应", "item": "安抚患者焦虑",         "score": 5 },
+    { "id": 10, "category": "共同决策与计划", "item": "提供选择方案",         "score": 7 },
+    { "id": 11, "category": "共同决策与计划", "item": "协商治疗方案",         "score": 8 },
+    { "id": 12, "category": "职业素养",       "item": "尊重患者与保密",       "score": 5 },
+    { "id": 13, "category": "职业素养",       "item": "伦理与法律意识",       "score": 5 }
+  ]
+}

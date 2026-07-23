@@ -1,0 +1,22 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-4",
+  "name": "技能操作评分表（标准模板）",
+  "type": "procedure",
+  "specialty": "通用",
+  "description": "适用于各专业技能操作站的考核，评估考生临床操作的规范性、熟练度和无菌观念",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "操作前准备",     "item": "核对患者信息与知情同意", "score": 5 },
+    { "id": 2,  "category": "操作前准备",     "item": "物品与器械准备",         "score": 5 },
+    { "id": 3,  "category": "操作前准备",     "item": "洗手与无菌准备",         "score": 5 },
+    { "id": 4,  "category": "操作过程规范",   "item": "无菌操作规范",           "score": 15 },
+    { "id": 5,  "category": "操作过程规范",   "item": "操作步骤正确",           "score": 20 },
+    { "id": 6,  "category": "操作过程规范",   "item": "操作熟练度与手法",       "score": 10 },
+    { "id": 7,  "category": "操作后处理",     "item": "患者安置与观察",         "score": 8 },
+    { "id": 8,  "category": "操作后处理",     "item": "物品处理与记录",         "score": 7 },
+    { "id": 9,  "category": "操作后处理",     "item": "标本处理与送检",         "score": 5 },
+    { "id": 10, "category": "无菌观念与安全", "item": "全程无菌意识",           "score": 10 },
+    { "id": 11, "category": "无菌观念与安全", "item": "职业安全与防护",         "score": 10 }
+  ]
+}

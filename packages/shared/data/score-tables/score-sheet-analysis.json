@@ -1,0 +1,23 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-7",
+  "name": "病例分析评分表（标准模板）",
+  "type": "analysis",
+  "specialty": "通用",
+  "description": "适用于临床思维站的考核，评估考生对临床病例的综合分析能力和临床决策水平",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "病例摘要提炼",   "item": "关键信息提取",         "score": 8 },
+    { "id": 2,  "category": "病例摘要提炼",   "item": "病情归纳总结",         "score": 7 },
+    { "id": 3,  "category": "诊断与鉴别诊断", "item": "初步诊断",             "score": 15 },
+    { "id": 4,  "category": "诊断与鉴别诊断", "item": "鉴别诊断",             "score": 15 },
+    { "id": 5,  "category": "诊断与鉴别诊断", "item": "诊断依据",             "score": 5 },
+    { "id": 6,  "category": "辅助检查选择",   "item": "检查项目选择合理性",   "score": 12 },
+    { "id": 7,  "category": "辅助检查选择",   "item": "检查结果判读",         "score": 8 },
+    { "id": 8,  "category": "治疗方案",       "item": "治疗原则",             "score": 8 },
+    { "id": 9,  "category": "治疗方案",       "item": "具体治疗方案",         "score": 8 },
+    { "id": 10, "category": "治疗方案",       "item": "并发症预防",           "score": 4 },
+    { "id": 11, "category": "预后与预防",     "item": "预后评估",             "score": 5 },
+    { "id": 12, "category": "预后与预防",     "item": "预防与随访计划",       "score": 5 }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": "v2.0",
+  "code": "TPL-STD-2",
+  "name": "体格检查评分表（标准模板）",
+  "type": "physical",
+  "specialty": "通用",
+  "description": "适用于各专业接诊病人站的体格检查考核，评估考生的查体手法、完整性和人文关怀",
+  "total_score": 100,
+  "items": [
+    { "id": 1,  "category": "检查前准备",     "item": "物品与器械准备",     "score": 5 },
+    { "id": 2,  "category": "检查前准备",     "item": "患者准备与告知",     "score": 5 },
+    { "id": 3,  "category": "检查前准备",     "item": "洗手与消毒",         "score": 5 },
+    { "id": 4,  "category": "检查手法与规范", "item": "视诊规范",           "score": 10 },
+    { "id": 5,  "category": "检查手法与规范", "item": "触诊规范",           "score": 10 },
+    { "id": 6,  "category": "检查手法与规范", "item": "叩诊规范",           "score": 10 },
+    { "id": 7,  "category": "检查手法与规范", "item": "听诊规范",           "score": 10 },
+    { "id": 8,  "category": "检查内容完整性", "item": "系统检查无遗漏",     "score": 15 },
+    { "id": 9,  "category": "检查内容完整性", "item": "重点部位详细检查",   "score": 10 },
+    { "id": 10, "category": "人文关怀",       "item": "保护患者隐私",       "score": 8 },
+    { "id": 11, "category": "人文关怀",       "item": "检查中沟通安抚",     "score": 7 },
+    { "id": 12, "category": "人文关怀",       "item": "检查后整理与告知",   "score": 5 }
+  ]
+}
