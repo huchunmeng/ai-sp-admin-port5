@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-24
+
+### 帽子云部署构建修复
+
+- **根因**：`.gitignore` 中 `data/` 规则过于宽泛，将 `apps/admin/src/data/`、`apps/ops/src/data/`、`packages/shared/data/` 三个源码数据目录全部排除出版本控制，Docker 构建 clone 后文件缺失；帽子云自动检测 `appDir` 为 `packages/shared`，但 build 脚本在根目录
+- **修复**：`.gitignore` 增加 `!apps/admin/src/data/`、`!apps/ops/src/data/`、`!packages/shared/data/` 三条例外规则；`packages/shared/package.json` 新增 `build:admin` 等五端构建脚本（`cd ../.. && npm install && npm run build --workspace=ai-sp-admin`）
+
+### 文件变更
+
+| 文件 | 变更 |
+|------|------|
+| `.gitignore` | 新增 3 条 `data/` 例外规则（apps/admin、apps/ops、packages/shared） |
+| `packages/shared/package.json` | 新增 `build:admin/training/exam/app-training/ops` 五个脚本 |
+| `apps/admin/src/data/` (31 文件) | 首次纳入版本控制 |
+| `apps/ops/src/data/` (11 文件) | 首次纳入版本控制 |
+| `packages/shared/data/` (35 文件) | 首次纳入版本控制 |
+
 ## 2026-07-10
 
 ### 精神检查模块 — 非精神病性障碍支持
