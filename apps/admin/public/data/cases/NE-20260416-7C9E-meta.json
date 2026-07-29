@@ -1,0 +1,41 @@
+{
+  "case_id": "NE-20260416-7C9E",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "隐忍型",
+    "sensitivity": "高敏感",
+    "resilience": "低豁达"
+  },
+  "pre_generation": {
+    "case_id": "NE-20260416-7C9E",
+    "specialty": "神经内科",
+    "disease": "颅内高压及脑疝",
+    "difficulty": "R3",
+    "training_phase": "住院医师",
+    "input_mode": "参数生成",
+    "source_document": "无"
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-18T09:08:58.304Z"
+    },
+    "encounter": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-18T09:08:58.304Z"
+    },
+    "case_analysis": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-18T09:08:58.304Z"
+    },
+    "communication": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-18T09:08:58.304Z"
+    }
+  },
+  "key_timeline": []
+}

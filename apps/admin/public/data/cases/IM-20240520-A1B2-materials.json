@@ -1,0 +1,37 @@
+{
+  "case_id": "IM-20240520-A1B2",
+  "items": [
+    {
+      "id": "mat_kidney_ct_01",
+      "type": "image",
+      "filename": "kidney_ct.jpg",
+      "itemName": "腹部CT平扫",
+      "category": "previous",
+      "subcategory": "imaging",
+      "sourceHospital": "XX市人民医院",
+      "examDate": "2024-05-10",
+      "description": "双肾大小形态正常，皮质厚度可，未见明确占位性病变。",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": ["CT", "拍片子", "之前检查", "做过什么检查", "B超", "影像", "检查结果"],
+      "semantic_hints": ["之前有带检查结果来吗？"],
+      "spVerbal": "这是上个月在人民医院做的腹部CT，您看看。"
+    },
+    {
+      "id": "mat_urine_01",
+      "type": "form",
+      "filename": "urine_test.pdf",
+      "itemName": "尿常规化验单",
+      "category": "previous",
+      "subcategory": "lab",
+      "sourceHospital": "XX社区卫生服务中心",
+      "examDate": "2024-05-15",
+      "description": "尿蛋白+++，镜下可见大量管型。",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": ["化验", "尿常规", "检查", "结果", "报告", "化验单"],
+      "semantic_hints": ["之前的化验结果您要看吗？"],
+      "spVerbal": "这是前几天在社区医院查的尿常规，他们说有问题让我来大医院看看。"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "case_id": "PS-20260611-PAN1",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "普通型",
+    "sensitivity": "普通敏感度",
+    "resilience": "普通恢复力"
+  },
+  "atypical_dialogue": {
+    "disease_type": "惊恐障碍",
+    "mental_status": {
+      "appearance": "衣着整洁，坐立不安，双手颤抖，频繁搓手或握拳，眼神警惕而恐惧，额头冒汗，呼吸急促",
+      "speech": "语速快、音量时高时低，内容围绕身体症状和恐惧感，有重复性诉说倾向",
+      "thought_form": "思维奔逸但内容局限，反复围绕濒死感和失控感，无明显思维破裂",
+      "thought_content": "存在疑病观念，坚信自己患有严重心脏病或脑部疾病；担心随时会发疯或死亡",
+      "affect": "焦虑恐惧明显，情感反应强烈且与处境不匹配，易激惹但持续时间短",
+      "perception": "发作时有非真实感和现实解体感，无幻觉",
+      "cognition": "发作时注意力高度集中于身体感受，记忆力正常，定向力完整",
+      "insight": "发作间歇期有自知力，知道是心理问题但发作时完全被恐惧支配"
+    },
+    "behavior_params": {
+      "tangentiality": 0.5,
+      "verbosity": 1.4,
+      "affective_blunting": 0.1,
+      "irritability": 0.7,
+      "hallucination_interference": 0.0,
+      "insight_level": "波动"
+    },
+    "delusional_system": {
+      "core_belief": "我的心脏或大脑出了问题，我随时可能会死掉或发疯",
+      "triggers": ["心跳", "胸闷", "头晕", "呼吸困难", "死亡", "发疯", "医院"]
+    },
+    "hallucination_profile": {
+      "type": "无",
+      "frequency": 0
+    }
+  },
+  "pre_generation": {
+    "case_id": "PS-20260611-PAN1",
+    "specialty": "妇产科",
+    "disease": "子宫肌瘤",
+    "difficulty": "R1",
+    "training_phase": "住院医师",
+    "input_mode": "参数生成",
+    "source_document": "无"
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-12T05:24:17.942Z"
+    },
+    "encounter": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-12T05:24:17.942Z"
+    },
+    "case_analysis": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-12T05:24:17.942Z"
+    },
+    "communication": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-12T05:24:17.942Z"
+    }
+  },
+  "key_timeline": []
+}

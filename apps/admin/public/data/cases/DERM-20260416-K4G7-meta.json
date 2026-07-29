@@ -1,0 +1,41 @@
+{
+  "case_id": "DERM-20260416-K4G7",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "偏内敛",
+    "sensitivity": "高敏感",
+    "resilience": "低豁达"
+  },
+  "pre_generation": {
+    "case_id": "DERM-20260416-K4G7",
+    "specialty": "皮肤科",
+    "disease": "大疱性类天疱疮",
+    "difficulty": "R3",
+    "training_phase": "住院医师",
+    "input_mode": "参数生成",
+    "source_document": "无"
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T17:25:43.801Z"
+    },
+    "encounter": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T17:25:43.801Z"
+    },
+    "case_analysis": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T17:25:43.801Z"
+    },
+    "communication": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T17:25:43.801Z"
+    }
+  },
+  "key_timeline": []
+}

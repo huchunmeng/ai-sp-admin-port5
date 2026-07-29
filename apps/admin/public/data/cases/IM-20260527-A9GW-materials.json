@@ -1,0 +1,22 @@
+{
+  "case_id": "IM-20260527-A9GW",
+  "items": [
+    {
+      "id": "mat_mqhflztpu0w8",
+      "type": "image",
+      "filename": "d0607a09fa5a4da5b36f28ae6546703b.pdf_9_2400.jpg~tplv-a9rns2rl98-resize-crop_42_216_2402_1734_2360_1518.jpeg",
+      "itemName": "心电图",
+      "category": "previous",
+      "subcategory": "imaging",
+      "sourceHospital": "",
+      "examDate": "",
+      "description": "",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": [],
+      "semantic_hints": [],
+      "spVerbal": "",
+      "filePath": "/data/cases/IM-20260527-A9GW/materials/d0607a09fa5a4da5b36f28ae6546703b.pdf_9_2400.jpg~tplv-a9rns2rl98-resize-crop_42_216_2402_1734_2360_1518.jpeg"
+    }
+  ]
+}

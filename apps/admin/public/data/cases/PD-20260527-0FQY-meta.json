@@ -1,0 +1,393 @@
+{
+  "case_id": "PD-20260527-0FQY",
+  "version": "v1.0",
+  "personality": {
+    "expressiveness": "普通型",
+    "sensitivity": "高敏感",
+    "resilience": "普通恢复力"
+  },
+  "pre_generation": {
+    "specialty": "儿科",
+    "disease": "儿童糖尿病",
+    "difficulty": "R1",
+    "training_phase": "",
+    "input_mode": "参数生成模式",
+    "source_document": null
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T15:55:37.021Z"
+    },
+    "encounter": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T15:55:37.021Z"
+    },
+    "case_analysis": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T15:55:37.021Z"
+    },
+    "communication": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-10T15:55:37.021Z"
+    }
+  },
+  "ai_services": {
+    "ai_sp": {
+      "sp_play_rules": {
+        "knowledge_boundary": {
+          "knows": [
+            "主要症状：多饮、多尿、体重下降",
+            "主诉：多饮、多尿、体重下降2周",
+            "现病史详情",
+            "自己的姓名和一般资料",
+            "主动提问：医生，这孩子是得了糖尿病吗？能治好吗？是不是以后一辈子都得打针了？",
+            "就医经历",
+            "既往病史"
+          ],
+          "does_not_know": [
+            "具体诊断名称",
+            "实验室检查结果"
+          ]
+        },
+        "emotion_progression": [
+          {
+            "trigger": "就诊开始",
+            "change": "作为母亲的焦虑与担忧，整体合作但语速偏快"
+          },
+          {
+            "trigger": "病情叙述",
+            "change": "详细描述发病经过"
+          },
+          {
+            "trigger": "问诊过程",
+            "change": "逐渐放松，配合医生"
+          }
+        ],
+        "vague_response_templates": [
+          "具体记不太清了...",
+          "好像有这回事...",
+          "应该没什么问题吧...",
+          "时间长了有点模糊了..."
+        ],
+        "refuse_to_answer": [
+          "我不知道...",
+          "这个我不太清楚...",
+          "我得想想..."
+        ]
+      },
+      "physical_exam_result_templates": [
+        {
+          "item": "为患儿测量血压并进行生长发育评估（身长/身高、体重、头围等）",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查一般状态：神志、营养状况、皮肤弹性、有无脱水貌",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查头部及颈部：咽部、扁桃体、颈软度",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "进行心肺听诊",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "进行腹部触诊：腹部平软度、有无压痛、肝脾触诊",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "进行神经系统筛查：四肢肌力、肌张力，膝腱反射，病理征",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查皮肤有无皮疹、出血点，浅表淋巴结有无肿大",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "简述阳性体征及关键阴性体征的临床意义",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        }
+      ]
+    },
+    "ai_scoring": {
+      "ai_scoring_rules": {
+        "history_rules": [
+          {
+            "item": "开场介绍并确认患儿及家属身份",
+            "keywords": [
+              "开场介绍并确认患儿及家属身份"
+            ],
+            "score": 2
+          },
+          {
+            "item": "以开放式提问开始，引出主诉",
+            "keywords": [
+              "以开放式提问开始",
+              "引出主诉"
+            ],
+            "score": 2
+          },
+          {
+            "item": "详细询问多饮的起病时间、饮水量变化、饮水偏好",
+            "keywords": [
+              "详细多饮的起病时间",
+              "饮水量变化",
+              "饮水偏好"
+            ],
+            "score": 2
+          },
+          {
+            "item": "详细询问多尿的起病时间、频率及夜尿次数",
+            "keywords": [
+              "详细多尿的起病时间",
+              "频率及夜尿次数"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问体重下降的具体数值、时间及伴随食欲变化",
+            "keywords": [
+              "体重下降的具体数值",
+              "时间及伴随食欲变化"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问发病以来乏力程度",
+            "keywords": [
+              "发病以来乏力程度"
+            ],
+            "score": 2
+          },
+          {
+            "item": "逐一追问重要阴性症状（恶心、呕吐、腹痛、腹泻、发热、咳嗽）",
+            "keywords": [
+              "逐一追问重要阴性症状"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问发病以来一般情况（精神、睡眠、大便情况）",
+            "keywords": [
+              "发病以来一般情况"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问诊疗经过（外院检查项目、结果、处理情况）",
+            "keywords": [
+              "诊疗经过"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问既往健康状况及传染病史",
+            "keywords": [
+              "既往健康状况及传染病史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问手术、外伤、过敏史",
+            "keywords": [
+              "手术",
+              "外伤",
+              "过敏史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问出生史及早期喂养史",
+            "keywords": [
+              "出生史及早期喂养史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问生长发育里程碑",
+            "keywords": [
+              "生长发育里程碑"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问预防接种史",
+            "keywords": [
+              "预防接种史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问近一月传染病接触史",
+            "keywords": [
+              "近一月传染病接触史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问家族史，特别是糖尿病等慢性病及遗传病史",
+            "keywords": [
+              "家族史",
+              "特别是糖尿病等慢性病及遗传病史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "系统回顾（着重询问神经系统症状如意识障碍、抽搐）",
+            "keywords": [
+              "系统回顾"
+            ],
+            "score": 2
+          },
+          {
+            "item": "初始问诊后，主动询问患儿家长的核心担忧并给予恰当回应",
+            "keywords": [
+              "初始问诊后"
+            ],
+            "score": 3
+          }
+        ],
+        "physical_rules": [
+          {
+            "item": "为患儿测量血压并进行生长发育评估（身长/身高、体重、头围等）",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查一般状态：神志、营养状况、皮肤弹性、有无脱水貌",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查头部及颈部：咽部、扁桃体、颈软度",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "进行心肺听诊",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "进行腹部触诊：腹部平软度、有无压痛、肝脾触诊",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "进行神经系统筛查：四肢肌力、肌张力，膝腱反射，病理征",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查皮肤有无皮疹、出血点，浅表淋巴结有无肿大",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "简述阳性体征及关键阴性体征的临床意义",
+            "keywords": [],
+            "score": 2
+          }
+        ],
+        "communication_rules": [],
+        "deduction_rules": {
+          "leading_question": "诱导性提问扣分",
+          "medical_jargon": "过度使用医学术语扣分",
+          "poor_organization": "问诊缺乏条理扣分",
+          "miss_critical": "遗漏关键信息扣分"
+        }
+      },
+      "diagnosis_scoring_rules": {
+        "primary_diagnosis": {
+          "expected": "1型糖尿病（初发，伴轻度酮症）",
+          "keywords": [
+            "1型糖尿病（初发，伴轻度酮症）"
+          ],
+          "score": 15
+        },
+        "diagnosis_basis": {
+          "expected_points": [
+            {
+              "point": "患儿存在典型“三多一少”症状：多饮、多尿、多食、体重下降。",
+              "score": 4
+            },
+            {
+              "point": "随机末梢血糖16.2mmol/L，明显升高；尿糖（+++）；糖化血红蛋白9.8%提示近2-3个月持续高血糖。",
+              "score": 5
+            },
+            {
+              "point": "胰岛自身抗体GADA、ICA阳性，支持1型糖尿病自身免疫性病因诊断。",
+              "score": 3
+            },
+            {
+              "point": "血气分析示轻度代酸，尿酮体（+），提示伴轻度酮症，但无严重脱水及意识障碍，排除了糖尿病酮症酸中毒。",
+              "score": 3
+            },
+            {
+              "point": "排除尿崩症：患儿无血钠明显升高，尿量增多可用高渗性利尿解释。",
+              "score": 3
+            },
+            {
+              "point": "排除应激性高血糖：无感染、创伤等应激史，且糖化血红蛋白显著升高，支持为慢性持续性高血糖。",
+              "score": 2
+            }
+          ],
+          "scoring_logic": "按要点给分"
+        },
+        "differential_diagnosis": {
+          "expected": [
+            "尿崩症",
+            "应激性高血糖"
+          ],
+          "score": 10
+        }
+      }
+    }
+  },
+  "review": {
+    "status": "pending",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "comments": null
+  },
+  "deployment": {
+    "is_published": false,
+    "published_at": null
+  },
+  "key_timeline": [
+    {
+      "event": "AI 生成完成",
+      "timestamp": "2026-06-10T15:55:37.021Z"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "case_id": "IM-20260721-YQWH",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "偏内敛",
+    "sensitivity": "高敏感",
+    "resilience": "普通恢复力"
+  },
+  "pre_generation": {
+    "case_id": "IM-20260721-YQWH",
+    "specialty": "内科",
+    "disease": "肝癌",
+    "difficulty": "R3",
+    "training_phase": "住院医师",
+    "input_mode": "参数生成",
+    "source_document": "无"
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-07-21T06:48:15.073Z"
+    },
+    "encounter": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-07-21T06:48:15.073Z"
+    },
+    "case_analysis": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-07-21T06:48:15.073Z"
+    },
+    "communication": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-07-21T06:48:15.073Z"
+    }
+  },
+  "key_timeline": []
+}

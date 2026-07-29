@@ -1,0 +1,39 @@
+{
+  "case_id": "DERM-20260416-K4G7",
+  "items": [
+    {
+      "id": "mat_mpynqijfbk31",
+      "type": "image",
+      "filename": "poster.png",
+      "itemName": "",
+      "category": "previous",
+      "subcategory": "imaging",
+      "sourceHospital": "",
+      "examDate": "",
+      "description": "",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": [],
+      "semantic_hints": [],
+      "spVerbal": "",
+      "filePath": "/data/cases/DERM-20260416-K4G7/materials/poster.png"
+    },
+    {
+      "id": "mat_mpynr27km794",
+      "type": "pdf",
+      "filename": "20260313105124_22769.pdf",
+      "itemName": "",
+      "category": "previous",
+      "subcategory": "imaging",
+      "sourceHospital": "",
+      "examDate": "",
+      "description": "",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": [],
+      "semantic_hints": [],
+      "spVerbal": "",
+      "filePath": "/data/cases/DERM-20260416-K4G7/materials/20260313105124_22769.pdf"
+    }
+  ]
+}

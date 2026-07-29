@@ -1,0 +1,27 @@
+{
+  "case_id": "ORT-20260417-LDH03",
+  "version": "1.0",
+  "pre_generation": {
+    "specialty": "骨科/康复科",
+    "disease": "腰椎间盘突出症（L3/4节段）",
+    "difficulty": "R1",
+    "training_phase": "住培",
+    "input_mode": "参数生成模式",
+    "source_document": null
+  },
+  "generation_trace": {
+    "basic_info": { "generated_at": "2024-05-20T10:30:00Z", "model": "gpt-4", "prompt_version": "v0.4" },
+    "encounter": { "generated_at": "2024-05-20T10:35:00Z", "model": "gpt-4", "prompt_version": "v0.4" },
+    "case_analysis": { "generated_at": "2024-05-20T10:40:00Z", "model": "gpt-4", "prompt_version": "v0.4" },
+    "communication": { "generated_at": "2024-05-20T10:45:00Z", "model": "gpt-4", "prompt_version": "v0.4" }
+  },
+  "ai_services": { "ai_sp": {}, "ai_scoring": {} },
+  "review": { "status": "pending", "reviewed_by": null, "reviewed_at": null, "comments": null },
+  "deployment": { "is_published": false, "published_at": null, "used_in_exams": [] },
+  "key_timeline": [
+    { "event": "基础信息生成", "timestamp": "2024-05-20T10:30:00Z" },
+    { "event": "接诊剧本生成", "timestamp": "2024-05-20T10:35:00Z" },
+    { "event": "病例分析题生成", "timestamp": "2024-05-20T10:40:00Z" },
+    { "event": "人文沟通剧本生成", "timestamp": "2024-05-20T10:45:00Z" }
+  ]
+}

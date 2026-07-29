@@ -37,6 +37,7 @@ reports/
 # 训练记录落盘目录 (运行时生成)
 data/
 !apps/admin/src/data/
+!apps/admin/public/data/
 !apps/ops/src/data/
 !packages/shared/data/
 

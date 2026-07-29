@@ -1,0 +1,41 @@
+{
+  "case_id": "OB-20260416-7C9E",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "偏内敛",
+    "sensitivity": "高敏感",
+    "resilience": "普通恢复力"
+  },
+  "pre_generation": {
+    "case_id": "OB-20260416-7C9E",
+    "specialty": "妇产科",
+    "disease": "异常产程",
+    "difficulty": "R3",
+    "training_phase": "住院医师",
+    "input_mode": "参数生成",
+    "source_document": "无"
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-13T19:36:26.373Z"
+    },
+    "encounter": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-13T19:36:26.373Z"
+    },
+    "case_analysis": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-13T19:36:26.373Z"
+    },
+    "communication": {
+      "model": "auto",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-06-13T19:36:26.373Z"
+    }
+  },
+  "key_timeline": []
+}

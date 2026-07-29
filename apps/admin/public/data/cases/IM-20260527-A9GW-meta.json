@@ -1,0 +1,172 @@
+{
+  "meta_info": {
+    "case_id": "IM-20260527-A9GW",
+    "specialty": "内科",
+    "disease": "Graves病",
+    "teaching_phase": "R1",
+    "training_phase": "住院医师",
+    "version": "v1.0",
+    "generation_timestamp": "2026-05-26T17:33:02.707Z",
+    "source_document_ref": null,
+    "input_mode": "参数生成模式"
+  },
+  "generation_record": {
+    "basic_info": {
+      "model": "mock-model",
+      "prompt_version": "v0.5",
+      "generated_at": "2026-05-26T17:33:02.707Z"
+    },
+    "encounter": {
+      "model": "mock-model",
+      "prompt_version": "v0.5",
+      "generated_at": "2026-05-26T17:33:02.707Z"
+    },
+    "case_analysis": {
+      "model": "mock-model",
+      "prompt_version": "v0.4",
+      "generated_at": "2026-05-26T17:33:02.707Z"
+    },
+    "communication": {
+      "model": "mock-model",
+      "prompt_version": "v0.5",
+      "generated_at": "2026-05-26T17:33:02.707Z"
+    }
+  },
+  "sp_play_rules": {
+    "knowledge_boundary": {
+      "knows": [
+        "主要症状",
+        "就医经历"
+      ],
+      "does_not_know": [
+        "具体诊断名称",
+        "实验室检查结果"
+      ]
+    },
+    "emotion_progression": [
+      {
+        "stage": "initial",
+        "emotion": "担忧",
+        "trigger": "就诊开始"
+      },
+      {
+        "stage": "middle",
+        "emotion": "期待",
+        "trigger": "医生询问病史"
+      },
+      {
+        "stage": "final",
+        "emotion": "平静",
+        "trigger": "获得诊断和治疗方案"
+      }
+    ],
+    "vague_response_templates": [
+      "具体记不太清了...",
+      "好像有这回事...",
+      "应该没什么问题吧..."
+    ],
+    "refuse_to_answer": [
+      "我不知道...",
+      "这个我不太清楚..."
+    ]
+  },
+  "ai_scoring_rules": {
+    "history_rules": [
+      {
+        "item": "询问主诉",
+        "keywords": [
+          "主要症状",
+          "持续时间",
+          "发病情况"
+        ],
+        "score": 10
+      },
+      {
+        "item": "询问伴随症状",
+        "keywords": [
+          "伴随症状",
+          "其他不适"
+        ],
+        "score": 10
+      },
+      {
+        "item": "询问既往史",
+        "keywords": [
+          "既往病史",
+          "用药史",
+          "过敏史"
+        ],
+        "score": 10
+      }
+    ],
+    "physical_rules": [
+      {
+        "item": "生命体征",
+        "keywords": [
+          "血压",
+          "心率",
+          "体温",
+          "呼吸"
+        ],
+        "score": 10
+      },
+      {
+        "item": "系统查体",
+        "keywords": [
+          "视诊",
+          "触诊",
+          "叩诊",
+          "听诊"
+        ],
+        "score": 10
+      }
+    ],
+    "communication_rules": [
+      {
+        "item": "礼貌问候",
+        "score": 5
+      },
+      {
+        "item": "自我介绍",
+        "score": 5
+      },
+      {
+        "item": "共情表达",
+        "score": 10
+      },
+      {
+        "item": "信息确认",
+        "score": 10
+      }
+    ]
+  },
+  "physical_exam_result_templates": [
+    {
+      "_exam_focus": "生命体征 + 专科查体",
+      "_exam_card": "请根据SP状态记录体格检查结果"
+    }
+  ],
+  "diagnosis_scoring_rules": {
+    "primary_diagnosis": {
+      "expected": "急性上呼吸道感染",
+      "keywords": [
+        "急性上呼吸道感染"
+      ],
+      "score": 20
+    },
+    "diagnosis_basis": {
+      "expected_points": [
+        "发热、咽部充血等上呼吸道症状",
+        "起病急，病程短"
+      ],
+      "scoring_logic": "每点5分，至少列出3点"
+    },
+    "differential_diagnosis": {
+      "expected": [
+        "流行性感冒",
+        "急性支气管炎"
+      ],
+      "score": 15
+    }
+  }
+}

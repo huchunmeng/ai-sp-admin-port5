@@ -1,0 +1,22 @@
+{
+  "case_id": "EM-20260416-7A2K",
+  "items": [
+    {
+      "id": "mat_mqch0r4q62lt",
+      "type": "image",
+      "filename": "d0607a09fa5a4da5b36f28ae6546703b.pdf_9_2400.jpg~tplv-a9rns2rl98-resize-crop_42_216_2402_1734_2360_1518.jpeg",
+      "itemName": "肝功能化验单",
+      "category": "previous",
+      "subcategory": "labtest",
+      "sourceHospital": "社区卫生站",
+      "examDate": "2026-04-13",
+      "description": "转氨酶升高，ALT 1240 U/L，AST 980 U/L",
+      "phase": "history_taking",
+      "mode": "on_ask",
+      "keywords": ["肝功能", "化验", "抽血", "转氨酶", "肝"],
+      "semantic_hints": ["肝功能结果", "化验单", "抽血报告", "检查结果"],
+      "spVerbal": "这是前些天在社区卫生站查的肝功能，您看看。",
+      "filePath": "/data/cases/EM-20260416-7A2K/materials/d0607a09fa5a4da5b36f28ae6546703b.pdf_9_2400.jpg~tplv-a9rns2rl98-resize-crop_42_216_2402_1734_2360_1518.jpeg"
+    }
+  ]
+}

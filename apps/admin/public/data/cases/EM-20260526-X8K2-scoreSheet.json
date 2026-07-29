@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "category": "一般项目",
+    "item": "检查自我简介及问候",
+    "group_score": 5,
+    "key_point": "在急诊环境下快速完成自我介绍并说明接诊目的",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 2,
+    "category": "一般项目",
+    "item": "检查自我简介及问候",
+    "group_score": 5,
+    "key_point": "在紧急情况下征得患者配合意愿",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 3,
+    "category": "一般项目",
+    "item": "询问患者基本情况",
+    "group_score": 5,
+    "key_point": "快速获取患者姓名、性别、年龄、职业等基本信息",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 4,
+    "category": "一般项目",
+    "item": "询问患者基本情况",
+    "group_score": 5,
+    "key_point": "了解就诊方式及发病时状况",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 5,
+    "category": "一般项目",
+    "item": "了解患者教育水平及职业特点",
+    "group_score": 1.5,
+    "key_point": "职业特点（出租车司机、长期久坐）与心血管风险",
+    "score": 1.5,
+    "rules": ""
+  },
+  {
+    "id": 6,
+    "category": "现病史",
+    "item": "胸痛起病与时间",
+    "group_score": 8,
+    "key_point": "明确胸痛起始时间（2小时前）及起病方式（突发）",
+    "score": 4,
+    "rules": ""
+  },
+  {
+    "id": 7,
+    "category": "现病史",
+    "item": "胸痛起病与时间",
+    "group_score": 8,
+    "key_point": "询问发病诱因（驾驶中、无明显诱因）及院前处置",
+    "score": 4,
+    "rules": ""
+  },
+  {
+    "id": 8,
+    "category": "现病史",
+    "item": "胸痛症状详细询问",
+    "group_score": 15,
+    "key_point": "胸痛部位确认（胸骨后）及放射部位（左肩、左上肢）",
+    "score": 3.5,
+    "rules": ""
+  },
+  {
+    "id": 9,
+    "category": "现病史",
+    "item": "胸痛症状详细询问",
+    "group_score": 15,
+    "key_point": "疼痛性质评估（压榨样、持续性）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 10,
+    "category": "现病史",
+    "item": "胸痛症状详细询问",
+    "group_score": 15,
+    "key_point": "疼痛程度量化（VAS 8-9分）",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 11,
+    "category": "现病史",
+    "item": "胸痛症状详细询问",
+    "group_score": 15,
+    "key_point": "缓解因素确认（休息无缓解、硝酸甘油效果不佳）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 12,
+    "category": "现病史",
+    "item": "胸痛症状详细询问",
+    "group_score": 15,
+    "key_point": "加重因素及时间演变",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 13,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "自主神经症状确认（大汗、恶心）",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 14,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "呼吸困难程度及与胸痛的时间关系",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 15,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "肺栓塞鉴别症状（咳嗽、咯血、下肢肿痛）",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 16,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "主动脉夹层鉴别（撕裂样疼痛、双上肢血压差异、神经系统症状）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 17,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "心包炎鉴别（体位相关性胸痛、发热、近期感染史）",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 18,
+    "category": "现病史",
+    "item": "伴随症状和阴性鉴别症状",
+    "group_score": 15,
+    "key_point": "晕厥/黑蒙等严重事件询问",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 19,
+    "category": "现病史",
+    "item": "诊疗经过",
+    "group_score": 6,
+    "key_point": "院前急救具体措施（120处理：吸氧、阿司匹林、硝酸甘油）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 20,
+    "category": "现病史",
+    "item": "诊疗经过",
+    "group_score": 6,
+    "key_point": "院前处理后症状变化情况",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 21,
+    "category": "现病史",
+    "item": "目前一般状况",
+    "group_score": 5,
+    "key_point": "当前疼痛程度、精神状况评估",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 22,
+    "category": "现病史",
+    "item": "目前一般状况",
+    "group_score": 5,
+    "key_point": "当前有无新出现症状（心悸加重、呼吸困难恶化）",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 23,
+    "category": "现病史",
+    "item": "溶栓/PCI禁忌症排查",
+    "group_score": 8,
+    "key_point": "近期手术、外伤、出血史确认",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 24,
+    "category": "现病史",
+    "item": "溶栓/PCI禁忌症排查",
+    "group_score": 8,
+    "key_point": "近期脑卒中或TIA史确认",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 25,
+    "category": "现病史",
+    "item": "溶栓/PCI禁忌症排查",
+    "group_score": 8,
+    "key_point": "活动性出血或出血倾向确认",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 26,
+    "category": "现病史",
+    "item": "溶栓/PCI禁忌症排查",
+    "group_score": 8,
+    "key_point": "药物过敏史确认",
+    "score": 0,
+    "rules": ""
+  },
+  {
+    "id": 27,
+    "category": "现病史",
+    "item": "目前一般状况",
+    "group_score": 0,
+    "key_point": "",
+    "score": 0,
+    "rules": ""
+  },
+  {
+    "id": 28,
+    "category": "既往史",
+    "item": "慢性病史详细询问",
+    "group_score": 10,
+    "key_point": "高血压病史（8年、最高血压、用药方案、控制情况）",
+    "score": 3.5,
+    "rules": ""
+  },
+  {
+    "id": 29,
+    "category": "既往史",
+    "item": "慢性病史详细询问",
+    "group_score": 10,
+    "key_point": "高脂血症史（3年、既往用药、停药原因）",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 30,
+    "category": "既往史",
+    "item": "慢性病史详细询问",
+    "group_score": 10,
+    "key_point": "糖尿病史确认及血糖情况",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 31,
+    "category": "既往史",
+    "item": "慢性病史详细询问",
+    "group_score": 10,
+    "key_point": "既往类似胸痛发作史及冠脉造影/PCI史",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 32,
+    "category": "既往史",
+    "item": "手术外伤输血史",
+    "group_score": 2.5,
+    "key_point": "手术史、外伤史及输血史确认",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 33,
+    "category": "既往史",
+    "item": "过敏史",
+    "group_score": 2.5,
+    "key_point": "药物（阿司匹林、造影剂、肝素等）及食物过敏史",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 34,
+    "category": "既往史",
+    "item": "用药史",
+    "group_score": 3,
+    "key_point": "平素用药详情（氨氯地平剂量、阿托伐他汀停药时间）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 35,
+    "category": "个人史",
+    "item": "吸烟饮酒史",
+    "group_score": 4,
+    "key_point": "吸烟指数（30年，1包/日=30包年）及饮酒频率与量",
+    "score": 4,
+    "rules": ""
+  },
+  {
+    "id": 36,
+    "category": "个人史",
+    "item": "职业与环境暴露",
+    "group_score": 3,
+    "key_point": "职业（出租车司机）相关的久坐、饮食不规律等心血管危险因素",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 37,
+    "category": "家族史",
+    "item": "家族遗传病史",
+    "group_score": 5,
+    "key_point": "冠心病早发家族史（父亲68岁因心梗去世）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 38,
+    "category": "家族史",
+    "item": "家族遗传病史",
+    "group_score": 5,
+    "key_point": "高血压、糖尿病等心血管危险因素家族史",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 39,
+    "category": "问诊技巧",
+    "item": "问诊条理与重点突出",
+    "group_score": 8,
+    "key_point": "急诊环境下快速系统性问诊（按胸痛鉴别诊断框架展开）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 40,
+    "category": "问诊技巧",
+    "item": "问诊条理与重点突出",
+    "group_score": 8,
+    "key_point": "鉴别诊断思维体现（MI vs 夹层 vs 肺栓塞 vs 心包炎）",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 41,
+    "category": "问诊技巧",
+    "item": "问诊条理与重点突出",
+    "group_score": 8,
+    "key_point": "再灌注禁忌症主动排查",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 42,
+    "category": "问诊技巧",
+    "item": "问诊语言恰当",
+    "group_score": 4,
+    "key_point": "急诊环境下的简明清晰语言，避免冗长询问",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 43,
+    "category": "问诊技巧",
+    "item": "问诊语言恰当",
+    "group_score": 4,
+    "key_point": "对患者的痛苦状态给予适当语言回应",
+    "score": 1.5,
+    "rules": ""
+  },
+  {
+    "id": 44,
+    "category": "问诊技巧",
+    "item": "问诊中体现共情",
+    "group_score": 5,
+    "key_point": "急诊环境下的快速共情表达与情绪稳定化",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 45,
+    "category": "问诊技巧",
+    "item": "问诊中体现共情",
+    "group_score": 5,
+    "key_point": "对患者疼痛和恐惧的积极回应",
+    "score": 2,
+    "rules": ""
+  },
+  {
+    "id": 46,
+    "category": "医患沟通",
+    "item": "沟通态度",
+    "group_score": 5,
+    "key_point": "急诊环境下的沉稳、专业、果断的沟通态度",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 47,
+    "category": "医患沟通",
+    "item": "沟通态度",
+    "group_score": 5,
+    "key_point": "在紧急情况下维持医患信任关系",
+    "score": 2.5,
+    "rules": ""
+  },
+  {
+    "id": 48,
+    "category": "医患沟通",
+    "item": "病史信息总结与反馈",
+    "group_score": 5,
+    "key_point": "快速总结关键病史并向患者反馈初步判断",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 49,
+    "category": "医患沟通",
+    "item": "患者提问回应与紧急告知",
+    "group_score": 5.5,
+    "key_point": "紧急处置（急诊PCI）的必要性告知与知情同意沟通",
+    "score": 3,
+    "rules": ""
+  },
+  {
+    "id": 50,
+    "category": "医患沟通",
+    "item": "患者提问回应与紧急告知",
+    "group_score": 5.5,
+    "key_point": "二级预防（戒烟、饮食、康复）的健康教育",
+    "score": 2.5,
+    "rules": ""
+  }
+]
