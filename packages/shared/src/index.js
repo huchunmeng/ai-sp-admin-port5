@@ -1278,7 +1278,7 @@ export function resolveAppUrls() {
   // 生产环境：优先使用环境变量（Vite .env.producible），未注入时回退硬编码域名
   const PROD_URLS = {
     admin: 'https://aisp-78y8v019a.maozi.io/',
-    training: 'https://aisptraining-q5h4z019a.maozi.io/',
+    training: 'https://p5training-q5h4z019a.maozi.io/',
     exam: 'https://aispexam-q5h4z019a.maozi.io/',
     ops: 'https://aispops-q5h4z019a.maozi.io/',
     appTraining: 'https://aisptrainingphone-q5h4z019a.maozi.io/'
