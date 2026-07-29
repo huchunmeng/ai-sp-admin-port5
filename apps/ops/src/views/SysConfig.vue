@@ -248,7 +248,7 @@ function saveConfig() {
   }).then(r => r.json()).catch(() => null)
 
   // 推送TTS模型配置到SP-API
-  const ttsPromise = fetch('http://localhost:5100/api/sp/admin/settings', {
+  const ttsPromise = fetch('/api/sp/admin/settings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ttsModel: form.tts })

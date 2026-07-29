@@ -17,8 +17,9 @@ const VOICE_INSTRUCTIONS = {
   broken:          '崩溃抽泣，声音发抖，断断续续。',
 }
 
-const TTS_URL = 'ws://localhost:5100/api/sp/tts'
-const SP_API_URL = 'http://localhost:5100'
+const WS_PROTO = location.protocol === 'https:' ? 'wss:' : 'ws:'
+const TTS_URL = `${WS_PROTO}//${location.host}/api/sp/tts`
+const SP_API_URL = '/api/sp'
 
 function isCosyVoice(model) {
   return model && model.startsWith('cosyvoice')

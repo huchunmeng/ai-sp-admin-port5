@@ -722,7 +722,8 @@ async function loadVoiceConfig() {
 }
 
 // ===== TTS试听 =====
-const TTS_BASE_URL = 'ws://localhost:5100/api/sp/tts'
+const WS_PROTO = location.protocol === 'https:' ? 'wss:' : 'ws:'
+const TTS_BASE_URL = `${WS_PROTO}//${location.host}/api/sp/tts`
 const playingVoice = ref(null)
 const previewState = ref(null)
 const ttsBusy = ref(false)
@@ -952,7 +953,7 @@ function onThumbError(e) { e.target.style.display = 'none' }
 onMounted(async () => {
   // 先同步当前 sp-api 运行的实际 TTS 模型
   try {
-    const res = await fetch('http://localhost:5100/api/sp/admin/settings')
+    const res = await fetch('/api/sp/admin/settings')
     if (res.ok) {
       const data = await res.json()
       if (data.ttsModel) {
