@@ -109,6 +109,56 @@
         </div>
       </section>
 
+      <!-- 精品病例 -->
+      <section class="zone-section zone-elite">
+        <div class="zone-header">
+          <span class="zone-title"><i class="fa-solid fa-crown"></i> 精品病例</span>
+        </div>
+        <div class="zone-body">
+          <div class="elite-grid">
+            <div class="elite-card elite-academician" @click="goAcademicianCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#312e81,#4f46e5);">
+                  <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <span class="elite-count">{{ academicianCount }} 例</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">院士精讲病例</div>
+                <div class="elite-desc">顶尖专家深度解析疑难罕见病例，传授临床思维精髓</div>
+              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
+            </div>
+            <div class="elite-card elite-mentor" @click="goMentorCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
+                  <i class="fa-solid fa-medal"></i>
+                </div>
+                <span class="elite-count">{{ mentorCount }} 例</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">金牌导师病例</div>
+                <div class="elite-desc">一线临床名师手把手带教，覆盖常见病与多发病实战</div>
+              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
+            </div>
+            <div class="elite-card elite-national" @click="goNationalCenterCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+                  <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <span class="elite-count">{{ nationalCenterCount }} 例</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">国家级质控中心病例</div>
+                <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
+              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 为你推荐 -->
       <section class="zone-section zone-recommend">
         <div class="zone-header">
@@ -125,6 +175,7 @@
               <div class="rec-info">
                 <div class="rec-row-1">
                   <span class="rec-name">{{ rec.patientName }}</span>
+                  <span class="rec-source-tag" :class="'src-' + sourceClass(rec.source)">{{ rec.source }}病例</span>
                   <span class="rec-diff" :class="'diff-' + (rec.difficulty[0] || 'R')">{{ rec.difficulty }}</span>
                   <span class="rec-case-level" :class="'cl-' + getCaseLevel(rec.difficulty)">{{ getCaseLevelLabel(rec.difficulty) }}</span>
                 </div>
@@ -155,6 +206,7 @@
             <div class="record-info">
               <div class="record-row-1">
                 <span class="record-name">{{ r.casePatientName || r.caseId }}</span>
+                <span v-if="r.caseSource" class="record-source-tag" :class="'src-' + sourceClass(r.caseSource)">{{ r.caseSource }}病例</span>
                 <span v-if="r.score" class="record-score" :class="scoreClass(r.score)">{{ r.score }}分</span>
                 <span v-else class="record-score pending">未评分</span>
               </div>
@@ -364,12 +416,35 @@ function goExam() {
   window.open(urls.exam, '_blank')
 }
 
+const academicianCount = ref(12)
+const mentorCount = ref(28)
+const nationalCenterCount = ref(45)
+
+function goAcademicianCases() {
+  router.push({ name: 'caseList', query: { filter: 'academician' } })
+}
+
+function goMentorCases() {
+  router.push({ name: 'caseList', query: { filter: 'mentor' } })
+}
+
+function goNationalCenterCases() {
+  router.push({ name: 'caseList', query: { filter: 'national_center' } })
+}
+
 function goAdaptiveLearning() {
   router.push({ name: 'adaptiveLearning' })
 }
 
 function goRecords() {
   router.push({ name: 'caseList' })
+}
+
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
 }
 
 function goScoreReport(record) {
@@ -409,9 +484,9 @@ const radarDots = computed(() => {
 })
 
 const recommendations = ref([
-  { patientName: '周伯通', disease: '心衰合并肾功能不全', caseId: 'CARD-20260715-M2N7', difficulty: 'R2', gender: '男', age: '68', specialty: '心血管内科', symptoms: ['呼吸困难', '下肢水肿', '少尿'], chiefComplaint: '反复胸闷气喘2月，加重伴夜间不能平卧1周', reason: '鉴别诊断维度得分偏低，推荐强化心血管鉴别能力' },
-  { patientName: '孙晓芳', disease: '间质性肺病鉴别诊断', caseId: 'RESP-20260710-K9P3', difficulty: 'R3', gender: '女', age: '55', specialty: '呼吸内科', symptoms: ['干咳', '活动后气促', 'Velcro啰音'], chiefComplaint: '进行性呼吸困难伴干咳3月', reason: '肺部听诊遗漏率偏高，推荐加强胸部影像判读' },
-  { patientName: '赵秀兰', disease: '社区获得性肺炎', caseId: 'RESP-20260602-B5Y1', difficulty: 'U2', gender: '女', age: '45', specialty: '呼吸内科', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天', reason: '基础病例巩固，抗生素选择思路校准' },
+  { patientName: '周伯通', disease: '心衰合并肾功能不全', caseId: 'CARD-20260715-M2N7', difficulty: 'R2', gender: '男', age: '68', specialty: '心血管内科', symptoms: ['呼吸困难', '下肢水肿', '少尿'], chiefComplaint: '反复胸闷气喘2月，加重伴夜间不能平卧1周', reason: '鉴别诊断维度得分偏低，推荐强化心血管鉴别能力', source: '院士精讲' },
+  { patientName: '孙晓芳', disease: '间质性肺病鉴别诊断', caseId: 'RESP-20260710-K9P3', difficulty: 'R3', gender: '女', age: '55', specialty: '呼吸内科', symptoms: ['干咳', '活动后气促', 'Velcro啰音'], chiefComplaint: '进行性呼吸困难伴干咳3月', reason: '肺部听诊遗漏率偏高，推荐加强胸部影像判读', source: '金牌导师' },
+  { patientName: '赵秀兰', disease: '社区获得性肺炎', caseId: 'RESP-20260602-B5Y1', difficulty: 'U2', gender: '女', age: '45', specialty: '呼吸内科', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天', reason: '基础病例巩固，抗生素选择思路校准', source: '国家级质控中心' },
 ])
 
 const recAvatars = computed(() => {
@@ -435,6 +510,7 @@ const recentRecords = computed(() => {
     caseDifficulty: r.caseDifficulty || '',
     caseChiefComplaint: r.caseChiefComplaint || '',
     caseSymptoms: r.caseSymptoms || [],
+    caseSource: r.caseSource || '',
     stationId: r.stationId,
     stationName: r.stationName || getStationLabel(r.stationId),
     score: r.score,
@@ -468,12 +544,12 @@ function scoreClass(s) {
 }
 
 const caseMetaMap = {
-  'IM-20260527-A9GW': { patientName: '王丽', gender: '女', age: '36', specialty: '内分泌科', difficulty: 'R2', disease: 'Graves病', symptoms: ['心悸', '多汗', '体重下降'], chiefComplaint: '心悸、多汗、体重下降3月' },
-  'IM-20260416-K4G7': { patientName: '张德明', gender: '男', age: '62', specialty: '心血管内科', difficulty: 'R3', disease: '急性心肌梗死', symptoms: ['胸痛', '大汗', '呼吸困难'], chiefComplaint: '突发胸痛伴大汗2小时' },
-  'NEURO-20260515-P3X8': { patientName: '李广富', gender: '男', age: '71', specialty: '神经内科', difficulty: 'F1', disease: '急性缺血性脑卒中', symptoms: ['言语不清', '右侧肢体无力', '口角歪斜'], chiefComplaint: '突发言语不清伴右侧肢体无力1.5小时' },
-  'RESP-20260602-B5Y1': { patientName: '赵秀兰', gender: '女', age: '45', specialty: '呼吸内科', difficulty: 'U2', disease: '社区获得性肺炎', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天' },
-  'GI-20260701-C2M3': { patientName: '刘建国', gender: '男', age: '55', specialty: '消化内科', difficulty: 'R2', disease: '上消化道出血', symptoms: ['黑便', '呕血', '上腹痛'], chiefComplaint: '反复黑便3天，呕血1次' },
-  'DERM-20260416-K4G7': { patientName: '陈小雅', gender: '女', age: '28', specialty: '皮肤科', difficulty: 'R1', disease: '寻常型银屑病', symptoms: ['红斑', '鳞屑', '瘙痒'], chiefComplaint: '全身红斑鳞屑伴瘙痒2年，加重1月' },
+  'IM-20260527-A9GW': { patientName: '王丽', gender: '女', age: '36', specialty: '内分泌科', difficulty: 'R2', disease: 'Graves病', symptoms: ['心悸', '多汗', '体重下降'], chiefComplaint: '心悸、多汗、体重下降3月', source: '院士精讲' },
+  'IM-20260416-K4G7': { patientName: '张德明', gender: '男', age: '62', specialty: '心血管内科', difficulty: 'R3', disease: '急性心肌梗死', symptoms: ['胸痛', '大汗', '呼吸困难'], chiefComplaint: '突发胸痛伴大汗2小时', source: '金牌导师' },
+  'NEURO-20260515-P3X8': { patientName: '李广富', gender: '男', age: '71', specialty: '神经内科', difficulty: 'F1', disease: '急性缺血性脑卒中', symptoms: ['言语不清', '右侧肢体无力', '口角歪斜'], chiefComplaint: '突发言语不清伴右侧肢体无力1.5小时', source: '国家级质控中心' },
+  'RESP-20260602-B5Y1': { patientName: '赵秀兰', gender: '女', age: '45', specialty: '呼吸内科', difficulty: 'U2', disease: '社区获得性肺炎', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天', source: '院士精讲' },
+  'GI-20260701-C2M3': { patientName: '刘建国', gender: '男', age: '55', specialty: '消化内科', difficulty: 'R2', disease: '上消化道出血', symptoms: ['黑便', '呕血', '上腹痛'], chiefComplaint: '反复黑便3天，呕血1次', source: '金牌导师' },
+  'DERM-20260416-K4G7': { patientName: '陈小雅', gender: '女', age: '28', specialty: '皮肤科', difficulty: 'R1', disease: '寻常型银屑病', symptoms: ['红斑', '鳞屑', '瘙痒'], chiefComplaint: '全身红斑鳞屑伴瘙痒2年，加重1月', source: '国家级质控中心' },
 }
 
 function makeRecord(entry) {
@@ -486,6 +562,7 @@ function makeRecord(entry) {
     casePatientName: meta.patientName || entry.caseName || '', caseDisease: meta.disease || entry.caseName || '',
     caseGender: meta.gender || '', caseAge: meta.age || '', caseSpecialty: meta.specialty || '',
     caseDifficulty: meta.difficulty || '', caseSymptoms: meta.symptoms || [], caseChiefComplaint: meta.chiefComplaint || '',
+    caseSource: meta.source || '',
   }
 }
 
@@ -647,6 +724,7 @@ onMounted(() => {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #f0f2f5; overflow: hidden;
 }
 .zone-action { border-left: 4px solid #059669; }
+.zone-elite { border-left: 4px solid #8b5cf6; }
 .zone-recommend { border-left: 4px solid #f59e0b; }
 .zone-records { border-left: 4px solid #2563eb; }
 .zone-notify { border-left: 4px solid #7c3aed; }
@@ -683,6 +761,32 @@ onMounted(() => {
 .entry-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #d1d5db; font-size: 11px; }
 .entry-card:hover .entry-arrow { color: #6b7280; }
 
+/* ─── 精品病例 ─── */
+.elite-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.elite-card {
+  background: #fafbfc; border-radius: 12px; padding: 16px;
+  border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s; position: relative;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.elite-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); background: #fff; }
+.elite-card-top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.elite-icon-wrap {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 20px;
+}
+.elite-count {
+  font-size: 13px; font-weight: 700; color: #1f2937;
+  background: #f3f4f6; padding: 4px 10px; border-radius: 8px;
+}
+.elite-card-body { flex: 1; }
+.elite-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+.elite-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
+.elite-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: all .2s; }
+.elite-card:hover .elite-arrow { color: #6b7280; }
+
 /* ─── 推荐病例 ─── */
 .recommend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .recommend-card {
@@ -717,6 +821,13 @@ onMounted(() => {
   font-size: 9px; padding: 1px 5px; background: #f3f4f6;
   border-radius: 3px; color: #6b7280;
 }
+.rec-source-tag {
+  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+  color: #fff; white-space: nowrap; letter-spacing: 0.03em;
+}
+.rec-source-tag.src-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
+.rec-source-tag.src-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.rec-source-tag.src-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .rec-reason {
   font-size: 10px; color: #9ca3af; margin-top: 3px; padding-top: 3px;
   border-top: 1px dashed #f3f4f6; line-height: 1.4;
@@ -748,6 +859,13 @@ onMounted(() => {
 .record-name { font-size: 13px; font-weight: 600; }
 .record-caseid { font-size: 10px; color: #9ca3af; font-family: monospace; }
 .record-diff { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.record-source-tag {
+  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+  color: #fff; white-space: nowrap; letter-spacing: 0.03em; margin-left: 6px;
+}
+.record-source-tag.src-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
+.record-source-tag.src-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.record-source-tag.src-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .record-score { font-size: 13px; font-weight: 600; margin-left: auto; }
 .record-score.score-good { color: #059669; }
 .record-score.score-ok { color: #d97706; }

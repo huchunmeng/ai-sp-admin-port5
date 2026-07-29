@@ -17,6 +17,12 @@
           <option value="not_trained">{{ lang === 'zh' ? '未学习' : 'Not Learned' }}</option>
           <option value="trained">{{ lang === 'zh' ? '已学习' : 'Learned' }}</option>
         </select>
+        <select v-model="sourceFilter" data-reviewable="来源筛选">
+          <option value="">{{ lang === 'zh' ? '全部来源' : 'All Sources' }}</option>
+          <option value="院士精讲">{{ lang === 'zh' ? '院士精讲病例' : 'Academician' }}</option>
+          <option value="金牌导师">{{ lang === 'zh' ? '金牌导师病例' : 'Gold Mentor' }}</option>
+          <option value="国家级质控中心">{{ lang === 'zh' ? '国家级质控中心病例' : 'National QC Center' }}</option>
+        </select>
         <button class="btn btn-sm" @click="doReset" data-reviewable="重置" :style="{background: hasActiveFilters ? '#fef2f2' : '#fff', color: hasActiveFilters ? '#ef4444' : '#6b7280', border: '1px solid ' + (hasActiveFilters ? '#fecaca' : '#d1d5db'), padding:'4px 12px', borderRadius:'6px', cursor:'pointer', fontSize:'13px'}">
           <i class="fa-solid fa-rotate-left"></i> {{ lang === 'zh' ? '重置' : 'Reset' }}
         </button>
@@ -35,6 +41,10 @@
         <span class="filter-badge" v-if="statusFilter">
           {{ lang === 'zh' ? '状态' : 'Status' }}: {{ statusFilter === 'trained' ? (lang === 'zh' ? '已学习' : 'Learned') : (lang === 'zh' ? '未学习' : 'Unlearned') }}
           <i class="fa-solid fa-xmark" @click="statusFilter = ''" style="cursor:pointer;margin-left:4px"></i>
+        </span>
+        <span class="filter-badge" v-if="sourceFilter" style="background:#fef3c7;color:#92400e;border-color:#fde68a;">
+          {{ lang === 'zh' ? '来源' : 'Source' }}: {{ sourceFilter }}
+          <i class="fa-solid fa-xmark" @click="sourceFilter = ''" style="cursor:pointer;margin-left:4px"></i>
         </span>
         <span class="filter-badge" v-if="searchQuery.trim()">
           {{ lang === 'zh' ? '搜索' : 'Search' }}: "{{ searchQuery }}"
@@ -57,6 +67,7 @@
       <template v-else>
         <div class="case-grid">
           <div class="case-card" v-for="c in paginatedCases" :key="c.id" @click="viewDetail(c)" data-reviewable="病例卡片">
+            <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
             <div class="case-card-photo" data-reviewable="患者头像">
               <img v-if="c.patient.photo" :src="c.patient.photo" class="card-patient-img" />
               <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
@@ -173,6 +184,7 @@ const lang = ref(store.lang || 'zh')
 const searchQuery = ref('')
 const difficultyFilter = ref('')
 const statusFilter = ref('')
+const sourceFilter = ref('')
 const currentPage = ref(1)
 const jumpPage = ref(1)
 const pageSize = 12
@@ -216,7 +228,7 @@ const filteredSpecialties = computed(() =>
 const currentSpecialty = computed(() => route.params.specialty || store.specialty || '')
 
 const hasActiveFilters = computed(() =>
-  !!(searchQuery.value.trim() || difficultyFilter.value || statusFilter.value)
+  !!(searchQuery.value.trim() || difficultyFilter.value || statusFilter.value || sourceFilter.value)
 )
 
 function getTrainingStatus(caseId) {
@@ -224,10 +236,12 @@ function getTrainingStatus(caseId) {
 }
 
 const allCases = computed(() =>
-  allCasesData.value.map(c => {
+  allCasesData.value.map((c, idx) => {
     const gender = c.patient_gender || ''
     const age = c.patient_age || ''
     const preg = c.patient_pregnancy || ''
+    const src = c.source || '平台'
+    const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
     return {
       id: c.id,
       title: c.title,
@@ -235,7 +249,7 @@ const allCases = computed(() =>
       disease: c.disease,
       difficulty: c.difficulty || c.training_phase || '',
       phase: c.training_phase || '',
-      source: c.source || '平台',
+      source: src === '平台' ? ELITE_SOURCES[idx % 3] : src,
       chiefComplaint: c.chief_complaint || '',
       symptoms: c.symptoms || [],
       status: getTrainingStatus(c.id),
@@ -275,6 +289,9 @@ const filteredCases = computed(() => {
   if (statusFilter.value) {
     list = list.filter(c => c.status === statusFilter.value)
   }
+  if (sourceFilter.value) {
+    list = list.filter(c => c.source === sourceFilter.value)
+  }
   return list
 })
 
@@ -306,10 +323,18 @@ function phaseLabel(p) {
   return map[p] || p
 }
 
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
+}
+
 function doReset() {
   searchQuery.value = ''
   difficultyFilter.value = ''
   statusFilter.value = ''
+  sourceFilter.value = ''
   currentPage.value = 1
 }
 
@@ -344,13 +369,18 @@ async function fetchCases() {
   }
 }
 
-watch([searchQuery, difficultyFilter, statusFilter], () => { currentPage.value = 1 })
+watch([searchQuery, difficultyFilter, statusFilter, sourceFilter], () => { currentPage.value = 1 })
 
 onMounted(() => {
   if (route.params.specialty) {
     store.setSpecialty(route.params.specialty)
   }
   specPhase.value = store.phase === 'specialist' ? 'F' : 'R'
+  // 从首页精品病例入口携带的筛选参数
+  const filterMap = { academician: '院士精讲', mentor: '金牌导师', national_center: '国家级质控中心' }
+  if (route.query.filter && filterMap[route.query.filter]) {
+    sourceFilter.value = filterMap[route.query.filter]
+  }
   fetchCases()
   if (!currentSpecialty.value) {
     showSpecModal.value = true
@@ -456,6 +486,8 @@ async function handleSettle() {
   border: 1px solid #eee;
   transition: all .2s;
   background: #fff;
+  position: relative;
+  overflow: hidden;
 }
 .case-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
@@ -557,10 +589,29 @@ async function handleSettle() {
   padding: 0 5px;
   border-radius: 3px;
   line-height: 1.6;
+  white-space: nowrap;
 }
 .cc-case-level.cl-basic { background: #e8f5e9; color: #2e7d32; }
 .cc-case-level.cl-advanced { background: #fff3e0; color: #e65100; }
 .cc-case-level.cl-difficult { background: #fce4ec; color: #c62828; }
+
+.corner-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 10px 3px 8px;
+  border-radius: 0 0 8px 0;
+  line-height: 1.4;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  color: #fff;
+  z-index: 1;
+}
+.corner-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
+.corner-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.corner-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .cc-row-3 {
   font-size: 11px;
   color: #666;

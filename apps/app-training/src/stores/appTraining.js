@@ -161,6 +161,8 @@ export const useAppTrainingStore = defineStore('appTraining', () => {
   function selectCase(c) { currentCase.value = c }
   function setLang(l) { lang.value = l; saveState() }
 
+  const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
+
   async function loadCases() {
     try {
       const resp = await fetch('/api/cases')
@@ -176,7 +178,7 @@ export const useAppTrainingStore = defineStore('appTraining', () => {
             disease: c.disease,
             difficulty: c.difficulty,
             phase: c.training_phase,
-            source: c.source,
+            source: (c.source && c.source !== '平台') ? c.source : ELITE_SOURCES[idx % 3],
             chiefComplaint: c.chief_complaint,
             symptoms: c.symptoms || [],
             patient: {
@@ -209,7 +211,7 @@ export const useAppTrainingStore = defineStore('appTraining', () => {
         specialty: basic.specialty || '',
         disease: basic.disease || '',
         difficulty: basic.difficulty || basic.teaching_phase || '',
-        source: '平台',
+        source: ELITE_SOURCES[(caseId || '').split('').reduce((s, ch) => s + ch.charCodeAt(0), 0) % 3],
         chiefComplaint: basic.chief_complaint || '',
         symptoms: basic.symptoms || [],
         patient: {

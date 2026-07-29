@@ -26,6 +26,7 @@
     <!-- 病例网格 -->
     <div class="case-grid" v-if="!loading">
       <div class="case-card" v-for="c in filteredCases" :key="c.id" @click="viewDetail(c)">
+        <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
         <div class="case-card-photo">
           <img v-if="patientAvatar(c)" :src="patientAvatar(c)" class="card-patient-img" />
           <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
@@ -34,6 +35,7 @@
           <div class="cc-row cc-row-1">
             <span class="cc-name">{{ c.patientName }}</span>
             <span class="cc-diff" :class="'diff-' + c.teachingPhase[0]">{{ c.levelLabel }}</span>
+            <span class="cc-case-level" :class="'cl-' + getCaseLevel(c.teachingPhase)">{{ getCaseLevelLabel(c.teachingPhase) }}</span>
           </div>
           <div class="cc-row cc-row-2">
             <span class="cc-id">{{ c.id }}</span>
@@ -64,10 +66,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { MDT_CASES, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
+import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
 
 const router = useRouter()
 const loading = ref(false)
 const activeFilter = ref('all')
+
+const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -78,7 +83,7 @@ const filters = [
   { key: 'endocrine', label: '内分泌' },
 ]
 
-const mdtCases = ref(MDT_CASES)
+const mdtCases = ref(MDT_CASES.map((c, idx) => ({ ...c, source: ELITE_SOURCES[idx % 3] })))
 
 const filteredCases = computed(() => {
   if (activeFilter.value === 'all') return mdtCases.value
@@ -87,6 +92,13 @@ const filteredCases = computed(() => {
 
 function patientAvatar(c) {
   return matchPatientImage({ gender: c.gender, age: c.age }, 'patient')
+}
+
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
 }
 
 function viewDetail(c) {
@@ -138,6 +150,7 @@ onMounted(() => { loading.value = false })
   display: flex; gap: 16px; padding: 18px; cursor: pointer;
   border-radius: 14px; border: 1px solid #e5e7eb;
   transition: all .2s; background: #fff;
+  position: relative; overflow: hidden;
 }
 .case-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
@@ -165,6 +178,22 @@ onMounted(() => { loading.value = false })
 }
 .diff-R { background: #e3f2fd; color: #1565c0; }
 .diff-F { background: #fce4ec; color: #c62828; font-weight: 700; }
+.cc-case-level {
+  display: inline-block; font-size: 9px; font-weight: 500;
+  padding: 0 5px; border-radius: 3px; line-height: 1.6; white-space: nowrap;
+}
+.cl-basic { background: #e8f5e9; color: #2e7d32; }
+.cl-advanced { background: #fff3e0; color: #e65100; }
+.cl-difficult { background: #fce4ec; color: #c62828; }
+.corner-tag {
+  position: absolute; top: 0; left: 0;
+  font-size: 9px; font-weight: 700; padding: 3px 10px 3px 8px;
+  border-radius: 0 0 8px 0; line-height: 1.4;
+  white-space: nowrap; letter-spacing: 0.04em; color: #fff; z-index: 1;
+}
+.corner-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
+.corner-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.corner-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .cc-row-2 {}
 .cc-id { font-size: 10px; color: #999; }
 .cc-row-3 { font-size: 11px; color: #666; }

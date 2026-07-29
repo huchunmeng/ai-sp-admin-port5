@@ -18,7 +18,7 @@
           <div class="patient-top">
             <div class="avatar">{{ c.patient.name ? c.patient.name.charAt(0) : '?' }}</div>
             <div class="patient-meta">
-              <div class="patient-name">{{ c.patient.name }} <span class="diff-tag" :class="'diff-' + getCaseLevel(c.difficulty)">{{ getCaseLevelLabel(c.difficulty) }}</span></div>
+              <div class="patient-name">{{ c.patient.name }} <span class="source-tag" :class="'src-' + sourceClass(c.source)">{{ c.source }}病例</span><span class="diff-tag" :class="'diff-' + getCaseLevel(c.difficulty)">{{ getCaseLevelLabel(c.difficulty) }}</span></div>
               <div class="patient-sub">{{ c.patient.sex }} · {{ c.patient.age }}岁 · {{ c.patient.occupation }}</div>
               <div class="case-id">{{ c.id }}</div>
             </div>
@@ -112,6 +112,12 @@ const caseRecords = computed(() => {
 })
 
 function scoreClass(s) { if (s >= 85) return 'great'; if (s >= 70) return 'good'; return 'low' }
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
+}
 function formatDuration(sec) { const m = Math.floor(sec / 60); const s = sec % 60; return m + '分' + s + '秒' }
 
 const vitalLabels = { temp: '体温', pulse: '脉搏', rr: '呼吸', bp: '血压', spo2: 'SpO₂' }
@@ -181,6 +187,10 @@ onMounted(async () => {
 .diff-advanced { background: #fef3c7; color: #92400e; }
 .diff-difficult { background: #fee2e2; color: #991b1b; }
 .diff-undefined { background: #f3f4f6; color: #9ca3af; }
+.source-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; color: #fff; white-space: nowrap; letter-spacing: 0.03em; }
+.src-academician { background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%); box-shadow: 0 1px 3px rgba(79,70,229,0.3); }
+.src-mentor { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); box-shadow: 0 1px 3px rgba(245,158,11,0.3); }
+.src-national { background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); box-shadow: 0 1px 3px rgba(220,38,38,0.3); }
 
 .vitals-row { display: flex; gap: 4px; flex-wrap: wrap; }
 .vital-item { background: #f5f7fa; border-radius: 8px; padding: 6px 10px; text-align: center; flex: 1; min-width: 50px; }

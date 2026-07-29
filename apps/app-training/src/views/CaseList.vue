@@ -54,9 +54,9 @@
             <label class="filter-label">来源</label>
             <div class="filter-chips">
               <span class="filter-chip" :class="{ active: sourceFilter === '' }" @click="sourceFilter = ''">全部</span>
-              <span class="filter-chip" :class="{ active: sourceFilter === '平台' }" @click="sourceFilter = sourceFilter === '平台' ? '' : '平台'">平台病例库</span>
-              <span class="filter-chip" :class="{ active: sourceFilter === '机构' }" @click="sourceFilter = sourceFilter === '机构' ? '' : '机构'">机构病例库</span>
-              <span class="filter-chip" :class="{ active: sourceFilter === '专家' }" @click="sourceFilter = sourceFilter === '专家' ? '' : '专家'">专家病例库</span>
+              <span class="filter-chip" :class="{ active: sourceFilter === '院士精讲' }" @click="sourceFilter = sourceFilter === '院士精讲' ? '' : '院士精讲'">院士精讲病例</span>
+              <span class="filter-chip" :class="{ active: sourceFilter === '金牌导师' }" @click="sourceFilter = sourceFilter === '金牌导师' ? '' : '金牌导师'">金牌导师病例</span>
+              <span class="filter-chip" :class="{ active: sourceFilter === '国家级质控中心' }" @click="sourceFilter = sourceFilter === '国家级质控中心' ? '' : '国家级质控中心'">国家级质控中心病例</span>
             </div>
           </div>
         </div>
@@ -85,6 +85,7 @@
     </div>
 
     <div v-for="c in filteredCases" :key="c.id" class="case-item" @click="goDetail(c)">
+      <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
       <div class="case-left">
         <div class="case-avatar">
           <i class="fa-solid fa-user"></i>
@@ -174,11 +175,7 @@ const filteredCases = computed(() => {
     list = list.filter(c => c.status === statusFilter.value)
   }
   if (sourceFilter.value) {
-    if (sourceFilter.value === '机构') {
-      list = list.filter(c => c.source && c.source !== '平台' && c.source !== '专家')
-    } else {
-      list = list.filter(c => c.source === sourceFilter.value)
-    }
+    list = list.filter(c => c.source === sourceFilter.value)
   }
   if (specialtyFilter.value) {
     list = list.filter(c => c.specialty === specialtyFilter.value)
@@ -201,6 +198,13 @@ function doReset() {
   sourceFilter.value = ''
   specialtyFilter.value = ''
   showAllSpecialties.value = false
+}
+
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
 }
 
 function goDetail(c) {
@@ -255,7 +259,7 @@ onMounted(() => {
 .specialty-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .result-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 8px; }
 
-.case-item { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; }
+.case-item { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; position: relative; overflow: hidden; }
 .case-item:active { background: #f5f7fa; }
 .case-left { display: flex; gap: 12px; flex: 1; min-width: 0; }
 .case-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px; flex-shrink: 0; }
@@ -276,6 +280,15 @@ onMounted(() => {
 .status-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
 .status-tag.done { background: #e8f5e9; color: #2e7d32; }
 .status-tag.new { background: #fff3e0; color: #e65100; }
+.corner-tag {
+  position: absolute; top: 0; left: 0;
+  font-size: 9px; font-weight: 700; padding: 2px 8px 2px 7px;
+  border-radius: 0 0 6px 0; line-height: 1.4;
+  white-space: nowrap; letter-spacing: 0.04em; color: #fff; z-index: 1;
+}
+.corner-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
+.corner-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
+.corner-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .empty { text-align: center; padding: 50px 20px; color: var(--text-tertiary); }
 .empty i { font-size: 36px; margin-bottom: 12px; display: block; }
 .empty p { font-size: 13px; }

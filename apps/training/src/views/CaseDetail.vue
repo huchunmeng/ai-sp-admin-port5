@@ -157,6 +157,7 @@
                   <div class="case-id-line" style="font-size:11px;color:#999;margin-bottom:2px;">{{ c.id }}</div>
                   <div class="patient-name-row">
                     <span class="patient-name">{{ c.patient.name }}</span>
+                    <span class="tag tag-source" :class="'tag-src-' + sourceClass(c.source)">{{ c.source }}病例</span>
                     <span class="tag tag-primary">{{ diffLabel(c.difficulty) }}</span>
                     <span class="tag" :class="'tag-case-level tag-' + getCaseLevel(c.difficulty)">{{ getCaseLevelLabel(c.difficulty) }}</span>
                   </div>
@@ -332,6 +333,7 @@ const c = computed(() => {
         difficulty: mdt.teachingPhase,
         specialty: mdt.disciplines[0],
         disease: '',
+        source: '',
         patient: {
           name: mdt.patientName,
           gender: mdt.gender,
@@ -354,6 +356,7 @@ const c = computed(() => {
       difficulty: mc.difficulty || '',
       specialty: mc.specialty || '',
       disease: mc.disease || '',
+      source: mc.source || '',
       patient: {
         name: mc.patient?.name || mc.patient_name || '',
         gender: g,
@@ -379,6 +382,7 @@ const c = computed(() => {
       difficulty: mdt.teachingPhase,
       specialty: mdt.disciplines[0],
       disease: basic.disease || '',
+      source: '',
       patient: {
         name: pi.name || mdt.patientName,
         gender,
@@ -391,12 +395,16 @@ const c = computed(() => {
       vitals: parseVitals(basic.physical_exam?.vital_signs),
     }
   }
+  const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
+  const caseIdForHash = basic.case_id || caseData.value.caseId || ''
+  const srcIdx = caseIdForHash.split('').reduce((s, ch) => s + ch.charCodeAt(0), 0) % 3
   return {
     id: basic.case_id || caseData.value.caseId || '',
     title: basic.title || '',
     difficulty: basic.teaching_phase || '',
     specialty: basic.specialty || '',
     disease: basic.disease || '',
+    source: ELITE_SOURCES[srcIdx],
     patient: {
       name: pi.name || '',
       gender,
@@ -426,6 +434,13 @@ function diffLabel(d) {
   if (!d) return ''
   if (lang.value !== 'zh') return d
   return getDifficultyLabel(d)
+}
+
+function sourceClass(src) {
+  if (src === '院士精讲') return 'academician'
+  if (src === '金牌导师') return 'mentor'
+  if (src === '国家级质控中心') return 'national'
+  return ''
 }
 
 async function startTraining() {
@@ -735,6 +750,10 @@ onUnmounted(() => {
 .tag-basic { background: #e8f5e9; color: #2e7d32; }
 .tag-advanced { background: #fff3e0; color: #e65100; }
 .tag-difficult { background: #fce4ec; color: #c62828; }
+.tag-source { font-size: 10px; font-weight: 700; color: #fff; letter-spacing: 0.03em; }
+.tag-src-academician { background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%); box-shadow: 0 1px 3px rgba(79,70,229,0.3); }
+.tag-src-mentor { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); box-shadow: 0 1px 3px rgba(245,158,11,0.3); }
+.tag-src-national { background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); box-shadow: 0 1px 3px rgba(220,38,38,0.3); }
 
 .detail-actions { display: flex; gap: 12px; }
 .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; border: 1px solid #DCDFE6; background: #fff; color: #606266; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; font-family: inherit; }

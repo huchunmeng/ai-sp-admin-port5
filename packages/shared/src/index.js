@@ -1570,13 +1570,13 @@ export {
 // ============================================================
 
 export const TRAINING_LEVELS = [
-  { value: 'U1', label: 'U1 - 见习', phase: '院校教育', caseLevel: 'basic' },
-  { value: 'U2', label: 'U2 - 实习', phase: '院校教育', caseLevel: 'basic' },
-  { value: 'R1', label: 'R1 - 住培一年级', phase: '住培阶段', caseLevel: 'advanced' },
-  { value: 'R2', label: 'R2 - 住培二年级', phase: '住培阶段', caseLevel: 'advanced' },
-  { value: 'R3', label: 'R3 - 住培三年级', phase: '住培阶段', caseLevel: 'advanced' },
-  { value: 'F1', label: 'F1 - 专科进阶', phase: '专培阶段', caseLevel: 'difficult' },
-  { value: 'F2', label: 'F2 - 独立专家', phase: '专培阶段', caseLevel: 'difficult' },
+  { value: 'U1', label: 'U1', phase: '院校教育', caseLevel: 'basic' },
+  { value: 'U2', label: 'U2', phase: '院校教育', caseLevel: 'basic' },
+  { value: 'R1', label: 'R1', phase: '住培阶段', caseLevel: 'advanced' },
+  { value: 'R2', label: 'R2', phase: '住培阶段', caseLevel: 'advanced' },
+  { value: 'R3', label: 'R3', phase: '住培阶段', caseLevel: 'advanced' },
+  { value: 'F1', label: 'F1', phase: '专培阶段', caseLevel: 'difficult' },
+  { value: 'F2', label: 'F2', phase: '专培阶段', caseLevel: 'difficult' },
 ]
 
 export const CASE_LEVEL_MAP = {
