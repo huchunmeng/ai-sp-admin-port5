@@ -46,7 +46,8 @@ function serveAdminCasesPlugin() {
                   patient_gender: pi.sex || '',
                   patient_age: String(pi.age || '').replace('岁', ''),
                   patient_pregnancy: pi.pregnancy || '',
-                  source: data.source || '平台',
+                  source: data.source || '',
+                  caseLevel: data.caseLevel || '',
                   creator_name: data.creator_name || ''
                 })
               } catch { /* skip broken files */ }

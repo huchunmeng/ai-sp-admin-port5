@@ -179,9 +179,6 @@ const actions = createDefaultActions(route, {
   requirementAction: () => { requirement.toggle(route.name || 'home') },
   btns: [
     { label: '训练端', url: urls.training, name: 'ai-sp-training', style: { background: '#7c3aed', color: '#fff' } },
-    { label: '考试端', url: urls.exam, name: 'ai-sp-exam', style: { background: '#059669', color: '#fff' } },
-    { label: '运营平台', url: urls.ops, name: 'ai-sp-ops', style: { background: '#7c3aed', color: '#fff' } },
-    { label: '电子书包', url: urls.appTraining, name: 'ai-sp-app-training', style: { background: '#059669', color: '#fff' } },
   ]
 })
 

@@ -67,7 +67,7 @@
       <template v-else>
         <div class="case-grid">
           <div class="case-card" v-for="c in paginatedCases" :key="c.id" @click="viewDetail(c)" data-reviewable="病例卡片">
-            <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
+            <span v-if="c.source" class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
             <div class="case-card-photo" data-reviewable="患者头像">
               <img v-if="c.patient.photo" :src="c.patient.photo" class="card-patient-img" />
               <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
@@ -82,7 +82,7 @@
               <div class="cc-row cc-row-2">
                 <span class="cc-id">{{ c.id }}</span>
                 <span class="cc-diff" :class="'diff-' + (c.difficulty || 'R1')[0]">{{ getDifficultyLabel(c.difficulty) }}</span>
-                <span class="cc-case-level" :class="'cl-' + getCaseLevel(c.difficulty)">{{ getCaseLevelLabel(c.difficulty) }}</span>
+                <span class="cc-case-level" :class="'cl-' + getCaseLevel(c.difficulty)">{{ c.caseLevel || getCaseLevelLabel(c.difficulty) }}</span>
               </div>
               <div class="cc-row cc-row-3">
                 <span>{{ c.patient.gender }} · {{ c.patient.age }}{{ lang === 'zh' ? '岁' : 'y' }} · {{ c.specialty }}</span>
@@ -240,8 +240,6 @@ const allCases = computed(() =>
     const gender = c.patient_gender || ''
     const age = c.patient_age || ''
     const preg = c.patient_pregnancy || ''
-    const src = c.source || '平台'
-    const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
     return {
       id: c.id,
       title: c.title,
@@ -249,7 +247,8 @@ const allCases = computed(() =>
       disease: c.disease,
       difficulty: c.difficulty || c.training_phase || '',
       phase: c.training_phase || '',
-      source: src === '平台' ? ELITE_SOURCES[idx % 3] : src,
+      source: c.source || '',
+      caseLevel: c.caseLevel || '',
       chiefComplaint: c.chief_complaint || '',
       symptoms: c.symptoms || [],
       status: getTrainingStatus(c.id),

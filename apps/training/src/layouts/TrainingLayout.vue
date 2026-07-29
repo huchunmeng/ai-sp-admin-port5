@@ -22,12 +22,24 @@
           </svg>
           <span>{{ userStore.institution }}</span>
         </div>
-        <div class="user-menu" @click="openAdaptiveLearning" title="点击查看学习画像">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          <span>{{ userStore.name }}</span>
+        <div class="user-menu-wrap">
+          <div class="user-menu" @click="showUserMenu = !showUserMenu" title="点击查看账号菜单">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>{{ userStore.name }}</span>
+            <i class="fa-solid fa-caret-down" style="font-size:9px;margin-left:2px;"></i>
+          </div>
+          <div class="user-dropdown" v-if="showUserMenu" @click.stop>
+            <div class="user-dropdown-item" @click="showUserMenu = false; openAdaptiveLearning()">
+              <i class="fa-solid fa-chart-pie"></i> 学习画像
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <div class="user-dropdown-item logout" @click="handleLogout">
+              <i class="fa-solid fa-right-from-bracket"></i> 退出登录
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -65,6 +77,7 @@ const store = useTrainingStore()
 const userStore = useUserStore()
 
 const showHiddenControls = ref(false)
+const showUserMenu = ref(false)
 let floatingBarEl = null
 
 function toggleHiddenControls() {
@@ -90,6 +103,18 @@ function openAdmin() {
 
 function openAdaptiveLearning() {
   router.push({ name: 'adaptiveLearning' })
+}
+
+function handleLogout() {
+  showUserMenu.value = false
+  userStore.logout()
+  router.push({ name: 'login' })
+}
+
+function onClickOutside(e) {
+  if (showUserMenu.value && !e.target.closest('.user-menu-wrap')) {
+    showUserMenu.value = false
+  }
 }
 
 function openOpsLlmConfig() {
@@ -154,9 +179,6 @@ const actions = createDefaultActions(route, {
   requirementAction: () => { requirement.toggle(route.name) },
   btns: [
     { label: '管理端', url: urls.admin, name: 'ai-sp-admin', style: { background: '#4A90E2', color: '#fff' } },
-    { label: '考试端', url: urls.exam, name: 'ai-sp-exam', style: { background: '#059669', color: '#fff' } },
-    { label: '运营平台', url: urls.ops, name: 'ai-sp-ops', style: { background: '#7c3aed', color: '#fff' } },
-    { label: '电子书包', url: urls.appTraining, name: 'ai-sp-app-training', style: { background: '#059669', color: '#fff' } },
   ]
 })
 
@@ -166,10 +188,12 @@ onMounted(() => {
   // 默认隐藏浮窗，点击机构名称显示
   floatingBarEl = document.querySelector('.sp-floating-bar')
   if (floatingBarEl) floatingBarEl.style.display = 'none'
+  document.addEventListener('click', onClickOutside)
 })
 
 onUnmounted(() => {
   bottomBar.destroy()
+  document.removeEventListener('click', onClickOutside)
 })
 
 watch(() => route.name, (name) => {
@@ -201,4 +225,22 @@ watch(() => route.name, (name) => {
   white-space: nowrap; margin-right: 12px;
 }
 .tts-status:hover { background: #ede5ff; }
+
+.user-menu-wrap { position: relative; }
+.user-menu { cursor: pointer; }
+.user-dropdown {
+  position: absolute; top: 100%; right: 0; margin-top: 6px;
+  background: #fff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  border: 1px solid #e5e7eb; min-width: 150px; z-index: 1000;
+  overflow: hidden;
+}
+.user-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; font-size: 13px; color: #374151;
+  cursor: pointer; transition: background .12s;
+}
+.user-dropdown-item:hover { background: #f3f4f6; }
+.user-dropdown-item.logout { color: #dc2626; }
+.user-dropdown-item.logout:hover { background: #fef2f2; }
+.user-dropdown-divider { height: 1px; background: #e5e7eb; margin: 2px 0; }
 </style>

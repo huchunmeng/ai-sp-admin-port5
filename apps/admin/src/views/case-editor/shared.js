@@ -61,6 +61,7 @@ const SIMPLE_LEVELS = ['U1', 'U2']
 export function createEmptyFormData() {
   return {
     case_id: '', teaching_phase: '', specialty: '', category: '', disease: '', symptom: '', score_sheet_template: '',
+    source: '', caseLevel: '',
     communication_target: 'patient',
     version: '', title: '', patient_name: '', patient_gender: '男',
     patient_age: '', patient_occupation: '', patient_education: '', patient_marital: '', patient_address: '',
@@ -382,6 +383,8 @@ export async function loadCaseDataFromFiles(caseId) {
       diagnosis_basis: diagnosisBasis, treatment_plan: basicData.treatment_plan || '',
       teaching_points: teachingPointsText, specialty_focus: basicData.specialty_focus || '',
       score_sheet_template: basicData.score_sheet_template || '',
+      source: basicData.source || '',
+      caseLevel: basicData.caseLevel || '',
       communication_target: basicData.communication_target || (specialty === '儿科' || specialty === '精神科' ? 'family' : 'patient'),
     })
 

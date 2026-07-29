@@ -91,7 +91,7 @@
                 <div class="entry-title">MDT多学科讨论</div>
                 <div class="entry-desc">团队协作病例思辨</div>
               </div>
-              <div class="entry-badge" style="background: #d1fae5; color: #065f46;">{{ mdtCount }} 例可讨论</div>
+              <div class="entry-badge" style="background: #fef9c3; color: #a16207;">即将开放</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
             <div class="entry-card entry-exam" @click="goExam">
@@ -109,55 +109,77 @@
         </div>
       </section>
 
-      <!-- 精品病例 -->
-      <section class="zone-section zone-elite">
-        <div class="zone-header">
-          <span class="zone-title"><i class="fa-solid fa-crown"></i> 精品病例</span>
-        </div>
-        <div class="zone-body">
-          <div class="elite-grid">
-            <div class="elite-card elite-academician" @click="goAcademicianCases">
-              <div class="elite-card-top">
-                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#312e81,#4f46e5);">
-                  <i class="fa-solid fa-chalkboard-user"></i>
+      <!-- 精品病例 + VR -->
+      <div class="elite-vr-row">
+        <section class="zone-section zone-elite" style="flex:3;min-width:0;">
+          <div class="zone-header">
+            <span class="zone-title"><i class="fa-solid fa-crown"></i> 精品病例</span>
+          </div>
+          <div class="zone-body">
+            <div class="elite-grid">
+              <div class="elite-card elite-academician" @click="goAcademicianCases">
+                <div class="elite-card-top">
+                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#312e81,#4f46e5);">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                  </div>
+                  <span class="elite-count">{{ academicianCount }} 例</span>
                 </div>
-                <span class="elite-count">{{ academicianCount }} 例</span>
-              </div>
-              <div class="elite-card-body">
-                <div class="elite-title">院士精讲病例</div>
-                <div class="elite-desc">顶尖专家深度解析疑难罕见病例，传授临床思维精髓</div>
-              </div>
-              <i class="fa-solid fa-chevron-right elite-arrow"></i>
-            </div>
-            <div class="elite-card elite-mentor" @click="goMentorCases">
-              <div class="elite-card-top">
-                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
-                  <i class="fa-solid fa-medal"></i>
+                <div class="elite-card-body">
+                  <div class="elite-title">院士精讲病例</div>
+                  <div class="elite-desc">顶尖专家深度解析疑难罕见病例，传授临床思维精髓</div>
                 </div>
-                <span class="elite-count">{{ mentorCount }} 例</span>
+                <i class="fa-solid fa-chevron-right elite-arrow"></i>
               </div>
-              <div class="elite-card-body">
-                <div class="elite-title">金牌导师病例</div>
-                <div class="elite-desc">一线临床名师手把手带教，覆盖常见病与多发病实战</div>
-              </div>
-              <i class="fa-solid fa-chevron-right elite-arrow"></i>
-            </div>
-            <div class="elite-card elite-national" @click="goNationalCenterCases">
-              <div class="elite-card-top">
-                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
-                  <i class="fa-solid fa-building-columns"></i>
+              <div class="elite-card elite-mentor" @click="goMentorCases">
+                <div class="elite-card-top">
+                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
+                    <i class="fa-solid fa-medal"></i>
+                  </div>
+                  <span class="elite-count">{{ mentorCount }} 例</span>
                 </div>
-                <span class="elite-count">{{ nationalCenterCount }} 例</span>
+                <div class="elite-card-body">
+                  <div class="elite-title">金牌导师病例</div>
+                  <div class="elite-desc">一线临床名师手把手带教，覆盖常见病与多发病实战</div>
+                </div>
+                <i class="fa-solid fa-chevron-right elite-arrow"></i>
               </div>
-              <div class="elite-card-body">
-                <div class="elite-title">国家级质控中心病例</div>
-                <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
+              <div class="elite-card elite-national" @click="goNationalCenterCases">
+                <div class="elite-card-top">
+                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+                    <i class="fa-solid fa-building-columns"></i>
+                  </div>
+                  <span class="elite-count">{{ nationalCenterCount }} 例</span>
+                </div>
+                <div class="elite-card-body">
+                  <div class="elite-title">国家级质控中心病例</div>
+                  <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
+                </div>
+                <i class="fa-solid fa-chevron-right elite-arrow"></i>
               </div>
-              <i class="fa-solid fa-chevron-right elite-arrow"></i>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        <section class="zone-section zone-vr" style="flex:1;min-width:0;">
+          <div class="zone-header">
+            <span class="zone-title"><i class="fa-solid fa-vr-cardboard"></i> VR研习空间</span>
+          </div>
+          <div class="zone-body">
+            <div class="elite-card elite-vr" @click="openVRLab">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#0d9488,#14b8a6);">
+                  <i class="fa-solid fa-vr-cardboard"></i>
+                </div>
+                <span class="elite-count">国家级一流课程</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">磁共振成像虚拟仿真实验</div>
+                <div class="elite-desc">MRI原理、信号基础、设备认知、扫描成像质量评估</div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square elite-arrow"></i>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <!-- 为你推荐 -->
       <section class="zone-section zone-recommend">
@@ -175,9 +197,9 @@
               <div class="rec-info">
                 <div class="rec-row-1">
                   <span class="rec-name">{{ rec.patientName }}</span>
-                  <span class="rec-source-tag" :class="'src-' + sourceClass(rec.source)">{{ rec.source }}病例</span>
+                  <span v-if="rec.source" class="rec-source-tag" :class="'src-' + sourceClass(rec.source)">{{ rec.source }}病例</span>
                   <span class="rec-diff" :class="'diff-' + (rec.difficulty[0] || 'R')">{{ rec.difficulty }}</span>
-                  <span class="rec-case-level" :class="'cl-' + getCaseLevel(rec.difficulty)">{{ getCaseLevelLabel(rec.difficulty) }}</span>
+                  <span class="rec-case-level" :class="'cl-' + getCaseLevel(rec.difficulty)">{{ rec.caseLevel || getCaseLevelLabel(rec.difficulty) }}</span>
                 </div>
                 <div class="rec-row-2">{{ rec.gender }} · {{ rec.age }}岁 · {{ rec.specialty }}</div>
                 <div class="rec-row-3">
@@ -206,7 +228,7 @@
             <div class="record-info">
               <div class="record-row-1">
                 <span class="record-name">{{ r.casePatientName || r.caseId }}</span>
-                <span v-if="r.caseSource" class="record-source-tag" :class="'src-' + sourceClass(r.caseSource)">{{ r.caseSource }}病例</span>
+                <span v-if="r.caseSource && r.caseSource !== '平台'" class="record-source-tag" :class="'src-' + sourceClass(r.caseSource)">{{ r.caseSource }}病例</span>
                 <span v-if="r.score" class="record-score" :class="scoreClass(r.score)">{{ r.score }}分</span>
                 <span v-else class="record-score pending">未评分</span>
               </div>
@@ -253,7 +275,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
-import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
+import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 
 const router = useRouter()
@@ -413,7 +435,7 @@ function goMDT() {
 }
 
 function goExam() {
-  window.open(urls.exam, '_blank')
+  toast.show('在线考试功能即将开放，敬请期待', 'info')
 }
 
 const academicianCount = ref(12)
@@ -434,6 +456,10 @@ function goNationalCenterCases() {
 
 function goAdaptiveLearning() {
   router.push({ name: 'adaptiveLearning' })
+}
+
+function openVRLab() {
+  window.open('https://xnfz.seu.edu.cn/exp/272.html', '_blank')
 }
 
 function goRecords() {
@@ -762,6 +788,10 @@ onMounted(() => {
 .entry-card:hover .entry-arrow { color: #6b7280; }
 
 /* ─── 精品病例 ─── */
+.elite-vr-row { display: flex; gap: 14px; }
+.elite-vr-row .zone-elite { flex: 3; min-width: 0; }
+.elite-vr-row .zone-vr { flex: 1; min-width: 0; }
+
 .elite-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .elite-card {
   background: #fafbfc; border-radius: 12px; padding: 16px;
@@ -786,6 +816,9 @@ onMounted(() => {
 .elite-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
 .elite-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: all .2s; }
 .elite-card:hover .elite-arrow { color: #6b7280; }
+
+.elite-vr:hover { border-color: #0d9488; }
+.zone-vr { border-left: 4px solid #0d9488; }
 
 /* ─── 推荐病例 ─── */
 .recommend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

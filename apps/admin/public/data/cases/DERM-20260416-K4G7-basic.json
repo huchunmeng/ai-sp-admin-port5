@@ -70,5 +70,7 @@
   "score_sheet_template": "TPL-STD",
   "teaching_phase": "R3",
   "savedAt": "2026-06-23T02:17:12.793Z",
-  "communication_target": "patient"
+  "communication_target": "patient",
+  "source": "",
+  "caseLevel": ""
 }

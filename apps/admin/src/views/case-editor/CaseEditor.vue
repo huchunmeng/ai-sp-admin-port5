@@ -66,6 +66,24 @@
             <label>评分表模板</label>
             <SearchSelect :options="availableTemplates" :modelValue="formData.score_sheet_template" @update:modelValue="v => { formData.score_sheet_template = v; saveTemplateChoice(v) }" placeholder="选择评分表模板" />
           </div>
+          <div class="filter-item">
+            <label>精品来源</label>
+            <select class="select" v-model="formData.source" @change="autoSaveMeta()">
+              <option value="">普通病例</option>
+              <option value="院士精讲">院士精讲</option>
+              <option value="金牌导师">金牌导师</option>
+              <option value="国家级质控中心">国家级质控中心</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>难度标签</label>
+            <select class="select" v-model="formData.caseLevel" @change="autoSaveMeta()">
+              <option value="">未设置</option>
+              <option value="基础病例">基础病例</option>
+              <option value="高阶病例">高阶病例</option>
+              <option value="疑难病例">疑难病例</option>
+            </select>
+          </div>
         </div>
         <div v-if="isCurrentCaseGenerating" class="modal-overlay">
           <div class="modal-card" style="width:420px">
@@ -840,6 +858,8 @@ function persistMeta(extraFields = {}) {
     score_sheet_template: formData.value.score_sheet_template,
     title: formData.value.title,
     teaching_phase: formData.value.teaching_phase,
+    source: formData.value.source,
+    caseLevel: formData.value.caseLevel,
     communication_target: formData.value.communication_target,
     ...extraFields
   }

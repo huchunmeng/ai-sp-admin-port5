@@ -85,7 +85,7 @@
     </div>
 
     <div v-for="c in filteredCases" :key="c.id" class="case-item" @click="goDetail(c)">
-      <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
+      <span v-if="c.source" class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
       <div class="case-left">
         <div class="case-avatar">
           <i class="fa-solid fa-user"></i>
@@ -102,7 +102,7 @@
         </div>
       </div>
       <div class="case-right">
-        <span class="diff-tag" :class="'diff-' + getCaseLevel(c.difficulty)">{{ getCaseLevelLabel(c.difficulty) }}</span>
+        <span class="diff-tag" :class="'diff-' + getCaseLevel(c.difficulty)">{{ c.caseLevel || getCaseLevelLabel(c.difficulty) }}</span>
         <span class="status-tag" :class="c.status === 'trained' ? 'done' : 'new'">
           {{ c.status === 'trained' ? '已学习' : '未学习' }}
         </span>
