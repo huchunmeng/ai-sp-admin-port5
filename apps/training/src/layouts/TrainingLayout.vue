@@ -20,14 +20,14 @@
             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span>东南大学附属中大医院</span>
+          <span>{{ userStore.institution }}</span>
         </div>
         <div class="user-menu" @click="openAdaptiveLearning" title="点击查看学习画像">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span>张梓墨</span>
+          <span>{{ userStore.name }}</span>
         </div>
       </div>
     </header>
@@ -54,6 +54,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
+import { useUserStore } from '@/stores/user'
 import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls } from '@ai-sp/shared'
 import { getCurrentTtsModel } from '@/composables/useTTS.js'
 import AICompanionDrawer from '@/components/AICompanionDrawer.vue'
@@ -61,6 +62,7 @@ import AICompanionDrawer from '@/components/AICompanionDrawer.vue'
 const router = useRouter()
 const route = useRoute()
 const store = useTrainingStore()
+const userStore = useUserStore()
 
 const showHiddenControls = ref(false)
 let floatingBarEl = null

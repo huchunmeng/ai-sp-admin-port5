@@ -141,6 +141,9 @@
         <div v-show="activeTab === 'meta'" class="tab-panel" key="meta">
           <MetaInfoView :meta="formData.meta" @update:meta="v => formData.meta = v" />
         </div>
+        <div v-show="activeTab === 'expertKB'" class="tab-panel" key="expertKB">
+          <ExpertKBEditor :model="formData.expertReview" @update:model="v => formData.expertReview = v" />
+        </div>
       </div>
 
       <div v-if="showGenConfig" class="modal-overlay" @click.self="showGenConfig = false">
@@ -725,6 +728,7 @@ import { buildMetaInfo } from './score-sheet-generator.js'
 import MetaInfoView from './MetaInfo.vue'
 import MaterialsEditor from './MaterialsEditor.vue'
 import MentalExamEditor from './MentalExamEditor.vue'
+import ExpertKBEditor from './ExpertKBEditor.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
 import { SCORE_SHEET_TEMPLATES } from '@/data/templates/index.js'
 
@@ -751,7 +755,7 @@ const tabs = computed(() => {
     { key: 'humanity', label: '人文沟通' },
   ]
   if (isPsych.value) base.push({ key: 'mentalExam', label: '精神检查' })
-  base.push({ key: 'materials', label: '检查素材' }, { key: 'meta', label: '元信息' })
+  base.push({ key: 'materials', label: '检查素材' }, { key: 'meta', label: '元信息' }, { key: 'expertKB', label: '专家知识库' })
   return base
 })
 const activeTab = ref('basic')
@@ -1371,6 +1375,19 @@ function saveDraft() {
 
   if (formData.value.meta && Object.keys(formData.value.meta).length > 0) {
     saveFile(caseId + '-meta.json', formData.value.meta)
+  }
+
+  const expertReview = formData.value.expertReview
+  if (expertReview && (expertReview.enabled || expertReview.expertKB)) {
+    saveFile(caseId + '-expert.json', {
+      caseId,
+      expertEnabled: expertReview.enabled,
+      expertName: expertReview.expertName,
+      expertTitle: expertReview.expertTitle,
+      expertTags: expertReview.expertTags,
+      expertKB: expertReview.expertKB,
+      reviewTitle: expertReview.reviewTitle
+    })
   }
 
   toast.show('草稿已保存')

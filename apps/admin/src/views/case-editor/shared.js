@@ -85,7 +85,8 @@ export function createEmptyFormData() {
     atypical_dialogue: null,
     score_sheet: [],
     station_scores: null,
-    examination_materials: []
+    examination_materials: [],
+    expertReview: { enabled: false, expertName: '', expertTitle: '', expertTags: [], expertKB: '', reviewTitle: '' }
   }
 }
 
@@ -251,7 +252,7 @@ export async function loadCaseDataFromFiles(caseId) {
   const suffix = caseId
 
   try {
-    const [basicData, receptionData, analysisData, humanityData, mentalExamData, metaData, scoreSheetData, materialsData] = await Promise.all([
+    const [basicData, receptionData, analysisData, humanityData, mentalExamData, metaData, scoreSheetData, materialsData, expertData] = await Promise.all([
       tryFetchJson(basePaths, `${suffix}-basic.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-reception.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-analysis.json`).catch(() => null),
@@ -259,7 +260,8 @@ export async function loadCaseDataFromFiles(caseId) {
       tryFetchJson(basePaths, `${suffix}-mentalExam.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-meta.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-scoreSheet.json`).catch(() => null),
-      tryFetchJson(basePaths, `${suffix}-materials.json`).catch(() => null)
+      tryFetchJson(basePaths, `${suffix}-materials.json`).catch(() => null),
+      tryFetchJson(basePaths, `${suffix}-expert.json`).catch(() => null)
     ])
     if (!basicData) return { formData: createEmptyFormData(), raw: null }
 
@@ -496,7 +498,17 @@ export async function loadCaseDataFromFiles(caseId) {
     formData.meta = metaData ? normalizeOldMeta(metaData) : buildFallbackMeta(basicData, receptionData, analysisData, humanityData, caseId, patientPersonality)
     formData.atypical_dialogue = metaData?.atypical_dialogue || mentalExamData || null
     formData.examination_materials = (materialsData && materialsData.items) ? materialsData.items : []
-    return { formData, raw: { basicData, scoreSheetData, receptionData, analysisData, humanityData, mentalExamData, metaData, materialsData } }
+    if (expertData) {
+      formData.expertReview = {
+        enabled: expertData.expertEnabled || expertData.enabled || false,
+        expertName: expertData.expertName || '',
+        expertTitle: expertData.expertTitle || '',
+        expertTags: expertData.expertTags || [],
+        expertKB: expertData.expertKB || '',
+        reviewTitle: expertData.reviewTitle || ''
+      }
+    }
+    return { formData, raw: { basicData, scoreSheetData, receptionData, analysisData, humanityData, mentalExamData, metaData, materialsData, expertData } }
   } catch (e) {
     return { formData: createEmptyFormData(), raw: null }
   }

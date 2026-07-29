@@ -76,7 +76,7 @@ export function useCaseLoader() {
     loading.value = true
     error.value = null
 
-    const modules = ['basic', 'reception', 'analysis', 'humanity', 'meta']
+    const modules = ['basic', 'reception', 'analysis', 'humanity', 'meta', 'expert']
     const results = {}
     const errors = []
 
@@ -156,6 +156,7 @@ function normalizeCaseData(caseId, raw) {
   const analysis = raw.analysis || {}
   const humanity = raw.humanity || {}
   const meta = raw.meta || null
+  const expert = raw.expert || null
 
   // Normalize reception qa_script format
   if (reception.sp_materials?.qa_script) {
@@ -190,6 +191,7 @@ function normalizeCaseData(caseId, raw) {
     reception,
     analysis,
     humanity,
-    meta
+    meta,
+    expert
   }
 }

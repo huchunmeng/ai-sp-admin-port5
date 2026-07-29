@@ -26,94 +26,80 @@
           <div class="qa-messages" ref="qaContainer">
             <div v-for="(msg, i) in qaMessages" :key="i" :class="['qa-msg', msg.type]">
               <span v-if="msg.type === 'ai'">🤖 </span>{{ msg.text }}
-              <div v-if="msg.ref" class="qa-ref">{{ msg.ref }}</div>
+            </div>
+            <div v-if="aiLoading" class="qa-msg ai typing">
+              <span class="typing-dots"><i></i><i></i><i></i></span>
             </div>
           </div>
           <div class="qa-input-row">
-            <input v-model="qaInput" class="input" placeholder="输入你的问题..." @keydown.enter="askQuestion()">
-            <button class="btn btn-primary btn-sm" @click="askQuestion()">
-              <i class="fa-solid fa-paper-plane"></i>
+            <input v-model="qaInput" class="input" placeholder="输入你的问题..." @keydown.enter="askQuestion()" :disabled="aiLoading">
+            <button class="btn btn-primary btn-sm" @click="askQuestion()" :disabled="aiLoading">
+              <i v-if="aiLoading" class="fa-solid fa-spinner fa-spin"></i>
+              <i v-else class="fa-solid fa-paper-plane"></i>
             </button>
           </div>
         </div>
 
         <!-- 专家点评 -->
         <div v-show="activeTab === 'commentary'" class="tab-content commentary-tab">
-          <div class="commentary-single">
-            <!-- 视频区 -->
-            <div class="commentary-video" @click="playVideo">
-              <img :src="expertCover" class="video-cover" />
-              <div class="video-overlay">
-                <div class="play-btn"><i class="fa-solid fa-play"></i></div>
-                <span class="video-duration">课程视频 · 点击播放</span>
-              </div>
-            </div>
+          <!-- 加载中 -->
+          <div v-if="expertLoading" style="text-align:center;padding:40px 20px;">
+            <div class="spinner" style="margin:0 auto 16px;"></div>
+            <p style="color:var(--text-tertiary);font-size:13px;">正在加载专家点评...</p>
+          </div>
 
+          <!-- 无专家点评 -->
+          <div v-else-if="!expertData" class="expert-empty">
+            <div class="expert-empty-icon"><i class="fa-solid fa-star"></i></div>
+            <p class="expert-empty-title">该病例暂无专家点评</p>
+            <p class="expert-empty-desc">此功能仅对指定病例开放，由专家结合病例内容和学员操作进行个性化点评。</p>
+          </div>
+
+          <!-- 有专家点评 -->
+          <div v-else class="commentary-single">
             <!-- 专家信息 -->
             <div class="expert-profile">
-              <img :src="expertPhoto" class="expert-avatar" />
+              <div class="expert-avatar-icon"><i class="fa-solid fa-user-tie"></i></div>
               <div class="expert-meta">
-                <div class="expert-name">滕皋军 院士</div>
-                <div class="expert-dept">东南大学附属中大医院 · 介入与血管外科</div>
+                <div class="expert-name">{{ expertData.expertName }}</div>
+                <div class="expert-dept">{{ expertData.expertTitle }}</div>
                 <div class="expert-tags">
-                  <span class="expert-tag">中国科学院院士</span>
-                  <span class="expert-tag">介入放射学</span>
+                  <span v-for="tag in expertData.expertTags" :key="tag" class="expert-tag">{{ tag }}</span>
                 </div>
               </div>
             </div>
 
             <!-- 点评正文 -->
             <div class="commentary-article">
-              <h3 class="article-title">从不明原因消瘦到肝脏占位——症状驱动的临床思维路径</h3>
+              <h3 class="article-title">{{ expertData.reviewTitle || '专家教学点评' }}</h3>
               <div class="article-body">
-                <p>本病例以"近3个月无明显诱因体重下降5kg、右上腹持续性隐痛伴纳差乏力"为切入点。患者无发热、黄疸等急性表现，这种隐匿起病的慢性消耗性症状群，往往需要从"蛛丝马迹"中展开系统性鉴别。</p>
-
-                <div class="article-section">
-                  <h4><i class="fa-solid fa-magnifying-glass"></i> 从症状入手的鉴别思维</h4>
-                  <p>消瘦+右上腹痛的组合，首先建立"右上腹器官→系统性疾病"的双层鉴别框架。第一层：肝、胆、右肾、结肠肝曲等局部器官病变。第二层：消化系统肿瘤、慢性感染、代谢性疾病等系统性病因。临床思维的关键在于，<em>不急于指向某一个诊断</em>，而是先穷举可能，再通过问诊和检查逐层收敛。</p>
+                <div v-if="reviewGenerating" style="text-align:center;padding:20px;">
+                  <span class="typing-dots"><i></i><i></i><i></i></span>
+                  <p style="color:var(--text-tertiary);font-size:12px;">AI 正在生成点评...</p>
                 </div>
-
-                <div class="article-section">
-                  <h4><i class="fa-solid fa-clock"></i> 病史深挖时间线</h4>
-                  <div class="timeline-table">
-                    <div class="tl-row"><span class="tl-time">3月前</span><span class="tl-act">无明显诱因开始食欲减退，饭量降至平时一半，厌油腻明显</span></div>
-                    <div class="tl-row"><span class="tl-time">2月前</span><span class="tl-act">右上腹隐痛出现，持续性、钝痛性质，无放射，劳累后加重</span></div>
-                    <div class="tl-row"><span class="tl-time">1月前</span><span class="tl-act">家属发现面色晦暗、体重明显下降（称重后确认下降5kg），就诊</span></div>
-                    <div class="tl-row"><span class="tl-time">就诊后</span><span class="tl-act">腹部超声提示肝右叶占位性病变，进一步行增强CT/MRI明确</span></div>
-                  </div>
+                <div v-else-if="reviewContent" v-html="renderedReview"></div>
+                <div v-else style="text-align:center;padding:20px;">
+                  <button class="btn btn-primary btn-sm" @click="generateExpertReview">生成专家点评</button>
                 </div>
+              </div>
+            </div>
 
-                <div class="article-section">
-                  <h4><i class="fa-solid fa-chart-line"></i> 关键数据</h4>
-                  <div class="key-metrics">
-                    <div class="metric-item">
-                      <div class="metric-val">50<span>%</span></div>
-                      <div class="metric-label">初诊时已为中晚期<br>（我国现状）</div>
-                    </div>
-                    <div class="metric-item">
-                      <div class="metric-val">80<span>%</span></div>
-                      <div class="metric-label">有乙肝/肝硬化<br>基础病史</div>
-                    </div>
-                    <div class="metric-item">
-                      <div class="metric-val">5<span>年</span></div>
-                      <div class="metric-label">早期根治术后<br>生存率可达70%+</div>
-                    </div>
-                    <div class="metric-item">
-                      <div class="metric-val">3-6<span>月</span></div>
-                      <div class="metric-label">高危人群建议<br>超声+AFP筛查频次</div>
-                    </div>
-                  </div>
+            <!-- 追问区域 -->
+            <div v-if="reviewContent" class="expert-qa-section">
+              <div class="expert-qa-messages" ref="expertQaContainer">
+                <div v-for="(msg, i) in expertMessages" :key="i" :class="['qa-msg', msg.type]">
+                  <span v-if="msg.type === 'ai'">🤖 </span>{{ msg.text }}
                 </div>
-
-                <div class="article-section">
-                  <h4><i class="fa-solid fa-lightbulb"></i> 教学要点</h4>
-                  <ul class="teaching-points">
-                    <li>非特异性症状（消瘦、纳差、隐痛）组合出现持续超过2周，必须启动系统性排查</li>
-                    <li>问诊中不可遗漏的关键线索：乙肝病史、饮酒史、家族肿瘤史、疫水接触史</li>
-                    <li>即使超声已发现占位，仍应完成完整的鉴别诊断流程，避免"看见病灶就下结论"的锚定偏误</li>
-                    <li>体格检查中肝脏触诊+移动性浊音+蜘蛛痣/肝掌是三个必须完成的查体步骤</li>
-                  </ul>
+                <div v-if="expertAiLoading" class="qa-msg ai typing">
+                  <span class="typing-dots"><i></i><i></i><i></i></span>
                 </div>
+              </div>
+              <div class="qa-input-row">
+                <input v-model="expertInput" class="input" placeholder="向专家追问..." @keydown.enter="askExpertQuestion()" :disabled="expertAiLoading">
+                <button class="btn btn-primary btn-sm" @click="askExpertQuestion()" :disabled="expertAiLoading">
+                  <i v-if="expertAiLoading" class="fa-solid fa-spinner fa-spin"></i>
+                  <i v-else class="fa-solid fa-paper-plane"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -124,10 +110,18 @@
 </template>
 
 <script setup>
-import { ref, nextTick, computed } from 'vue'
+import { ref, nextTick, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
+import { useCaseLoader } from '@/composables/useCaseLoader'
+import { useAIChat } from '@/composables/useAIChat'
+import { getStationLabel } from '@ai-sp/shared'
 
 const store = useTrainingStore()
+const route = useRoute()
+const { getCached } = useCaseLoader()
+const { sendMessage, loading: aiLoading } = useAIChat()
+const { sendMessage: sendExpertMessage, loading: expertAiLoading } = useAIChat()
 
 const open = ref(false)
 const activeTab = ref('qa')
@@ -135,89 +129,294 @@ const qaInput = ref('')
 const qaContainer = ref(null)
 const companionImg = '/images/avatars/' + encodeURIComponent('AI学伴.png')
 
-const caseName = computed(() => {
-  const c = store.currentCase
-  if (c && c.patient && c.patient.name) return c.patient.name
-  return ''
-})
+// ── Station context ──
+const stationLabel = computed(() => getStationLabel(route.name) || '')
 
-const suggestedQuestions = [
-  '右上腹痛伴消瘦，需要考虑哪些可能？',
-  '问诊时哪些关键信息不能遗漏？',
-  '需要安排哪些辅助检查？',
-  '腹部超声发现占位后，下一步怎么走？',
-  '这个病例的鉴别诊断思路是什么？',
-  '体格检查应该重点关注哪些体征？',
-  '如果肿瘤标志物正常，能否排除恶性病变？',
-  '这类患者的预后与哪些因素相关？',
-]
-
-const qaMessages = ref([
-  { type: 'ai', text: '你好！我是AI伴学助手，基于专家知识库为你解答。你可以针对这个病例自由提问。' },
-])
-
-const qaResponses = {
-  '右上腹痛伴消瘦，需要考虑哪些可能？': {
-    text: '右上腹痛+消瘦是重要的临床线索，需从局部器官到系统疾病进行分层鉴别：(1)肝脏病变——慢性肝炎活动期、肝占位性病变（良恶性均需考虑）、肝脓肿；(2)胆道系统——慢性胆囊炎、胆道肿瘤；(3)右肾及肾上腺——肾肿瘤、肾上腺占位；(4)结肠肝曲——结肠肿瘤；(5)全身性——慢性感染（结核等）、内分泌代谢病（甲亢、糖尿病）、消化系统肿瘤。关键原则：先穷举，后收敛，不急于锁定单一诊断。',
-    ref: '参考：《内科学（第9版）》消化系统疾病鉴别诊断',
-  },
-  '问诊时哪些关键信息不能遗漏？': {
-    text: '必须覆盖的关键问诊线索：(1)乙肝/丙肝病史——我国肝脏占位性病变最重要的背景因素；(2)饮酒史——量和年限，每日>40g乙醇持续5年以上显著升高风险；(3)家族史——一级亲属中是否有肝脏恶性肿瘤患者；(4)症状演变——疼痛性质、体重变化速度、有无发热/黄疸/腹胀；(5)疫水/血吸虫接触史——部分流行区仍是重要病因；(6)药物史——长期使用损肝药物情况。',
-    ref: '参考：《中国原发性肝癌诊疗指南（2024版）》危险因素评估',
-  },
-  '需要安排哪些辅助检查？': {
-    text: '推荐分层检查路径：第一层（初筛）——肝功能全套+乙肝五项+丙肝抗体+AFP+腹部超声。第二层（精查）——增强CT（三期扫描）或增强MRI（含肝细胞特异性对比剂），这是目前无创诊断的核心手段。第三层（必要时）——超声/CT引导下肝穿刺活检取得病理。同时完善：血常规、凝血功能、肿瘤标志物谱（AFP-L3、DCP/PIVKA-II等补充标志物）。',
-    ref: '参考：《中国原发性肝癌诊疗指南（2024版）》诊断流程',
-  },
-  '腹部超声发现占位后，下一步怎么走？': {
-    text: '超声发现肝脏占位不等于诊断明确。下一步关键步骤：(1)确认超声特征——是否有"晕圈征"、低回声/高回声、边界是否清楚——这对鉴别良恶性有重要提示；(2)必须完成增强影像（增强CT或增强MRI），观察"快进快出"强化特征——这是肝细胞癌的典型影像学特征；(3)同时查AFP等肿瘤标志物辅助判断；(4)综合分析：影像特征+标志物+背景肝病（乙肝/肝硬化）=临床诊断。部分典型病例仅凭影像学即可达到临床诊断标准，无需活检。',
-    ref: '参考：LI-RADS分级系统 + 中国肝癌诊疗指南影像诊断路径',
-  },
-  '这个病例的鉴别诊断思路是什么？': {
-    text: '肝脏占位的三个核心鉴别方向：(1)恶性——肝细胞癌、胆管细胞癌、转移性肝癌、混合型肝癌；(2)良性——肝血管瘤（最常见，增强有特征性"填充式"强化）、局灶性结节性增生（FNH，中央瘢痕为特征）、肝腺瘤（与口服避孕药相关）；(3)非肿瘤性——肝硬化再生结节、肝脓肿、局灶性脂肪浸润/缺失。鉴别的核心工具是增强影像的"血流动力学特征"+背景肝病状态+肿瘤标志物。',
-    ref: '参考：LI-RADS（Liver Imaging Reporting and Data System）v2018',
-  },
-  '体格检查应该重点关注哪些体征？': {
-    text: '三项必查：(1)肝脏触诊——右锁骨中线肋缘下触诊，注意大小、质地（硬/韧/软）、表面（光滑/结节感）、压痛。正常成人肝下界一般在肋缘下不可触及；(2)移动性浊音——提示腹水，是肝功能失代偿或肿瘤腹腔转移的重要体征；(3)慢性肝病体征——蜘蛛痣（胸前、颈部、上肢）、肝掌（大小鱼际红斑）、巩膜黄染、男性乳房发育。这些体征提示存在背景肝病的可能性。',
-    ref: '参考：《实用内科学（第16版）》腹部查体与慢性肝病体征',
-  },
-  '如果肿瘤标志物正常，能否排除恶性病变？': {
-    text: '不能。这是一个重要的临床认识：(1)AFP诊断肝细胞癌的灵敏度约为60%~70%，即约1/3的肝细胞癌患者AFP始终正常；(2)胆管细胞癌和转移性肝癌更常见AFP正常或不显著升高；(3)小肝癌（<3cm）中AFP阴性比例更高；(4)因此AFP仅作为辅助参考，不能作为排除依据——影像学仍然是诊断的核心支柱。AFP-L3和DCP（异常凝血酶原）可作为补充标志物，提高诊断敏感性。',
-    ref: '参考：临床肿瘤学关键认知——肿瘤标志物的诊断局限性',
-  },
-  '这类患者的预后与哪些因素相关？': {
-    text: '预后评估五要素：(1)肿瘤分期——大小、数量、有无血管侵犯或肝外转移，这是最核心的预后因子；(2)肝功能储备——Child-Pugh分级，决定了可耐受的治疗手段范围；(3)根治性治疗机会——能否手术切除或消融/肝移植，早期发现是改善预后的最大杠杆；(4)背景肝病控制——乙肝/丙肝抗病毒治疗、戒酒等；(5)综合治疗反应——TACE、靶向、免疫治疗的疗效。我国通过高危人群定期筛查（每6个月超声+AFP），已逐步提高早诊率。',
-    ref: '参考：BCLC分期系统 + 中国肝癌诊疗指南预后分层',
-  },
+// ── Case info helper ──
+function getCaseInfo() {
+  const c = store.currentCase || getCached(store.currentCase?.caseId || store.currentCase?.id)
+  if (!c) return null
+  const basic = c.basic || c
+  const p = basic.patient || basic
+  return {
+    name: p.name || '',
+    age: p.age || '',
+    gender: p.gender || (basic.gender || ''),
+    chiefComplaint: basic.chiefComplaint || c.chiefComplaint || '',
+    disease: basic.disease || c.disease || '',
+    specialty: basic.specialty || c.specialty || '',
+  }
 }
 
-function askQuestion(q) {
+// ── Suggested questions per station ──
+const stationQuestionMap = {
+  historyTaking: [
+    '接下来应该问哪些问题？',
+    '哪些关键病史信息不能遗漏？',
+    '如何根据已有信息缩小鉴别诊断范围？',
+    '这个症状的可能病因有哪些？',
+  ],
+  physicalExam: [
+    '应该重点检查哪些体征？',
+    '这些体征的临床意义是什么？',
+    '如何通过体格检查进一步鉴别诊断？',
+  ],
+  ancillaryTests: [
+    '需要安排哪些辅助检查？',
+    '这些检查项目的选择依据是什么？',
+    '如何解读这些检查结果？',
+  ],
+  diagnosis: [
+    '最可能的诊断是什么？',
+    '需要与哪些疾病进行鉴别？',
+    '诊断依据有哪些？',
+  ],
+  treatmentPlan: [
+    '该病例的治疗原则是什么？',
+    '有哪些可选的治疗方案？',
+    '如何制定个体化的治疗计划？',
+  ],
+  medicalRecord: [
+    '病历书写的要点有哪些？',
+    '如何规范书写入院记录？',
+  ],
+  caseAnalysis: [
+    '这个病例的临床特点是什么？',
+    '诊断思路应该如何展开？',
+    '有哪些需要特别注意的陷阱？',
+  ],
+  humanisticComm: [
+    '如何与患者进行有效沟通？',
+    '沟通中需要注意哪些人文关怀要点？',
+  ],
+  mentalExam: [
+    '精神检查的要点有哪些？',
+    '如何评估患者的精神状态？',
+  ],
+}
+
+const defaultQuestions = [
+  '这个病例的关键点是什么？',
+  '我应该从哪些方面入手？',
+  '有哪些容易遗漏的地方？',
+]
+
+const suggestedQuestions = computed(() => {
+  return stationQuestionMap[route.name] || defaultQuestions
+})
+
+// ── Build system prompt from case + station + dialogue context ──
+function buildSystemPrompt() {
+  const info = getCaseInfo()
+  const parts = []
+
+  parts.push('你是一位临床教学助手，正在帮助医学学员进行临床思维训练。')
+
+  if (info) {
+    parts.push(`当前病例信息：`)
+    if (info.name) parts.push(`- 患者：${info.name}，${info.gender || '未知'}，${info.age || '未知'}岁`)
+    if (info.chiefComplaint) parts.push(`- 主诉：${info.chiefComplaint}`)
+    if (info.disease) parts.push(`- 疾病：${info.disease}`)
+    if (info.specialty) parts.push(`- 科室：${info.specialty}`)
+  }
+
+  if (stationLabel.value) {
+    parts.push(`当前考站：${stationLabel.value}`)
+  }
+
+  // Add recent dialogue context from training session
+  const session = store.trainingSession
+  if (session) {
+    const recentMsgs = []
+    for (const key of Object.keys(session)) {
+      const data = session[key]
+      if (data && data.messages && Array.isArray(data.messages)) {
+        recentMsgs.push(...data.messages)
+      }
+    }
+    if (recentMsgs.length > 0) {
+      const lastMsgs = recentMsgs.slice(-8)
+      parts.push('学员与SP的最近对话记录：')
+      for (const m of lastMsgs) {
+        const role = m.role === 'user' ? '学员' : 'SP'
+        parts.push(`${role}：${m.content}`)
+      }
+    }
+  }
+
+  parts.push('请用中文回答学员的问题，语言简洁专业，结合病例信息给出具体建议。')
+  return parts.join('\n')
+}
+
+// ── Chat messages ──
+const qaMessages = ref([
+  { type: 'ai', text: '你好！我是AI伴学助手，可以针对当前病例和考站为你解答。请随时提问。' },
+])
+
+async function askQuestion(q) {
   const question = typeof q === 'string' ? q : qaInput.value.trim()
-  if (!question) return
+  if (!question || aiLoading.value) return
+
   qaMessages.value.push({ type: 'user', text: question })
   qaInput.value = ''
-  const answer = qaResponses[question]
-  if (answer) {
-    setTimeout(() => { qaMessages.value.push({ type: 'ai', text: answer.text, ref: answer.ref }); scrollToBottom() }, 600)
-  } else {
-    setTimeout(() => {
-      qaMessages.value.push({ type: 'ai', text: '这是一个好问题。基于病例上下文和专家知识库，建议从病史特点、体格检查、辅助检查三个维度综合分析。如需更详细解答，请咨询带教老师。' })
-      scrollToBottom()
-    }, 800)
-  }
+  scrollToBottom()
+
+  const systemPrompt = buildSystemPrompt()
+  const llmMessages = qaMessages.value.map(m => ({
+    role: m.type === 'user' ? 'user' : 'assistant',
+    content: m.text
+  }))
+
+  const result = await sendMessage(llmMessages, systemPrompt)
+  qaMessages.value.push({ type: 'ai', text: result.content })
+  scrollToBottom()
 }
 
 function scrollToBottom() {
   nextTick(() => { if (qaContainer.value) qaContainer.value.scrollTop = qaContainer.value.scrollHeight })
 }
 
-const expertCover = '/images/expert-cover.png'
-const expertPhoto = '/images/expert-photo.webp'
+// ── Expert Review ──
+const expertData = ref(null)
+const expertLoading = ref(false)
+const reviewGenerating = ref(false)
+const reviewContent = ref('')
+const expertMessages = ref([])
+const expertInput = ref('')
+const expertQaContainer = ref(null)
 
-function playVideo() {
-  // 演示：点击视频封面提示
-  alert('专家课程视频播放（演示版本）')
+const renderedReview = computed(() => {
+  if (!reviewContent.value) return ''
+  return reviewContent.value
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^|$/g, '<p>')
+    .replace(/<p><\/p>/g, '')
+    .replace(/^<p>/, '<p>')
+    .replace(/(?:^|\n)#{1,3}\s*(.+?)(?:\n|$)/g, (_, title) => `<h4 style="font-weight:600;margin:14px 0 6px;color:#1f2937;">${title}</h4>`)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/-\s(.+?)(?=<br>|<\/p>)/g, '<li>$1</li>')
+})
+
+async function loadExpertData() {
+  if (expertData.value || expertLoading.value) return
+  expertLoading.value = true
+  try {
+    const caseData = store.currentCase || getCached(store.currentCase?.caseId || store.currentCase?.id)
+    const caseId = caseData?.caseId || store.currentCase?.case_id || store.currentCase?.id
+    if (!caseId) { expertLoading.value = false; return }
+
+    // Try cache first
+    if (caseData?.expert) {
+      expertData.value = caseData.expert
+      expertLoading.value = false
+      return
+    }
+
+    // Fetch expert data directly
+    const resp = await fetch(`/data/cases/${caseId}-expert.json`)
+    if (resp.ok) {
+      const json = await resp.json()
+      if (json.expertEnabled || json.enabled) {
+        expertData.value = {
+          expertName: json.expertName || '',
+          expertTitle: json.expertTitle || '',
+          expertTags: json.expertTags || [],
+          expertKB: json.expertKB || '',
+          reviewTitle: json.reviewTitle || ''
+        }
+      }
+    }
+  } catch { /* no expert data available */ }
+  expertLoading.value = false
 }
+
+async function generateExpertReview() {
+  if (!expertData.value || reviewGenerating.value) return
+  reviewGenerating.value = true
+
+  const info = getCaseInfo()
+  const parts = ['你是一位顶级临床专家，正在为医学学员撰写教学点评。']
+
+  if (info) {
+    parts.push(`病例信息：${info.name}，${info.gender || ''}，${info.age || ''}岁，主诉：${info.chiefComplaint}，疾病：${info.disease}`)
+  }
+
+  if (expertData.value.expertName) {
+    parts.push(`点评专家：${expertData.value.expertName}（${expertData.value.expertTitle}）`)
+  }
+
+  if (expertData.value.expertKB) {
+    parts.push(`专家知识库（必须基于此内容进行点评）：\n${expertData.value.expertKB}`)
+  }
+
+  // Add student's training context
+  const session = store.trainingSession
+  if (session) {
+    const recentMsgs = []
+    for (const key of Object.keys(session)) {
+      const data = session[key]
+      if (data && data.messages && Array.isArray(data.messages)) {
+        recentMsgs.push(...data.messages)
+      }
+    }
+    if (recentMsgs.length > 0) {
+      const lastMsgs = recentMsgs.slice(-10)
+      parts.push('学员操作记录（据此给出针对性点评）：')
+      for (const m of lastMsgs) {
+        const role = m.role === 'user' ? '学员' : 'SP'
+        parts.push(`${role}：${m.content}`)
+      }
+    }
+  }
+
+  parts.push('请撰写一篇结构清晰的教学点评，包括：学员表现分析、关键知识点讲解、改进建议。用中文输出，语言专业但易读。')
+
+  const result = await sendExpertMessage(
+    [{ role: 'user', content: '请为这个病例撰写专家教学点评。' }],
+    parts.join('\n'),
+    { temperature: 0.5, maxTokens: 3000 }
+  )
+
+  reviewContent.value = result.content
+  reviewGenerating.value = false
+}
+
+async function askExpertQuestion() {
+  const q = expertInput.value.trim()
+  if (!q || expertAiLoading.value) return
+
+  expertMessages.value.push({ type: 'user', text: q })
+  expertInput.value = ''
+  scrollExpertToBottom()
+
+  const systemPrompt = [
+    '你是一位临床专家，正在回答学员关于病例点评的追问。',
+    `之前的点评内容：${reviewContent.value}`,
+    `专家知识库：${expertData.value?.expertKB || ''}`,
+    '请基于点评内容和知识库，用中文简洁回答学员的问题。'
+  ].join('\n')
+
+  const llmMessages = expertMessages.value.map(m => ({
+    role: m.type === 'user' ? 'user' : 'assistant',
+    content: m.text
+  }))
+
+  const result = await sendExpertMessage(llmMessages, systemPrompt)
+  expertMessages.value.push({ type: 'ai', text: result.content })
+  scrollExpertToBottom()
+}
+
+function scrollExpertToBottom() {
+  nextTick(() => {
+    if (expertQaContainer.value) expertQaContainer.value.scrollTop = expertQaContainer.value.scrollHeight
+  })
+}
+
+// Watch tab switch to load expert data
+watch(() => activeTab.value, (tab) => {
+  if (tab === 'commentary') loadExpertData()
+})
 
 defineExpose({ open })
 </script>
@@ -281,7 +480,19 @@ defineExpose({ open })
 .qa-msg { max-width: 90%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
 .qa-msg.user { align-self: flex-end; background: #ecf5ff; color: #1f2937; }
 .qa-msg.ai { align-self: flex-start; background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; }
-.qa-ref { font-size: 11px; color: #409EFF; margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb; }
+.qa-msg.typing { padding: 14px 18px; }
+.typing-dots { display: flex; gap: 4px; align-items: center; }
+.typing-dots i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #c0c4cc; display: inline-block;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots i:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
 
 .qa-input-row { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
 .qa-input-row .input {
@@ -293,42 +504,28 @@ defineExpose({ open })
 
 .commentary-tab { padding: 0 !important; }
 
-.commentary-single { display: flex; flex-direction: column; }
+.commentary-single { display: flex; flex-direction: column; height: 100%; }
 
-/* ─── 视频区 ─── */
-.commentary-video {
-  position: relative; cursor: pointer; overflow: hidden;
-  border-radius: 0; aspect-ratio: 16/9; background: #0f172a;
-}
-.video-cover { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-.commentary-video:hover .video-cover { transform: scale(1.03); }
-.video-overlay {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.35); transition: background .2s;
-}
-.commentary-video:hover .video-overlay { background: rgba(0,0,0,0.25); }
-.play-btn {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center;
-  transition: transform .2s;
-}
-.play-btn i { font-size: 20px; color: #2563eb; margin-left: 2px; }
-.commentary-video:hover .play-btn { transform: scale(1.08); }
-.video-duration { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 10px; }
+/* ─── 无专家点评 ─── */
+.expert-empty { text-align: center; padding: 40px 24px; }
+.expert-empty-icon { font-size: 36px; color: #d1d5db; margin-bottom: 12px; }
+.expert-empty-title { font-size: 14px; color: #6b7280; margin-bottom: 6px; font-weight: 500; }
+.expert-empty-desc { font-size: 12px; color: #9ca3af; line-height: 1.6; }
 
 /* ─── 专家信息 ─── */
 .expert-profile {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 16px; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb; flex-shrink: 0;
 }
-.expert-avatar {
-  width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
-  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex-shrink: 0;
+.expert-avatar-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #dbeafe; color: #2563eb;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
 }
 .expert-meta { min-width: 0; }
-.expert-name { font-size: 16px; font-weight: 700; color: #1f2937; }
+.expert-name { font-size: 15px; font-weight: 700; color: #1f2937; }
 .expert-dept { font-size: 11px; color: #6b7280; margin-top: 2px; }
 .expert-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 .expert-tag {
@@ -337,45 +534,25 @@ defineExpose({ open })
 }
 
 /* ─── 点评正文 ─── */
-.commentary-article { padding: 16px; }
+.commentary-article {
+  padding: 16px; overflow-y: auto; flex: 1; min-height: 0;
+}
 .article-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 14px; line-height: 1.4; }
 .article-body { font-size: 13px; line-height: 1.8; color: #4b5563; }
-.article-body p { margin-bottom: 10px; }
 
-.article-section {
-  margin-top: 16px; padding-top: 14px; border-top: 1px solid #f3f4f6;
+/* ─── 追问区域 ─── */
+.expert-qa-section {
+  border-top: 1px solid #e5e7eb; padding: 12px 16px; flex-shrink: 0;
+  display: flex; flex-direction: column; max-height: 200px;
 }
-.article-section h4 { font-size: 13px; font-weight: 600; color: #1f2937; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-.article-section h4 i { color: #2563eb; font-size: 12px; width: 16px; text-align: center; }
+.expert-qa-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; min-height: 40px; }
+.expert-qa-section .qa-input-row { border-top: none; padding-top: 0; }
 
-/* ─── 时间轴表 ─── */
-.timeline-table {
-  background: #f8fafc; border-radius: 8px; overflow: hidden;
-  border: 1px solid #e5e7eb;
+/* ─── Spinner ─── */
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #e5e7eb; border-top-color: #409EFF;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
 }
-.tl-row {
-  display: flex; align-items: flex-start; padding: 8px 12px;
-  border-bottom: 1px solid #e5e7eb; font-size: 12px;
-}
-.tl-row:last-child { border-bottom: none; }
-.tl-time {
-  width: 70px; flex-shrink: 0; font-weight: 700; color: #2563eb;
-  font-family: monospace;
-}
-.tl-act { flex: 1; color: #4b5563; }
-
-/* ─── 关键指标 ─── */
-.key-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.metric-item {
-  text-align: center; padding: 12px 6px; background: #f8fafc;
-  border-radius: 8px; border: 1px solid #e5e7eb;
-}
-.metric-val { font-size: 22px; font-weight: 800; color: #2563eb; line-height: 1.2; }
-.metric-val span { font-size: 12px; font-weight: 500; color: #6b7280; }
-.metric-label { font-size: 10px; color: #6b7280; margin-top: 3px; line-height: 1.3; }
-
-/* ─── 教学要点 ─── */
-.teaching-points { margin: 0; padding-left: 18px; }
-.teaching-points li { font-size: 12px; margin-bottom: 5px; line-height: 1.6; }
-.teaching-points li::marker { color: #2563eb; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
