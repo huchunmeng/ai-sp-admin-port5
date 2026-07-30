@@ -68,11 +68,13 @@
   "symptom": "",
   "score_sheet_template": "TPL-STD",
   "teaching_phase": "R1",
-  "savedAt": "2026-06-17T02:08:18.696Z",
+  "savedAt": "2026-07-30T01:59:54.080Z",
   "personality": {
     "expressiveness": "偏内敛",
     "sensitivity": "普通敏感度",
     "resilience": "普通恢复力"
   },
-  "communication_target": "patient"
+  "communication_target": "patient",
+  "source": "院士精讲",
+  "caseLevel": "疑难病例"
 }

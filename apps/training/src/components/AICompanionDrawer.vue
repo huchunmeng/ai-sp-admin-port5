@@ -59,7 +59,10 @@
           <div v-else class="commentary-single">
             <!-- 专家信息 -->
             <div class="expert-profile">
-              <div class="expert-avatar-icon"><i class="fa-solid fa-user-tie"></i></div>
+              <div class="expert-avatar-icon">
+                <img v-if="expertData.expertAvatar" :src="expertData.expertAvatar" @error="e => e.target.style.display='none'" />
+                <i v-else class="fa-solid fa-user-tie"></i>
+              </div>
               <div class="expert-meta">
                 <div class="expert-name">{{ expertData.expertName }}</div>
                 <div class="expert-dept">{{ expertData.expertTitle }}</div>
@@ -69,33 +72,34 @@
               </div>
             </div>
 
-            <!-- 点评正文 -->
-            <div class="commentary-article">
-              <h3 class="article-title">{{ expertData.reviewTitle || '专家教学点评' }}</h3>
-              <div class="article-body">
-                <div v-if="reviewGenerating" style="text-align:center;padding:20px;">
-                  <span class="typing-dots"><i></i><i></i><i></i></span>
-                  <p style="color:var(--text-tertiary);font-size:12px;">AI 正在生成点评...</p>
-                </div>
-                <div v-else-if="reviewContent" v-html="renderedReview"></div>
-                <div v-else style="text-align:center;padding:20px;">
-                  <button class="btn btn-primary btn-sm" @click="generateExpertReview">生成专家点评</button>
-                </div>
+            <!-- 统一对话区 -->
+            <div class="expert-chat">
+              <div v-if="expertMessages.length === 0" class="suggested-qs">
+                <button v-for="q in expertSuggestedQuestions" :key="q" class="suggested-q" @click="askExpertQuestion(q)">{{ q }}</button>
               </div>
-            </div>
-
-            <!-- 追问区域 -->
-            <div v-if="reviewContent" class="expert-qa-section">
-              <div class="expert-qa-messages" ref="expertQaContainer">
+              <div class="expert-chat-messages" ref="expertQaContainer">
                 <div v-for="(msg, i) in expertMessages" :key="i" :class="['qa-msg', msg.type]">
-                  <span v-if="msg.type === 'ai'">🤖 </span>{{ msg.text }}
+                  <div class="qa-msg-avatar" v-if="msg.type === 'ai'">
+                    <img v-if="expertData.expertAvatar" :src="expertData.expertAvatar" @error="e => e.target.style.display='none'" />
+                    <i v-else class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div class="qa-msg-content">
+                    <div class="qa-msg-bubble" v-html="msg.html || msg.text"></div>
+                    <div v-if="msg.type === 'ai' && msg.followUps && msg.followUps.length && i === expertMessages.length - 1" class="followup-chips">
+                      <button v-for="fq in msg.followUps" :key="fq" class="followup-chip" @click="askExpertQuestion(fq)">{{ fq }}</button>
+                    </div>
+                  </div>
                 </div>
                 <div v-if="expertAiLoading" class="qa-msg ai typing">
-                  <span class="typing-dots"><i></i><i></i><i></i></span>
+                  <div class="qa-msg-avatar">
+                    <img v-if="expertData.expertAvatar" :src="expertData.expertAvatar" @error="e => e.target.style.display='none'" />
+                    <i v-else class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div class="qa-msg-bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div>
                 </div>
               </div>
               <div class="qa-input-row">
-                <input v-model="expertInput" class="input" placeholder="向专家追问..." @keydown.enter="askExpertQuestion()" :disabled="expertAiLoading">
+                <input v-model="expertInput" class="input" placeholder="向专家提问..." @keydown.enter="askExpertQuestion()" :disabled="expertAiLoading">
                 <button class="btn btn-primary btn-sm" @click="askExpertQuestion()" :disabled="expertAiLoading">
                   <i v-if="expertAiLoading" class="fa-solid fa-spinner fa-spin"></i>
                   <i v-else class="fa-solid fa-paper-plane"></i>
@@ -115,13 +119,14 @@ import { useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
 import { useAIChat } from '@/composables/useAIChat'
+import { useExpertAgent } from '@/composables/useExpertAgent'
 import { getStationLabel } from '@ai-sp/shared'
 
 const store = useTrainingStore()
 const route = useRoute()
 const { getCached } = useCaseLoader()
 const { sendMessage, loading: aiLoading } = useAIChat()
-const { sendMessage: sendExpertMessage, loading: expertAiLoading } = useAIChat()
+const { askExpert, expertAiLoading } = useExpertAgent()
 
 const open = ref(false)
 const activeTab = ref('qa')
@@ -279,24 +284,83 @@ function scrollToBottom() {
 // ── Expert Review ──
 const expertData = ref(null)
 const expertLoading = ref(false)
-const reviewGenerating = ref(false)
-const reviewContent = ref('')
 const expertMessages = ref([])
 const expertInput = ref('')
 const expertQaContainer = ref(null)
 
-const renderedReview = computed(() => {
-  if (!reviewContent.value) return ''
-  return reviewContent.value
+const expertQuestionMap = {
+  historyTaking: [
+    '请对我的问诊过程进行综合点评',
+    '我的问诊思路有什么需要改进的地方？',
+    '这个病例的病史采集要点是什么？',
+  ],
+  physicalExam: [
+    '请对我的体格检查进行综合点评',
+    '我的查体过程有哪些遗漏？',
+    '这个病例的查体重点是什么？',
+  ],
+  ancillaryTests: [
+    '请对我的辅助检查选择进行综合点评',
+    '我选择的检查项目是否合理？',
+    '这个病例的辅助检查策略是什么？',
+  ],
+  diagnosis: [
+    '请对我的诊断过程进行综合点评',
+    '我的诊断和鉴别诊断是否完善？',
+    '这个病例的诊断思路应该如何展开？',
+  ],
+  preliminaryDiag: [
+    '请对我的初步诊断进行综合点评',
+    '我的诊断和鉴别诊断是否完善？',
+    '这个病例的诊断思路应该如何展开？',
+  ],
+  treatmentPlan: [
+    '请对我的治疗方案进行综合点评',
+    '我的治疗计划是否合理完善？',
+    '这个病例的治疗要点是什么？',
+  ],
+  medicalRecord: [
+    '请对我的病历书写进行综合点评',
+    '我的病历有哪些需要完善的地方？',
+    '规范病历书写的要点是什么？',
+  ],
+  caseAnalysis: [
+    '请对我的病例分析进行综合点评',
+    '我的诊断思路有什么问题？',
+    '这个病例的鉴别诊断要点是什么？',
+  ],
+  humanisticComm: [
+    '请对我的沟通表现进行综合点评',
+    '我在人文关怀方面有哪些不足？',
+    '这个病例的医患沟通要点是什么？',
+  ],
+  mentalExam: [
+    '请对我的精神检查进行综合点评',
+    '我的精神检查有什么遗漏？',
+    '这个病例的精神检查要点是什么？',
+  ],
+}
+
+const defaultExpertQuestions = [
+  '请对我的操作进行综合点评',
+  '在这个病例中我有哪些不足？',
+  '这个病例的核心临床要点是什么？',
+]
+
+const expertSuggestedQuestions = computed(() => {
+  return expertQuestionMap[route.name] || defaultExpertQuestions
+})
+
+function renderMsgText(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/\n\n/g, '</p><p>')
     .replace(/\n/g, '<br>')
     .replace(/^|$/g, '<p>')
     .replace(/<p><\/p>/g, '')
-    .replace(/^<p>/, '<p>')
-    .replace(/(?:^|\n)#{1,3}\s*(.+?)(?:\n|$)/g, (_, title) => `<h4 style="font-weight:600;margin:14px 0 6px;color:#1f2937;">${title}</h4>`)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/-\s(.+?)(?=<br>|<\/p>)/g, '<li>$1</li>')
-})
+    .replace(/(?:^|\n)#{1,3}\s*(.+?)(?:\n|$)/g, (_, title) => `<h4 style="font-weight:600;margin:14px 0 6px;color:#1f2937;">${title}</h4>`)
+}
 
 async function loadExpertData() {
   if (expertData.value || expertLoading.value) return
@@ -321,6 +385,7 @@ async function loadExpertData() {
         expertData.value = {
           expertName: json.expertName || '',
           expertTitle: json.expertTitle || '',
+          expertAvatar: json.expertAvatar || '',
           expertTags: json.expertTags || [],
           expertKB: json.expertKB || '',
           reviewTitle: json.reviewTitle || ''
@@ -331,79 +396,33 @@ async function loadExpertData() {
   expertLoading.value = false
 }
 
-async function generateExpertReview() {
-  if (!expertData.value || reviewGenerating.value) return
-  reviewGenerating.value = true
+async function askExpertQuestion(q) {
+  const question = typeof q === 'string' ? q : expertInput.value.trim()
+  if (!question || expertAiLoading.value || !expertData.value) return
 
-  const info = getCaseInfo()
-  const parts = ['你是一位顶级临床专家，正在为医学学员撰写教学点评。']
-
-  if (info) {
-    parts.push(`病例信息：${info.name}，${info.gender || ''}，${info.age || ''}岁，主诉：${info.chiefComplaint}，疾病：${info.disease}`)
-  }
-
-  if (expertData.value.expertName) {
-    parts.push(`点评专家：${expertData.value.expertName}（${expertData.value.expertTitle}）`)
-  }
-
-  if (expertData.value.expertKB) {
-    parts.push(`专家知识库（必须基于此内容进行点评）：\n${expertData.value.expertKB}`)
-  }
-
-  // Add student's training context
-  const session = store.trainingSession
-  if (session) {
-    const recentMsgs = []
-    for (const key of Object.keys(session)) {
-      const data = session[key]
-      if (data && data.messages && Array.isArray(data.messages)) {
-        recentMsgs.push(...data.messages)
-      }
-    }
-    if (recentMsgs.length > 0) {
-      const lastMsgs = recentMsgs.slice(-10)
-      parts.push('学员操作记录（据此给出针对性点评）：')
-      for (const m of lastMsgs) {
-        const role = m.role === 'user' ? '学员' : 'SP'
-        parts.push(`${role}：${m.content}`)
-      }
-    }
-  }
-
-  parts.push('请撰写一篇结构清晰的教学点评，包括：学员表现分析、关键知识点讲解、改进建议。用中文输出，语言专业但易读。')
-
-  const result = await sendExpertMessage(
-    [{ role: 'user', content: '请为这个病例撰写专家教学点评。' }],
-    parts.join('\n'),
-    { temperature: 0.5, maxTokens: 3000 }
-  )
-
-  reviewContent.value = result.content
-  reviewGenerating.value = false
-}
-
-async function askExpertQuestion() {
-  const q = expertInput.value.trim()
-  if (!q || expertAiLoading.value) return
-
-  expertMessages.value.push({ type: 'user', text: q })
-  expertInput.value = ''
+  expertMessages.value.push({ type: 'user', text: question })
+  if (typeof q === 'string') expertInput.value = ''
+  else expertInput.value = ''
   scrollExpertToBottom()
 
-  const systemPrompt = [
-    '你是一位临床专家，正在回答学员关于病例点评的追问。',
-    `之前的点评内容：${reviewContent.value}`,
-    `专家知识库：${expertData.value?.expertKB || ''}`,
-    '请基于点评内容和知识库，用中文简洁回答学员的问题。'
-  ].join('\n')
+  const response = await askExpert(
+    expertData.value,
+    getCaseInfo(),
+    stationLabel.value,
+    route.name,
+    store.trainingSession,
+    expertMessages.value,
+    question
+  )
 
-  const llmMessages = expertMessages.value.map(m => ({
-    role: m.type === 'user' ? 'user' : 'assistant',
-    content: m.text
-  }))
-
-  const result = await sendExpertMessage(llmMessages, systemPrompt)
-  expertMessages.value.push({ type: 'ai', text: result.content })
+  if (response) {
+    expertMessages.value.push({
+      type: 'ai',
+      text: response.text,
+      html: renderMsgText(response.text),
+      followUps: response.followUps,
+    })
+  }
   scrollExpertToBottom()
 }
 
@@ -477,10 +496,20 @@ defineExpose({ open })
 .suggested-q:hover { background: #d9ecff; }
 
 .qa-messages { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; margin-bottom: 12px; min-height: 160px; }
-.qa-msg { max-width: 90%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
-.qa-msg.user { align-self: flex-end; background: #ecf5ff; color: #1f2937; }
-.qa-msg.ai { align-self: flex-start; background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; }
-.qa-msg.typing { padding: 14px 18px; }
+.qa-msg { max-width: 90%; display: flex; gap: 8px; align-items: flex-start; }
+.qa-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.qa-msg.ai { align-self: flex-start; }
+.qa-msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: #dbeafe; color: #2563eb;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; overflow: hidden;
+}
+.qa-msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.qa-msg-bubble { padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
+.qa-msg.user .qa-msg-bubble { background: #ecf5ff; color: #1f2937; }
+.qa-msg.ai .qa-msg-bubble { background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; }
+.qa-msg.typing .qa-msg-bubble { padding: 12px 16px; }
 .typing-dots { display: flex; gap: 4px; align-items: center; }
 .typing-dots i {
   width: 6px; height: 6px; border-radius: 50%;
@@ -522,8 +551,9 @@ defineExpose({ open })
   width: 48px; height: 48px; border-radius: 50%;
   background: #dbeafe; color: #2563eb;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
+  font-size: 20px; flex-shrink: 0; overflow: hidden;
 }
+.expert-avatar-icon img { width: 100%; height: 100%; object-fit: cover; }
 .expert-meta { min-width: 0; }
 .expert-name { font-size: 15px; font-weight: 700; color: #1f2937; }
 .expert-dept { font-size: 11px; color: #6b7280; margin-top: 2px; }
@@ -533,20 +563,21 @@ defineExpose({ open })
   background: #dbeafe; color: #1d4ed8; font-weight: 500;
 }
 
-/* ─── 点评正文 ─── */
-.commentary-article {
-  padding: 16px; overflow-y: auto; flex: 1; min-height: 0;
-}
-.article-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 14px; line-height: 1.4; }
-.article-body { font-size: 13px; line-height: 1.8; color: #4b5563; }
+/* ─── 专家点评统一对话区 ─── */
+.expert-chat { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.expert-chat .suggested-qs { padding: 10px 16px; flex-shrink: 0; }
+.expert-chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 0 16px; min-height: 80px; }
+.expert-chat .qa-input-row { padding: 8px 16px; flex-shrink: 0; }
 
-/* ─── 追问区域 ─── */
-.expert-qa-section {
-  border-top: 1px solid #e5e7eb; padding: 12px 16px; flex-shrink: 0;
-  display: flex; flex-direction: column; max-height: 200px;
+.qa-msg-content { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.followup-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.followup-chip {
+  font-size: 11px; padding: 4px 10px; border-radius: 12px;
+  background: #f0f5ff; color: #409EFF; cursor: pointer;
+  border: 1px solid #d9ecff; font-family: inherit; transition: .15s;
+  white-space: nowrap;
 }
-.expert-qa-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; min-height: 40px; }
-.expert-qa-section .qa-input-row { border-top: none; padding-top: 0; }
+.followup-chip:hover { background: #d9ecff; border-color: #b3d8ff; }
 
 /* ─── Spinner ─── */
 .spinner {

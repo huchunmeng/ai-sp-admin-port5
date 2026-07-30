@@ -25,6 +25,10 @@
             <input class="input" :value="model.expertTitle" @input="updateField('expertTitle', $event.target.value)" placeholder="如：东南大学附属中大医院 · 介入与血管外科">
           </div>
           <div class="info-item">
+            <label>专家头像URL</label>
+            <input class="input" :value="model.expertAvatar" @input="updateField('expertAvatar', $event.target.value)" placeholder="如：/images/experts/liuchao.png 或 https://...">
+          </div>
+          <div class="info-item">
             <label>点评标题</label>
             <input class="input" :value="model.reviewTitle" @input="updateField('reviewTitle', $event.target.value)" placeholder="如：Graves病鉴别诊断中的关键线索">
           </div>
@@ -50,7 +54,7 @@
 
 <script setup>
 const props = defineProps({
-  model: { type: Object, default: () => ({ enabled: false, expertName: '', expertTitle: '', expertTags: [], expertKB: '', reviewTitle: '' }) }
+  model: { type: Object, default: () => ({ enabled: false, expertName: '', expertTitle: '', expertAvatar: '', expertTags: [], expertKB: '', reviewTitle: '' }) }
 })
 
 const emit = defineEmits(['update:model'])

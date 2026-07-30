@@ -10,6 +10,7 @@
         <div class="filter-item"><label>专业</label><SearchSelect v-model="filters.specialty" :options="availableSpecialties" placeholder="全部" @change="onSpecialtyChange" :disabled="!filters.teaching_phase" /></div>
         <div class="filter-item"><label>分类</label><SearchSelect v-model="filters.category" :options="availableCategories" placeholder="全部" @change="onCategoryChange" :disabled="!filters.specialty" /></div>
         <div class="filter-item"><label>病种</label><SearchSelect v-model="filters.disease" :options="availableDiseases" placeholder="全部" :disabled="!filters.category" /></div>
+        <div class="filter-item"><label>病例分级</label><select class="select" v-model="filters.caseLevel"><option value="">全部</option><option>基础病例</option><option>高阶病例</option><option>疑难病例</option></select></div>
       </div>
       <div class="filter-row mt-4">
         <div class="filter-item"><label>AI质检</label><select class="select" v-model="filters.ai_quality_status"><option value="">全部</option><option>待质检</option><option>已通过</option><option>未通过</option></select></div>
@@ -39,6 +40,7 @@
               <th v-if="visibleColumns.includes('specialty')">专业</th>
               <th v-if="visibleColumns.includes('category')">分类</th>
               <th v-if="visibleColumns.includes('disease')">病种</th>
+              <th v-if="visibleColumns.includes('caseLevel')">病例分级</th>
               <th v-if="visibleColumns.includes('version')">版本</th>
               <th v-if="visibleColumns.includes('ai_quality_status')">AI质检</th>
               <th v-if="visibleColumns.includes('editor_review_status')">编辑审核</th>
@@ -61,6 +63,7 @@
               <td v-if="visibleColumns.includes('specialty')">{{ item.specialty }}</td>
               <td v-if="visibleColumns.includes('category')">{{ item.category }}</td>
               <td v-if="visibleColumns.includes('disease')">{{ item.disease }}</td>
+              <td v-if="visibleColumns.includes('caseLevel')"><span class="badge" :class="caseLevelBadgeClass(item.caseLevel)">{{ item.caseLevel || '—' }}</span></td>
               <td v-if="visibleColumns.includes('version')"><a href="#" @click.prevent="showVersionHistory(item)" style="color:var(--primary);text-decoration:none; cursor:pointer">{{ item.version }}</a></td>
               <td v-if="visibleColumns.includes('ai_quality_status')"><span class="badge" :class="statusBadgeClass(item.ai_quality_status)">{{ item.ai_quality_status }}</span></td>
               <td v-if="visibleColumns.includes('editor_review_status')"><span class="badge" :class="statusBadgeClass(item.editor_review_status)">{{ item.editor_review_status }}</span></td>
@@ -109,7 +112,8 @@ const filters = reactive({
   editor_review_status: '',
   expert_review_status: '',
   base_review_status: '',
-  source: ''
+  source: '',
+  caseLevel: ''
 })
 
 const availableSpecialties = computed(() => dict.specialties)
@@ -134,12 +138,12 @@ const onCategoryChange = () => {
 }
 
 const mockData = () => [
-  { id:1, case_id:'ORT-20260417-LDH03', title:'腰椎间盘突出症（L3/4节段）', teaching_phase:'住院医师', specialty:'骨科/康复科', category:'脊柱外科', disease:'腰椎间盘突出症', version:'v2.1.0', ai_quality_status:'已通过', editor_review_status:'已通过', expert_review_status:'已通过', base_review_status:'已通过', source:'平台', creator_name:'张医生', created_at:'2026-03-15 10:30', enabled:true, patient_name:'赵建国', patient_gender:'男', patient_age:'48' },
-  { id:2, case_id:'IM-20240520-A1B2', title:'肾病综合症', teaching_phase:'本科教学', specialty:'内科', category:'肾内科', disease:'肾病综合症', version:'v1.5.2', ai_quality_status:'已通过', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'机构', creator_name:'李主任', created_at:'2026-04-01 14:20', enabled:true, patient_name:'李建国', patient_gender:'男', patient_age:'62' },
-  { id:3, case_id:'ORT-20260417-LDH03', title:'胃溃疡伴出血', teaching_phase:'专科培训', specialty:'内科', category:'消化内科', disease:'胃溃疡', version:'v3.0.0', ai_quality_status:'未通过', editor_review_status:'未通过', expert_review_status:'待审核', base_review_status:'待审核', source:'专家', creator_name:'王教授', created_at:'2026-02-28 09:15', enabled:false, patient_name:'张永生', patient_gender:'男', patient_age:'52' },
-  { id:4, case_id:'IM-20240520-A1B2', title:'正常分娩', teaching_phase:'本科教学', specialty:'妇产科', category:'产科', disease:'正常分娩', version:'v1.2.0', ai_quality_status:'已通过', editor_review_status:'已通过', expert_review_status:'已通过', base_review_status:'已通过', source:'平台', creator_name:'赵医师', created_at:'2025-12-10 16:40', enabled:true, patient_name:'李丽', patient_gender:'女', patient_age:'28' },
-  { id:5, case_id:'ORT-20260417-LDH03', title:'胫骨平台骨折', teaching_phase:'住院医师', specialty:'外科', category:'骨科', disease:'骨折', version:'v1.0.0', ai_quality_status:'待质检', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'个人', creator_name:'刘医生', created_at:'2026-04-18 11:05', enabled:true, patient_name:'王强', patient_gender:'男', patient_age:'35' },
-  { id:6, case_id:'EM-20260526-X8K2', title:'急性心肌梗死', teaching_phase:'住院医师', specialty:'急诊科', category:'心血管急症', disease:'急性广泛前壁心肌梗死', version:'v1.0', ai_quality_status:'待审核', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'平台', creator_name:'AI生成', created_at:'2026-05-26 14:30', enabled:true, patient_name:'王德胜', patient_gender:'男', patient_age:'58' }
+  { id:1, case_id:'ORT-20260417-LDH03', title:'腰椎间盘突出症（L3/4节段）', teaching_phase:'住院医师', specialty:'骨科/康复科', category:'脊柱外科', disease:'腰椎间盘突出症', caseLevel:'高阶病例', version:'v2.1.0', ai_quality_status:'已通过', editor_review_status:'已通过', expert_review_status:'已通过', base_review_status:'已通过', source:'平台', creator_name:'张医生', created_at:'2026-03-15 10:30', enabled:true, patient_name:'赵建国', patient_gender:'男', patient_age:'48' },
+  { id:2, case_id:'IM-20240520-A1B2', title:'肾病综合症', teaching_phase:'本科教学', specialty:'内科', category:'肾内科', disease:'肾病综合症', caseLevel:'基础病例', version:'v1.5.2', ai_quality_status:'已通过', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'机构', creator_name:'李主任', created_at:'2026-04-01 14:20', enabled:true, patient_name:'李建国', patient_gender:'男', patient_age:'62' },
+  { id:3, case_id:'ORT-20260417-LDH03', title:'胃溃疡伴出血', teaching_phase:'专科培训', specialty:'内科', category:'消化内科', disease:'胃溃疡', caseLevel:'疑难病例', version:'v3.0.0', ai_quality_status:'未通过', editor_review_status:'未通过', expert_review_status:'待审核', base_review_status:'待审核', source:'专家', creator_name:'王教授', created_at:'2026-02-28 09:15', enabled:false, patient_name:'张永生', patient_gender:'男', patient_age:'52' },
+  { id:4, case_id:'IM-20240520-A1B2', title:'正常分娩', teaching_phase:'本科教学', specialty:'妇产科', category:'产科', disease:'正常分娩', caseLevel:'基础病例', version:'v1.2.0', ai_quality_status:'已通过', editor_review_status:'已通过', expert_review_status:'已通过', base_review_status:'已通过', source:'平台', creator_name:'赵医师', created_at:'2025-12-10 16:40', enabled:true, patient_name:'李丽', patient_gender:'女', patient_age:'28' },
+  { id:5, case_id:'ORT-20260417-LDH03', title:'胫骨平台骨折', teaching_phase:'住院医师', specialty:'外科', category:'骨科', disease:'骨折', caseLevel:'高阶病例', version:'v1.0.0', ai_quality_status:'待质检', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'个人', creator_name:'刘医生', created_at:'2026-04-18 11:05', enabled:true, patient_name:'王强', patient_gender:'男', patient_age:'35' },
+  { id:6, case_id:'EM-20260526-X8K2', title:'急性心肌梗死', teaching_phase:'住院医师', specialty:'急诊科', category:'心血管急症', disease:'急性广泛前壁心肌梗死', caseLevel:'疑难病例', version:'v1.0', ai_quality_status:'待审核', editor_review_status:'待审核', expert_review_status:'待审核', base_review_status:'待审核', source:'平台', creator_name:'AI生成', created_at:'2026-05-26 14:30', enabled:true, patient_name:'王德胜', patient_gender:'男', patient_age:'58' }
 ]
 
 const allData = ref([])
@@ -176,6 +180,7 @@ const allColumns = [
   { key: 'specialty', label: '专业' },
   { key: 'category', label: '分类' },
   { key: 'disease', label: '病种' },
+  { key: 'caseLevel', label: '病例分级' },
   { key: 'version', label: '版本' },
   { key: 'ai_quality_status', label: 'AI质检' },
   { key: 'editor_review_status', label: '编辑审核' },
@@ -203,6 +208,7 @@ if (filters.ai_quality_status && item.ai_quality_status !== filters.ai_quality_s
   if (filters.expert_review_status && item.expert_review_status !== filters.expert_review_status) return false
   if (filters.base_review_status && item.base_review_status !== filters.base_review_status) return false
   if (filters.source && item.source !== filters.source) return false
+  if (filters.caseLevel && item.caseLevel !== filters.caseLevel) return false
   return true
 }))
 
@@ -280,6 +286,13 @@ const statusBadgeClass = (status) => {
   if (status.includes('通过')) return 'badge-success'
   if (status.includes('未通过')) return 'badge-error'
   return 'badge-warning'
+}
+const caseLevelBadgeClass = (level) => {
+  if (!level) return ''
+  if (level === '基础病例') return 'badge-info'
+  if (level === '高阶病例') return 'badge-success'
+  if (level === '疑难病例') return 'badge-error'
+  return ''
 }
 const getPatientInfo = (item) => {
   if (item.patient_name) return `${item.patient_name}（${item.patient_age}岁，${item.patient_gender}）`

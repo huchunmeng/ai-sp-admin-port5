@@ -81,5 +81,7 @@
     "sensitivity": "普通敏感度",
     "resilience": "低豁达"
   },
-  "communication_target": "patient"
+  "communication_target": "patient",
+  "source": "",
+  "caseLevel": ""
 }

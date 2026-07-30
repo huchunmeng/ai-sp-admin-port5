@@ -87,7 +87,7 @@ export function createEmptyFormData() {
     score_sheet: [],
     station_scores: null,
     examination_materials: [],
-    expertReview: { enabled: false, expertName: '', expertTitle: '', expertTags: [], expertKB: '', reviewTitle: '' }
+    expertReview: { enabled: false, expertName: '', expertTitle: '', expertAvatar: '', expertTags: [], expertKB: '', reviewTitle: '' }
   }
 }
 
@@ -506,6 +506,7 @@ export async function loadCaseDataFromFiles(caseId) {
         enabled: expertData.expertEnabled || expertData.enabled || false,
         expertName: expertData.expertName || '',
         expertTitle: expertData.expertTitle || '',
+        expertAvatar: expertData.expertAvatar || '',
         expertTags: expertData.expertTags || [],
         expertKB: expertData.expertKB || '',
         reviewTitle: expertData.reviewTitle || ''

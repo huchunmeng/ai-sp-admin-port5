@@ -7,6 +7,7 @@
         <div class="filter-item"><label>专业</label><SearchSelect v-model="filters.specialty" :options="availableSpecialties" placeholder="全部" @change="onSpecialtyChange" :disabled="!filters.teaching_phase" /></div>
         <div class="filter-item"><label>分类</label><SearchSelect v-model="filters.category" :options="availableCategories" placeholder="全部" @change="onCategoryChange" :disabled="!filters.specialty" /></div>
         <div class="filter-item"><label>病种</label><SearchSelect v-model="filters.disease" :options="availableDiseases" placeholder="全部" :disabled="!filters.category" /></div>
+        <div class="filter-item"><label>病例分级</label><select class="select" v-model="filters.caseLevel"><option value="">全部</option><option>基础病例</option><option>高阶病例</option><option>疑难病例</option></select></div>
       </div>
       <div class="filter-row mt-4">
         <div class="filter-item"><label>AI质检</label><select class="select" v-model="filters.ai_quality_status"><option value="">全部</option><option>待质检</option><option>已通过</option><option>未通过</option></select></div>
@@ -33,6 +34,7 @@
               <th v-if="visibleColumns.includes('specialty')">专业</th>
               <th v-if="visibleColumns.includes('category')">分类</th>
               <th v-if="visibleColumns.includes('disease')">病种</th>
+              <th v-if="visibleColumns.includes('caseLevel')">病例分级</th>
               <th v-if="visibleColumns.includes('version')">版本</th>
               <th v-if="visibleColumns.includes('ai_quality_status')">AI质检</th>
               <th v-if="visibleColumns.includes('base_review_status')">基地审核</th>
@@ -52,6 +54,7 @@
               <td v-if="visibleColumns.includes('specialty')">{{ item.specialty }}</td>
               <td v-if="visibleColumns.includes('category')">{{ item.category }}</td>
               <td v-if="visibleColumns.includes('disease')">{{ item.disease }}</td>
+              <td v-if="visibleColumns.includes('caseLevel')"><span class="badge" :class="caseLevelBadgeClass(item.caseLevel)">{{ item.caseLevel || '—' }}</span></td>
               <td v-if="visibleColumns.includes('version')"><a href="#" @click.prevent="showVersionHistory(item)" style="color:var(--primary);text-decoration:none; cursor:pointer">{{ item.version }}</a></td>
               <td v-if="visibleColumns.includes('ai_quality_status')"><span class="badge" :class="statusBadgeClass(item.ai_quality_status)">{{ item.ai_quality_status }}</span></td>
               <td v-if="visibleColumns.includes('base_review_status')"><span class="badge" :class="statusBadgeClass(item.base_review_status)">{{ item.base_review_status }}</span></td>
@@ -89,7 +92,8 @@ const filters = reactive({
   category: '',
   disease: '',
   ai_quality_status: '',
-  base_review_status: ''
+  base_review_status: '',
+  caseLevel: ''
 })
 
 const availableSpecialties = computed(() => dict.specialties)
@@ -114,12 +118,12 @@ const onCategoryChange = () => {
 }
 
 const mockData = () => [
-  { id:101, case_id:'ORT-20260417-LDH03', title:'慢性心力衰竭', teaching_phase:'住院医师', specialty:'内科', category:'心内科', disease:'心衰', version:'v1.1.0', ai_quality_status:'已通过', base_review_status:'已通过', creator_name:'李医师', created_at:'2026-03-20 09:15', enabled:true, patient_name:'王德明', patient_gender:'男', patient_age:'65' },
-  { id:102, case_id:'IM-20240520-A1B2', title:'新生儿黄疸', teaching_phase:'本科教学', specialty:'儿科', category:'新生儿科', disease:'黄疸', version:'v1.0.0', ai_quality_status:'待质检', base_review_status:'待审核', creator_name:'王主任', created_at:'2026-04-10 14:30', enabled:true, patient_name:'张宝宝', patient_gender:'女', patient_age:'0.2' },
-  { id:103, case_id:'ORT-20260417-LDH03', title:'急性阑尾炎', teaching_phase:'专科培训', specialty:'外科', category:'普外科', disease:'阑尾炎', version:'v2.0.1', ai_quality_status:'已通过', base_review_status:'未通过', creator_name:'张医师', created_at:'2026-02-15 11:20', enabled:false, patient_name:'李明', patient_gender:'男', patient_age:'32' },
-  { id:104, case_id:'IM-20240520-A1B2', title:'妊娠期糖尿病', teaching_phase:'住院医师', specialty:'妇产科', category:'产科', disease:'妊娠期糖尿病', version:'v1.3.0', ai_quality_status:'已通过', base_review_status:'已通过', creator_name:'赵医生', created_at:'2026-01-05 16:00', enabled:true, patient_name:'王芳', patient_gender:'女', patient_age:'30' },
-  { id:105, case_id:'ORT-20260417-LDH03', title:'过敏性休克', teaching_phase:'本科教学', specialty:'急诊科', category:'急诊内科', disease:'过敏', version:'v1.0.2', ai_quality_status:'未通过', base_review_status:'未通过', creator_name:'刘医师', created_at:'2026-04-22 08:45', enabled:true, patient_name:'陈华', patient_gender:'男', patient_age:'28' },
-  { id:106, case_id:'EM-20260526-X8K2', title:'急性心肌梗死', teaching_phase:'住院医师', specialty:'急诊科', category:'心血管急症', disease:'急性广泛前壁心肌梗死', version:'v1.0', ai_quality_status:'待审核', base_review_status:'待审核', creator_name:'AI生成', created_at:'2026-05-26 14:30', enabled:true, patient_name:'王德胜', patient_gender:'男', patient_age:'58' }
+  { id:101, case_id:'ORT-20260417-LDH03', title:'慢性心力衰竭', teaching_phase:'住院医师', specialty:'内科', category:'心内科', disease:'心衰', caseLevel:'高阶病例', version:'v1.1.0', ai_quality_status:'已通过', base_review_status:'已通过', creator_name:'李医师', created_at:'2026-03-20 09:15', enabled:true, patient_name:'王德明', patient_gender:'男', patient_age:'65' },
+  { id:102, case_id:'IM-20240520-A1B2', title:'新生儿黄疸', teaching_phase:'本科教学', specialty:'儿科', category:'新生儿科', disease:'黄疸', caseLevel:'基础病例', version:'v1.0.0', ai_quality_status:'待质检', base_review_status:'待审核', creator_name:'王主任', created_at:'2026-04-10 14:30', enabled:true, patient_name:'张宝宝', patient_gender:'女', patient_age:'0.2' },
+  { id:103, case_id:'ORT-20260417-LDH03', title:'急性阑尾炎', teaching_phase:'专科培训', specialty:'外科', category:'普外科', disease:'阑尾炎', caseLevel:'疑难病例', version:'v2.0.1', ai_quality_status:'已通过', base_review_status:'未通过', creator_name:'张医师', created_at:'2026-02-15 11:20', enabled:false, patient_name:'李明', patient_gender:'男', patient_age:'32' },
+  { id:104, case_id:'IM-20240520-A1B2', title:'妊娠期糖尿病', teaching_phase:'住院医师', specialty:'妇产科', category:'产科', disease:'妊娠期糖尿病', caseLevel:'高阶病例', version:'v1.3.0', ai_quality_status:'已通过', base_review_status:'已通过', creator_name:'赵医生', created_at:'2026-01-05 16:00', enabled:true, patient_name:'王芳', patient_gender:'女', patient_age:'30' },
+  { id:105, case_id:'ORT-20260417-LDH03', title:'过敏性休克', teaching_phase:'本科教学', specialty:'急诊科', category:'急诊内科', disease:'过敏', caseLevel:'基础病例', version:'v1.0.2', ai_quality_status:'未通过', base_review_status:'未通过', creator_name:'刘医师', created_at:'2026-04-22 08:45', enabled:true, patient_name:'陈华', patient_gender:'男', patient_age:'28' },
+  { id:106, case_id:'EM-20260526-X8K2', title:'急性心肌梗死', teaching_phase:'住院医师', specialty:'急诊科', category:'心血管急症', disease:'急性广泛前壁心肌梗死', caseLevel:'疑难病例', version:'v1.0', ai_quality_status:'待审核', base_review_status:'待审核', creator_name:'AI生成', created_at:'2026-05-26 14:30', enabled:true, patient_name:'王德胜', patient_gender:'男', patient_age:'58' }
 ]
 
 const allData = ref([])
@@ -155,6 +159,7 @@ const allColumns = [
   { key: 'specialty', label: '专业' },
   { key: 'category', label: '分类' },
   { key: 'disease', label: '病种' },
+  { key: 'caseLevel', label: '病例分级' },
   { key: 'version', label: '版本' },
   { key: 'ai_quality_status', label: 'AI质检' },
   { key: 'base_review_status', label: '基地审核' },
@@ -176,6 +181,7 @@ const filteredData = computed(() => allData.value.filter(item => {
   if (filters.disease && item.disease !== filters.disease) return false
 if (filters.ai_quality_status && item.ai_quality_status !== filters.ai_quality_status) return false
   if (filters.base_review_status && item.base_review_status !== filters.base_review_status) return false
+  if (filters.caseLevel && item.caseLevel !== filters.caseLevel) return false
   return true
 }))
 
@@ -227,6 +233,13 @@ const statusBadgeClass = (status) => {
   if (status.includes('通过')) return 'badge-success'
   if (status.includes('未通过')) return 'badge-error'
   return 'badge-warning'
+}
+const caseLevelBadgeClass = (level) => {
+  if (!level) return ''
+  if (level === '基础病例') return 'badge-info'
+  if (level === '高阶病例') return 'badge-success'
+  if (level === '疑难病例') return 'badge-error'
+  return ''
 }
 const getPatientInfo = (item) => {
   if (item.patient_name) return `${item.patient_name}（${item.patient_age}岁，${item.patient_gender}）`

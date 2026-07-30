@@ -1404,6 +1404,7 @@ function saveDraft() {
       expertEnabled: expertReview.enabled,
       expertName: expertReview.expertName,
       expertTitle: expertReview.expertTitle,
+      expertAvatar: expertReview.expertAvatar,
       expertTags: expertReview.expertTags,
       expertKB: expertReview.expertKB,
       reviewTitle: expertReview.reviewTitle

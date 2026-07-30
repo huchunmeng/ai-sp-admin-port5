@@ -12,6 +12,12 @@
           <option value="R">{{ lang === 'zh' ? '住培' : 'Residency' }}</option>
           <option value="F">{{ lang === 'zh' ? '专培' : 'Fellowship' }}</option>
         </select>
+        <select v-model="caseLevelFilter" data-reviewable="病例分级筛选">
+          <option value="">{{ lang === 'zh' ? '全部分级' : 'All Levels' }}</option>
+          <option value="基础病例">{{ lang === 'zh' ? '基础病例' : 'Basic' }}</option>
+          <option value="高阶病例">{{ lang === 'zh' ? '高阶病例' : 'Advanced' }}</option>
+          <option value="疑难病例">{{ lang === 'zh' ? '疑难病例' : 'Difficult' }}</option>
+        </select>
         <select v-model="statusFilter" data-reviewable="学习状态筛选">
           <option value="">{{ lang === 'zh' ? '全部状态' : 'All Status' }}</option>
           <option value="not_trained">{{ lang === 'zh' ? '未学习' : 'Not Learned' }}</option>
@@ -37,6 +43,10 @@
         <span class="filter-badge" v-if="difficultyFilter">
           {{ lang === 'zh' ? '阶段' : 'Phase' }}: {{ phaseLabel(difficultyFilter) }}
           <i class="fa-solid fa-xmark" @click="difficultyFilter = ''" style="cursor:pointer;margin-left:4px"></i>
+        </span>
+        <span class="filter-badge" v-if="caseLevelFilter" style="background:#f3e8ff;color:#7c3aed;border-color:#ddd6fe;">
+          {{ lang === 'zh' ? '分级' : 'Level' }}: {{ caseLevelFilter }}
+          <i class="fa-solid fa-xmark" @click="caseLevelFilter = ''" style="cursor:pointer;margin-left:4px"></i>
         </span>
         <span class="filter-badge" v-if="statusFilter">
           {{ lang === 'zh' ? '状态' : 'Status' }}: {{ statusFilter === 'trained' ? (lang === 'zh' ? '已学习' : 'Learned') : (lang === 'zh' ? '未学习' : 'Unlearned') }}
@@ -183,6 +193,7 @@ const { loadCaseIndex } = useCaseLoader()
 const lang = ref(store.lang || 'zh')
 const searchQuery = ref('')
 const difficultyFilter = ref('')
+const caseLevelFilter = ref('')
 const statusFilter = ref('')
 const sourceFilter = ref('')
 const currentPage = ref(1)
@@ -228,7 +239,7 @@ const filteredSpecialties = computed(() =>
 const currentSpecialty = computed(() => route.params.specialty || store.specialty || '')
 
 const hasActiveFilters = computed(() =>
-  !!(searchQuery.value.trim() || difficultyFilter.value || statusFilter.value || sourceFilter.value)
+  !!(searchQuery.value.trim() || difficultyFilter.value || caseLevelFilter.value || statusFilter.value || sourceFilter.value)
 )
 
 function getTrainingStatus(caseId) {
@@ -285,6 +296,12 @@ const filteredCases = computed(() => {
       return tp.startsWith(difficultyFilter.value)
     })
   }
+  if (caseLevelFilter.value) {
+    list = list.filter(c => {
+      const cl = c.caseLevel || getCaseLevelLabel(c.difficulty)
+      return cl === caseLevelFilter.value
+    })
+  }
   if (statusFilter.value) {
     list = list.filter(c => c.status === statusFilter.value)
   }
@@ -332,6 +349,7 @@ function sourceClass(src) {
 function doReset() {
   searchQuery.value = ''
   difficultyFilter.value = ''
+  caseLevelFilter.value = ''
   statusFilter.value = ''
   sourceFilter.value = ''
   currentPage.value = 1
@@ -368,7 +386,7 @@ async function fetchCases() {
   }
 }
 
-watch([searchQuery, difficultyFilter, statusFilter, sourceFilter], () => { currentPage.value = 1 })
+watch([searchQuery, difficultyFilter, caseLevelFilter, statusFilter, sourceFilter], () => { currentPage.value = 1 })
 
 onMounted(() => {
   if (route.params.specialty) {

@@ -106,3 +106,60 @@
 1. **P1 核心通路** — AICompanionDrawer重写（QA+点评双Tab）+ 扩展到详情/报告页 + 后端companion API
 2. **考试数据持久化** — 考试完成时评分+对话同步到服务端（当前仅在Pinia内存中）
 3. **画像数据需求** — 存什么、怎么用，后续按实际需求确定
+
+---
+
+## 2026-07-29 — 交付准备 + 底部按钮精简 + 管理端URL更新
+
+### 已完成
+
+**交付包整理 (`docs/交付包_20260729/`)**：
+- `PRD_AI伴学与专家点评.md` — 整合版PRD，覆盖登录/AI伴学/专家点评/精品病例/VR/UI调整
+- `DELIVERY_20260729.md` — 交付说明，含完整文件清单、关键函数索引、LLM调用路径
+- `TEST_20260729.md` — 60条测试用例 (T1-T60)
+
+**管理端URL统一更新**：
+- 5个 `.env.production` + `packages/shared/src/index.js` 中 PROD_URLS
+- `VITE_ADMIN_URL` 从 `aisp-78y8v019a.maozi.io` → `p5admin-q5h4z019a.maozi.io`
+
+**底部按钮栏精简** (5个Layout)：
+- 移除 考试端/运营平台/电子书包 按钮，仅保留 管理端 ↔ 训练端 双端互跳
+
+**训练端退出登录**：
+- `TrainingLayout.vue` 新增用户下拉菜单 (学习画像 + 退出登录)
+- 点击外部自动关闭下拉
+
+**文档重组**：
+- 合并 `doc/` 到 `docs/`，统一 `PREFIX_中文名[_日期].ext` 命名规范
+- 新增 `REF_文档命名规范.md` 和 `REF_交付规范.md`
+
+---
+
+## 2026-07-30 — 待办：AI伴学 + 专家点评提示词调试
+
+### 调试目标
+
+1. **AI伴学 QA 提示词** — `AICompanionDrawer.vue` 中 `buildSystemPrompt()`:
+   - 当前：组装考站标签 + 病例基本信息 + 最近对话上下文
+   - 需验证：回答是否与病例相关、是否在角色范围内、上下文窗口是否合理
+   - 提示词位置：`apps/training/src/components/AICompanionDrawer.vue` (~L200-240)
+
+2. **专家点评生成提示词** — `AICompanionDrawer.vue` 中 `generateExpertReview()`:
+   - 当前："top clinical expert writing teaching review" + 专家知识库 + 病例信息
+   - 需验证：点评质量、是否基于KB而非编造、格式是否适合教学
+   - 提示词位置：`apps/training/src/components/AICompanionDrawer.vue` (~L280-320)
+
+3. **LLM调用链路**：
+   - `useAIChat.sendMessage()` → `POST /api/llm` → vite.config.js middleware (dev) / prod-server route (prod)
+   - 参数：`{ messages, system, temperature: 0.7, max_tokens: 2000 }`
+   - 30s超时，中文降级回复
+
+### 待调试项
+
+- [ ] QA提示词：病例信息注入是否充分
+- [ ] QA提示词：角色边界约束是否有效
+- [ ] 专家点评：KB内容是否被正确引用
+- [ ] 专家点评：点评深度和教学价值
+- [ ] 专家追问：历史点评作为上下文的连贯性
+- [ ] 超时/错误降级是否友好
+- [ ] suggestedQuestions 是否随考站类型合理变化
