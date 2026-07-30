@@ -9,7 +9,7 @@
     <div v-if="open" class="companion-panel">
       <div class="panel-header">
         <span class="panel-tab" :class="{ active: activeTab === 'qa' }" @click="activeTab = 'qa'">
-          <i class="fa-solid fa-comments"></i> 智能问答
+          <i class="fa-solid fa-comments"></i> AI伴学
         </span>
         <span class="panel-tab" :class="{ active: activeTab === 'commentary' }" @click="activeTab = 'commentary'">
           <i class="fa-solid fa-star"></i> 专家点评
@@ -20,15 +20,19 @@
       <div class="panel-body">
         <!-- 智能问答 -->
         <div v-show="activeTab === 'qa'" class="tab-content">
-          <div class="suggested-qs">
-            <button v-for="q in suggestedQuestions" :key="q" class="suggested-q" @click="askQuestion(q)">{{ q }}</button>
-          </div>
           <div class="qa-messages" ref="qaContainer">
             <div v-for="(msg, i) in qaMessages" :key="i" :class="['qa-msg', msg.type]">
-              <span v-if="msg.type === 'ai'">🤖 </span>{{ msg.text }}
+              <span v-if="msg.type === 'ai'" class="qa-msg-avatar">🤖</span>
+              <div class="qa-msg-content">
+                <div class="qa-msg-bubble" v-html="msg.html || msg.text"></div>
+                <div v-if="msg.type === 'ai' && msg.followUps && msg.followUps.length && i === qaMessages.length - 1" class="followup-chips">
+                  <button v-for="fq in msg.followUps" :key="fq" class="followup-chip" @click="askQuestion(fq)">{{ fq }}</button>
+                </div>
+              </div>
             </div>
             <div v-if="aiLoading" class="qa-msg ai typing">
-              <span class="typing-dots"><i></i><i></i><i></i></span>
+              <span class="qa-msg-avatar">🤖</span>
+              <div class="qa-msg-bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div>
             </div>
           </div>
           <div class="qa-input-row">
@@ -118,14 +122,14 @@ import { ref, nextTick, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
-import { useAIChat } from '@/composables/useAIChat'
 import { useExpertAgent } from '@/composables/useExpertAgent'
+import { useAICompanion } from '@/composables/useAICompanion'
 import { getStationLabel } from '@ai-sp/shared'
 
 const store = useTrainingStore()
 const route = useRoute()
 const { getCached } = useCaseLoader()
-const { sendMessage, loading: aiLoading } = useAIChat()
+const { askCompanion, companionLoading: aiLoading } = useAICompanion()
 const { askExpert, expertAiLoading } = useExpertAgent()
 
 const open = ref(false)
@@ -210,53 +214,13 @@ const suggestedQuestions = computed(() => {
   return stationQuestionMap[route.name] || defaultQuestions
 })
 
-// ── Build system prompt from case + station + dialogue context ──
-function buildSystemPrompt() {
-  const info = getCaseInfo()
-  const parts = []
-
-  parts.push('你是一位临床教学助手，正在帮助医学学员进行临床思维训练。')
-
-  if (info) {
-    parts.push(`当前病例信息：`)
-    if (info.name) parts.push(`- 患者：${info.name}，${info.gender || '未知'}，${info.age || '未知'}岁`)
-    if (info.chiefComplaint) parts.push(`- 主诉：${info.chiefComplaint}`)
-    if (info.disease) parts.push(`- 疾病：${info.disease}`)
-    if (info.specialty) parts.push(`- 科室：${info.specialty}`)
-  }
-
-  if (stationLabel.value) {
-    parts.push(`当前考站：${stationLabel.value}`)
-  }
-
-  // Add recent dialogue context from training session
-  const session = store.trainingSession
-  if (session) {
-    const recentMsgs = []
-    for (const key of Object.keys(session)) {
-      const data = session[key]
-      if (data && data.messages && Array.isArray(data.messages)) {
-        recentMsgs.push(...data.messages)
-      }
-    }
-    if (recentMsgs.length > 0) {
-      const lastMsgs = recentMsgs.slice(-8)
-      parts.push('学员与SP的最近对话记录：')
-      for (const m of lastMsgs) {
-        const role = m.role === 'user' ? '学员' : 'SP'
-        parts.push(`${role}：${m.content}`)
-      }
-    }
-  }
-
-  parts.push('请用中文回答学员的问题，语言简洁专业，结合病例信息给出具体建议。')
-  return parts.join('\n')
-}
-
 // ── Chat messages ──
 const qaMessages = ref([
-  { type: 'ai', text: '你好！我是AI伴学助手，可以针对当前病例和考站为你解答。请随时提问。' },
+  { type: 'ai', text: '你好！我是AI伴学助手，可以针对当前病例和考站为你解答。请随时提问。', html: '', followUps: [] },
 ])
+// 初始化开场白的推荐问题
+qaMessages.value[0].html = renderMsgText(qaMessages.value[0].text)
+qaMessages.value[0].followUps = suggestedQuestions.value
 
 async function askQuestion(q) {
   const question = typeof q === 'string' ? q : qaInput.value.trim()
@@ -266,14 +230,23 @@ async function askQuestion(q) {
   qaInput.value = ''
   scrollToBottom()
 
-  const systemPrompt = buildSystemPrompt()
-  const llmMessages = qaMessages.value.map(m => ({
-    role: m.type === 'user' ? 'user' : 'assistant',
-    content: m.text
-  }))
+  const response = await askCompanion(
+    getCaseInfo(),
+    stationLabel.value,
+    route.name,
+    store.trainingSession,
+    qaMessages.value,
+    question
+  )
 
-  const result = await sendMessage(llmMessages, systemPrompt)
-  qaMessages.value.push({ type: 'ai', text: result.content })
+  if (response) {
+    qaMessages.value.push({
+      type: 'ai',
+      text: response.text,
+      html: renderMsgText(response.text),
+      followUps: response.followUps,
+    })
+  }
   scrollToBottom()
 }
 
