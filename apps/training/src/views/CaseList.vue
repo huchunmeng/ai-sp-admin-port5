@@ -122,31 +122,6 @@
       </template>
     </div>
 
-    <!-- 断点续训弹窗（不可关闭，必须二选一） -->
-    <div class="resume-overlay" v-if="showResumeModal && resumeInfo">
-      <div class="resume-modal">
-        <div class="resume-modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h2>{{ lang === 'zh' ? '检测到未完成的训练' : 'Unfinished Training Detected' }}</h2>
-        <div class="resume-modal-info">
-          <p><strong>{{ lang === 'zh' ? '病例：' : 'Case: ' }}</strong>{{ resumeInfo.caseId }}</p>
-          <p><strong>{{ lang === 'zh' ? '中断于：' : 'Interrupted at: ' }}</strong>{{ resumeInfo.stationName || resumeInfo.currentStationId }}</p>
-          <p v-if="resumeInfo.startedAt"><strong>{{ lang === 'zh' ? '开始时间：' : 'Started: ' }}</strong>{{ new Date(resumeInfo.startedAt).toLocaleString() }}</p>
-        </div>
-        <div class="resume-modal-actions">
-          <button class="btn-resume-continue" @click="handleResume" :disabled="resumeLoading">
-            <i class="fa-solid fa-spinner fa-spin" v-if="resumeLoading"></i>
-            <i class="fa-solid fa-play" v-else></i>
-            {{ lang === 'zh' ? '继续训练' : 'Continue Training' }}
-          </button>
-          <button class="btn-resume-settle" @click="handleSettle" :disabled="resumeLoading">
-            <i class="fa-solid fa-spinner fa-spin" v-if="resumeLoading"></i>
-            <i class="fa-solid fa-check-double" v-else></i>
-            {{ lang === 'zh' ? '结束训练并结算成绩' : 'End & Settle Scores' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
     <div class="spec-modal-overlay" v-if="showSpecModal" @click.self="showSpecModal = false" style="z-index:500;">
       <div class="spec-modal">
         <div class="spec-modal-header">
@@ -204,9 +179,6 @@ const specPhase = ref('R')
 const allCasesData = ref([])
 const loading = ref(false)
 const loadError = ref('')
-const showResumeModal = ref(false)
-const resumeInfo = ref(null)
-const resumeLoading = ref(false)
 
 // 专业列表
 const allSpecialties = [
@@ -402,79 +374,7 @@ onMounted(() => {
   if (!currentSpecialty.value) {
     showSpecModal.value = true
   }
-  // 检测未完成训练
-  const flow = store.loadActiveFlow()
-  if (flow && flow.caseId) {
-    const elapsed = Date.now() - new Date(flow.startedAt).getTime()
-    if (elapsed <= 24 * 60 * 60 * 1000) {
-      resumeInfo.value = {
-        caseId: flow.caseId,
-        stationName: flow.currentStationId || flow.stationName || '',
-        startedAt: flow.startedAt,
-        stationFlow: flow.stationFlow,
-        stationScheme: flow.stationScheme,
-        currentStationId: flow.currentStationId
-      }
-      showResumeModal.value = true
-    }
-  }
 })
-
-// ── 断点续训处理 ──
-function handleResume() {
-  if (!resumeInfo.value) return
-  resumeLoading.value = true
-  const flow = resumeInfo.value
-  // 恢复考站流程状态
-  if (flow.stationFlow) {
-    store.stationFlow = flow.stationFlow
-    store.stationScheme = flow.stationScheme
-    store.currentFlowIndex = flow.stationFlow.currentIndex || 0
-  }
-  router.push({ name: 'caseDetail', params: { caseId: flow.caseId }, query: { resume: '1' } })
-}
-
-async function handleSettle() {
-  if (!resumeInfo.value) return
-  const caseId = resumeInfo.value.caseId
-
-  // 立即关闭弹窗，清除活跃流程，不影响前端操作
-  showResumeModal.value = false
-  store.clearActiveFlow()
-
-  // 后台结算（fire-and-forget，静默完成）
-  const ts = store.trainingSession || {}
-  const STATION_KEYS = ['historyTaking', 'physicalExam', 'medicalRecord', 'preliminaryDiag', 'treatmentPlan', 'analysis', 'humanity', 'mentalExam']
-  const stations = []
-  for (const sid of STATION_KEYS) {
-    const data = ts[sid]
-    let parsedSheet = null
-    try {
-      parsedSheet = sessionStorage.getItem(`aisp_parsed_scoresheet_${caseId}_${sid}`)
-      if (!parsedSheet) parsedSheet = sessionStorage.getItem(`aisp_parsed_scoresheet_${caseId}`)
-      if (parsedSheet) parsedSheet = JSON.parse(parsedSheet)
-    } catch (e) { /* ignore */ }
-    stations.push({
-      stationId: sid,
-      stationName: sid,
-      hasData: !!(data && (data.messages?.length > 0 || data.answers?.length > 0 || data.content)),
-      parsedSheet: parsedSheet || [],
-      records: data ? { dialog: data.messages || [], exam: data.examHistory || [], qa: [], freeText: data.notes ? [{ text: data.notes }] : [] } : {}
-    })
-  }
-
-  const hasAnyData = stations.some(s => s.hasData)
-  if (hasAnyData) {
-    fetch('/api/training/settle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ caseId, caseInfo: { case_id: caseId }, stations })
-    }).catch(() => { /* 静默 */ })
-  }
-
-  resumeInfo.value = null
-  resumeLoading.value = false
-}
 </script>
 
 <style scoped>
@@ -692,49 +592,4 @@ select:focus { border-color: #409EFF; }
 .page-jump { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #909399; margin-left: 12px; }
 .page-jump input { width: 50px; padding: 4px 6px; border: 1px solid #DCDFE6; border-radius: 4px; text-align: center; font-size: 13px; }
 
-/* 断点续训弹窗（不可关闭） */
-.resume-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
-}
-.resume-modal {
-  background: #fff; border-radius: 16px; padding: 40px 48px;
-  max-width: 500px; width: 90%; text-align: center;
-  box-shadow: 0 16px 64px rgba(0,0,0,0.25);
-}
-.resume-modal-icon {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: #E6A23C; color: #fff; font-size: 28px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
-}
-.resume-modal h2 {
-  margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #303133;
-}
-.resume-modal-info {
-  text-align: left; background: #f5f7fa; border-radius: 10px;
-  padding: 14px 18px; margin-bottom: 24px; font-size: 13px; color: #606266;
-}
-.resume-modal-info p { margin: 6px 0; }
-.resume-modal-info strong { color: #303133; margin-right: 4px; }
-.resume-modal-actions {
-  display: flex; flex-direction: column; gap: 10px;
-}
-.btn-resume-continue, .btn-resume-settle {
-  width: 100%; padding: 12px 24px; border-radius: 10px; border: none;
-  font-size: 15px; font-weight: 600; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all .15s;
-}
-.btn-resume-continue {
-  background: #409EFF; color: #fff;
-}
-.btn-resume-continue:hover { background: #337ecc; }
-.btn-resume-settle {
-  background: #fff; color: #E6A23C; border: 2px solid #E6A23C;
-}
-.btn-resume-settle:hover { background: #fef0f0; }
-.btn-resume-continue:disabled, .btn-resume-settle:disabled {
-  opacity: 0.6; cursor: not-allowed;
-}
 </style>
