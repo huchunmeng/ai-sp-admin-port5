@@ -55,11 +55,10 @@ function extractPhysicalExam(session) {
 function extractAncillaryTests(session) {
   const data = session.ancillaryTests
   if (!data) return null
-  const selections = data.selections || []
   const results = data.results || []
-  if (!selections.length && !results.length) return null
+  if (!results.length) return null
 
-  const selectedNames = selections.map(s => s.name).filter(Boolean)
+  const allNames = results.map(r => r.name).filter(Boolean)
   const viewedResults = results.filter(r => r.viewed)
   const resultItems = viewedResults.map(r => ({
     name: r.name || '',
@@ -67,11 +66,11 @@ function extractAncillaryTests(session) {
   }))
 
   return {
-    summary: `选择了${selectedNames.length}项检查（${selectedNames.slice(0, 8).join('、')}${selectedNames.length > 8 ? '...' : ''}），已查看${viewedResults.length}项结果`,
+    summary: `共${allNames.length}项检查，已查看${viewedResults.length}项结果`,
     detail: {
-      selected: selectedNames,
+      selected: allNames,
       results: resultItems,
-      totalSelected: selectedNames.length,
+      totalSelected: allNames.length,
       totalViewed: viewedResults.length,
     }
   }

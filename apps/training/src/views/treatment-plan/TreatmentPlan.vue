@@ -24,7 +24,7 @@
 
     <div class="body-area">
       <div class="left-panel">
-        <div class="panel-tabs">
+        <div class="panel-tabs" :class="{ 'has-flow': flowSteps }">
           <div class="panel-tab" :class="{ active: leftTab === 'info' }" @click="leftTab = 'info'">
             {{ lang === 'zh' ? '患者信息' : 'Info' }}
           </div>
@@ -33,6 +33,19 @@
           </div>
           <div class="panel-tab" :class="{ active: leftTab === 'pe' }" @click="leftTab = 'pe'">
             {{ lang === 'zh' ? '接诊记录' : 'History' }}
+          </div>
+        
+          <div v-if="flowSteps" class="panel-tab" :class="{ active: leftTab === 'ancillaryTests' }" @click="leftTab = 'ancillaryTests'">
+            {{ lang === 'zh' ? '辅检' : 'Tests' }}
+          </div>
+          <div v-if="flowSteps" class="panel-tab" :class="{ active: leftTab === 'diagnosis' }" @click="leftTab = 'diagnosis'">
+            {{ lang === 'zh' ? '诊断' : 'Dx' }}
+          </div>
+          <div v-if="flowSteps" class="panel-tab" :class="{ active: leftTab === 'treatmentPlan' }" @click="leftTab = 'treatmentPlan'">
+            {{ lang === 'zh' ? '治疗' : 'Tx' }}
+          </div>
+          <div v-if="flowSteps" class="panel-tab" :class="{ active: leftTab === 'medicalRecord' }" @click="leftTab = 'medicalRecord'">
+            {{ lang === 'zh' ? '病历' : 'MR' }}
           </div>
         </div>
         <div class="panel-content">
@@ -64,6 +77,18 @@
               </div>
             </div>
             <div v-else class="empty-state">{{ lang === 'zh' ? '暂无接诊记录' : 'No consultation records' }}</div>
+          </div>
+                  <div v-if="flowSteps" v-show="leftTab === 'ancillaryTests'">
+            <StationRecordPanel :entry="getEntry('ancillaryTests')" :is-zh="lang === 'zh'" />
+          </div>
+          <div v-if="flowSteps" v-show="leftTab === 'diagnosis'">
+            <StationRecordPanel :entry="getEntry('diagnosis')" :is-zh="lang === 'zh'" />
+          </div>
+          <div v-if="flowSteps" v-show="leftTab === 'treatmentPlan'">
+            <StationRecordPanel :entry="getEntry('treatmentPlan')" :is-zh="lang === 'zh'" />
+          </div>
+          <div v-if="flowSteps" v-show="leftTab === 'medicalRecord'">
+            <StationRecordPanel :entry="getEntry('medicalRecord')" :is-zh="lang === 'zh'" />
           </div>
         </div>
       </div>
@@ -119,6 +144,8 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
+import { buildOperationLog } from '@/composables/useOperationLog'
+import StationRecordPanel from '@/components/StationRecordPanel.vue'
 import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
 import { PROJECT_ROUTE_MAP, resolveNextInFlow, advanceToNextStation, ensureStationIndex } from '@/composables/useStationFlow'
@@ -183,6 +210,9 @@ const steps = computed(() => {
 const stepIndex = computed(() => {
   return stationProjects.value.findIndex(p => PROJECT_ROUTE_MAP[p]?.route === route.name)
 })
+
+const logEntries = computed(() => buildOperationLog(store.trainingSession))
+function getEntry(key) { return logEntries.value.find(e => e.key === key) }
 const flowCtx = computed(() => resolveNextInFlow(store, route.name))
 
 const flowSteps = computed(() => {
@@ -406,6 +436,7 @@ onMounted(async () => {
 
 .panel-tabs { display: flex; border-bottom: 1px solid #EBEEF5; flex-shrink: 0; }
 .panel-tab { flex: 1; text-align: center; padding: 12px 8px; font-size: 13px; cursor: pointer; color: #909399; transition: all .15s; }
+.panel-tabs.has-flow .panel-tab { font-size: 12px; padding: 10px 6px; }
 .panel-tab.active { color: #409EFF; border-bottom: 2px solid #409EFF; }
 .panel-content { padding: 12px; overflow-y: auto; flex: 1; }
 
