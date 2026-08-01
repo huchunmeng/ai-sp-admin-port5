@@ -203,7 +203,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
-import { useStationFlow, resolveNextInFlow, advanceToNextStation, ensureStationIndex } from '@/composables/useStationFlow'
+import { useStationFlow, resolveNextInFlow, advanceToNextStation, ensureStationIndex, PROJECT_ROUTE_MAP } from '@/composables/useStationFlow'
 import { useTimer } from '@/composables/useTimer'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { parseVitals } from '@/composables/useUtils'
@@ -297,19 +297,23 @@ const stationProjects = computed(() => {
 })
 
 const steps = computed(() => {
-  if (stationProjects.value.length > 0) return stationProjects.value
+  if (stationProjects.value.length > 0) {
+    return stationProjects.value.map(p => {
+      const mapped = PROJECT_ROUTE_MAP[p]
+      return { label: p, route: mapped?.route || 'ancillaryTests' }
+    })
+  }
   if (store.stationScheme?.length) {
     const st = store.stationScheme[store.currentFlowIndex]
-    return st?.projects || [st?.name].filter(Boolean)
+    const projects = st?.projects || [st?.name].filter(Boolean)
+    return projects.map(p => ({ label: p, route: 'ancillaryTests' }))
   }
-  return [lang.value === 'zh' ? '辅助检查' : 'Ancillary Tests']
+  const label = lang.value === 'zh' ? '辅助检查' : 'Ancillary Tests'
+  return [{ label, route: 'ancillaryTests' }]
 })
 
 const stepIndex = computed(() => {
-  const proj = stationProjects.value
-  if (!proj.length) return 0
-  const idx = proj.findIndex(p => p === (lang.value === 'zh' ? '辅助检查' : 'Ancillary Tests'))
-  return idx >= 0 ? idx : 0
+  return steps.value.findIndex(s => s.route === route.name)
 })
 
 const flowCtx = computed(() => resolveNextInFlow(store, route.name))
