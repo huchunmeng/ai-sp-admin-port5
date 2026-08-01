@@ -1,5 +1,71 @@
 # Changelog
 
+## 2026-08-01
+
+### 临床思维模拟训练 — 设计文档集
+
+- **问题**：临床思维模拟训练（flow mode）相关设计散落在代码和口头沟通中，缺少系统化的交付文档
+- **方案**：在 `docs/临床思维模拟训练/` 下建立三份编号设计文档，均可直接交付AI编码助手复现全部功能
+  - `DESIGN_01_架构与导航.md`（962行）：整体架构、TrainingLayout、TrainingTopBar、useStationFlow流转引擎、数据模型、视图集成模式
+  - `DESIGN_02_左侧信息面板.md`（1111行）：PatientInfoPanel、FloatInfoPanel、StationRecordPanel、useOperationLog六个Extractor、病例数据归一化
+  - `DESIGN_03_AI智能体.md`（2093行）：专家点评+AI伴学五层流水线（原文档重命名+更新至v2.2）
+- **文档更新**：AI智能体设计文档同步至代码变更（AncillaryTestsData新版格式、extractSelectionStation兼容、buildSegmentData/buildCompanionData全部考站注入）
+
+### Flow模式左侧面板 — 操作记录标签页
+
+- **问题**：Flow模式下学员完成辅检/诊断/治疗/病历后，无法在其他考站页面查看已提交的历史操作记录
+- **方案**：Diagnosis、AncillaryTests、TreatmentPlan、MedicalRecord四个视图的左侧面板Tab栏，在flow模式下增加"辅检/诊断/治疗/病历"4个操作记录标签页。复用已有的 `StationRecordPanel.vue` + `useOperationLog.js`
+- **样式**：flow模式7个Tab通过父级 `.panel-tabs.has-flow` 统一缩小字号（13px→12px，padding减小），保持视觉一致性
+- **修复**：`extractAncillaryTests` 适配新版LLM格式（`results` 数组直接包含检查项，不再依赖 `selections` 字段）
+
+### AI智能体 — 全量操作记录读取修复
+
+- **问题**：AI伴学和专家点评在flow模式下仅读取当前考站的操作记录，无法感知其他已完成的考站数据，导致点评和答疑上下文不完整
+- **根因**：三层问题——
+  1. `useExpertContext.js` 的 `extractSelectionStation` 只支持旧版辅检格式（`selections`），新版LLM格式（`results`）返回null
+  2. `useAICompanion.js` 的 `buildCompanionData` 只注入当前考站的摘要
+  3. `useExpertAgent.js` 的 `buildSegmentData` 按意图条件注入（`procedural_guidance`/`comparison_request`/`casual_chat` 意图完全拿不到操作记录）
+- **修复**：
+  1. `extractSelectionStation` 新增新版格式分支（`results` 无 `selections`）优先判断
+  2. `buildCompanionData` 改为遍历全部 `stationsWithActivity`，注入每站的摘要+详情
+  3. `buildSegmentData` 改为 `hasActivity` 时始终注入全部考站的操作记录，不再按意图筛选
+
+### 诊断/辅检模块 — 步骤名称显示修复
+
+- **问题**：接诊病人站下的诊断/辅检模块，TrainingTopBar 步骤名称为空白
+- **根因**：`Diagnosis.vue` 和 `AncillaryTests.vue` 的 `steps` computed 返回的是原始字符串数组，但 `TrainingTopBar` 期望 `{ label, route }` 对象数组
+- **修复**：`steps` 通过 `PROJECT_ROUTE_MAP` 将项目名映射为 `{ label, route }` 对象
+
+### 管理端 — 知识库编辑器扩展
+
+- 专家知识库编辑器（ExpertKBEditor）功能增强：支持更丰富的编辑操作
+- 新增病历知识库编辑器（MedicalRecordKBEditor）：独立编辑病历书写知识库
+
+### 辅助检查模块 — LLM自由文本重写
+
+- **问题**：辅助检查站旧版使用预设选择列表（`selections`），检查项目固定，缺乏灵活性
+- **方案**：重写为LLM生成检查医嘱模式，学员通过自由文本输入检查项目，LLM返回对应的检查结果。数据格式从 `{ selections, results }` 变更为 `{ results: [{ name, category, result, ... }], submittedAt, duration }`
+- **涉及文件**：`AncillaryTests.vue` 重写（~900行→~600行），`useOperationLog.js` 和 `useExpertContext.js` 同步适配
+
+### 文件变更
+
+| 文件 | 变更 |
+|------|------|
+| `docs/临床思维模拟训练/DESIGN_01_架构与导航.md` | 新增 |
+| `docs/临床思维模拟训练/DESIGN_02_左侧信息面板.md` | 新增 |
+| `docs/临床思维模拟训练/DESIGN_03_AI智能体.md` | 重命名+更新（v2.1→v2.2） |
+| `apps/training/src/views/diagnosis/Diagnosis.vue` | 修改 — steps修复 + flow操作记录Tab |
+| `apps/training/src/views/ancillary-tests/AncillaryTests.vue` | 重写 — LLM自由文本模式 + steps修复 + flow操作记录Tab |
+| `apps/training/src/views/treatment-plan/TreatmentPlan.vue` | 修改 — flow操作记录Tab |
+| `apps/training/src/views/medical-record/MedicalRecord.vue` | 修改 — flow操作记录Tab |
+| `apps/training/src/components/StationRecordPanel.vue` | 新增 — 操作记录渲染共享组件 |
+| `apps/training/src/composables/useOperationLog.js` | 修改 — extractAncillaryTests适配新版格式 |
+| `apps/training/src/composables/useAICompanion.js` | 修改 — buildCompanionData遍历全部考站 |
+| `apps/training/src/composables/useExpertAgent.js` | 修改 — buildSegmentData始终注入全部操作记录 |
+| `apps/training/src/composables/useExpertContext.js` | 修改 — extractSelectionStation新增新版辅检格式分支 |
+| `apps/admin/src/components/ExpertKBEditor.vue` | 修改 — 编辑器功能增强 |
+| `apps/admin/src/components/MedicalRecordKBEditor.vue` | 新增 — 病历知识库编辑器 |
+
 ## 2026-07-30
 
 ### AI 伴学智能体 — 五层流水线实现
