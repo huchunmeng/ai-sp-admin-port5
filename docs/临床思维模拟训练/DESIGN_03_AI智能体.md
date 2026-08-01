@@ -1,6 +1,6 @@
 # AI-SP 智能体设计文档
 
-> 版本：v2.1 | 日期：2026-07-30
+> 版本：v2.2 | 日期：2026-08-01
 >
 > 本文档描述两个AI智能体的完整设计：**专家点评智能体** 和 **AI伴学智能体**。
 > 文档目标是：交给AI coding助手后，可直接根据本文档构建和复现两个智能体的全部功能。
@@ -179,17 +179,27 @@ interface PhysicalExamStationData {
   examHistory?: ExamRecord[]
 }
 
+// 新版 LLM 格式（辅助检查站重写后，检查项目直接存入 results，不再使用 selections）
+interface AncillaryTestResult {
+  name: string
+  category?: string
+  categoryLabel?: string
+  result?: string
+  source?: string
+  viewed?: boolean
+}
+
 interface AncillaryTestsData {
-  selections: Selection[]
-  results?: Result[]
+  results: AncillaryTestResult[]
+  submittedAt?: string
+  duration?: number
 }
 
 interface DiagnosisStationData {
   preliminary?: string
   differential?: string
   basis?: string
-  final?: string
-  icdCode?: string
+  differentialDetails?: Array<{ name: string; evidence: string }>
 }
 
 interface CaseAnalysisData {
@@ -544,7 +554,24 @@ function extractSelectionStation(
 ): StationSnapshot | null {
   if (!sessionData) return null
 
-  // 辅助检查站：检测 selections 数组
+  // ★ 新版辅助检查格式（LLM自由文本输入，全部在 results 中，无 selections）
+  if ('results' in sessionData && Array.isArray(sessionData.results) && !('selections' in sessionData)) {
+    const results = sessionData.results
+    if (results.length === 0) return null
+    const names = results.map(r => r.name).filter(Boolean)
+    const viewed = results.filter(r => r.viewed)
+    const parts = [`共${results.length}项辅助检查：${names.join('、')}`]
+    if (viewed.length > 0) parts.push(`已查看${viewed.length}项检查结果`)
+    return {
+      hasActivity: true,
+      summary: parts.join('。'),
+      detail: names.join('\n'),
+      category: 'selection',
+      stationLabel: '',
+    }
+  }
+
+  // 旧版辅助检查格式（selections + results 分离，已废弃，保留兼容）
   if ('selections' in sessionData && Array.isArray(sessionData.selections)) {
     const selected = sessionData.selections
     if (selected.length === 0) return null
@@ -565,15 +592,14 @@ function extractSelectionStation(
 
   // 诊断站/初步诊断站：检测诊断字段
   const diag = sessionData as DiagnosisStationData
-  const { preliminary, differential, basis, final, icdCode } = diag
+  const { preliminary, differential, basis } = diag
 
-  if (!preliminary && !differential && !basis && !final) return null
+  if (!preliminary && !differential && !basis) return null
 
   const parts: string[] = []
   if (preliminary) parts.push(`初步诊断：${preliminary}`)
   if (differential) parts.push(`鉴别诊断：${differential}`)
   if (basis) parts.push(`诊断依据：${basis.slice(0, 300)}`)
-  if (final) parts.push(`最终诊断：${final}${icdCode ? `（ICD：${icdCode}）` : ''}`)
 
   return {
     hasActivity: true,
@@ -891,7 +917,7 @@ function buildSegmentRole(expertData: ExpertData, stationLabel: string): string 
 }
 ```
 
-#### 段2：数据段（按意图选择数据源）
+#### 段2：数据段（注入病例信息 + 知识库 + 全部已提交考站操作记录）
 
 ```typescript
 function buildSegmentData(
@@ -918,35 +944,17 @@ function buildSegmentData(
   const { primaryIntent } = intent
   const hasActivity = ctx.global.hasAnyActivity
 
-  // 按意图选择注入操作数据
-  if (primaryIntent === 'review_request' && hasActivity) {
-    const targetIds = ctx.global.stationsWithActivity
-    if (targetIds.length > 0) {
-      parts.push('学员操作记录：')
-      for (const sid of targetIds) {
-        const snap = ctx.stationSnapshots[sid]
-        if (snap?.hasActivity) {
-          parts.push(`【${snap.stationLabel}】${snap.summary}`)
-          if (snap.detail) parts.push(snap.detail)
-        }
-      }
-    }
-  } else if (primaryIntent === 'cross_station_review' && hasActivity) {
+  // ★ 只要学员有任何操作记录，就注入全部考站的活动摘要
+  // 让 LLM 自行判断哪些信息与当前问题相关，而非按意图硬性筛选
+  if (hasActivity) {
     const visited = ctx.global.stationsWithActivity
-    parts.push(`学员已完成${visited.length}个考站的训练：${visited.map(sid => ctx.stationSnapshots[sid]?.stationLabel || sid).join('、')}`)
-    parts.push('各站操作摘要：')
+    parts.push('学员操作记录：')
     for (const sid of visited) {
       const snap = ctx.stationSnapshots[sid]
       if (snap?.hasActivity) {
         parts.push(`【${snap.stationLabel}】${snap.summary}`)
         if (snap.detail) parts.push(snap.detail)
       }
-    }
-  } else if (primaryIntent === 'knowledge_question' && hasActivity) {
-    const recent = ctx.global.recentActivityStation
-    if (recent) {
-      const snap = ctx.stationSnapshots[recent]
-      parts.push(`学员最近在${snap.stationLabel}的操作（可用于举例）：${snap.summary}`)
     }
   }
 
@@ -1328,14 +1336,18 @@ function buildCompanionData(
     if (caseInfo.specialty) parts.push(`科室：${caseInfo.specialty}`)
   }
 
-  // 简要活动上下文（用于举例，不用于点评）
+  // ★ 注入全部已完成考站的操作记录（用于举例和引导，不用于点评）
   const hasActivity = ctx.global.hasAnyActivity
   if (hasActivity) {
     const visited = ctx.global.stationsWithActivity
     parts.push(`学员已完成${visited.length}个考站的训练：${visited.map(sid => ctx.stationSnapshots[sid]?.stationLabel || sid).join('、')}`)
-    const current = ctx.stationSnapshots[ctx.currentStation.id]
-    if (current?.hasActivity) {
-      parts.push(`当前考站操作摘要：${current.summary}`)
+    parts.push('各站操作记录：')
+    for (const sid of visited) {
+      const snap = ctx.stationSnapshots[sid]
+      if (snap?.hasActivity) {
+        parts.push(`【${snap.stationLabel}】${snap.summary}`)
+        if (snap.detail) parts.push(snap.detail)
+      }
     }
   } else {
     parts.push('学员尚未开始操作训练。')

@@ -95,36 +95,15 @@ function buildSegmentData(ctx, intent, caseInfo, expertData) {
   const { primaryIntent } = intent
   const hasActivity = ctx.global.hasAnyActivity
 
-  // 按意图选择数据注入
-  if (primaryIntent === 'review_request' && hasActivity) {
-    const targetIds = ctx.global.stationsWithActivity
-    if (targetIds.length > 0) {
-      parts.push('学员操作记录：')
-      for (const sid of targetIds) {
-        const snap = ctx.stationSnapshots[sid]
-        if (snap?.hasActivity) {
-          parts.push(`【${snap.stationLabel}】${snap.summary}`)
-          if (snap.detail) parts.push(snap.detail)
-        }
-      }
-    }
-  } else if (primaryIntent === 'cross_station_review' && hasActivity) {
+  if (hasActivity) {
     const visited = ctx.global.stationsWithActivity
-    parts.push(`学员已完成${visited.length}个考站的训练：${visited.map(sid => ctx.stationSnapshots[sid]?.stationLabel || sid).join('、')}`)
-    parts.push('各站操作摘要：')
+    parts.push('学员操作记录：')
     for (const sid of visited) {
       const snap = ctx.stationSnapshots[sid]
       if (snap?.hasActivity) {
         parts.push(`【${snap.stationLabel}】${snap.summary}`)
         if (snap.detail) parts.push(snap.detail)
       }
-    }
-  } else if (primaryIntent === 'knowledge_question' && hasActivity) {
-    // 知识问题：给简要操作上下文，帮助举例
-    const recent = ctx.global.recentActivityStation
-    if (recent) {
-      const snap = ctx.stationSnapshots[recent]
-      parts.push(`学员最近在${snap.stationLabel}的操作（可用于举例）：${snap.summary}`)
     }
   }
 

@@ -83,7 +83,18 @@ function extractPhysicalExam(sessionData) {
 function extractSelectionStation(sessionData) {
   if (!sessionData) return null
 
-  // 辅助检查站
+  // 辅助检查站 — 新版格式（LLM自由文本输入，全部在 results 中，无 selections）
+  if (sessionData.results && Array.isArray(sessionData.results) && !sessionData.selections) {
+    const results = sessionData.results
+    if (results.length === 0) return null
+    const names = results.map(r => r.name).filter(Boolean)
+    const viewed = results.filter(r => r.viewed)
+    const parts = [`共${results.length}项辅助检查：${names.join('、')}`]
+    if (viewed.length > 0) parts.push(`已查看${viewed.length}项检查结果`)
+    return { hasActivity: true, summary: parts.join('。'), detail: names.join('\n') }
+  }
+
+  // 辅助检查站 — 旧版格式（selections + results 分离）
   if (sessionData.selections && Array.isArray(sessionData.selections)) {
     const selected = sessionData.selections
     if (selected.length === 0) return null

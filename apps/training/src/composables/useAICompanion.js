@@ -95,9 +95,13 @@ function buildCompanionData(ctx, intent, caseInfo) {
   if (hasActivity) {
     const visited = ctx.global.stationsWithActivity
     parts.push(`学员已完成${visited.length}个考站的训练：${visited.map(sid => ctx.stationSnapshots[sid]?.stationLabel || sid).join('、')}`)
-    const current = ctx.stationSnapshots[ctx.currentStation.id]
-    if (current?.hasActivity) {
-      parts.push(`当前考站操作摘要：${current.summary}`)
+    parts.push('各站操作记录：')
+    for (const sid of visited) {
+      const snap = ctx.stationSnapshots[sid]
+      if (snap?.hasActivity) {
+        parts.push(`【${snap.stationLabel}】${snap.summary}`)
+        if (snap.detail) parts.push(snap.detail)
+      }
     }
   } else {
     parts.push('学员尚未开始操作训练。')
