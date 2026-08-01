@@ -1,22 +1,25 @@
 # AI-SP 智能体设计文档
 
-> 版本：v2.0 | 日期：2026-07-30
+> 版本：v2.1 | 日期：2026-07-30
 >
 > 本文档描述两个AI智能体的完整设计：**专家点评智能体** 和 **AI伴学智能体**。
 > 文档目标是：交给AI coding助手后，可直接根据本文档构建和复现两个智能体的全部功能。
+>
+> 代码示例全部使用 TypeScript，包含完整的类型定义和接口声明。
 
 ---
 
 ## 目录
 
 1. [双智能体概览](#1-双智能体概览)
-2. [共享基础设施](#2-共享基础设施)
-3. [专家点评智能体](#3-专家点评智能体)
-4. [AI伴学智能体](#4-ai伴学智能体)
-5. [前端集成](#5-前端集成)
-6. [文件清单与依赖关系](#6-文件清单与依赖关系)
-7. [配置与扩展](#7-配置与扩展)
-8. [设计决策记录](#8-设计决策记录)
+2. [共享类型定义](#2-共享类型定义)
+3. [共享基础设施](#3-共享基础设施)
+4. [专家点评智能体](#4-专家点评智能体)
+5. [AI伴学智能体](#5-ai伴学智能体)
+6. [前端集成](#6-前端集成)
+7. [文件清单与依赖关系](#7-文件清单与依赖关系)
+8. [配置与扩展](#8-配置与扩展)
+9. [设计决策记录](#9-设计决策记录)
 
 ---
 
@@ -28,7 +31,7 @@
 
 | 维度 | 专家点评智能体 | AI伴学智能体 |
 |------|-------------|------------|
-| **Tab名称** | 专家点评 | 智能问答 |
+| **Tab名称** | 专家点评 | AI伴学 |
 | **人设** | 真实临床专家（如滕皋军院士），有姓名、职称、头像 | 虚拟教学助手，无具体身份 |
 | **核心能力** | 点评学员操作表现，指出不足和改进方向 | 答疑解惑、引导思考、讲解知识 |
 | **知识来源** | 专家编撰的 `expertKB`（病例专属知识库） | 通用医学知识 + 病例基本信息 |
@@ -37,20 +40,21 @@
 | **语气风格** | 权威、评判性、第一人称"我" | 支持性、引导性、苏格拉底式反问 |
 | **推荐问题方向** | 追问不足、改进建议 | 探索知识、深入理解 |
 | **配置文件** | `/data/cases/{caseId}-expert.json` | 无额外配置，使用病例基本信息 |
+| **文件** | `useExpertAgent.ts` | `useAICompanion.ts` |
 
 ### 1.2 共享与分治
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    共享基础设施                           │
-│  useAIChat.js          ← LLM HTTP调用（两个智能体共用）     │
-│  useExpertContext.js   ← 活动感知 + Data Extractors（共用） │
+│  useAIChat.ts          ← LLM HTTP调用（两个智能体共用）     │
+│  useExpertContext.ts   ← 活动感知 + Data Extractors（共用） │
 │  AICompanionDrawer.vue ← UI层（两个Tab共用一个组件）        │
 └─────────────────────────────────────────────────────────┘
           │                              │
           ▼                              ▼
 ┌──────────────────┐          ┌──────────────────┐
-│ useExpertAgent.js│          │ useAICompanion.js │
+│ useExpertAgent.ts│          │ useAICompanion.ts │
 │  专家点评智能体    │          │  AI伴学智能体      │
 │  (五层流水线)     │          │  (五层流水线)      │
 └──────────────────┘          └──────────────────┘
@@ -60,22 +64,306 @@
 
 ---
 
-## 2. 共享基础设施
+## 2. 共享类型定义
 
-### 2.1 useAIChat.js — LLM调用封装
+本章定义全文所有模块共用的 TypeScript 类型。后续各章代码直接引用这些类型。
+
+### 2.1 LLM 通信类型
+
+```typescript
+interface LLMMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface LLMOptions {
+  temperature?: number
+  maxTokens?: number
+  timeout?: number
+  model?: string
+}
+
+interface LLMResult {
+  ok: boolean
+  content: string
+}
+
+interface LLMRequest {
+  messages: LLMMessage[]
+  system: string
+  temperature: number
+  max_tokens: number
+  model?: string
+}
+
+interface LLMResponse {
+  ok: boolean
+  content?: string
+  error?: string
+}
+```
+
+### 2.2 考站与消息类型
+
+```typescript
+type StationCategory = 'dialog' | 'selection' | 'text-input' | 'special'
+
+type StationId =
+  | 'historyTaking'
+  | 'physicalExam'
+  | 'mentalExam'
+  | 'humanisticComm'
+  | 'ancillaryTests'
+  | 'diagnosis'
+  | 'preliminaryDiag'
+  | 'caseAnalysis'
+  | 'medicalRecord'
+  | 'treatmentPlan'
+
+interface Message {
+  role: 'user' | 'sp' | 'system'
+  content: string
+}
+
+interface ExamRecord {
+  original: string
+  lower: string
+}
+
+interface Selection {
+  name: string
+  [key: string]: unknown
+}
+
+interface Result {
+  viewed: boolean
+  [key: string]: unknown
+}
+```
+
+### 2.3 TrainingSession 类型
+
+由各考站运行时写入，是扁平的 key-value 对象：
+
+```typescript
+interface TrainingSession {
+  // 对话类考站
+  historyTaking?:   DialogStationData
+  mentalExam?:      DialogStationData
+  humanisticComm?:  DialogStationData
+
+  // 体格检查（特殊对话类）
+  physicalExam?: PhysicalExamStationData
+
+  // 选择类考站
+  ancillaryTests?:  AncillaryTestsData | DiagnosisStationData
+  diagnosis?:       DiagnosisStationData
+  preliminaryDiag?: DiagnosisStationData
+
+  // 文本输入类考站
+  caseAnalysis?:    CaseAnalysisData
+  medicalRecord?:   string                // 纯文本
+  treatmentPlan?:   TreatmentPlanData
+
+  [key: string]: unknown
+}
+
+interface DialogStationData {
+  messages: Message[]
+  notes?: string
+  markedCount?: number
+}
+
+interface PhysicalExamStationData {
+  messages: Message[]
+  examHistory?: ExamRecord[]
+}
+
+interface AncillaryTestsData {
+  selections: Selection[]
+  results?: Result[]
+}
+
+interface DiagnosisStationData {
+  preliminary?: string
+  differential?: string
+  basis?: string
+  final?: string
+  icdCode?: string
+}
+
+interface CaseAnalysisData {
+  questions: string[]
+  answers: string[]
+}
+
+interface TreatmentPlanData {
+  content: string
+}
+```
+
+### 2.4 活动感知类型
+
+```typescript
+interface StationSnapshot {
+  hasActivity: boolean
+  category: StationCategory
+  stationLabel: string
+  summary: string | null
+  detail: string | null
+}
+
+interface ActivityContext {
+  currentStation: {
+    id: string
+    label: string
+    category: StationCategory
+  }
+  stationSnapshots: Record<string, StationSnapshot>
+  global: {
+    stationsWithActivity: string[]
+    stationsWithoutActivity: string[]
+    recentActivityStation: string | null
+    totalVisited: number
+    hasAnyActivity: boolean
+  }
+}
+```
+
+### 2.5 病例与专家配置类型
+
+```typescript
+interface CaseInfo {
+  name: string
+  age: string | number
+  gender: string
+  chiefComplaint: string
+  disease: string
+  specialty: string
+}
+
+interface ExpertData {
+  expertName: string
+  expertTitle: string
+  expertAvatar: string
+  expertTags: string[]
+  expertKB: string
+  reviewTitle: string
+}
+```
+
+### 2.6 意图类型（专家智能体）
+
+```typescript
+type ExpertIntent =
+  | 'review_request'
+  | 'knowledge_question'
+  | 'procedural_guidance'
+  | 'comparison_request'
+  | 'cross_station_review'
+  | 'casual_chat'
+
+interface ExpertIntentResult {
+  primaryIntent: ExpertIntent
+  allIntents: Array<{ intent: ExpertIntent; score: number; confidence: number }>
+  confidence: number
+  hasStationRef: boolean
+  needsLLMFallback: boolean
+}
+```
+
+### 2.7 意图类型（AI伴学智能体）
+
+```typescript
+type CompanionIntent =
+  | 'concept_explanation'
+  | 'procedural_guidance'
+  | 'differential_help'
+  | 'case_understanding'
+  | 'casual_chat'
+
+interface CompanionIntentResult {
+  primaryIntent: CompanionIntent
+  allIntents: Array<{ intent: CompanionIntent; score: number; confidence: number }>
+  confidence: number
+  isReviewRequest: boolean
+  needsLLMFallback: boolean
+}
+```
+
+### 2.8 回复策略类型
+
+```typescript
+interface ResponseStrategy {
+  temperature: number
+  maxTokens: number
+}
+```
+
+### 2.9 智能体返回类型
+
+```typescript
+interface AgentResponse {
+  text: string
+  followUps: string[]
+  intent: ExpertIntent | CompanionIntent
+}
+
+// 专家智能体特有
+interface ExpertAgentResponse extends AgentResponse {
+  intent: ExpertIntent
+}
+
+// AI伴学智能体特有
+interface CompanionAgentResponse extends AgentResponse {
+  intent: CompanionIntent
+  isReviewRequest: boolean
+}
+```
+
+### 2.10 UI消息类型
+
+```typescript
+interface UIMessage {
+  type: 'user' | 'ai'
+  text: string
+  html?: string
+  followUps?: string[]
+}
+```
+
+---
+
+## 3. 共享基础设施
+
+### 3.1 useAIChat.ts — LLM调用封装
 
 纯HTTP封装，与业务完全无关。两个智能体各自实例化使用。
 
-**文件：`apps/training/src/composables/useAIChat.js`**
+**文件：`apps/training/src/composables/useAIChat.ts`**
 
-```javascript
-import { ref } from 'vue'
+```typescript
+import { ref, type Ref } from 'vue'
 
-export function useAIChat() {
+interface UseAIChatReturn {
+  sendMessage: (
+    messages: LLMMessage[],
+    systemPrompt: string,
+    opts?: LLMOptions
+  ) => Promise<LLMResult>
+  loading: Ref<boolean>
+  error: Ref<string | null>
+}
+
+export function useAIChat(): UseAIChatReturn {
   const loading = ref(false)
-  const error = ref(null)
+  const error = ref<string | null>(null)
 
-  async function sendMessage(messages, systemPrompt, opts = {}) {
+  async function sendMessage(
+    messages: LLMMessage[],
+    systemPrompt: string,
+    opts: LLMOptions = {}
+  ): Promise<LLMResult> {
     loading.value = true
     error.value = null
 
@@ -91,24 +379,24 @@ export function useAIChat() {
           system: systemPrompt,
           temperature: opts.temperature ?? 0.7,
           max_tokens: opts.maxTokens ?? 2000,
-          model: opts.model || undefined
-        }),
-        signal: controller.signal
+          model: opts.model || undefined,
+        } satisfies LLMRequest),
+        signal: controller.signal,
       })
       clearTimeout(timeout)
 
-      const json = await resp.json()
+      const json: LLMResponse = await resp.json()
       if (!json.ok) {
         error.value = json.error || 'LLM request failed'
         return { ok: false, content: '抱歉，AI服务暂时不可用，请稍后再试。' }
       }
-      return { ok: true, content: json.content }
-    } catch (e) {
-      if (e.name === 'AbortError') {
+      return { ok: true, content: json.content! }
+    } catch (e: unknown) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
         error.value = '请求超时，请重试'
         return { ok: false, content: '抱歉，请求超时，请稍后再试。' }
       }
-      error.value = e.message
+      error.value = e instanceof Error ? e.message : '未知错误'
       return { ok: false, content: '抱歉，网络异常，请稍后再试。' }
     } finally {
       loading.value = false
@@ -141,52 +429,52 @@ export function useAIChat() {
 { "ok": false, "error": "错误描述" }
 ```
 
-### 2.2 useExpertContext.js — 活动感知层（两个智能体共用）
+### 3.2 useExpertContext.ts — 活动感知层（两个智能体共用）
 
 这是第一层（活动感知层），两个智能体都依赖它获取学员在各考站的操作摘要。
 
-**文件：`apps/training/src/composables/useExpertContext.js`**
+**文件：`apps/training/src/composables/useExpertContext.ts`**
 
 **依赖：** `@ai-sp/shared` 中的 `STATION_TO_SESSION_KEY` 和 `STATION_ID_TO_LABEL`
 
-#### 2.2.1 考站分类体系
+#### 3.2.1 考站分类体系
 
-```javascript
-const STATION_CATEGORY = {
-  historyTaking: 'dialog',
-  physicalExam: 'dialog',
-  mentalExam: 'dialog',
+```typescript
+const STATION_CATEGORY: Record<string, StationCategory> = {
+  historyTaking:  'dialog',
+  physicalExam:   'dialog',
+  mentalExam:     'dialog',
   humanisticComm: 'dialog',
   ancillaryTests: 'selection',
-  diagnosis: 'selection',
-  preliminaryDiag: 'selection',
-  caseAnalysis: 'text-input',
-  medicalRecord: 'text-input',
-  treatmentPlan: 'text-input',
+  diagnosis:      'selection',
+  preliminaryDiag:'selection',
+  caseAnalysis:   'text-input',
+  medicalRecord:  'text-input',
+  treatmentPlan:  'text-input',
 }
 ```
 
-#### 2.2.2 路由名→Session Key 映射
+#### 3.2.2 路由名→Session Key 映射
 
-```javascript
+```typescript
 import { STATION_TO_SESSION_KEY } from '@ai-sp/shared'
 
 // 补充 STATION_TO_SESSION_KEY 缺失的映射
-const ROUTE_TO_SESSION_KEY = {
+const ROUTE_TO_SESSION_KEY: Record<string, string> = {
   ...STATION_TO_SESSION_KEY,
   ancillaryTests: 'ancillaryTests',
   diagnosis: 'diagnosis',
 }
 ```
 
-#### 2.2.3 Data Extractor 实现
+#### 3.2.3 Data Extractor 实现
 
-每个Extractor输入：`trainingSession[sessionKey]`（单个考站的原始数据），输出：`{ hasActivity: boolean, summary: string, detail: string } | null`
+每个Extractor输入：`trainingSession[sessionKey]`（单个考站的原始数据），输出：`StationSnapshot | null`
 
 **Extractor 1 — 对话类考站（病史采集/精神检查/人文沟通）：**
 
-```javascript
-function extractDialogStation(sessionData) {
+```typescript
+function extractDialogStation(sessionData: DialogStationData | undefined): StationSnapshot | null {
   const messages = sessionData?.messages || []
   const notes = sessionData?.notes || ''
   const markedCount = sessionData?.markedCount || 0
@@ -194,7 +482,7 @@ function extractDialogStation(sessionData) {
 
   const userMsgs = messages.filter(m => m.role === 'user')
   const spMsgs = messages.filter(m => m.role === 'sp')
-  const parts = [`共${messages.length}轮对话（学员发言${userMsgs.length}条）`]
+  const parts: string[] = [`共${messages.length}轮对话（学员发言${userMsgs.length}条）`]
 
   if (markedCount > 0) parts.push(`学员标记了${markedCount}条重要信息作为笔记`)
   if (notes) parts.push(`学员笔记：${notes.slice(0, 200)}`)
@@ -211,19 +499,23 @@ function extractDialogStation(sessionData) {
     summary: parts.join('。'),
     detail: messages.filter(m => m.role === 'user').slice(-5)
       .map(m => `学员：${m.content}`).join('\n'),
+    category: 'dialog',
+    stationLabel: '',
   }
 }
 ```
 
 **Extractor 2 — 体格检查（特殊对话类）：**
 
-```javascript
-function extractPhysicalExam(sessionData) {
+```typescript
+function extractPhysicalExam(
+  sessionData: PhysicalExamStationData | undefined
+): StationSnapshot | null {
   const messages = sessionData?.messages || []
   const examHistory = sessionData?.examHistory || []
   if (messages.length === 0 && examHistory.length === 0) return null
 
-  const parts = []
+  const parts: string[] = []
   if (examHistory.length > 0) {
     const operations = examHistory.slice(-15)
       .map(e => e.original || e.lower).filter(Boolean)
@@ -238,90 +530,132 @@ function extractPhysicalExam(sessionData) {
     hasActivity: true,
     summary: parts.join('。'),
     detail: messages.slice(-5).map(m => `系统：${m.content?.slice(0, 100)}`).join('\n'),
+    category: 'dialog',
+    stationLabel: '',
   }
 }
 ```
 
 **Extractor 3 — 选择类考站（辅助检查/诊断/初步诊断）：**
 
-```javascript
-function extractSelectionStation(sessionData) {
+```typescript
+function extractSelectionStation(
+  sessionData: AncillaryTestsData | DiagnosisStationData | undefined
+): StationSnapshot | null {
   if (!sessionData) return null
 
   // 辅助检查站：检测 selections 数组
-  if (sessionData.selections && Array.isArray(sessionData.selections)) {
+  if ('selections' in sessionData && Array.isArray(sessionData.selections)) {
     const selected = sessionData.selections
     if (selected.length === 0) return null
     const names = selected.map(s => s.name).filter(Boolean)
-    const results = sessionData.results?.filter(r => r.viewed) || []
+    const results = ('results' in sessionData
+      ? (sessionData as AncillaryTestsData).results?.filter(r => r.viewed)
+      : []) || []
     const parts = [`选择了${selected.length}项辅助检查：${names.join('、')}`]
     if (results.length > 0) parts.push(`已查看${results.length}项检查结果`)
-    return { hasActivity: true, summary: parts.join('。'), detail: names.join('\n') }
+    return {
+      hasActivity: true,
+      summary: parts.join('。'),
+      detail: names.join('\n'),
+      category: 'selection',
+      stationLabel: '',
+    }
   }
 
   // 诊断站/初步诊断站：检测诊断字段
-  const preliminary = sessionData.preliminary || ''
-  const differential = sessionData.differential || ''
-  const basis = sessionData.basis || ''
-  const final = sessionData.final || ''
-  const icdCode = sessionData.icdCode || ''
+  const diag = sessionData as DiagnosisStationData
+  const { preliminary, differential, basis, final, icdCode } = diag
 
   if (!preliminary && !differential && !basis && !final) return null
 
-  const parts = []
+  const parts: string[] = []
   if (preliminary) parts.push(`初步诊断：${preliminary}`)
   if (differential) parts.push(`鉴别诊断：${differential}`)
   if (basis) parts.push(`诊断依据：${basis.slice(0, 300)}`)
   if (final) parts.push(`最终诊断：${final}${icdCode ? `（ICD：${icdCode}）` : ''}`)
 
-  return { hasActivity: true, summary: parts.join('；'), detail: parts.join('\n') }
+  return {
+    hasActivity: true,
+    summary: parts.join('；'),
+    detail: parts.join('\n'),
+    category: 'selection',
+    stationLabel: '',
+  }
 }
 ```
 
 **Extractor 4 — 文本输入类考站（临床思维/病历书写/治疗计划）：**
 
-```javascript
-function extractTextInputStation(sessionData) {
+```typescript
+function extractTextInputStation(
+  sessionData: CaseAnalysisData | string | TreatmentPlanData | undefined
+): StationSnapshot | null {
   if (!sessionData) return null
 
   // 临床思维站：{ questions, answers }
-  if (sessionData.answers && sessionData.questions) {
-    const answered = sessionData.answers.filter(Boolean).length
+  if (typeof sessionData === 'object' && 'answers' in sessionData && 'questions' in sessionData) {
+    const ca = sessionData as CaseAnalysisData
+    const answered = ca.answers.filter(Boolean).length
     if (answered === 0) return null
-    const parts = [`共${sessionData.questions.length}道病例分析题，已作答${answered}题`]
-    sessionData.answers.forEach((ans, i) => {
+    const parts: string[] = [`共${ca.questions.length}道病例分析题，已作答${answered}题`]
+    ca.answers.forEach((ans, i) => {
       if (ans) parts.push(`第${i + 1}题答案：${ans.slice(0, 150)}`)
     })
-    return { hasActivity: true, summary: parts[0], detail: parts.join('\n') }
+    return {
+      hasActivity: true,
+      summary: parts[0],
+      detail: parts.join('\n'),
+      category: 'text-input',
+      stationLabel: '',
+    }
   }
 
   // 病历书写站：纯文本字符串
   if (typeof sessionData === 'string') {
     const text = sessionData.trim()
     if (!text) return null
-    return { hasActivity: true, summary: `已撰写病历，共${text.length}字`, detail: text.slice(0, 500) }
+    return {
+      hasActivity: true,
+      summary: `已撰写病历，共${text.length}字`,
+      detail: text.slice(0, 500),
+      category: 'text-input',
+      stationLabel: '',
+    }
   }
 
   // 治疗计划站：{ content }
-  if (sessionData.content) {
-    return { hasActivity: true, summary: `已制定治疗计划，共${sessionData.content.length}字`, detail: sessionData.content.slice(0, 500) }
+  if (typeof sessionData === 'object' && 'content' in sessionData) {
+    const tp = sessionData as TreatmentPlanData
+    return {
+      hasActivity: true,
+      summary: `已制定治疗计划，共${tp.content.length}字`,
+      detail: tp.content.slice(0, 500),
+      category: 'text-input',
+      stationLabel: '',
+    }
   }
 
   return null
 }
 ```
 
-#### 2.2.4 主入口：buildActivityContext
+#### 3.2.4 主入口：buildActivityContext
 
-```javascript
-export function buildActivityContext(routeName, trainingSession) {
+```typescript
+import { STATION_ID_TO_LABEL, getStationLabel } from '@ai-sp/shared'
+
+export function buildActivityContext(
+  routeName: string,
+  trainingSession: TrainingSession
+): ActivityContext {
   const currentStationId = routeName || ''
   const currentStationLabel = STATION_ID_TO_LABEL[currentStationId] || currentStationId
   const currentCategory = getStationCategory(currentStationId)
 
-  const stationSnapshots = {}
-  const stationsWithActivity = []
-  let recentActivityStation = null
+  const stationSnapshots: Record<string, StationSnapshot> = {}
+  const stationsWithActivity: string[] = []
+  let recentActivityStation: string | null = null
 
   const allKeys = trainingSession ? Object.keys(trainingSession) : []
 
@@ -333,16 +667,16 @@ export function buildActivityContext(routeName, trainingSession) {
     if (!stationId) continue
 
     const category = getStationCategory(stationId)
-    let snapshot = null
+    let snapshot: StationSnapshot | null = null
 
     if (stationId === 'physicalExam') {
-      snapshot = extractPhysicalExam(sessionData)
+      snapshot = extractPhysicalExam(sessionData as PhysicalExamStationData)
     } else if (category === 'dialog') {
-      snapshot = extractDialogStation(sessionData)
+      snapshot = extractDialogStation(sessionData as DialogStationData)
     } else if (category === 'selection') {
-      snapshot = extractSelectionStation(sessionData)
+      snapshot = extractSelectionStation(sessionData as AncillaryTestsData | DiagnosisStationData)
     } else if (category === 'text-input') {
-      snapshot = extractTextInputStation(sessionData)
+      snapshot = extractTextInputStation(sessionData as CaseAnalysisData | string | TreatmentPlanData)
     }
 
     if (snapshot) {
@@ -355,13 +689,15 @@ export function buildActivityContext(routeName, trainingSession) {
   }
 
   // 标记所有无活动的考站
-  const stationsWithoutActivity = []
+  const stationsWithoutActivity: string[] = []
   for (const [stationId, category] of Object.entries(STATION_CATEGORY)) {
     if (!stationSnapshots[stationId]) {
       stationSnapshots[stationId] = {
-        hasActivity: false, category,
+        hasActivity: false,
+        category,
         stationLabel: STATION_ID_TO_LABEL[stationId] || stationId,
-        summary: null, detail: null,
+        summary: null,
+        detail: null,
       }
       stationsWithoutActivity.push(stationId)
     }
@@ -381,7 +717,7 @@ export function buildActivityContext(routeName, trainingSession) {
 }
 
 // sessionKey → stationId 反向查找
-function findStationIdBySessionKey(sessionKey) {
+function findStationIdBySessionKey(sessionKey: string): string | null {
   for (const [stationId, key] of Object.entries(ROUTE_TO_SESSION_KEY)) {
     if (key === sessionKey) return stationId
   }
@@ -392,96 +728,44 @@ function findStationIdBySessionKey(sessionKey) {
   return null
 }
 
-export function getStationCategory(stationId) {
+export function getStationCategory(stationId: string): StationCategory {
   return STATION_CATEGORY[stationId] || 'special'
-}
-```
-
-#### 2.2.5 数据模型：ActivityContext
-
-```typescript
-interface ActivityContext {
-  currentStation: {
-    id: string           // 路由名，如 'historyTaking'
-    label: string        // 中文名，如 '接诊病人站'
-    category: string     // 'dialog' | 'selection' | 'text-input' | 'special'
-  }
-  stationSnapshots: {
-    [stationId: string]: {
-      hasActivity: boolean
-      category: string
-      stationLabel: string
-      summary: string | null   // 自然语言摘要
-      detail: string | null    // 详细数据（截断后）
-    }
-  }
-  global: {
-    stationsWithActivity: string[]
-    stationsWithoutActivity: string[]
-    recentActivityStation: string | null
-    totalVisited: number
-    hasAnyActivity: boolean
-  }
-}
-```
-
-#### 2.2.6 数据模型：trainingSession
-
-```typescript
-// trainingSession 由各考站运行时写入，是扁平的 key-value 对象
-interface TrainingSession {
-  // 对话类
-  historyTaking?:     { messages: Message[], notes?: string, markedCount?: number }
-  mentalExam?:        { messages: Message[], notes?: string, markedCount?: number }
-  humanisticComm?:    { messages: Message[], notes?: string, markedCount?: number }
-
-  // 体格检查（特殊对话类）
-  physicalExam?:      { messages: Message[], examHistory?: ExamRecord[] }
-
-  // 选择类
-  ancillaryTests?:    { selections: Selection[], results?: Result[] }
-                      // 或诊断类字段：
-                      // { preliminary?: string, differential?: string, basis?: string, final?: string, icdCode?: string }
-  diagnosis?:         { preliminary?: string, differential?: string, basis?: string, final?: string, icdCode?: string }
-  preliminaryDiag?:   { preliminary?: string, differential?: string, basis?: string, final?: string, icdCode?: string }
-
-  // 文本输入类
-  caseAnalysis?:      { questions: string[], answers: string[] }
-  medicalRecord?:     string              // 纯文本
-  treatmentPlan?:     { content: string }
-}
-
-interface Message {
-  role: 'user' | 'sp' | 'system'
-  content: string
 }
 ```
 
 ---
 
-## 3. 专家点评智能体
+## 4. 专家点评智能体
 
-### 3.1 概述
+### 4.1 概述
 
-**文件：`apps/training/src/composables/useExpertAgent.js`**
+**文件：`apps/training/src/composables/useExpertAgent.ts`**
 
-**依赖：** `useExpertContext.js`, `useAIChat.js`, `@ai-sp/shared`
+**依赖：** `useExpertContext.ts`, `useAIChat.ts`, `@ai-sp/shared`
 
 **导出接口：**
 
-```javascript
-export function useExpertAgent() {
-  return {
-    askExpert,            // 主入口 — 完整五层编排
-    expertAiLoading,      // 加载状态 ref
-    buildActivityContext, // 暴露第一层（供调试/AI伴学复用）
-    classifyIntent,       // 暴露第二层（供调试）
-    getStationLabel,      // 工具函数
-  }
+```typescript
+interface UseExpertAgentReturn {
+  askExpert: (
+    expertData: ExpertData,
+    caseInfo: CaseInfo | null,
+    stationLabel: string,
+    routeName: string,
+    trainingSession: TrainingSession,
+    messages: UIMessage[],
+    question: string
+  ) => Promise<ExpertAgentResponse | null>
+  expertAiLoading: Ref<boolean>
+  buildActivityContext: typeof buildActivityContext
+  classifyIntent: (userMessage: string) => ExpertIntentResult
+  getStationLabel: (routeName: string) => string
 }
+
+export function useExpertAgent(): UseExpertAgentReturn { ... }
 ```
 
-### 3.2 专家配置数据模型
+### 4.2 专家配置数据模型
 
 **文件位置：`apps/admin/public/data/cases/{caseId}-expert.json`**
 
@@ -500,16 +784,16 @@ export function useExpertAgent() {
 
 | 字段 | 类型 | 必填 | 用途 |
 |------|------|------|------|
-| `caseId` | string | 是 | 关联病例 |
-| `expertEnabled` | boolean | 是 | 功能开关 |
-| `expertName` | string | 是 | 注入Prompt角色段 |
-| `expertTitle` | string | 是 | 注入Prompt角色段 |
-| `expertAvatar` | string | 否 | UI头像 |
-| `expertTags` | string[] | 否 | UI标签 |
-| `reviewTitle` | string | 否 | 展示用标题 |
-| `expertKB` | string | 是 | 专家知识库全文，注入Prompt数据段 |
+| `caseId` | `string` | 是 | 关联病例 |
+| `expertEnabled` | `boolean` | 是 | 功能开关 |
+| `expertName` | `string` | 是 | 注入Prompt角色段 |
+| `expertTitle` | `string` | 是 | 注入Prompt角色段 |
+| `expertAvatar` | `string` | 否 | UI头像 |
+| `expertTags` | `string[]` | 否 | UI标签 |
+| `reviewTitle` | `string` | 否 | 展示用标题 |
+| `expertKB` | `string` | 是 | 专家知识库全文，注入Prompt数据段 |
 
-### 3.3 第二层：意图识别 — classifyIntent
+### 4.3 第二层：意图识别 — classifyIntent
 
 #### 意图体系（6种）
 
@@ -524,8 +808,8 @@ export function useExpertAgent() {
 
 #### 关键词表
 
-```javascript
-const INTENT_KEYWORDS = {
+```typescript
+const INTENT_KEYWORDS: Record<ExpertIntent, string[]> = {
   review_request: [
     '点评', '评价', '怎么样', '不足', '打分', '问题在哪', '哪里不好',
     '有什么问题', '表现如何', '做的怎么样', '请评价', '帮我看看',
@@ -559,25 +843,28 @@ const INTENT_KEYWORDS = {
 
 #### 分类算法
 
-```javascript
-function classifyIntent(userMessage) {
+```typescript
+function classifyIntent(userMessage: string): ExpertIntentResult {
   const q = userMessage || ''
   const lower = q.toLowerCase()
-  const results = []
+  const results: Array<{ intent: ExpertIntent; score: number; confidence: number }> = []
 
   for (const [intent, keywords] of Object.entries(INTENT_KEYWORDS)) {
     let score = 0
-    for (const kw of keywords) {
+    for (const kw of keywords as string[]) {
       if (lower.includes(kw)) score += 1
     }
     if (score > 0) {
-      results.push({ intent, score, confidence: Math.min(score / 3, 1.0) })
+      results.push({ intent: intent as ExpertIntent, score, confidence: Math.min(score / 3, 1.0) })
     }
   }
 
   results.sort((a, b) => b.score - a.score)
 
-  const stationNames = ['问诊', '接诊', '体格检查', '查体', '辅助检查', '诊断', '治疗', '病历', '沟通', '精神检查', '临床思维']
+  const stationNames = [
+    '问诊', '接诊', '体格检查', '查体', '辅助检查', '诊断',
+    '治疗', '病历', '沟通', '精神检查', '临床思维',
+  ]
   const hasStationRef = stationNames.some(n => lower.includes(n))
 
   return {
@@ -590,14 +877,14 @@ function classifyIntent(userMessage) {
 }
 ```
 
-### 3.4 第三层：上下文组装 — buildExpertSystemPrompt
+### 4.4 第三层：上下文组装 — buildExpertSystemPrompt
 
 三段式Prompt模板，每段有独立构建函数。
 
 #### 段1：角色段
 
-```javascript
-function buildSegmentRole(expertData, stationLabel) {
+```typescript
+function buildSegmentRole(expertData: ExpertData, stationLabel: string): string {
   const name = expertData?.expertName || '临床专家'
   const title = expertData?.expertTitle || ''
   return `你是${name}（${title}），一位顶级临床专家。你正在${stationLabel}考站为医学学员进行教学点评和答疑。以第一人称"我"自称，语言专业、亲和、具体。`
@@ -606,9 +893,14 @@ function buildSegmentRole(expertData, stationLabel) {
 
 #### 段2：数据段（按意图选择数据源）
 
-```javascript
-function buildSegmentData(ctx, intent, caseInfo, expertData) {
-  const parts = []
+```typescript
+function buildSegmentData(
+  ctx: ActivityContext,
+  intent: ExpertIntentResult,
+  caseInfo: CaseInfo | null,
+  expertData: ExpertData
+): string {
+  const parts: string[] = []
 
   // 病例信息（所有意图都注入）
   if (caseInfo) {
@@ -664,8 +956,8 @@ function buildSegmentData(ctx, intent, caseInfo, expertData) {
 
 #### 段3：指令段（按意图+活动状态分叉）
 
-```javascript
-function buildSegmentInstruction(ctx, intent) {
+```typescript
+function buildSegmentInstruction(ctx: ActivityContext, intent: ExpertIntentResult): string {
   const { primaryIntent } = intent
   const hasActivity = ctx.global.hasAnyActivity
 
@@ -703,13 +995,19 @@ function buildSegmentInstruction(ctx, intent) {
 
 #### 完整 Prompt 组装
 
-```javascript
-export function buildExpertSystemPrompt(expertData, caseInfo, stationLabel, ctx, intent) {
+```typescript
+export function buildExpertSystemPrompt(
+  expertData: ExpertData,
+  caseInfo: CaseInfo | null,
+  stationLabel: string,
+  ctx: ActivityContext,
+  intent: ExpertIntentResult
+): string {
   const segmentRole = buildSegmentRole(expertData, stationLabel)
   const segmentData = buildSegmentData(ctx, intent, caseInfo, expertData)
   const segmentInstruction = buildSegmentInstruction(ctx, intent)
 
-  const parts = [segmentRole]
+  const parts: string[] = [segmentRole]
   if (segmentData) parts.push(segmentData)
   parts.push(segmentInstruction)
 
@@ -720,10 +1018,10 @@ export function buildExpertSystemPrompt(expertData, caseInfo, stationLabel, ctx,
 }
 ```
 
-### 3.5 第四层：回复策略 — selectResponseStrategy
+### 4.5 第四层：回复策略 — selectResponseStrategy
 
-```javascript
-function selectResponseStrategy(intent, ctx) {
+```typescript
+function selectResponseStrategy(intent: ExpertIntentResult, ctx: ActivityContext): ResponseStrategy {
   const { primaryIntent } = intent
   const hasActivity = ctx.global.hasAnyActivity
 
@@ -748,18 +1046,18 @@ function selectResponseStrategy(intent, ctx) {
 }
 ```
 
-### 3.6 第五层：智能推荐
+### 4.6 第五层：智能推荐
 
 #### 通道1：解析 LLM 推荐
 
-```javascript
-function parseSuggestions(text) {
+```typescript
+function parseSuggestions(text: string): string[] | null {
   const match = text.match(/<!--SUGGESTIONS-->\s*(\[.+?\])/s)
   if (!match) return null
   try {
-    const arr = JSON.parse(match[1])
+    const arr: unknown = JSON.parse(match[1])
     if (Array.isArray(arr) && arr.length > 0) {
-      return arr.filter(q => typeof q === 'string' && q.trim()).slice(0, 3)
+      return arr.filter((q): q is string => typeof q === 'string' && q.trim().length > 0).slice(0, 3)
     }
   } catch { /* ignore */ }
   return null
@@ -768,8 +1066,8 @@ function parseSuggestions(text) {
 
 #### 通道2：模板填充兜底
 
-```javascript
-function generateTemplateFollowUps(userQuestion, ctx) {
+```typescript
+function generateTemplateFollowUps(userQuestion: string, ctx: ActivityContext): string[] {
   const stationLabel = ctx.currentStation.label
   const q = userQuestion || ''
 
@@ -799,26 +1097,33 @@ function generateTemplateFollowUps(userQuestion, ctx) {
 
 #### 获取推荐问题 + 清理回复
 
-```javascript
-function getFollowUps(responseText, userQuestion, ctx) {
+```typescript
+function getFollowUps(responseText: string, userQuestion: string, ctx: ActivityContext): string[] {
   const parsed = parseSuggestions(responseText)
   if (parsed) return parsed
   return generateTemplateFollowUps(userQuestion, ctx)
 }
 
-function cleanResponseText(text) {
+function cleanResponseText(text: string): string {
   return text.replace(/<!--SUGGESTIONS-->\s*\[.+?\]\s*$/s, '').trim()
 }
 ```
 
-### 3.7 主入口编排
+### 4.7 主入口编排
 
-```javascript
-export function useExpertAgent() {
+```typescript
+export function useExpertAgent(): UseExpertAgentReturn {
   const { sendMessage: sendExpertMessage, loading: expertAiLoading } = useAIChat()
 
-  async function askExpert(expertData, caseInfo, stationLabel, routeName,
-                           trainingSession, messages, question) {
+  async function askExpert(
+    expertData: ExpertData,
+    caseInfo: CaseInfo | null,
+    stationLabel: string,
+    routeName: string,
+    trainingSession: TrainingSession,
+    messages: UIMessage[],
+    question: string
+  ): Promise<ExpertAgentResponse | null> {
     if (!question || expertAiLoading.value) return null
 
     // Layer 1: 活动感知
@@ -834,7 +1139,7 @@ export function useExpertAgent() {
     const strategy = selectResponseStrategy(intent, ctx)
 
     // 调用LLM
-    const llmMessages = messages.map(m => ({
+    const llmMessages: LLMMessage[] = messages.map(m => ({
       role: m.type === 'user' ? 'user' : 'assistant',
       content: m.text,
     }))
@@ -853,7 +1158,7 @@ export function useExpertAgent() {
     return {
       text: cleanText,
       followUps,
-      intent: intent.primaryIntent,
+      intent: intent.primaryIntent as ExpertIntent,
     }
   }
 
@@ -869,26 +1174,33 @@ export function useExpertAgent() {
 
 ---
 
-## 4. AI伴学智能体
+## 5. AI伴学智能体
 
-### 4.1 概述
+### 5.1 概述
 
-**文件：`apps/training/src/composables/useAICompanion.js`**（需新建）
+**文件：`apps/training/src/composables/useAICompanion.ts`**（需新建）
 
-**依赖：** `useExpertContext.js`, `useAIChat.js`, `@ai-sp/shared`
+**依赖：** `useExpertContext.ts`, `useAIChat.ts`, `@ai-sp/shared`
 
 **导出接口：**
 
-```javascript
-export function useAICompanion() {
-  return {
-    askCompanion,          // 主入口 — 完整五层编排
-    companionLoading,      // 加载状态 ref
-  }
+```typescript
+interface UseAICompanionReturn {
+  askCompanion: (
+    caseInfo: CaseInfo | null,
+    stationLabel: string,
+    routeName: string,
+    trainingSession: TrainingSession,
+    messages: UIMessage[],
+    question: string
+  ) => Promise<CompanionAgentResponse | null>
+  companionLoading: Ref<boolean>
 }
+
+export function useAICompanion(): UseAICompanionReturn { ... }
 ```
 
-### 4.2 与专家智能体的核心差异
+### 5.2 与专家智能体的核心差异
 
 | 维度 | 专家 | AI伴学 |
 |------|------|--------|
@@ -900,7 +1212,7 @@ export function useAICompanion() {
 | 推荐问题方向 | 追问不足、改进建议 | 探索知识、深入理解 |
 | 语气 | 权威评判 | 鼓励引导 |
 
-### 4.3 第二层：意图识别
+### 5.3 第二层：意图识别
 
 #### 意图体系（5种，无点评类意图）
 
@@ -914,8 +1226,8 @@ export function useAICompanion() {
 
 #### 关键词表
 
-```javascript
-const COMPANION_INTENT_KEYWORDS = {
+```typescript
+const COMPANION_INTENT_KEYWORDS: Record<CompanionIntent | 'review_keywords', string[]> = {
   concept_explanation: [
     '是什么', '为什么', '机制', '诊断标准', '治疗原则', '指南',
     '如何诊断', '怎么治疗', '用什么药', '剂量', '禁忌', '适应症',
@@ -941,7 +1253,7 @@ const COMPANION_INTENT_KEYWORDS = {
     '你好', '谢谢', '再见', '感谢', '辛苦了',
     '早上好', '下午好', '晚上好', 'hello', 'hi', '你是谁',
   ],
-  // 点评类关键词 —— 检测到后引导去专家Tab
+  // 点评类关键词 —— 检测到后引导去专家Tab（非意图，仅用于检测）
   review_keywords: [
     '点评', '评价', '怎么样', '不足', '打分', '问题在哪',
     '哪里不好', '表现如何', '做的怎么样', '请评价', '帮我看看',
@@ -953,11 +1265,11 @@ const COMPANION_INTENT_KEYWORDS = {
 
 #### 分类算法（含点评检测）
 
-```javascript
-function classifyCompanionIntent(userMessage) {
+```typescript
+function classifyCompanionIntent(userMessage: string): CompanionIntentResult {
   const q = userMessage || ''
   const lower = q.toLowerCase()
-  const results = []
+  const results: Array<{ intent: CompanionIntent; score: number; confidence: number }> = []
 
   // 先检测是否为点评请求 → 特殊处理
   let isReviewRequest = false
@@ -968,11 +1280,11 @@ function classifyCompanionIntent(userMessage) {
   for (const [intent, keywords] of Object.entries(COMPANION_INTENT_KEYWORDS)) {
     if (intent === 'review_keywords') continue // 跳过，只用于检测
     let score = 0
-    for (const kw of keywords) {
+    for (const kw of keywords as string[]) {
       if (lower.includes(kw)) score += 1
     }
     if (score > 0) {
-      results.push({ intent, score, confidence: Math.min(score / 3, 1.0) })
+      results.push({ intent: intent as CompanionIntent, score, confidence: Math.min(score / 3, 1.0) })
     }
   }
 
@@ -982,27 +1294,31 @@ function classifyCompanionIntent(userMessage) {
     primaryIntent: results.length > 0 ? results[0].intent : 'concept_explanation',
     allIntents: results,
     confidence: results.length > 0 ? results[0].confidence : 0.5,
-    isReviewRequest,  // 标记：用户是否在请求点评
+    isReviewRequest,
     needsLLMFallback: results.length === 0 || results[0].confidence < 0.4,
   }
 }
 ```
 
-### 4.4 第三层：上下文组装
+### 5.4 第三层：上下文组装
 
 #### 段1：角色段
 
-```javascript
-function buildCompanionRole(stationLabel) {
+```typescript
+function buildCompanionRole(stationLabel: string): string {
   return `你是一位临床教学助手，正在帮助医学学员进行${stationLabel}考站的临床思维训练。你不是临床专家，不对学员的表现做评判性点评。你的角色是引导学员自己思考、解答知识疑问、提供学习建议。以温和、鼓励的语气回答。当学员有疑问时，优先用反问引导他自己找到答案。`
 }
 ```
 
 #### 段2：数据段
 
-```javascript
-function buildCompanionData(ctx, intent, caseInfo) {
-  const parts = []
+```typescript
+function buildCompanionData(
+  ctx: ActivityContext,
+  intent: CompanionIntentResult,
+  caseInfo: CaseInfo | null
+): string {
+  const parts: string[] = []
 
   // 病例信息
   if (caseInfo) {
@@ -1031,8 +1347,8 @@ function buildCompanionData(ctx, intent, caseInfo) {
 
 #### 段3：指令段
 
-```javascript
-function buildCompanionInstruction(ctx, intent) {
+```typescript
+function buildCompanionInstruction(ctx: ActivityContext, intent: CompanionIntentResult): string {
   const { primaryIntent, isReviewRequest } = intent
 
   // 点评请求 → 明确拒绝并引导
@@ -1064,13 +1380,18 @@ function buildCompanionInstruction(ctx, intent) {
 
 #### 完整 Prompt 组装
 
-```javascript
-export function buildCompanionSystemPrompt(caseInfo, stationLabel, ctx, intent) {
+```typescript
+export function buildCompanionSystemPrompt(
+  caseInfo: CaseInfo | null,
+  stationLabel: string,
+  ctx: ActivityContext,
+  intent: CompanionIntentResult
+): string {
   const segmentRole = buildCompanionRole(stationLabel)
   const segmentData = buildCompanionData(ctx, intent, caseInfo)
   const segmentInstruction = buildCompanionInstruction(ctx, intent)
 
-  const parts = [segmentRole]
+  const parts: string[] = [segmentRole]
   if (segmentData) parts.push(segmentData)
   parts.push(segmentInstruction)
 
@@ -1084,10 +1405,10 @@ export function buildCompanionSystemPrompt(caseInfo, stationLabel, ctx, intent) 
 }
 ```
 
-### 4.5 第四层：回复策略
+### 5.5 第四层：回复策略
 
-```javascript
-function selectCompanionStrategy(intent) {
+```typescript
+function selectCompanionStrategy(intent: CompanionIntentResult): ResponseStrategy {
   const { primaryIntent } = intent
 
   switch (primaryIntent) {
@@ -1107,25 +1428,25 @@ function selectCompanionStrategy(intent) {
 }
 ```
 
-### 4.6 第五层：智能推荐
+### 5.6 第五层：智能推荐
 
 AI伴学的推荐问题方向与专家不同——探索引导型而非追问不足型。
 
-```javascript
-function parseCompanionSuggestions(text) {
+```typescript
+function parseCompanionSuggestions(text: string): string[] | null {
   // 与专家智能体完全相同的解析逻辑
   const match = text.match(/<!--SUGGESTIONS-->\s*(\[.+?\])/s)
   if (!match) return null
   try {
-    const arr = JSON.parse(match[1])
+    const arr: unknown = JSON.parse(match[1])
     if (Array.isArray(arr) && arr.length > 0) {
-      return arr.filter(q => typeof q === 'string' && q.trim()).slice(0, 3)
+      return arr.filter((q): q is string => typeof q === 'string' && q.trim().length > 0).slice(0, 3)
     }
   } catch { /* ignore */ }
   return null
 }
 
-function generateCompanionFollowUps(userQuestion, ctx) {
+function generateCompanionFollowUps(userQuestion: string, ctx: ActivityContext): string[] {
   const stationLabel = ctx.currentStation.label
   const q = userQuestion || ''
 
@@ -1161,25 +1482,31 @@ function generateCompanionFollowUps(userQuestion, ctx) {
   ]
 }
 
-function getCompanionFollowUps(responseText, userQuestion, ctx) {
+function getCompanionFollowUps(responseText: string, userQuestion: string, ctx: ActivityContext): string[] {
   const parsed = parseCompanionSuggestions(responseText)
   if (parsed) return parsed
   return generateCompanionFollowUps(userQuestion, ctx)
 }
 
-function cleanCompanionResponseText(text) {
+function cleanCompanionResponseText(text: string): string {
   return text.replace(/<!--SUGGESTIONS-->\s*\[.+?\]\s*$/s, '').trim()
 }
 ```
 
-### 4.7 主入口编排
+### 5.7 主入口编排
 
-```javascript
-export function useAICompanion() {
+```typescript
+export function useAICompanion(): UseAICompanionReturn {
   const { sendMessage, loading: companionLoading } = useAIChat()
 
-  async function askCompanion(caseInfo, stationLabel, routeName,
-                              trainingSession, messages, question) {
+  async function askCompanion(
+    caseInfo: CaseInfo | null,
+    stationLabel: string,
+    routeName: string,
+    trainingSession: TrainingSession,
+    messages: UIMessage[],
+    question: string
+  ): Promise<CompanionAgentResponse | null> {
     if (!question || companionLoading.value) return null
 
     // Layer 1: 活动感知（复用 useExpertContext）
@@ -1195,7 +1522,7 @@ export function useAICompanion() {
     const strategy = selectCompanionStrategy(intent)
 
     // 调用LLM
-    const llmMessages = messages.map(m => ({
+    const llmMessages: LLMMessage[] = messages.map(m => ({
       role: m.type === 'user' ? 'user' : 'assistant',
       content: m.text,
     }))
@@ -1215,6 +1542,7 @@ export function useAICompanion() {
       text: cleanText,
       followUps,
       intent: intent.primaryIntent,
+      isReviewRequest: intent.isReviewRequest,
     }
   }
 
@@ -1224,14 +1552,14 @@ export function useAICompanion() {
 
 ---
 
-## 5. 前端集成
+## 6. 前端集成
 
-### 5.1 组件：AICompanionDrawer.vue
+### 6.1 组件：AICompanionDrawer.vue
 
 **文件：`apps/training/src/components/AICompanionDrawer.vue`**
 
 组件职责：
-1. 渲染双Tab UI（智能问答 + 专家点评）
+1. 渲染双Tab UI（AI伴学 + 专家点评）
 2. 管理两个独立的消息列表状态
 3. 加载专家配置数据
 4. 提供各考站的初始推荐问题
@@ -1239,33 +1567,39 @@ export function useAICompanion() {
 
 #### 关键状态
 
-```javascript
+```typescript
 // ── 共享 ──
 const open = ref(false)
-const activeTab = ref('qa')          // 'qa' | 'commentary'
+const activeTab = ref<'qa' | 'commentary'>('qa')
 const route = useRoute()
 const store = useTrainingStore()
-const stationLabel = computed(() => getStationLabel(route.name) || '')
+const stationLabel = computed(() => getStationLabel(route.name as string) || '')
 
 // ── AI伴学 ──
-const { sendMessage, loading: aiLoading } = useAIChat()
+const { askCompanion, companionLoading: aiLoading } = useAICompanion()
 const qaInput = ref('')
-const qaMessages = ref([...])
-const suggestedQuestions = computed(() => stationQuestionMap[route.name] || defaultQuestions)
+const qaMessages = ref<UIMessage[]>([
+  { type: 'ai', text: '你好！我是AI伴学助手，可以针对当前病例和考站为你解答。请随时提问。' },
+])
+const suggestedQuestions = computed(() => stationQuestionMap[route.name as string] || defaultQuestions)
 
 // ── 专家点评 ──
 const { askExpert, expertAiLoading } = useExpertAgent()
-const expertData = ref(null)
+const expertData = ref<ExpertData | null>(null)
 const expertLoading = ref(false)
-const expertMessages = ref([])
+const expertMessages = ref<UIMessage[]>([])
 const expertInput = ref('')
-const expertSuggestedQuestions = computed(() => expertQuestionMap[route.name] || defaultExpertQuestions)
+const expertSuggestedQuestions = computed(() =>
+  expertQuestionMap[route.name as string] || defaultExpertQuestions
+)
 ```
 
 #### 病例信息提取
 
-```javascript
-function getCaseInfo() {
+```typescript
+const { getCached } = useCaseLoader()
+
+function getCaseInfo(): CaseInfo | null {
   const c = store.currentCase || getCached(store.currentCase?.caseId || store.currentCase?.id)
   if (!c) return null
   const basic = c.basic || c
@@ -1285,8 +1619,8 @@ function getCaseInfo() {
 
 **AI伴学（按考站）：**
 
-```javascript
-const stationQuestionMap = {
+```typescript
+const stationQuestionMap: Record<string, string[]> = {
   historyTaking: [
     '接下来应该问哪些问题？',
     '哪些关键病史信息不能遗漏？',
@@ -1332,7 +1666,7 @@ const stationQuestionMap = {
   ],
 }
 
-const defaultQuestions = [
+const defaultQuestions: string[] = [
   '这个病例的关键点是什么？',
   '我应该从哪些方面入手？',
   '有哪些容易遗漏的地方？',
@@ -1341,8 +1675,8 @@ const defaultQuestions = [
 
 **专家点评（按考站）：**
 
-```javascript
-const expertQuestionMap = {
+```typescript
+const expertQuestionMap: Record<string, string[]> = {
   historyTaking: [
     '请对我的问诊过程进行综合点评',
     '我的问诊思路有什么需要改进的地方？',
@@ -1390,16 +1724,22 @@ const expertQuestionMap = {
   ],
   mentalExam: [
     '请对我的精神检查进行综合点评',
-    '我的精神检查有并什么遗漏？',
+    '我的精神检查有什么遗漏？',
     '这个病例的精神检查要点是什么？',
   ],
 }
+
+const defaultExpertQuestions: string[] = [
+  '请对我的操作进行综合点评',
+  '在这个病例中我有哪些不足？',
+  '这个病例的核心临床要点是什么？',
+]
 ```
 
 #### 专家配置加载
 
-```javascript
-async function loadExpertData() {
+```typescript
+async function loadExpertData(): Promise<void> {
   if (expertData.value || expertLoading.value) return
   expertLoading.value = true
   try {
@@ -1409,7 +1749,7 @@ async function loadExpertData() {
 
     // 1. 尝试缓存
     if (caseData?.expert) {
-      expertData.value = caseData.expert
+      expertData.value = caseData.expert as ExpertData
       expertLoading.value = false
       return
     }
@@ -1425,7 +1765,7 @@ async function loadExpertData() {
           expertAvatar: json.expertAvatar || '',
           expertTags: json.expertTags || [],
           expertKB: json.expertKB || '',
-          reviewTitle: json.reviewTitle || ''
+          reviewTitle: json.reviewTitle || '',
         }
       }
     }
@@ -1441,10 +1781,22 @@ watch(() => activeTab.value, (tab) => {
 
 #### 消息发送
 
-**AI伴学发送：**
+**AI伴学发送（使用 useAICompanion 五层流水线）：**
 
-```javascript
-async function askQuestion(q) {
+```typescript
+function renderMsgText(text: string): string {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^|$/g, '<p>')
+    .replace(/<p><\/p>/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?:^|\n)#{1,3}\s*(.+?)(?:\n|$)/g, (_, title: string) =>
+      `<h4 style="font-weight:600;margin:14px 0 6px;color:#1f2937;">${title}</h4>`)
+}
+
+async function askQuestion(q?: string): Promise<void> {
   const question = typeof q === 'string' ? q : qaInput.value.trim()
   if (!question || aiLoading.value) return
 
@@ -1452,44 +1804,46 @@ async function askQuestion(q) {
   qaInput.value = ''
   scrollToBottom()
 
-  const systemPrompt = buildCompanionSystemPrompt(
-    getCaseInfo(), stationLabel.value, buildActivityContext(route.name, store.trainingSession),
-    classifyCompanionIntent(question)
+  const response = await askCompanion(
+    getCaseInfo(),
+    stationLabel.value,
+    route.name as string,
+    store.trainingSession,
+    qaMessages.value,
+    question,
   )
 
-  const llmMessages = qaMessages.value.map(m => ({
-    role: m.type === 'user' ? 'user' : 'assistant',
-    content: m.text
-  }))
-
-  const result = await sendMessage(llmMessages, systemPrompt)
-  qaMessages.value.push({ type: 'ai', text: result.content })
+  if (response) {
+    qaMessages.value.push({
+      type: 'ai',
+      text: response.text,
+      html: renderMsgText(response.text),
+      followUps: response.followUps,
+    })
+  }
   scrollToBottom()
 }
 ```
 
-> **注意**：以上是当前AI伴学的简化实现。重构为五层流水线后，应改为调用 `askCompanion()`，与专家智能体的调用模式一致。
-
 **专家点评发送：**
 
-```javascript
-async function askExpertQuestion(q) {
+```typescript
+async function askExpertQuestion(q?: string): Promise<void> {
   const question = typeof q === 'string' ? q : expertInput.value.trim()
   if (!question || expertAiLoading.value || !expertData.value) return
 
   expertMessages.value.push({ type: 'user', text: question })
-  if (typeof q === 'string') expertInput.value = ''
-  else expertInput.value = ''
+  expertInput.value = ''
   scrollExpertToBottom()
 
   const response = await askExpert(
     expertData.value,
     getCaseInfo(),
     stationLabel.value,
-    route.name,
+    route.name as string,
     store.trainingSession,
     expertMessages.value,
-    question
+    question,
   )
 
   if (response) {
@@ -1509,7 +1863,7 @@ async function askExpertQuestion(q) {
 ```html
 <!-- 双Tab切换 -->
 <div class="panel-tab" :class="{ active: activeTab === 'qa' }" @click="activeTab = 'qa'">
-  智能问答
+  AI伴学
 </div>
 <div class="panel-tab" :class="{ active: activeTab === 'commentary' }" @click="activeTab = 'commentary'">
   专家点评
@@ -1517,62 +1871,79 @@ async function askExpertQuestion(q) {
 
 <!-- AI伴学Tab -->
 <div v-show="activeTab === 'qa'">
-  <!-- 初始推荐问题 chips -->
-  <div class="suggested-qs">
-    <button v-for="q in suggestedQuestions" @click="askQuestion(q)">{{ q }}</button>
-  </div>
-  <!-- 消息列表 -->
+  <!-- 消息列表（开场白带推荐问题chips） -->
   <div class="qa-messages">
     <div v-for="(msg, i) in qaMessages" :class="['qa-msg', msg.type]">
-      <span v-if="msg.type === 'ai'">🤖 </span>{{ msg.text }}
+      <span v-if="msg.type === 'ai'" class="qa-msg-avatar">🤖</span>
+      <div class="qa-msg-content">
+        <div class="qa-msg-bubble" v-html="msg.html || msg.text"></div>
+        <!-- 最后一条AI消息下方显示 follow-up chips -->
+        <div v-if="msg.type === 'ai' && msg.followUps?.length && i === qaMessages.length - 1"
+             class="followup-chips">
+          <button v-for="fq in msg.followUps" :key="fq" class="followup-chip"
+                  @click="askQuestion(fq)">{{ fq }}</button>
+        </div>
+      </div>
     </div>
-    <div v-if="aiLoading" class="qa-msg ai typing">...</div>
+    <div v-if="aiLoading" class="qa-msg ai typing">
+      <span class="qa-msg-avatar">🤖</span>
+      <div class="qa-msg-bubble"><span class="typing-dots"><i></i><i></i><i></i></span></div>
+    </div>
   </div>
   <!-- 输入框 -->
   <div class="qa-input-row">
-    <input v-model="qaInput" @keydown.enter="askQuestion()" />
-    <button @click="askQuestion()">发送</button>
+    <input v-model="qaInput" @keydown.enter="askQuestion()" :disabled="aiLoading" />
+    <button @click="askQuestion()" :disabled="aiLoading">发送</button>
   </div>
 </div>
 
 <!-- 专家点评Tab -->
 <div v-show="activeTab === 'commentary'">
   <!-- 无专家配置 → 空状态 -->
-  <div v-if="!expertData" class="expert-empty">...</div>
+  <div v-if="!expertData && !expertLoading" class="expert-empty">
+    <p>该病例暂无专家点评</p>
+  </div>
+  <!-- 加载中 -->
+  <div v-if="expertLoading" class="loading">...</div>
   <!-- 有专家配置 → 完整界面 -->
-  <div v-else>
+  <div v-else-if="expertData">
     <!-- 专家信息卡片 -->
     <div class="expert-profile">
-      <img :src="expertData.expertAvatar" />
+      <img v-if="expertData.expertAvatar" :src="expertData.expertAvatar" />
+      <i v-else class="fa-solid fa-user-tie"></i>
       <div class="expert-name">{{ expertData.expertName }}</div>
       <div class="expert-dept">{{ expertData.expertTitle }}</div>
-      <span v-for="tag in expertData.expertTags">{{ tag }}</span>
+      <span v-for="tag in expertData.expertTags" :key="tag" class="expert-tag">{{ tag }}</span>
     </div>
     <!-- 对话区 -->
     <div class="expert-chat">
       <!-- 初始推荐问题（无消息时显示） -->
       <div v-if="expertMessages.length === 0" class="suggested-qs">
-        <button v-for="q in expertSuggestedQuestions" @click="askExpertQuestion(q)">{{ q }}</button>
+        <button v-for="q in expertSuggestedQuestions" :key="q"
+                @click="askExpertQuestion(q)">{{ q }}</button>
       </div>
       <!-- 消息列表（带专家头像） -->
       <div class="expert-chat-messages">
-        <div v-for="(msg, i) in expertMessages">
+        <div v-for="(msg, i) in expertMessages" :key="i" :class="['qa-msg', msg.type]">
           <div v-if="msg.type === 'ai'" class="qa-msg-avatar">
-            <img :src="expertData.expertAvatar" />
+            <img v-if="expertData.expertAvatar" :src="expertData.expertAvatar" />
+            <i v-else class="fa-solid fa-user-tie"></i>
           </div>
-          <div class="qa-msg-bubble" v-html="msg.html || msg.text"></div>
-          <!-- 最后一条AI消息下方显示 follow-up chips -->
-          <div v-if="msg.type === 'ai' && msg.followUps?.length && i === expertMessages.length - 1"
-               class="followup-chips">
-            <button v-for="fq in msg.followUps" @click="askExpertQuestion(fq)">{{ fq }}</button>
+          <div class="qa-msg-content">
+            <div class="qa-msg-bubble" v-html="msg.html || msg.text"></div>
+            <div v-if="msg.type === 'ai' && msg.followUps?.length && i === expertMessages.length - 1"
+                 class="followup-chips">
+              <button v-for="fq in msg.followUps" :key="fq" class="followup-chip"
+                      @click="askExpertQuestion(fq)">{{ fq }}</button>
+            </div>
           </div>
         </div>
         <div v-if="expertAiLoading" class="qa-msg ai typing">...</div>
       </div>
       <!-- 输入框 -->
       <div class="qa-input-row">
-        <input v-model="expertInput" @keydown.enter="askExpertQuestion()" />
-        <button @click="askExpertQuestion()">发送</button>
+        <input v-model="expertInput" @keydown.enter="askExpertQuestion()" :disabled="expertAiLoading" />
+        <button @click="askExpertQuestion()" :disabled="expertAiLoading">发送</button>
       </div>
     </div>
   </div>
@@ -1581,86 +1952,85 @@ async function askExpertQuestion(q) {
 
 ---
 
-## 6. 文件清单与依赖关系
+## 7. 文件清单与依赖关系
 
-### 6.1 需要创建/修改的文件
+### 7.1 需要创建/修改的文件
 
 ```
 apps/training/src/composables/
-├── useAIChat.js           ← [已存在] LLM调用封装，无需修改
-├── useExpertContext.js    ← [已存在] 活动感知层，无需修改
-├── useExpertAgent.js      ← [已存在] 专家点评智能体，无需修改
-└── useAICompanion.js      ← [新建] AI伴学智能体（五层流水线）
+├── useAIChat.ts             ← [已存在] LLM调用封装，迁移为TS
+├── useExpertContext.ts      ← [已存在] 活动感知层，迁移为TS
+├── useExpertAgent.ts        ← [已存在] 专家点评智能体，迁移为TS
+└── useAICompanion.ts        ← [新建] AI伴学智能体（五层流水线）
 
 apps/training/src/components/
-└── AICompanionDrawer.vue  ← [修改] 接入 useAICompanion，替换内联逻辑
+└── AICompanionDrawer.vue    ← [修改] 接入 useAICompanion，替换内联逻辑
 
 apps/admin/public/data/cases/
-├── {caseId}-expert.json   ← [已存在] 专家配置文件（管理端编辑）
+├── {caseId}-expert.json     ← [已存在] 专家配置文件（管理端编辑）
 └── ...
 
 packages/shared/src/
-└── station-constants.js   ← [已存在] 考站常量，无需修改
+└── station-constants.ts     ← [已存在] 考站常量
 ```
 
-### 6.2 依赖图
+### 7.2 依赖图
 
 ```
-useAIChat.js (无依赖)
+useAIChat.ts (无依赖)
      │
-     ├──→ useExpertAgent.js
+     ├──→ useExpertAgent.ts
      │         │
-     │         └──→ useExpertContext.js ──→ @ai-sp/shared
+     │         └──→ useExpertContext.ts ──→ @ai-sp/shared
      │
-     ├──→ useAICompanion.js
+     ├──→ useAICompanion.ts
      │         │
-     │         └──→ useExpertContext.js ──→ @ai-sp/shared
+     │         └──→ useExpertContext.ts ──→ @ai-sp/shared
      │
      └──→ AICompanionDrawer.vue
                │
-               ├──→ useExpertAgent.js
-               ├──→ useAICompanion.js (重构后)
-               ├──→ useAIChat.js (重构前，仅AI伴学使用)
-               └──→ useCaseLoader.js
+               ├──→ useExpertAgent.ts
+               ├──→ useAICompanion.ts
+               └──→ useCaseLoader.ts
 ```
 
-### 6.3 AI伴学重构要点
+### 7.3 AI伴学实现要点
 
-当前AI伴学的逻辑（`buildSystemPrompt` + `askQuestion`）全部内联在 `AICompanionDrawer.vue` 中。重构时：
+当前AI伴学的逻辑（`buildSystemPrompt` + `askQuestion`）全部内联在 `AICompanionDrawer.vue` 中。实现时：
 
-1. 创建 `useAICompanion.js`，将 Prompt 组装和策略逻辑移入
+1. 创建 `useAICompanion.ts`，将 Prompt 组装和策略逻辑移入
 2. 在 `AICompanionDrawer.vue` 中引入 `useAICompanion`
 3. 将 `askQuestion()` 中的 `buildSystemPrompt()` + `sendMessage()` 替换为 `askCompanion()`
-4. AI伴学消息也加入 `followUps` 支持（当前没有）
+4. AI伴学消息也加入 `followUps` 支持
 5. 保持 `qaMessages` 和 `expertMessages` 两个独立消息列表不变
 
 ---
 
-## 7. 配置与扩展
+## 8. 配置与扩展
 
-### 7.1 新增考站
+### 8.1 新增考站
 
-1. **`@ai-sp/shared`**：在 `station-constants.js` 中添加 ID→Label 映射和 session key 映射
-2. **`useExpertContext.js`**：在 `STATION_CATEGORY` 中添加分类；如属新类别，编写Extractor
-3. **`useExpertAgent.js`**：如新考站需特殊指令，在 `buildSegmentInstruction` 中分支
-4. **`useAICompanion.js`**：同上
+1. **`@ai-sp/shared`**：在 `station-constants.ts` 中添加 ID→Label 映射和 session key 映射
+2. **`useExpertContext.ts`**：在 `STATION_CATEGORY` 中添加分类；如属新类别，编写Extractor
+3. **`useExpertAgent.ts`**：如新考站需特殊指令，在 `buildSegmentInstruction` 中分支
+4. **`useAICompanion.ts`**：同上
 5. **`AICompanionDrawer.vue`**：在 `stationQuestionMap` 和 `expertQuestionMap` 中添加初始推荐问题
 
-### 7.2 新增意图类型
+### 8.2 新增意图类型
 
-1. 在对应智能体的 `INTENT_KEYWORDS` 中添加关键词
+1. 在对应智能体的 `INTENT_KEYWORDS` 中添加关键词和类型定义
 2. 在 `buildSegmentInstruction` 中添加指令模板
 3. 在 `selectResponseStrategy` 中添加策略配置
 4. 在 `buildSegmentData` 中添加数据注入逻辑
 5. 在 `generateTemplateFollowUps` 中添加兜底模板
 
-### 7.3 专家配置扩展
+### 8.3 专家配置扩展
 
-如需支持不同专家角色（当前统一为滕皋军院士），只需为每个病例编写不同的 `{caseId}-expert.json`。角色段Prompt会自动从 `expertName` 和 `expertTitle` 字段生成。专家头像从 `expertAvatar` 字段加载。
+如需支持不同专家角色，只需为每个病例编写不同的 `{caseId}-expert.json`。角色段Prompt会自动从 `expertName` 和 `expertTitle` 字段生成。类型已定义在 `ExpertData` 接口中。
 
-### 7.4 调试开关
+### 8.4 调试开关
 
-```javascript
+```typescript
 if (import.meta.env.DEV) {
   console.log('[Agent] Layer 1 - ActivityContext:', ctx)
   console.log('[Agent] Layer 2 - Intent:', intent)
@@ -1670,7 +2040,7 @@ if (import.meta.env.DEV) {
 }
 ```
 
-### 7.5 性能注意事项
+### 8.5 性能注意事项
 
 - `expertKB` 知识库建议 3000-5000 字以内
 - 消息历史控制在最近 10 轮以内
@@ -1679,7 +2049,7 @@ if (import.meta.env.DEV) {
 
 ---
 
-## 8. 设计决策记录
+## 9. 设计决策记录
 
 ### 决策1：为什么用自然语言摘要而非原始JSON？
 
@@ -1713,9 +2083,13 @@ LLM默认"有求必应"，无数据也会编造。明确否定指令比正面引
 
 学员可能分不清两个Tab的职责边界，在AI伴学Tab请求点评。AI伴学必须能识别并引导用户去正确的Tab，而非越界点评。
 
+### 决策9：为什么使用 TypeScript？
+
+两个智能体包含复杂的类型结构（考站分类、意图体系、多态 TrainingSession 等）。接口定义作为团队契约文档，类型系统防止数据提取器和Prompt组装间的不匹配。且项目规划 Phase D 迁移 TS，智能体层先行。
+
 ---
 
-## 附录：两个智能体意图体系对照
+## 附录A：两个智能体意图体系对照
 
 | 专家点评智能体 | AI伴学智能体 | 说明 |
 |-------------|-----------|------|
@@ -1726,3 +2100,31 @@ LLM默认"有求必应"，无数据也会编造。明确否定指令比正面引
 | `comparison_request` | `differential_help` | 伴学偏向教学对比 |
 | `casual_chat` | `casual_chat` | 相同 |
 | ❌ | `case_understanding` | 伴学特有，帮助理解病例 |
+
+## 附录B：完整类型清单速查
+
+| 类型 | 定义位置 | 用途 |
+|------|---------|------|
+| `LLMMessage` | 共享类型 | LLM消息格式 |
+| `LLMOptions` | 共享类型 | LLM调用参数 |
+| `LLMResult` | 共享类型 | LLM返回结果 |
+| `StationCategory` | 共享类型 | 考站分类字面量 |
+| `StationId` | 共享类型 | 考站ID联合类型 |
+| `Message` | 共享类型 | 对话消息 |
+| `TrainingSession` | 共享类型 | 训练数据根类型 |
+| `DialogStationData` | 共享类型 | 对话类考站数据 |
+| `AncillaryTestsData` | 共享类型 | 辅助检查数据 |
+| `DiagnosisStationData` | 共享类型 | 诊断考站数据 |
+| `StationSnapshot` | 共享类型 | 考站摘要快照 |
+| `ActivityContext` | 共享类型 | 活动感知上下文 |
+| `CaseInfo` | 共享类型 | 病例信息 |
+| `ExpertData` | 共享类型 | 专家配置 |
+| `ExpertIntent` | 共享类型 | 专家意图字面量 |
+| `ExpertIntentResult` | 共享类型 | 专家意图识别结果 |
+| `CompanionIntent` | 共享类型 | 伴学意图字面量 |
+| `CompanionIntentResult` | 共享类型 | 伴学意图识别结果 |
+| `ResponseStrategy` | 共享类型 | 回复策略 |
+| `AgentResponse` | 共享类型 | 智能体返回基类 |
+| `ExpertAgentResponse` | 共享类型 | 专家智能体返回 |
+| `CompanionAgentResponse` | 共享类型 | 伴学智能体返回 |
+| `UIMessage` | 共享类型 | UI消息格式 |

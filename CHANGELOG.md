@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-07-30
+
+### AI 伴学智能体 — 五层流水线实现
+
+- **根因**：AI伴学逻辑全部内联在 `AICompanionDrawer.vue` 中（`buildSystemPrompt()` ~30行），缺少活动感知、意图识别、推荐策略等结构化层。与专家智能体架构不一致。
+- **实现**：新建 `useAICompanion.js`，五层流水线（活动感知→意图识别→上下文组装→回复策略→智能推荐），与专家智能体架构模式统一
+- **意图体系**：5种意图（`concept_explanation` / `procedural_guidance` / `differential_help` / `case_understanding` / `casual_chat`）+ 点评请求检测（自动引导去专家Tab）
+- **UI重构**：Tab改名"AI伴学"，布局改为对话式AI常规布局（开场白+推荐chips → 对话 → 输入框），移除推荐问题独立栏
+- **断点续训弹窗移除**：删除 `CaseList.vue` 中"检测到未完成的训练"弹窗（模板+状态+handleResume/handleSettle函数+CSS，~145行）
+
+### 设计文档 TypeScript 化
+
+- **根因**：`DESIGN_专家AI智能体设计文档.md` 全部代码块为 JavaScript，对外交付不专业
+- **修复**：全文 `javascript` → `typescript`，新增第2章共享类型定义（26个interface/type），所有函数标注参数类型和返回值类型
+
+### 病例筛选增强
+
+- 训练端 `CaseList.vue` 新增病例分级筛选（基础病例/高阶病例/疑难病例）
+- 管理端三个病例列表页（Platform/Institution/Expert）同步增加病例分级列和筛选
+
+### 文件变更
+
+| 文件 | 变更 |
+|------|------|
+| `apps/training/src/composables/useAICompanion.js` | 新建 — AI伴学五层流水线（285行） |
+| `apps/training/src/components/AICompanionDrawer.vue` | 重构 — 接入 useAICompanion + Tab改名 + 布局调整 |
+| `apps/training/src/views/CaseList.vue` | 修改 — 新增病例分级筛选 + 移除断点续训弹窗 |
+| `apps/admin/src/views/case-list/PlatformCaseList.vue` | 修改 — 新增病例分级列和筛选 |
+| `apps/admin/src/views/case-list/InstitutionCaseList.vue` | 修改 — 新增病例分级列和筛选 |
+| `apps/admin/src/views/case-list/ExpertCaseList.vue` | 修改 — 新增病例分级列和筛选 |
+| `docs/DESIGN_专家AI智能体设计文档.md` | 重写 — 全 TypeScript + 共享类型定义章节 |
+
 ## 2026-07-24
 
 ### 帽子云部署构建修复
