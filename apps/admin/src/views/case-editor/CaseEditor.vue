@@ -128,6 +128,9 @@
       </div>
 
       <div class="tab-content">
+        <div v-show="activeTab === 'medicalKB'" class="tab-panel" key="medicalKB">
+          <MedicalRecordKB :records="formData.medicalRecords || {}" />
+        </div>
         <div v-show="activeTab === 'basic'" class="tab-panel" key="basic">
           <BasicInfoEditor
             :formData="formData"
@@ -160,7 +163,7 @@
           <MetaInfoView :meta="formData.meta" @update:meta="v => formData.meta = v" />
         </div>
         <div v-show="activeTab === 'expertKB'" class="tab-panel" key="expertKB">
-          <ExpertKBEditor :model="formData.expertReview" @update:model="v => formData.expertReview = v" />
+          <ExpertKBEditor :model="formData.expertReview" @update:model="v => formData.expertReview = v" :caseId="formData.case_id" />
         </div>
       </div>
 
@@ -747,6 +750,7 @@ import MetaInfoView from './MetaInfo.vue'
 import MaterialsEditor from './MaterialsEditor.vue'
 import MentalExamEditor from './MentalExamEditor.vue'
 import ExpertKBEditor from './ExpertKBEditor.vue'
+import MedicalRecordKB from './MedicalRecordKB.vue'
 import SearchSelect from '@/components/SearchSelect.vue'
 import { SCORE_SHEET_TEMPLATES } from '@/data/templates/index.js'
 
@@ -766,6 +770,7 @@ const isPsych = computed(() => formData.value.specialty === '精神科')
 
 const tabs = computed(() => {
   const base = [
+    { key: 'medicalKB', label: '病历知识库' },
     { key: 'basic', label: '基础信息' },
     { key: 'scoreSheet', label: 'v1.0 评分' },
     { key: 'reception', label: '接诊病人' },
@@ -776,7 +781,7 @@ const tabs = computed(() => {
   base.push({ key: 'materials', label: '检查素材' }, { key: 'meta', label: '元信息' }, { key: 'expertKB', label: '专家知识库' })
   return base
 })
-const activeTab = ref('basic')
+const activeTab = ref('medicalKB')
 
 const isSimpleLevel = computed(() => ['U1', 'U2'].includes(formData.value.teaching_phase))
 
@@ -1409,6 +1414,11 @@ function saveDraft() {
       expertKB: expertReview.expertKB,
       reviewTitle: expertReview.reviewTitle
     })
+  }
+
+  const medicalRecords = formData.value.medicalRecords
+  if (medicalRecords && Object.keys(medicalRecords).length > 0) {
+    saveFile(caseId + '-medicalRecords.json', { caseId, records: medicalRecords })
   }
 
   toast.show('草稿已保存')

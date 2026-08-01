@@ -87,7 +87,8 @@ export function createEmptyFormData() {
     score_sheet: [],
     station_scores: null,
     examination_materials: [],
-    expertReview: { enabled: false, expertName: '', expertTitle: '', expertAvatar: '', expertTags: [], expertKB: '', reviewTitle: '' }
+    expertReview: { enabled: false, expertName: '', expertTitle: '', expertAvatar: '', expertTags: [], expertKB: '', reviewTitle: '' },
+    medicalRecords: {}
   }
 }
 
@@ -253,7 +254,7 @@ export async function loadCaseDataFromFiles(caseId) {
   const suffix = caseId
 
   try {
-    const [basicData, receptionData, analysisData, humanityData, mentalExamData, metaData, scoreSheetData, materialsData, expertData] = await Promise.all([
+    const [basicData, receptionData, analysisData, humanityData, mentalExamData, metaData, scoreSheetData, materialsData, expertData, medicalRecordsData] = await Promise.all([
       tryFetchJson(basePaths, `${suffix}-basic.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-reception.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-analysis.json`).catch(() => null),
@@ -262,7 +263,8 @@ export async function loadCaseDataFromFiles(caseId) {
       tryFetchJson(basePaths, `${suffix}-meta.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-scoreSheet.json`).catch(() => null),
       tryFetchJson(basePaths, `${suffix}-materials.json`).catch(() => null),
-      tryFetchJson(basePaths, `${suffix}-expert.json`).catch(() => null)
+      tryFetchJson(basePaths, `${suffix}-expert.json`).catch(() => null),
+      tryFetchJson(basePaths, `${suffix}-medicalRecords.json`).catch(() => null)
     ])
     if (!basicData) return { formData: createEmptyFormData(), raw: null }
 
@@ -512,7 +514,10 @@ export async function loadCaseDataFromFiles(caseId) {
         reviewTitle: expertData.reviewTitle || ''
       }
     }
-    return { formData, raw: { basicData, scoreSheetData, receptionData, analysisData, humanityData, mentalExamData, metaData, materialsData, expertData } }
+    if (medicalRecordsData && medicalRecordsData.records) {
+      formData.medicalRecords = medicalRecordsData.records
+    }
+    return { formData, raw: { basicData, scoreSheetData, receptionData, analysisData, humanityData, mentalExamData, metaData, materialsData, expertData, medicalRecordsData } }
   } catch (e) {
     return { formData: createEmptyFormData(), raw: null }
   }
