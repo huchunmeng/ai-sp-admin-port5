@@ -98,16 +98,13 @@ function extractSelectionStation(sessionData) {
   const preliminary = sessionData.preliminary || ''
   const differential = sessionData.differential || ''
   const basis = sessionData.basis || ''
-  const final = sessionData.final || ''
-  const icdCode = sessionData.icdCode || ''
 
-  if (!preliminary && !differential && !basis && !final) return null
+  if (!preliminary && !differential && !basis) return null
 
   const parts = []
   if (preliminary) parts.push(`初步诊断：${preliminary}`)
   if (differential) parts.push(`鉴别诊断：${differential}`)
   if (basis) parts.push(`诊断依据：${basis.slice(0, 300)}`)
-  if (final) parts.push(`最终诊断：${final}${icdCode ? `（ICD：${icdCode}）` : ''}`)
 
   return { hasActivity: true, summary: parts.join('；'), detail: parts.join('\n') }
 }

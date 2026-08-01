@@ -81,7 +81,7 @@
         </div>
         <div class="form-footer">
           <button class="btn btn-primary btn-submit" @click="submitRecord">
-            <i class="fa-solid fa-check"></i> {{ lang === 'zh' ? '提交病历' : 'Submit Record' }}
+            <i class="fa-solid fa-check"></i> {{ lang === 'zh' ? (flowSteps ? '保存并提交' : '提交病历') : (flowSteps ? 'Save & Submit' : 'Submit Record') }}
           </button>
         </div>
       </div>
@@ -289,6 +289,23 @@ function submitRecord() {
     showToast(lang.value === 'zh' ? '请撰写病历' : 'Please write medical record', 'warning')
     return
   }
+
+  if (flowSteps.value) {
+    store.trainingSession = store.trainingSession || {}
+    store.trainingSession.medicalRecord = recordText.value
+    store.saveTrainingSession()
+    store.addTrainingRecord({
+      caseId: c.value.id,
+      stationId: 'medicalRecord',
+      stationName: flowCtx.value?.stationName || (lang.value === 'zh' ? '病历书写站' : 'Medical Record'),
+      duration: elapsedSeconds.value,
+      score: 0,
+      time: new Date().toLocaleString()
+    })
+    showToast(lang.value === 'zh' ? '保存成功' : 'Saved successfully', 'success')
+    return
+  }
+
   showEndConfirm.value = true
 }
 

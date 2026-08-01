@@ -61,108 +61,83 @@
       </div>
 
       <div class="right-panel">
-        <div class="view-toggle-bar">
-          <button class="view-toggle-btn" :class="{ active: rightView === 'select' }" @click="rightView = 'select'">
+        <!-- 上栏：检查结果（图标展示） -->
+        <div class="results-upper">
+          <div class="results-upper-header">
+            <span class="results-upper-title">
+              <i class="fa-solid fa-file-lines"></i>
+              {{ lang === 'zh' ? '检查结果' : 'Test Results' }}
+            </span>
+            <span v-if="submittedTests.length" class="results-upper-count">{{ submittedTests.length }} {{ lang === 'zh' ? '项' : 'items' }}</span>
+          </div>
+          <div :class="['results-grid', { 'results-flash': justSubmitted }]" v-if="submittedTests.length > 0">
+            <div
+              v-for="(test, idx) in submittedTests"
+              :key="idx"
+              :class="['result-icon-card', { viewed: viewedSet.has(idx) }]"
+              @click="toggleReport(idx)"
+            >
+              <div class="result-icon">
+                <i :class="getTestIcon(test.category)"></i>
+              </div>
+              <div class="result-icon-name">{{ test.name }}</div>
+              <div class="result-icon-cat">{{ test.categoryLabel }}</div>
+              <div v-if="!viewedSet.has(idx)" class="result-icon-badge new">NEW</div>
+            </div>
+          </div>
+          <div v-else class="results-empty">
             <i class="fa-solid fa-flask"></i>
-            {{ lang === 'zh' ? '添加辅检' : 'Add Tests' }}
-          </button>
-          <button class="view-toggle-btn" :class="{ active: rightView === 'report' }" @click="rightView = 'report'">
-            <i class="fa-solid fa-file-lines"></i>
-            {{ lang === 'zh' ? '结果报告' : 'Results' }}
-            <span v-if="submittedTests.length" class="view-badge">{{ submittedTests.length }}</span>
-          </button>
-        </div>
-
-        <div class="form-scroll">
-          <!-- View A: Batch Test Selection -->
-          <div v-show="rightView === 'select'">
-            <div class="section-title">{{ lang === 'zh' ? '选择辅助检查项目' : 'Select Ancillary Tests' }}</div>
-            <div v-if="testCategories.length === 0" class="empty-state">
-              <i class="fa-solid fa-circle-info" style="font-size:32px;color:#C0C4CC;"></i>
-              <p>{{ lang === 'zh' ? '该病例暂无可用辅查数据' : 'No test data available for this case' }}</p>
-            </div>
-            <div v-for="cat in testCategories" :key="cat.name" class="test-category">
-              <div class="category-header" @click="cat.expanded = !cat.expanded">
-                <div class="category-title">
-                  <i class="fa-solid" :class="cat.expanded ? 'fa-chevron-down' : 'fa-chevron-right'" style="width:16px;"></i>
-                  <span>{{ cat.label }}</span>
-                  <span class="category-count">({{ cat.items.length }})</span>
-                </div>
-                <div class="category-actions" @click.stop>
-                  <button class="cat-action-btn" @click="selectAllInCat(cat)">{{ lang === 'zh' ? '全选' : 'All' }}</button>
-                  <button class="cat-action-btn" @click="clearAllInCat(cat)">{{ lang === 'zh' ? '取消' : 'None' }}</button>
-                </div>
-              </div>
-              <div v-show="cat.expanded" class="category-items">
-                <label v-for="item in cat.items" :key="item.name" class="test-item" :class="{ selected: isSelected(cat.name, item.name) }">
-                  <input type="checkbox" :checked="isSelected(cat.name, item.name)" @change="toggleTest(cat.name, item)" />
-                  <div class="test-item-info">
-                    <div class="test-item-name">{{ item.name }}</div>
-                    <div class="test-item-desc" v-if="item.result && item.result !== item.name">{{ item.result.substring(0, 60) }}</div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <div v-if="testCategories.length > 0" class="batch-submit-area">
-              <div class="selected-count">{{ lang === 'zh' ? '已选' : 'Selected' }}: {{ selectedTests.length }} {{ lang === 'zh' ? '项' : 'items' }}</div>
-              <button class="btn btn-primary btn-submit" @click="submitBatch" :disabled="selectedTests.length === 0 || batchSubmitted">
-                <i class="fa-solid fa-paper-plane"></i>
-                {{ batchSubmitted ? (lang === 'zh' ? '已提交' : 'Submitted') : (lang === 'zh' ? '提交申请' : 'Submit') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- View B: Results Report -->
-          <div v-show="rightView === 'report'">
-            <div class="section-title">{{ lang === 'zh' ? '检查结果报告' : 'Test Results Report' }}</div>
-            <div v-if="submittedTests.length === 0" class="empty-state">
-              <i class="fa-solid fa-flask" style="font-size:32px;color:#C0C4CC;"></i>
-              <p>{{ lang === 'zh' ? '尚未提交任何检查申请' : 'No tests submitted yet' }}</p>
-              <button class="btn" @click="rightView = 'select'" style="margin-top:8px;">
-                {{ lang === 'zh' ? '去添加辅检' : 'Add Tests' }}
-              </button>
-            </div>
-            <div class="result-summary" v-if="submittedTests.length > 0">
-              <div class="result-summary-item">
-                <span class="summary-num">{{ submittedTests.length }}</span>
-                <span class="summary-label">{{ lang === 'zh' ? '已申请检查' : 'Tests Ordered' }}</span>
-              </div>
-              <div class="result-summary-item">
-                <span class="summary-num">{{ viewedResults.length }}</span>
-                <span class="summary-label">{{ lang === 'zh' ? '已查看报告' : 'Reports Viewed' }}</span>
-              </div>
-            </div>
-            <div v-for="(test, idx) in submittedTests" :key="idx" class="result-item">
-              <div class="result-item-header" @click="toggleReport(idx)">
-                <div class="result-item-left">
-                  <span class="result-cat-tag">{{ test.categoryLabel }}</span>
-                  <span class="result-item-name">{{ test.name }}</span>
-                </div>
-                <button class="report-toggle-btn" :class="{ viewed: viewedSet.has(idx) }">
-                  <i class="fa-solid" :class="expandedReports.has(idx) ? 'fa-chevron-up' : 'fa-file-lines'"></i>
-                  {{ expandedReports.has(idx) ? (lang === 'zh' ? '收起' : 'Hide') : (lang === 'zh' ? '报告' : 'Report') }}
-                </button>
-              </div>
-              <div v-if="expandedReports.has(idx)" class="result-detail">
-                <div class="result-meta">
-                  <span><i class="fa-solid fa-clock"></i> {{ test.submittedAt || '' }}</span>
-                  <span><i class="fa-solid fa-tag"></i> {{ test.categoryLabel }}</span>
-                </div>
-                <div class="result-content">{{ test.result }}</div>
-              </div>
-            </div>
+            <span>{{ lang === 'zh' ? '尚未申请检查，请在下方输入' : 'No tests ordered yet' }}</span>
           </div>
         </div>
 
-        <div class="form-footer">
-          <button class="btn btn-primary btn-submit" @click="submitTests" :disabled="!batchSubmitted && selectedTests.length === 0">
-            <i class="fa-solid fa-arrow-right"></i>
-            {{ lang === 'zh' ? '提交并进入诊断' : 'Submit & Go to Diagnosis' }}
-          </button>
+        <!-- 下栏：开具检查申请 -->
+        <div class="input-lower">
+          <div class="input-lower-header">
+            <span class="input-lower-title">
+              <i class="fa-solid fa-pen-to-square"></i>
+              {{ lang === 'zh' ? '开具检查申请' : 'Order Tests' }}
+            </span>
+            <span class="input-lower-hint">{{ lang === 'zh' ? '自由输入检查项目，AI自动识别处理' : 'Free-text input, AI auto-recognition' }}</span>
+          </div>
+          <div class="input-lower-body">
+            <textarea
+              ref="orderTextareaRef"
+              v-model="orderText"
+              class="order-textarea"
+              :placeholder="lang === 'zh' ? '在此输入要申请的检查项目，支持自然语言：\n例如：查个血常规+超敏CRP，肝功能全套，再加个腹部CT平扫+增强\n也可以简写：血常规、肝功、腹部CT\n系统将自动识别并匹配检查项目...' : 'Enter test orders in natural language:\ne.g. CBC with CRP, liver panel, abdominal CT with contrast'"
+              rows="5"
+              :disabled="processingOrder"
+            ></textarea>
+
+            <div class="input-actions">
+              <span v-if="processingOrder" class="processing-hint">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                {{ lang === 'zh' ? 'AI正在识别和处理检查项目...' : 'AI is processing your order...' }}
+              </span>
+              <span v-else class="matched-count empty"></span>
+              <button
+                class="btn btn-primary"
+                @click="submitOrder"
+                :disabled="!orderText.trim() || processingOrder"
+              >
+                <i v-if="!processingOrder" class="fa-solid fa-paper-plane"></i>
+                {{ lang === 'zh' ? '提交申请' : 'Submit Order' }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <transition name="toast-fade">
+        <div v-if="showToast" class="app-toast" @click="showToast = false">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ toastMessage }}</span>
+        </div>
+      </transition>
+    </Teleport>
 
     <StationModals
       :show-end-confirm="showEndConfirm"
@@ -180,6 +155,46 @@
         <p class="end-warning">{{ lang === 'zh' ? '提交后无法返回修改，确认提交吗？' : 'Cannot modify after submission. Confirm?' }}</p>
       </template>
     </StationModals>
+
+    <!-- 报告查看弹窗 -->
+    <Teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="showReport" class="report-modal-overlay" @click.self="showReport = false">
+          <div class="report-modal">
+            <div class="report-modal-header">
+              <span class="report-modal-title">
+                <i :class="getTestIcon(reportTest?.category)"></i>
+                {{ reportTest?.name }}
+              </span>
+              <span class="report-modal-cat">{{ reportTest?.categoryLabel }}</span>
+              <button class="report-modal-close" @click="showReport = false">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div class="report-modal-body">
+              <div v-if="reportImageLoaded" class="report-image-wrap">
+                <img :src="reportImageSrc" :alt="reportTest?.name" class="report-image" @error="reportImageLoaded = false" />
+                <div class="report-image-caption">{{ lang === 'zh' ? '检查报告图片' : 'Test Report Image' }}</div>
+              </div>
+              <div v-else class="report-text-wrap">
+                <div class="report-text-header">
+                  <div class="report-text-hospital">{{ lang === 'zh' ? '东南大学附属中大医院' : 'Zhongda Hospital, Southeast University' }}</div>
+                  <div class="report-text-title">{{ reportTest?.name }}{{ lang === 'zh' ? '检查报告' : ' Report' }}</div>
+                  <div class="report-text-meta">
+                    <span>{{ lang === 'zh' ? '姓名' : 'Name' }}: {{ c.patient.name }}</span>
+                    <span>{{ lang === 'zh' ? '性别' : 'Sex' }}: {{ c.patient.gender }}</span>
+                    <span>{{ lang === 'zh' ? '年龄' : 'Age' }}: {{ c.patient.age }}</span>
+                    <span>ID: {{ caseId?.slice(0, 16) }}</span>
+                  </div>
+                </div>
+                <div class="report-text-divider"></div>
+                <pre class="report-text-content">{{ formatReportText(reportTest) }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
@@ -192,7 +207,7 @@ import { useStationFlow, resolveNextInFlow, advanceToNextStation, ensureStationI
 import { useTimer } from '@/composables/useTimer'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { parseVitals } from '@/composables/useUtils'
-import { getTestCategories } from '@ai-sp/shared/test-selection-engine'
+import { useAIChat } from '@/composables/useAIChat'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import PatientInfoPanel from '@/components/PatientInfoPanel.vue'
 import StationModals from '@/components/StationModals.vue'
@@ -203,21 +218,27 @@ const store = useTrainingStore()
 const { loadCase } = useCaseLoader()
 const { stations: flowStations } = useStationFlow()
 const { formattedTime, elapsedSeconds, startTimer, stopTimer } = useTimer()
+const { sendMessage: sendLLMMessage } = useAIChat()
 
 const lang = ref(store.lang || 'zh')
 const forwardNav = ref(false)
 const caseData = ref({ basic: null })
 const leftTab = ref('info')
-const rightView = ref('select')
 const showEndConfirm = ref(false)
-const showConfirmDialog = ref(false)
 const showToast = ref(false)
 const toastMessage = ref('')
-const selectedTests = ref([])
 const submittedTests = ref([])
-const batchSubmitted = ref(false)
-const expandedReports = reactive(new Set())
 const viewedSet = reactive(new Set())
+
+const orderTextareaRef = ref(null)
+const orderText = ref('')
+const processingOrder = ref(false)
+const justSubmitted = ref(false)
+
+const showReport = ref(false)
+const reportTest = ref(null)
+const reportImageSrc = ref('')
+const reportImageLoaded = ref(false)
 
 const c = computed(() => {
   const basic = caseData.value.basic
@@ -333,138 +354,271 @@ const historyMessages = computed(() => {
   return combined.filter(m => m.content && (m.role === 'user' || m.role === 'sp')).slice(-50)
 })
 
-const peFindings = computed(() => {
-  const ts = store.trainingSession || {}
-  const peMsgs = (ts.physicalExam?.messages || []).filter(m => m.role === 'sp' || m.role === 'system')
-  if (peMsgs.length) return peMsgs.map(m => m.content).filter(Boolean)
-  const basic = caseData.value.basic
-  if (basic?.physical_exam) {
-    const pe = basic.physical_exam
-    return [pe.vital_signs, pe.general, pe.systemic].filter(Boolean)
+function getTestIcon(cat) {
+  const map = {
+    '实验室检查': 'fa-solid fa-vial-circle-check',
+    '影像学检查': 'fa-solid fa-x-ray',
+    '特殊检查': 'fa-solid fa-stethoscope',
+    'Laboratory Tests': 'fa-solid fa-vial-circle-check',
+    'Imaging Studies': 'fa-solid fa-x-ray',
+    'Special Tests': 'fa-solid fa-stethoscope'
   }
-  return []
-})
-
-const testCategories = computed(() => {
-  const basic = caseData.value.basic
-  if (!basic) return []
-  const catMap = getTestCategories(basic)
-  const labelMap = {
-    'Laboratory Tests': lang.value === 'zh' ? '实验室检查' : 'Laboratory Tests',
-    'Imaging Studies': lang.value === 'zh' ? '影像学检查' : 'Imaging Studies',
-    'Special Tests': lang.value === 'zh' ? '特殊检查' : 'Special Tests'
-  }
-  return Array.from(catMap.entries()).map(([key, items]) => ({
-    name: key,
-    label: labelMap[key] || key,
-    expanded: true,
-    items: items.map(it => ({ ...it }))
-  }))
-})
-
-function isSelected(catName, itemName) {
-  return selectedTests.value.some(t => t.category === catName && t.name === itemName)
+  return map[cat] || 'fa-solid fa-file-lines'
 }
 
-function toggleTest(catName, item) {
-  if (batchSubmitted.value) return
-  const idx = selectedTests.value.findIndex(t => t.category === catName && t.name === item.name)
-  if (idx >= 0) {
-    selectedTests.value.splice(idx, 1)
-  } else {
-    selectedTests.value.push({
-      category: catName,
-      name: item.name,
-      result: item.result || item.name
-    })
-  }
-  syncAncillaryToSession()
-}
+// ============ LLM Integration ============
 
-function selectAllInCat(cat) {
-  if (batchSubmitted.value) return
-  cat.items.forEach(item => {
-    if (!isSelected(cat.name, item.name)) {
-      selectedTests.value.push({
-        category: cat.name,
-        name: item.name,
-        result: item.result || item.name
-      })
+function buildTestOrderSystemPrompt() {
+  return `你是一名临床辅助检查智能调度员。用户（医学生）会输入需要开具的检查项目，你的任务是：
+1. 判断输入是否为合理的医疗检查申请——拦截完全无关、恶意或非医疗的输入
+2. 将用户输入解析为具体的检查项目列表
+3. 为每个检查项目生成完整的检查报告
+
+报告生成规则（优先级递减）：
+- 病例原始素材中已有该检查的明确结果 → 直接引用，保持原始格式
+- 病例中有相关临床发现但无该检查的完整结果 → 基于病例中的临床信息（症状、体征、既往史等）整合出合理报告
+- 病例中完全没有相关信息 → 生成正常范围的检查结果（需考虑患者既往史中的基础疾病可能带来的影响）
+
+报告格式要求：
+- 实验室检查：包含检查项目、标本类型、各项指标及结果值（带单位）、参考区间、异常标记
+- 影像学检查：包含检查技术、影像所见（详细描述）、诊断意见
+- 特殊检查：包含检查方法、检查所见、结论
+
+请严格按以下JSON格式输出，不要包含其他内容：
+{
+  "valid": true/false,
+  "reason": "如valid为false，说明原因",
+  "tests": [
+    {
+      "name": "检查项目名称",
+      "category": "实验室检查/影像学检查/特殊检查",
+      "result": "完整的检查报告内容（纯文本，用换行分隔各部分）",
+      "source": "case_material/case_context/generated"
     }
-  })
-  syncAncillaryToSession()
+  ]
+}`
 }
 
-function clearAllInCat(cat) {
-  if (batchSubmitted.value) return
-  selectedTests.value = selectedTests.value.filter(t => t.category !== cat.name)
-  syncAncillaryToSession()
+function buildTestOrderUserMessage(inputText) {
+  const basic = caseData.value.basic || {}
+  const pi = basic.patient_info || {}
+  const pe = basic.physical_exam || {}
+
+  let ctx = ''
+  ctx += `患者：${pi.name || '未知'}，${pi.sex === '1' || pi.sex === '男' ? '男' : '女'}，${pi.age || '未知'}\n`
+  ctx += `主诉：${basic.chief_complaint || '无'}\n`
+  ctx += `现病史：${basic.present_illness || '无'}\n`
+  ctx += `既往史：${basic.past_history || '无'}\n`
+  ctx += `个人史：${basic.personal_history || '无'}\n`
+  ctx += `家族史：${basic.family_history || '无'}\n`
+  ctx += `体格检查：${[pe.vital_signs, pe.general, pe.systemic].filter(Boolean).join('；') || '无'}\n`
+  ctx += `\n【病例已有检查素材】\n`
+  ctx += `实验室检查结果：\n${basic.lab_tests || '（无）'}\n\n`
+  ctx += `影像学检查结果：\n${basic.imaging || '（无）'}\n\n`
+  ctx += `特殊检查结果：\n${basic.special_exams || '（无）'}\n`
+  ctx += `\n学员输入的检查申请：\n${inputText}`
+
+  return ctx
 }
+
+function parseLLMResponse(content) {
+  try {
+    const json = JSON.parse(content)
+    return json
+  } catch {
+    const match = content.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) {
+      try { return JSON.parse(match[1].trim()) } catch { /* continue */ }
+    }
+    const braceMatch = content.match(/\{[\s\S]*"valid"[\s\S]*\}/)
+    if (braceMatch) {
+      try { return JSON.parse(braceMatch[0]) } catch { /* continue */ }
+    }
+    throw new Error('Unable to parse LLM response')
+  }
+}
+
+async function submitOrder() {
+  const input = orderText.value.trim()
+  if (!input || processingOrder.value) return
+
+  processingOrder.value = true
+
+  try {
+    const systemPrompt = buildTestOrderSystemPrompt()
+    const userMessage = buildTestOrderUserMessage(input)
+
+    const response = await sendLLMMessage(
+      [{ role: 'user', content: userMessage }],
+      systemPrompt,
+      { temperature: 0.3, maxTokens: 4000, timeout: 45000 }
+    )
+
+    if (!response.ok) {
+      showToast.value = true
+      toastMessage.value = lang.value === 'zh' ? 'AI服务异常，请重试' : 'AI service error, please retry'
+      setTimeout(() => { showToast.value = false }, 3000)
+      return
+    }
+
+    const parsed = parseLLMResponse(response.content)
+
+    if (!parsed || !parsed.valid) {
+      showToast.value = true
+      toastMessage.value = (parsed?.reason) || (lang.value === 'zh' ? '输入无法识别为有效的检查申请，请重新输入' : 'Cannot recognize as valid test order')
+      setTimeout(() => { showToast.value = false }, 3500)
+      return
+    }
+
+    if (!parsed.tests || parsed.tests.length === 0) {
+      showToast.value = true
+      toastMessage.value = lang.value === 'zh' ? '未识别到检查项目，请重新输入' : 'No test items recognized'
+      setTimeout(() => { showToast.value = false }, 3000)
+      return
+    }
+
+    const catLabelMap = {
+      '实验室检查': lang.value === 'zh' ? '实验室检查' : 'Lab',
+      '影像学检查': lang.value === 'zh' ? '影像学检查' : 'Imaging',
+      '特殊检查': lang.value === 'zh' ? '特殊检查' : 'Special'
+    }
+
+    const newTests = parsed.tests.map(t => ({
+      category: t.category || '实验室检查',
+      categoryLabel: catLabelMap[t.category] || t.category || (lang.value === 'zh' ? '实验室检查' : 'Lab'),
+      name: t.name || '未知检查',
+      result: t.result || t.name || '',
+      source: t.source || 'generated',
+      submittedAt: new Date().toLocaleString('zh-CN')
+    }))
+
+    submittedTests.value.push(...newTests)
+    orderText.value = ''
+    justSubmitted.value = true
+    syncAncillaryToSession()
+    setTimeout(() => { justSubmitted.value = false }, 1200)
+
+  } catch (e) {
+    console.error('Order processing error:', e)
+    showToast.value = true
+    toastMessage.value = lang.value === 'zh' ? '处理失败，请重试' : 'Processing failed, please retry'
+    setTimeout(() => { showToast.value = false }, 3000)
+  } finally {
+    processingOrder.value = false
+  }
+}
+
+// ============ Session Persistence ============
 
 function syncAncillaryToSession() {
-  const labelMap = {
-    'Laboratory Tests': '实验室检查',
-    'Imaging Studies': '影像学检查',
-    'Special Tests': '特殊检查'
-  }
   store.trainingSession = store.trainingSession || {}
   store.trainingSession.ancillaryTests = {
-    selections: selectedTests.value.map(t => ({
-      category: t.category,
-      categoryLabel: labelMap[t.category] || t.category,
-      name: t.name,
-      result: t.result
-    })),
-    results: submittedTests.value.map(t => ({
+    results: submittedTests.value.map((t, i) => ({
       ...t,
-      viewed: viewedSet.has(submittedTests.value.indexOf(t))
+      viewed: viewedSet.has(i)
     })),
-    batchSubmitted: batchSubmitted.value,
     submittedAt: new Date().toISOString(),
     duration: elapsedSeconds.value
   }
   store.saveTrainingSession()
 }
 
-function submitBatch() {
-  if (selectedTests.value.length === 0) return
-  batchSubmitted.value = true
-  const labelMap = {
-    'Laboratory Tests': lang.value === 'zh' ? '实验室检查' : 'Lab',
-    'Imaging Studies': lang.value === 'zh' ? '影像学检查' : 'Imaging',
-    'Special Tests': lang.value === 'zh' ? '特殊检查' : 'Special'
-  }
-  submittedTests.value = selectedTests.value.map(t => ({
-    ...t,
-    categoryLabel: labelMap[t.category] || t.category,
-    submittedAt: new Date().toLocaleString('zh-CN')
-  }))
-  rightView.value = 'report'
-  syncAncillaryToSession()
-}
+// ============ Report Display ============
 
 function toggleReport(idx) {
   viewedSet.add(idx)
-  if (expandedReports.has(idx)) {
-    expandedReports.delete(idx)
-  } else {
-    expandedReports.add(idx)
-  }
+  const test = submittedTests.value[idx]
+  if (!test) return
+
+  reportTest.value = test
+  reportImageLoaded.value = false
+  reportImageSrc.value = ''
+
+  const cleanName = test.name.replace(/[（(].*?[)）]/g, '').replace(/\s+/g, '')
+  const imgPath = `/data/cases/${caseId.value}-tests/${cleanName}.png`
+  reportImageSrc.value = imgPath
+  reportImageLoaded.value = true
+
+  showReport.value = true
 }
 
-const viewedResults = computed(() => submittedTests.value.filter((_, i) => viewedSet.has(i)))
+function formatReportText(test) {
+  if (!test) return ''
+  const result = test.result || ''
+  const cat = test.category || ''
 
-const confirmMessage = computed(() => {
-  if (lang.value === 'zh') {
-    return `已选择 ${selectedTests.value.length} 项辅助检查，确认提交并进入诊断？`
+  if (result.includes('：') && result.length > 30) return result
+
+  if (cat === 'Laboratory Tests') {
+    return formatLabReport(test)
+  } else if (cat === 'Imaging Studies') {
+    return formatImagingReport(test)
+  } else if (cat === 'Special Tests') {
+    return formatSpecialReport(test)
   }
-  return `Selected ${selectedTests.value.length} tests. Confirm and proceed to diagnosis?`
-})
+  return result
+}
+
+function formatLabReport(test) {
+  const result = test.result || test.name
+  const lines = [
+    '【检查项目】' + test.name,
+    '【标本类型】静脉血',
+    '【检查结果】',
+  ]
+  if (result.includes('正常') || result.includes('异常') || result.includes('增高') || result.includes('降低')) {
+    lines.push(result)
+  } else {
+    lines.push(result)
+    lines.push('')
+    lines.push('【参考区间】详见各分项参考范围')
+  }
+  lines.push('')
+  lines.push('【报告日期】' + new Date().toLocaleDateString('zh-CN'))
+  lines.push('【检验医师】' + (lang.value === 'zh' ? '检验科' : 'Lab Dept.'))
+  return lines.join('\n')
+}
+
+function formatImagingReport(test) {
+  const result = test.result || test.name
+  const lines = [
+    '【检查项目】' + test.name,
+    '【检查技术】' + (lang.value === 'zh' ? '详见扫描参数' : 'See scan parameters'),
+    '【影像所见】',
+    '  ' + result,
+    '',
+    '【诊断意见】',
+    '  ' + (lang.value === 'zh' ? '结合临床病史及其他检查综合判断。' : 'Correlate with clinical history and other findings.'),
+    '',
+    '【报告日期】' + new Date().toLocaleDateString('zh-CN'),
+    '【报告医师】' + (lang.value === 'zh' ? '影像科' : 'Radiology Dept.'),
+  ]
+  return lines.join('\n')
+}
+
+function formatSpecialReport(test) {
+  const result = test.result || test.name
+  const lines = [
+    '【检查项目】' + test.name,
+    '【检查所见】',
+    '  ' + result,
+    '',
+    '【结论】',
+    '  ' + (lang.value === 'zh' ? '详见上述检查所见。' : 'See findings above.'),
+    '',
+    '【报告日期】' + new Date().toLocaleDateString('zh-CN'),
+    '【报告医师】' + (lang.value === 'zh' ? '检查科室' : 'Exam Dept.'),
+  ]
+  return lines.join('\n')
+}
+
+// ============ Navigation & Stage Completion ============
 
 function submitTests() {
-  if (!batchSubmitted.value && selectedTests.value.length > 0) {
+  if (submittedTests.value.length === 0) {
     showToast.value = true
-    toastMessage.value = lang.value === 'zh' ? '请先点击"提交申请"获取检查结果' : 'Please submit the test order first'
+    toastMessage.value = lang.value === 'zh' ? '请先申请检查并获取结果' : 'Please submit test orders first'
+    setTimeout(() => { showToast.value = false }, 2500)
     return
   }
   showEndConfirm.value = true
@@ -472,29 +626,7 @@ function submitTests() {
 
 function endStage() {
   showEndConfirm.value = false
-
-  const labelMap = {
-    'Laboratory Tests': lang.value === 'zh' ? '实验室检查' : 'Lab',
-    'Imaging Studies': lang.value === 'zh' ? '影像学检查' : 'Imaging',
-    'Special Tests': lang.value === 'zh' ? '特殊检查' : 'Special'
-  }
-
-  store.trainingSession = store.trainingSession || {}
-  store.trainingSession.ancillaryTests = {
-    selections: selectedTests.value.map(t => ({
-      category: t.category,
-      categoryLabel: labelMap[t.category] || t.category,
-      name: t.name,
-      result: t.result
-    })),
-    results: submittedTests.value.map(t => ({
-      ...t,
-      viewed: viewedSet.has(submittedTests.value.indexOf(t))
-    })),
-    submittedAt: new Date().toISOString(),
-    duration: elapsedSeconds.value
-  }
-  store.saveTrainingSession()
+  syncAncillaryToSession()
 
   stopTimer()
   store.addTrainingRecord({
@@ -517,7 +649,6 @@ function endStage() {
 
 function forceEndTraining() {
   showEndConfirm.value = false
-  showConfirmDialog.value = false
   forwardNav.value = true
   router.push({ name: 'caseDetail', params: { caseId: caseId.value } })
 }
@@ -533,9 +664,8 @@ function onStepClick(si) {
 onBeforeRouteLeave((to, from, next) => {
   if (forwardNav.value) { next(); return }
   if ((store.stationFlow?.stations?.length || 0) > 1) { next(); return }
-  if (showEndConfirm.value) { showEndConfirm.value = false }
-  if (batchSubmitted.value || selectedTests.value.length === 0) { next(); return }
-  showConfirmDialog.value = true
+  if (submittedTests.value.length === 0) { next(); return }
+  showEndConfirm.value = true
   next(false)
 })
 
@@ -551,16 +681,12 @@ onMounted(async () => {
   // Restore previous session data
   const ts = store.trainingSession || {}
   if (ts.ancillaryTests) {
-    if (ts.ancillaryTests.selections) selectedTests.value = ts.ancillaryTests.selections
     if (ts.ancillaryTests.results?.length) {
       submittedTests.value = ts.ancillaryTests.results
-      batchSubmitted.value = true
-      // Restore viewed states
       ts.ancillaryTests.results.forEach((r, i) => {
         if (r.viewed) viewedSet.add(i)
       })
     }
-    if (ts.ancillaryTests.batchSubmitted) batchSubmitted.value = true
   }
 
   // Accumulate notes from prior stages
@@ -588,9 +714,6 @@ onMounted(async () => {
 .panel-tab.active { color: #409EFF; border-bottom: 2px solid #409EFF; font-weight: 600; }
 .panel-content { padding: 12px; overflow-y: auto; flex: 1; }
 
-.section-label { font-size: 12px; font-weight: 600; color: #909399; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-.finding-item { font-size: 12px; color: #606266; padding: 4px 0; line-height: 1.5; display: flex; align-items: flex-start; }
-
 .marked-msg { padding: 8px 10px; margin-bottom: 8px; background: #f0f9eb; border-radius: 8px; border-left: 3px solid #67C23A; }
 .marked-role { font-size: 11px; color: #67C23A; font-weight: 600; margin-bottom: 2px; }
 .marked-text { font-size: 12px; color: #606266; line-height: 1.5; }
@@ -603,65 +726,92 @@ onMounted(async () => {
 .bubble-meta { font-size: 10px; color: #909399; margin-bottom: 2px; }
 .bubble-text { color: #303133; line-height: 1.5; }
 
-/* View Toggle */
-.view-toggle-bar { display: flex; gap: 0; border-bottom: 2px solid #EBEEF5; flex-shrink: 0; }
-.view-toggle-btn { flex: 1; padding: 14px 16px; border: none; background: #f5f7fa; cursor: pointer; font-size: 14px; font-weight: 600; color: #909399; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; position: relative; }
-.view-toggle-btn:first-child { border-right: 1px solid #EBEEF5; }
-.view-toggle-btn.active { background: #fff; color: #409EFF; border-bottom: 2px solid #409EFF; margin-bottom: -2px; }
-.view-toggle-btn:hover:not(.active) { color: #606266; background: #ebeef5; }
-.view-badge { background: #67C23A; color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 400; }
+/* Results Upper — 50% */
+.results-upper { flex: 1 1 50%; border-bottom: 1px solid #EBEEF5; display: flex; flex-direction: column; overflow: hidden; background: #fafbfc; min-height: 0; }
+.results-upper-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; flex-shrink: 0; }
+.results-upper-title { font-size: 14px; font-weight: 600; color: #303133; display: flex; align-items: center; gap: 8px; }
+.results-upper-title i { color: #67C23A; }
+.results-upper-count { font-size: 12px; color: #909399; background: #e5e7eb; padding: 2px 10px; border-radius: 10px; font-weight: 500; }
+.results-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 12px; overflow-y: auto; align-content: flex-start; flex: 1; transition: background .3s; }
+.results-grid.results-flash { animation: results-flash-anim .4s ease; }
+@keyframes results-flash-anim { 0% { background: #ecf5ff; } 100% { background: transparent; } }
+.result-icon-card { display: flex; flex-direction: column; align-items: center; width: 82px; padding: 10px 8px 8px; border: 1px solid #EBEEF5; border-radius: 10px; cursor: pointer; transition: all .18s; position: relative; background: #fff; flex-shrink: 0; }
+.result-icon-card:hover { border-color: #409EFF; box-shadow: 0 2px 10px rgba(64,158,255,0.1); transform: translateY(-1px); }
+.result-icon-card.viewed { background: #f0f9eb; border-color: #c6e6c0; }
+.result-icon { width: 36px; height: 36px; border-radius: 50%; background: #ecf5ff; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; font-size: 15px; color: #409EFF; transition: all .15s; }
+.result-icon-card.viewed .result-icon { background: #e1f3d8; color: #67C23A; }
+.result-icon-name { font-size: 11px; font-weight: 500; color: #303133; text-align: center; line-height: 1.35; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
+.result-icon-cat { font-size: 9px; color: #C0C4CC; margin-top: 2px; }
+.result-icon-badge { position: absolute; top: -3px; right: -3px; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 6px; }
+.result-icon-badge.new { background: #F56C6C; color: #fff; animation: badge-pulse 1.5s ease infinite; }
+@keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
+.results-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; color: #C0C4CC; gap: 10px; font-size: 13px; flex: 1; }
+.results-empty i { font-size: 32px; opacity: .5; }
 
-.form-scroll { flex: 1; overflow-y: auto; padding: 20px 24px; }
-.section-title { font-size: 15px; font-weight: 600; color: #303133; margin-bottom: 16px; }
-.empty-state { text-align: center; padding: 40px 20px; color: #C0C4CC; }
+/* Input Lower — 50% */
+.input-lower { flex: 1 1 50%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; background: #fff; }
+.input-lower-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
+.input-lower-title { font-size: 14px; font-weight: 600; color: #303133; display: flex; align-items: center; gap: 8px; }
+.input-lower-title i { color: #409EFF; }
+.input-lower-hint { font-size: 11px; color: #C0C4CC; }
+.input-lower-body { flex: 1; display: flex; flex-direction: column; padding: 0 16px 12px; overflow: hidden; min-height: 0; }
 
-/* Test Categories */
-.test-category { margin-bottom: 12px; border: 1px solid #EBEEF5; border-radius: 10px; overflow: hidden; }
-.category-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f5f7fa; cursor: pointer; transition: background .15s; }
-.category-header:hover { background: #ebeef5; }
-.category-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: #303133; }
-.category-count { font-size: 11px; color: #909399; font-weight: 400; }
-.category-actions { display: flex; gap: 6px; }
-.cat-action-btn { font-size: 11px; padding: 3px 10px; border-radius: 4px; border: 1px solid #DCDFE6; background: #fff; color: #606266; cursor: pointer; transition: all .15s; }
-.cat-action-btn:hover { border-color: #409EFF; color: #409EFF; }
+.order-textarea { flex: 1; width: 100%; border: 1.5px dashed #DCDFE6; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.7; resize: none; font-family: inherit; color: #303133; background: #fafbfc; transition: border-color .2s, box-shadow .2s; outline: none; box-sizing: border-box; }
+.order-textarea:focus { border-color: #409EFF; border-style: solid; box-shadow: 0 0 0 2px rgba(64,158,255,0.08); background: #fff; }
+.order-textarea::placeholder { color: #C0C4CC; font-size: 12px; line-height: 1.6; }
+.order-textarea:disabled { background: #f5f7fa; color: #909399; }
 
-.category-items { padding: 8px; max-height: 250px; overflow-y: auto; }
-.test-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background .15s; margin-bottom: 2px; }
-.test-item:hover { background: #f5f7fa; }
-.test-item.selected { background: #ecf5ff; }
-.test-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #409EFF; flex-shrink: 0; }
-.test-item-info { flex: 1; min-width: 0; }
-.test-item-name { font-size: 13px; font-weight: 500; color: #303133; }
-.test-item-desc { font-size: 11px; color: #909399; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.input-actions { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; flex-shrink: 0; border-top: 1px solid #f0f0f0; margin-top: auto; }
+.processing-hint { font-size: 12px; color: #409EFF; display: flex; align-items: center; gap: 6px; }
+.processing-hint i { font-size: 13px; }
+.matched-count { font-size: 12px; color: #409EFF; font-weight: 500; }
+.matched-count.empty { visibility: hidden; }
 
-.batch-submit-area { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; margin-top: 12px; border-top: 1px solid #EBEEF5; }
-.selected-count { font-size: 14px; color: #409EFF; font-weight: 600; }
+/* Report Modal */
+.report-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+.report-modal { background: #fff; border-radius: 14px; width: min(640px, 92vw); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,0.18); overflow: hidden; }
+.report-modal-header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #EBEEF5; flex-shrink: 0; }
+.report-modal-title { font-size: 16px; font-weight: 600; color: #303133; display: flex; align-items: center; gap: 8px; }
+.report-modal-title i { color: #409EFF; }
+.report-modal-cat { font-size: 12px; color: #909399; background: #f0f0f0; padding: 3px 10px; border-radius: 10px; }
+.report-modal-close { margin-left: auto; border: none; background: none; cursor: pointer; font-size: 18px; color: #909399; padding: 4px; border-radius: 6px; transition: all .15s; }
+.report-modal-close:hover { color: #303133; background: #f0f0f0; }
+.report-modal-body { flex: 1; overflow-y: auto; padding: 0; }
 
-/* Results Report */
-.result-summary { display: flex; gap: 16px; margin-bottom: 20px; }
-.result-summary-item { flex: 1; text-align: center; padding: 16px 12px; background: #f5f7fa; border-radius: 10px; }
-.summary-num { display: block; font-size: 24px; font-weight: 700; color: #409EFF; }
-.summary-label { font-size: 12px; color: #909399; margin-top: 4px; display: block; }
+.report-image-wrap { padding: 16px 20px; display: flex; flex-direction: column; align-items: center; }
+.report-image { max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 6px; border: 1px solid #EBEEF5; }
+.report-image-caption { font-size: 12px; color: #909399; margin-top: 10px; }
 
-.result-item { margin-bottom: 8px; border: 1px solid #EBEEF5; border-radius: 10px; overflow: hidden; }
-.result-item-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; transition: background .15s; }
-.result-item-header:hover { background: #f5f7fa; }
-.result-item-left { display: flex; align-items: center; gap: 10px; }
-.result-cat-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: #ecf5ff; color: #409EFF; }
-.result-item-name { font-size: 13px; font-weight: 500; color: #303133; }
-.report-toggle-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid #DCDFE6; background: #fff; color: #606266; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all .15s; white-space: nowrap; }
-.report-toggle-btn:hover { border-color: #409EFF; color: #409EFF; }
-.report-toggle-btn.viewed { border-color: #67C23A; color: #67C23A; }
+.report-text-wrap { padding: 20px 24px; }
+.report-text-header { margin-bottom: 16px; }
+.report-text-hospital { font-size: 16px; font-weight: 700; color: #303133; text-align: center; margin-bottom: 8px; }
+.report-text-title { font-size: 15px; font-weight: 600; color: #303133; text-align: center; margin-bottom: 12px; }
+.report-text-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #606266; justify-content: center; }
+.report-text-divider { height: 1px; background: #303133; margin: 14px 0 18px; opacity: 0.4; }
+.report-text-content { font-size: 13px; line-height: 1.9; color: #303133; white-space: pre-wrap; word-break: break-all; font-family: inherit; margin: 0; }
 
-.result-detail { padding: 14px; border-top: 1px solid #EBEEF5; background: #fafafa; }
-.result-meta { display: flex; gap: 16px; margin-bottom: 10px; font-size: 11px; color: #909399; }
-.result-content { font-size: 13px; color: #303133; line-height: 1.8; white-space: pre-wrap; }
+.modal-fade-enter-active { transition: all .25s ease; }
+.modal-fade-leave-active { transition: all .2s ease; }
+.modal-fade-enter-from { opacity: 0; }
+.modal-fade-enter-from .report-modal { transform: scale(0.95); }
+.modal-fade-leave-to { opacity: 0; }
 
-.form-footer { flex-shrink: 0; text-align: center; padding: 16px 24px; position: sticky; bottom: 0; background: rgba(255,255,255,0.95); border-top: 1px solid #EBEEF5; }
+/* Toast */
+.app-toast { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); background: #fff; color: #303133; padding: 10px 20px; border-radius: 10px; font-size: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); z-index: 9999; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 4px solid #E6A23C; }
+.app-toast i { color: #E6A23C; font-size: 15px; }
+.toast-fade-enter-active { transition: all .25s ease; }
+.toast-fade-leave-active { transition: all .2s ease; }
+.toast-fade-enter-from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+.toast-fade-leave-to { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+
 .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; border: 1px solid #DCDFE6; background: #fff; color: #606266; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
 .btn:hover { border-color: #409EFF; color: #409EFF; }
 .btn-primary { background: #409EFF; border-color: #409EFF; color: #fff; }
 .btn-primary:hover { background: #337ecc; color: #fff; }
 .btn-primary:disabled { background: #a0cfff; border-color: #a0cfff; cursor: not-allowed; }
-.btn-submit { padding: 12px 32px; font-size: 15px; }
+
+/* Scrollbar */
+.results-grid::-webkit-scrollbar { width: 4px; }
+.results-grid::-webkit-scrollbar-thumb { background: #d9dce0; border-radius: 3px; }
+.results-grid::-webkit-scrollbar-thumb:hover { background: #c0c4cc; }
 </style>

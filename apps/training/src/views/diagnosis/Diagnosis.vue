@@ -155,45 +155,12 @@
             </div>
           </div>
 
-          <!-- Section 3: Final Diagnosis -->
-          <div class="diag-section">
-            <div class="diag-section-header">
-              <span class="diag-section-num">3</span>
-              <span class="diag-section-title">{{ lang === 'zh' ? '最终诊断' : 'Final Diagnosis' }}</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">{{ lang === 'zh' ? '最终诊断名称' : 'Final Diagnosis Name' }}</label>
-              <select v-model="finalDiagnosis" class="final-select">
-                <option value="">{{ lang === 'zh' ? '-- 从初步诊断中选择 --' : '-- Select from preliminary --' }}</option>
-                <option v-for="tag in primaryDiagTags" :key="tag" :value="tag">{{ tag }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">{{ lang === 'zh' ? '最终诊断依据' : 'Final Diagnostic Basis' }}</label>
-              <textarea
-                v-model="finalBasis"
-                :placeholder="lang === 'zh' ? '总结最终诊断依据...' : 'Summarize final diagnostic basis...'"
-                maxlength="2000"
-                class="diag-textarea"
-              ></textarea>
-              <div class="char-count">{{ finalBasis.length }}/2000</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">ICD {{ lang === 'zh' ? '编码（可选）' : 'Code (optional)' }}</label>
-              <input
-                v-model="icdCode"
-                type="text"
-                :placeholder="lang === 'zh' ? '如 J15.9' : 'e.g. J15.9'"
-                class="icd-input"
-              />
-            </div>
-          </div>
         </div>
 
         <div class="form-footer">
           <button class="btn btn-primary btn-submit" @click="submitDiag" :disabled="primaryDiagTags.length === 0">
             <i class="fa-solid fa-arrow-right"></i>
-            {{ lang === 'zh' ? '提交并进入治疗' : 'Submit & Go to Treatment' }}
+            {{ lang === 'zh' ? (flowSteps ? '保存并提交' : '提交并进入治疗') : (flowSteps ? 'Save & Submit' : 'Submit & Go to Treatment') }}
           </button>
         </div>
       </div>
@@ -254,9 +221,6 @@ const newDifferentialDiag = ref('')
 const primarySuggestions = ref([])
 const differentialSuggestions = ref([])
 const differentialDetails = reactive([])
-const finalDiagnosis = ref('')
-const finalBasis = ref('')
-const icdCode = ref('')
 
 const diag = reactive({ basis: '' })
 
@@ -371,9 +335,6 @@ function onFlowStepClick(idx, step) {
       evidence: d.evidence
     })),
     basis: diag.basis,
-    final: finalDiagnosis.value,
-    finalBasis: finalBasis.value,
-    icdCode: icdCode.value,
     notes: store.trainingSession.diagNotes || '',
     duration: elapsedSeconds.value
   }
@@ -420,7 +381,6 @@ const confirmMessage = computed(() => {
   const parts = []
   if (primaryDiagTags.value.length) parts.push((lang.value === 'zh' ? '初步诊断：' : 'Preliminary: ') + primaryDiagTags.value.join('、'))
   if (differentialDiagTags.value.length) parts.push((lang.value === 'zh' ? '鉴别诊断：' : 'Differential: ') + differentialDiagTags.value.join('、'))
-  if (finalDiagnosis.value) parts.push((lang.value === 'zh' ? '最终诊断：' : 'Final: ') + finalDiagnosis.value)
   return parts.join('\n')
 })
 
@@ -443,10 +403,6 @@ function addDiagTag(type) {
   if (type === 'differential') {
     differentialDetails.push({ evidence: '' })
   }
-  // Auto-select as final if it's the only primary
-  if (type === 'primary' && primaryDiagTags.value.length === 1 && !finalDiagnosis.value) {
-    finalDiagnosis.value = name
-  }
   clearInput(type)
 }
 
@@ -462,9 +418,7 @@ function clearInput(type) {
 
 function removeDiagTag(type, idx) {
   if (type === 'primary') {
-    const removed = primaryDiagTags.value[idx]
     primaryDiagTags.value.splice(idx, 1)
-    if (finalDiagnosis.value === removed) finalDiagnosis.value = primaryDiagTags.value[0] || ''
   } else {
     differentialDiagTags.value.splice(idx, 1)
     differentialDetails.splice(idx, 1)
@@ -486,6 +440,39 @@ function submitDiag() {
     toastMessage.value = lang.value === 'zh' ? '请至少输入一个初步诊断' : 'Please enter at least one preliminary diagnosis'
     return
   }
+
+  if (flowSteps.value) {
+    store.trainingSession = store.trainingSession || {}
+    store.trainingSession.diagnosis = {
+      preliminary: primaryDiagTags.value.join('、'),
+      differential: differentialDiagTags.value.join('、'),
+      differentialDetails: differentialDetails.map((d, i) => ({
+        name: differentialDiagTags.value[i] || '',
+        evidence: d.evidence
+      })),
+      basis: diag.basis,
+      notes: store.trainingSession.diagNotes || '',
+      duration: elapsedSeconds.value
+    }
+    store.trainingSession.preliminaryDiag = {
+      preliminary: primaryDiagTags.value.join('、'),
+      differential: differentialDiagTags.value.join('、'),
+      basis: diag.basis
+    }
+    store.saveTrainingSession()
+    stopTimer()
+    store.addTrainingRecord({
+      caseId: caseId.value,
+      stationId: 'diagnosis',
+      stationName: flowCtx.value?.stationName || (lang.value === 'zh' ? '诊断' : 'Diagnosis'),
+      duration: elapsedSeconds.value
+    })
+    showToast.value = true
+    toastMessage.value = lang.value === 'zh' ? '保存成功' : 'Saved successfully'
+    setTimeout(() => { showToast.value = false }, 2500)
+    return
+  }
+
   showEndConfirm.value = true
 }
 
@@ -494,7 +481,6 @@ function endStage() {
 
   store.trainingSession = store.trainingSession || {}
 
-  // Write to new diagnosis key
   store.trainingSession.diagnosis = {
     preliminary: primaryDiagTags.value.join('、'),
     differential: differentialDiagTags.value.join('、'),
@@ -503,9 +489,6 @@ function endStage() {
       evidence: d.evidence
     })),
     basis: diag.basis,
-    final: finalDiagnosis.value,
-    finalBasis: finalBasis.value,
-    icdCode: icdCode.value,
     notes: store.trainingSession.diagNotes || '',
     duration: elapsedSeconds.value
   }
@@ -586,9 +569,6 @@ onMounted(async () => {
     } else {
       differentialDiagTags.value.forEach(() => differentialDetails.push({ evidence: '' }))
     }
-    if (diagData.final) finalDiagnosis.value = diagData.final
-    if (diagData.finalBasis) finalBasis.value = diagData.finalBasis
-    if (diagData.icdCode) icdCode.value = diagData.icdCode
   }
 
   // Accumulate notes from prior stages
@@ -680,10 +660,7 @@ onMounted(async () => {
 .diff-textarea { width: 100%; padding: 6px 10px; border: 1px solid #EBEEF5; border-radius: 6px; font-size: 12px; resize: vertical; outline: none; font-family: inherit; }
 .diff-textarea:focus { border-color: #E6A23C; }
 
-.final-select { width: 100%; padding: 8px 12px; border: 1px solid #DCDFE6; border-radius: 8px; font-size: 13px; outline: none; background: #fff; }
-.final-select:focus { border-color: #409EFF; }
-.icd-input { width: 100%; padding: 8px 12px; border: 1px solid #DCDFE6; border-radius: 8px; font-size: 13px; outline: none; max-width: 300px; }
-.icd-input:focus { border-color: #409EFF; }
+
 
 .form-footer { flex-shrink: 0; text-align: center; padding: 16px 24px; position: sticky; bottom: 0; background: rgba(255,255,255,0.95); border-top: 1px solid #EBEEF5; }
 .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; border: 1px solid #DCDFE6; background: #fff; color: #606266; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
