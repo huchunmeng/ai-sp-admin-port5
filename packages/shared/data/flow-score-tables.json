@@ -1,0 +1,453 @@
+{
+  "version": "v1",
+  "type": "flow",
+  "totalScore": 100,
+  "description": "临床思维全流程评分配置：全流程版评分表资产 + 多套评分方案（含通用基础 + 各专业独立配置）",
+  "tables": {
+    "FLOW-HISTORY": {
+      "code": "FLOW-HISTORY",
+      "name": "病史采集评分表（临床思维全流程）",
+      "type": "history",
+      "specialty": "通用",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "现病史采集",
+          "item": "起病情况与诱因",
+          "score": 8
+        },
+        {
+          "id": 2,
+          "category": "现病史采集",
+          "item": "主要症状特点",
+          "score": 8
+        },
+        {
+          "id": 3,
+          "category": "现病史采集",
+          "item": "伴随症状与鉴别",
+          "score": 6
+        },
+        {
+          "id": 4,
+          "category": "现病史采集",
+          "item": "诊疗经过",
+          "score": 4
+        },
+        {
+          "id": 5,
+          "category": "现病史采集",
+          "item": "发病以来一般状况",
+          "score": 4
+        },
+        {
+          "id": 6,
+          "category": "既往史采集",
+          "item": "既往疾病史",
+          "score": 8
+        },
+        {
+          "id": 7,
+          "category": "既往史采集",
+          "item": "手术外伤史",
+          "score": 6
+        },
+        {
+          "id": 8,
+          "category": "既往史采集",
+          "item": "过敏史",
+          "score": 6
+        },
+        {
+          "id": 9,
+          "category": "个人史与家族史",
+          "item": "个人生活习惯",
+          "score": 8
+        },
+        {
+          "id": 10,
+          "category": "个人史与家族史",
+          "item": "家族遗传病史",
+          "score": 7
+        },
+        {
+          "id": 11,
+          "category": "系统回顾",
+          "item": "各系统回顾完整性",
+          "score": 15
+        },
+        {
+          "id": 12,
+          "category": "问诊技巧与沟通",
+          "item": "问诊条理与组织",
+          "score": 8
+        },
+        {
+          "id": 13,
+          "category": "问诊技巧与沟通",
+          "item": "沟通技巧与人文关怀",
+          "score": 12
+        }
+      ]
+    },
+    "FLOW-PHYSICAL": {
+      "code": "FLOW-PHYSICAL",
+      "name": "体格检查评分表（临床思维全流程）",
+      "type": "physical",
+      "specialty": "通用",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "检查前准备",
+          "item": "物品与器械准备",
+          "score": 5
+        },
+        {
+          "id": 2,
+          "category": "检查前准备",
+          "item": "患者准备与告知",
+          "score": 5
+        },
+        {
+          "id": 3,
+          "category": "检查前准备",
+          "item": "洗手与消毒",
+          "score": 5
+        },
+        {
+          "id": 4,
+          "category": "检查手法与规范",
+          "item": "视诊规范",
+          "score": 10
+        },
+        {
+          "id": 5,
+          "category": "检查手法与规范",
+          "item": "触诊规范",
+          "score": 10
+        },
+        {
+          "id": 6,
+          "category": "检查手法与规范",
+          "item": "叩诊规范",
+          "score": 10
+        },
+        {
+          "id": 7,
+          "category": "检查手法与规范",
+          "item": "听诊规范",
+          "score": 10
+        },
+        {
+          "id": 8,
+          "category": "检查内容完整性",
+          "item": "系统检查无遗漏",
+          "score": 15
+        },
+        {
+          "id": 9,
+          "category": "检查内容完整性",
+          "item": "重点部位详细检查",
+          "score": 10
+        },
+        {
+          "id": 10,
+          "category": "人文关怀",
+          "item": "保护患者隐私",
+          "score": 8
+        },
+        {
+          "id": 11,
+          "category": "人文关怀",
+          "item": "检查中沟通安抚",
+          "score": 7
+        },
+        {
+          "id": 12,
+          "category": "人文关怀",
+          "item": "检查后整理与告知",
+          "score": 5
+        }
+      ]
+    },
+    "FLOW-ANCILLARY": {
+      "code": "FLOW-ANCILLARY",
+      "name": "辅助检查评分表（临床思维全流程）",
+      "type": "ancillary",
+      "specialty": "通用",
+      "description": "评估学员辅助检查申请与结果判读能力",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "检查申请",
+          "item": "检查项目针对性（与病情相关）",
+          "score": 20
+        },
+        {
+          "id": 2,
+          "category": "检查申请",
+          "item": "检查项目必要性（不过度检查）",
+          "score": 15
+        },
+        {
+          "id": 3,
+          "category": "检查申请",
+          "item": "检查项目完整性（覆盖诊断所需）",
+          "score": 15
+        },
+        {
+          "id": 4,
+          "category": "结果判读",
+          "item": "检查结果理解正确",
+          "score": 25
+        },
+        {
+          "id": 5,
+          "category": "结果判读",
+          "item": "结果与临床结合分析",
+          "score": 15
+        },
+        {
+          "id": 6,
+          "category": "结果判读",
+          "item": "根据结果调整诊疗思路",
+          "score": 10
+        }
+      ]
+    },
+    "FLOW-DIAGNOSIS": {
+      "code": "FLOW-DIAGNOSIS",
+      "name": "诊断评分表（临床思维全流程）",
+      "type": "diagnosis",
+      "specialty": "通用",
+      "description": "评估学员初步诊断、诊断依据与鉴别诊断能力",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "初步诊断",
+          "item": "主要诊断准确",
+          "score": 20
+        },
+        {
+          "id": 2,
+          "category": "初步诊断",
+          "item": "诊断依据充分",
+          "score": 15
+        },
+        {
+          "id": 3,
+          "category": "鉴别诊断",
+          "item": "鉴别诊断全面合理",
+          "score": 20
+        },
+        {
+          "id": 4,
+          "category": "鉴别诊断",
+          "item": "鉴别诊断依据充分",
+          "score": 15
+        },
+        {
+          "id": 5,
+          "category": "临床思维",
+          "item": "结合病史/查体/辅检综合分析",
+          "score": 15
+        },
+        {
+          "id": 6,
+          "category": "临床思维",
+          "item": "诊断逻辑清晰（优先级/排除法）",
+          "score": 15
+        }
+      ]
+    },
+    "FLOW-TREATMENT": {
+      "code": "FLOW-TREATMENT",
+      "name": "治疗计划评分表（临床思维全流程）",
+      "type": "treatment",
+      "specialty": "通用",
+      "description": "评估学员治疗原则、治疗方案与治疗管理能力",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "治疗原则",
+          "item": "治疗原则正确",
+          "score": 20
+        },
+        {
+          "id": 2,
+          "category": "治疗原则",
+          "item": "治疗目标明确",
+          "score": 10
+        },
+        {
+          "id": 3,
+          "category": "治疗方案",
+          "item": "具体治疗措施（药物/非药物）",
+          "score": 25
+        },
+        {
+          "id": 4,
+          "category": "治疗方案",
+          "item": "用药合理性（剂量/途径/禁忌）",
+          "score": 15
+        },
+        {
+          "id": 5,
+          "category": "治疗管理",
+          "item": "并发症预防与处理",
+          "score": 15
+        },
+        {
+          "id": 6,
+          "category": "治疗管理",
+          "item": "健康宣教与随访计划",
+          "score": 15
+        }
+      ]
+    },
+    "FLOW-RECORD": {
+      "code": "FLOW-RECORD",
+      "name": "病历书写评分表（临床思维全流程）",
+      "type": "record",
+      "specialty": "通用",
+      "total_score": 100,
+      "items": [
+        {
+          "id": 1,
+          "category": "主诉与现病史",
+          "item": "主诉简明准确",
+          "score": 10
+        },
+        {
+          "id": 2,
+          "category": "主诉与现病史",
+          "item": "现病史完整详实",
+          "score": 20
+        },
+        {
+          "id": 3,
+          "category": "既往史与个人史",
+          "item": "既往史记录完整",
+          "score": 8
+        },
+        {
+          "id": 4,
+          "category": "既往史与个人史",
+          "item": "个人史与家族史记录",
+          "score": 7
+        },
+        {
+          "id": 5,
+          "category": "体格检查记录",
+          "item": "阳性体征记录",
+          "score": 8
+        },
+        {
+          "id": 6,
+          "category": "体格检查记录",
+          "item": "阴性体征记录",
+          "score": 7
+        },
+        {
+          "id": 7,
+          "category": "诊断与鉴别诊断",
+          "item": "初步诊断明确",
+          "score": 10
+        },
+        {
+          "id": 8,
+          "category": "诊断与鉴别诊断",
+          "item": "鉴别诊断充分",
+          "score": 10
+        },
+        {
+          "id": 9,
+          "category": "诊断与鉴别诊断",
+          "item": "诊断依据充分",
+          "score": 5
+        },
+        {
+          "id": 10,
+          "category": "诊疗计划",
+          "item": "辅助检查计划",
+          "score": 5
+        },
+        {
+          "id": 11,
+          "category": "诊疗计划",
+          "item": "治疗方案",
+          "score": 7
+        },
+        {
+          "id": 12,
+          "category": "诊疗计划",
+          "item": "健康宣教与随访",
+          "score": 3
+        }
+      ]
+    }
+  },
+  "defaultSchemeId": "FLOW-STD",
+  "schemes": [
+    {
+      "id": "FLOW-STD",
+      "name": "临床思维全流程标准方案",
+      "source": "系统默认",
+      "status": true,
+      "majors": [
+        {
+          "name": "通用",
+          "modules": [
+            {
+              "moduleId": "historyTaking",
+              "name": "病史采集",
+              "routeName": "historyTaking",
+              "weight": 20,
+              "scoreTableCode": "FLOW-HISTORY"
+            },
+            {
+              "moduleId": "physicalExam",
+              "name": "体格检查",
+              "routeName": "physicalExam",
+              "weight": 15,
+              "scoreTableCode": "FLOW-PHYSICAL"
+            },
+            {
+              "moduleId": "ancillaryTests",
+              "name": "辅助检查",
+              "routeName": "ancillaryTests",
+              "weight": 15,
+              "scoreTableCode": "FLOW-ANCILLARY"
+            },
+            {
+              "moduleId": "diagnosis",
+              "name": "诊断",
+              "routeName": "diagnosis",
+              "weight": 20,
+              "scoreTableCode": "FLOW-DIAGNOSIS"
+            },
+            {
+              "moduleId": "treatmentPlan",
+              "name": "治疗计划",
+              "routeName": "treatmentPlan",
+              "weight": 15,
+              "scoreTableCode": "FLOW-TREATMENT"
+            },
+            {
+              "moduleId": "medicalRecord",
+              "name": "病历书写",
+              "routeName": "medicalRecord",
+              "weight": 15,
+              "scoreTableCode": "FLOW-RECORD"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

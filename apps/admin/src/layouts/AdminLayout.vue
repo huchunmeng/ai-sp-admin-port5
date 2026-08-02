@@ -148,6 +148,7 @@ const MENU_CONFIG = [
   ]},
   { module: '系统管理', icon: '⚙️', pages: [
       { id: 'station-settings', label: '考站设置', route: '/station-settings' },
+      { id: 'flow-scheme-settings', label: '全流程评分配置', route: '/flow-scheme-settings' },
       { id: 'system-settings', label: '系统设置', route: '/system-settings' }
   ]}
 ]

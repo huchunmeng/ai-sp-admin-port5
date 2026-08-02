@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import annoPlugin from '../../scripts/anno-plugin.mjs'
 import stationSchemesPersist from '../../scripts/station-schemes-persist.mjs'
+import flowScoreTablesPersist from '../../scripts/flow-score-tables-persist.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -47,6 +48,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       annoPlugin(),
       stationSchemesPersist(),
+      flowScoreTablesPersist(),
       vue(),
       {
         name: 'serve-admin-cases',

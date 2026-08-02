@@ -1519,6 +1519,12 @@ export { useDebounce, useDebouncedRef } from './composables/useDebounce.js'
 export { stationSchemesEdits } from '../data/station-schemes-edits.js'
 
 // ============================================================
+//  flow 评分方案（临床思维全流程）— 共享读写
+// ============================================================
+
+export { flowScoreTables } from '../data/flow-score-tables.js'
+
+// ============================================================
 //  考站方案数据 — 共享给所有端使用
 // ============================================================
 
@@ -1563,6 +1569,7 @@ export {
   getProfileType,
   getStationIdsByLabel,
   getReportLookupPrefixes,
+  pickFlowScheme,
 } from './station-constants.js'
 
 // ============================================================

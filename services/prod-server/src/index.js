@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import config from './config.js'
 import { mountAnnotations } from './routes/annotations.js'
 import { mountStationSchemes } from './routes/station-schemes.js'
+import { mountFlowScoreTables } from './routes/flow-score-tables.js'
 import { mountSettings } from './routes/settings.js'
 import { mountAiGenerate } from './routes/ai-generate.js'
 import { mountCaseCrud } from './routes/case-crud.js'
@@ -29,6 +30,7 @@ app.use(express.json({ limit: '50mb' }))
 // ── API 路由 ──
 mountAnnotations(app)
 mountStationSchemes(app)
+mountFlowScoreTables(app)
 mountSettings(app)
 mountAiGenerate(app)
 mountCaseCrud(app)

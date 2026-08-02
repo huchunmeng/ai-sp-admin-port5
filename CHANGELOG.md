@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-08-02
+
+### 全流程评分配置增强：专业方案 + 复用考站设置交互
+
+- **问题**：flow 评分方案（`flow-score-tables.json`）仅支持单份 `modules[]`，无法按专业差异化配置评分表与权重
+- **数据模型**：方案从 `modules[]` 升级为 `majors[]`（首项固定「通用基础」兜底 + 各专业独立配置），`tables` 字段与 ScoreSettings 编辑不受影响
+- **共享层**：`pickFlowScheme(flow, specialty)` 增加专业参数，方案内按专业匹配 `majors`；未配置该专业/无专业时回退通用基础，兼容旧 `modules` / `default` 结构
+- **消费端专业传递**：训练端 `StationLoading` 与 sp-api `settle` 均传入病例专业；`CaseDetail` 结算请求补传 `specialty` / `training_phase` / `difficulty` 上下文
+- **管理端 `FlowSchemeSettings` 重写**：
+  - 「绑定评分表」交互复用考站设置模态框（radio 单选 + 搜索 + name/code/specialty/引用次数展示，考站版 + 全流程版可选）
+  - 编辑面板改为专业 tab 栏：通用基础 tab 固定不可删，可「添加专业」（默认复制通用配置起手）、专业间「复制配置」、删除专业
+  - 每个专业独立校验 Σ权重 = 100 且模块均已绑评分表，全部通过才保存
+- **路由/菜单**：`flow-score-settings` → `flow-scheme-settings`，删除旧 `FlowScoreSettings.vue`
+- **ScoreSettings**：合并全流程版评分表编辑（`tables` 读写不变）
+
+### 设计文档归集
+
+- 新增 `docs/临床思维模拟训练/DESIGN_04_全流程评分配置.md`（技术栈无关的功能设计文档）
+- `docs/辅助检查模块设计文档.md` → `DESIGN_05_辅助检查模块.md`，归集到 `docs/临床思维模拟训练/`（该模块自述为临床思维模拟训练中的一个考站）
+
+### 文件变更
+
+| 文件 | 变更 |
+|------|------|
+| `packages/shared/data/flow-score-tables.json` | 重构 — 方案升级 `majors[]`（通用基础 + 专业配置） |
+| `packages/shared/data/flow-score-tables.js` | 新增 — ES module 导出包装 |
+| `packages/shared/src/station-constants.js` | 修改 — `pickFlowScheme` 增加 specialty 参数，方案内按专业解析 |
+| `packages/shared/src/index.js` | 修改 — 导出 `flowScoreTables` / `pickFlowScheme` |
+| `apps/admin/src/views/FlowSchemeSettings.vue` | 新增 — 专业 tab 编辑面板 + 评分表绑定模态框 |
+| `apps/admin/src/views/ScoreSettings.vue` | 修改 — 合并全流程版评分表编辑 |
+| `apps/admin/src/layouts/AdminLayout.vue` | 修改 — 菜单项改为 `flow-scheme-settings` |
+| `apps/admin/src/router/index.js` | 修改 — 路由指向 `FlowSchemeSettings.vue` |
+| `apps/admin/vite.config.js` | 修改 — flow-score-tables 持久化通道 |
+| `apps/training/vite.config.js` | 修改 — flow-score-tables 持久化通道 |
+| `apps/training/src/views/StationLoading.vue` | 修改 — `pickFlowScheme(flow, specialty)` |
+| `apps/training/src/views/CaseDetail.vue` | 修改 — 结算补传 specialty / training_phase / difficulty |
+| `services/sp-api/src/index.js` | 修改 — settle 按专业解析 flow 评分方案 |
+| `services/prod-server/src/index.js` | 修改 — 挂载 flow-score-tables 路由 |
+| `services/prod-server/src/routes/flow-score-tables.js` | 新增 — prod 持久化路由 |
+| `scripts/flow-score-tables-persist.mjs` | 新增 — 共享持久化 wrapper（fetch + localStorage 回退） |
+| `apps/admin/src/views/FlowScoreSettings.vue` | 删除 — 由 FlowSchemeSettings 取代 |
+| `docs/临床思维模拟训练/DESIGN_04_全流程评分配置.md` | 新增 |
+| `docs/临床思维模拟训练/DESIGN_05_辅助检查模块.md` | 新增 — 自 `docs/辅助检查模块设计文档.md` 归集改名 |
+
 ## 2026-08-01
 
 ### 临床思维模拟训练 — 设计文档集

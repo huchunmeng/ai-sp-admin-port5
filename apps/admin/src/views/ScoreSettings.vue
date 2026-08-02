@@ -1,5 +1,11 @@
 <template>
   <div class="content-container">
+    <!-- 所有评分表（考站版 + 临床思维全流程版）统一在此维护 -->
+    <div class="card mb-4" style="padding:12px 20px">
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">
+        所有评分表（考站版 + 临床思维全流程版）统一在此维护；全流程评分方案请在「系统管理 → 全流程评分配置」页面配置（每个模块一张评分表，按权重汇总总分）。
+      </div>
+    </div>
     <div class="card mb-4" style="padding:16px 20px">
       <div class="filter-row">
         <div class="filter-item" style="min-width:200px">
@@ -18,6 +24,13 @@
           <select class="select" v-model="filters.status">
             <option value="">全部</option>
             <option v-for="s in statusOptions" :key="s" :value="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>版本</label>
+          <select class="select" v-model="filters.category">
+            <option value="">全部</option>
+            <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
           </select>
         </div>
         <div class="filter-item">
@@ -78,6 +91,7 @@
               <th v-if="visibleColumns.includes('created_at')">创建时间</th>
               <th v-if="visibleColumns.includes('updated_at')">更新时间</th>
               <th style="text-align:center">启用状态</th>
+              <th style="text-align:center" v-if="visibleColumns.includes('category')">版本</th>
               <th class="sticky-right" style="right:0; min-width:170px; z-index:4">操作</th>
             </tr>
           </thead>
@@ -100,13 +114,16 @@
               <td v-if="visibleColumns.includes('created_at')">{{ item.created_at }}</td>
               <td v-if="visibleColumns.includes('updated_at')">{{ item.updated_at }}</td>
               <td style="text-align:center">
-                <label class="switch" :class="{ 'switch-disabled': item.status === '草稿' || item.status === '已归档' }">
+                <label class="switch" :class="{ 'switch-disabled': item.status === '草稿' || item.status === '已归档' || item.category === '全流程版' }">
                   <input type="checkbox"
                     :checked="item.enabled"
-                    :disabled="item.status === '草稿' || item.status === '已归档'"
+                    :disabled="item.status === '草稿' || item.status === '已归档' || item.category === '全流程版'"
                     @change="toggleEnabled(item)">
                   <span class="slider"></span>
                 </label>
+              </td>
+              <td style="text-align:center" v-if="visibleColumns.includes('category')">
+                <span class="badge" :class="item.category === '全流程版' ? 'badge-info' : ''">{{ item.category }}</span>
               </td>
               <td class="sticky-right" style="right:0">
                 <div class="flex gap-2" style="justify-content:flex-end">
@@ -139,7 +156,6 @@
         </select>
       </div>
     </div>
-
     <!-- 评分表详情抽屉 -->
     <div v-if="detailVisible" class="drawer-overlay" @click.self="detailVisible = false">
       <div class="drawer" style="width: 1100px; max-width: 95vw;">
@@ -214,18 +230,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
-import { confirm, toast } from '@ai-sp/shared'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { confirm, toast, flowScoreTables } from '@ai-sp/shared'
 import { SCORE_SHEET_TEMPLATES } from '@/data/templates/index.js'
 
 const filters = reactive({
   keyword: '',
   specialty: '',
-  status: ''
+  status: '',
+  category: ''
 })
 
-const specialties = ['内科', '外科', '儿科', '妇产科', '急诊科', '全科', '精神科']
+const specialties = ['通用', '内科', '外科', '儿科', '妇产科', '急诊科', '全科', '精神科']
 const statusOptions = ['草稿', '已发布', '已停用', '已归档']
+const categoryOptions = ['考站版', '全流程版']
 
 const mockData = () => SCORE_SHEET_TEMPLATES.map((tpl, i) => ({
   id: i + 1,
@@ -241,10 +259,43 @@ const mockData = () => SCORE_SHEET_TEMPLATES.map((tpl, i) => ({
   is_system: true,
   version: tpl.version,
   description: tpl.description,
-  total_score: tpl.total_score
+  total_score: tpl.total_score,
+  category: '考站版'
 }))
 
 const allData = ref(mockData())
+
+// 临床思维全流程版评分表资产（持久化于 flow-score-tables.json）
+const flowData = ref({ tables: {} })
+
+function flowRows() {
+  const baseId = SCORE_SHEET_TEMPLATES.length
+  return Object.values(flowData.value.tables || {}).map((tpl, i) => ({
+    id: baseId + i + 1,
+    template_code: tpl.code,
+    template_name: tpl.name,
+    specialty: tpl.specialty || '通用',
+    status: '已发布',
+    creator_name: '系统',
+    created_at: '2026-01-01 00:00',
+    updated_at: '2026-01-01 00:00',
+    enabled: true,
+    items: tpl.items || [],
+    is_system: true,
+    version: 'flow',
+    description: tpl.description || '',
+    total_score: tpl.total_score || 100,
+    category: '全流程版'
+  }))
+}
+
+onMounted(async () => {
+  try {
+    const data = await flowScoreTables.load()
+    if (data?.tables) flowData.value = data
+  } catch (e) { /* 降级到考站版 */ }
+  allData.value = [...mockData(), ...flowRows()]
+})
 const selectedRows = ref([])
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -293,6 +344,16 @@ function saveEditDetail() {
   detailTarget.value.total_score = editTotalScore.value
   detailEditMode.value = false
   editItems.value = []
+  if (detailTarget.value.category === '全流程版') {
+    const code = detailTarget.value.template_code
+    if (flowData.value.tables[code]) {
+      flowData.value.tables[code].name = editMeta.name
+      flowData.value.tables[code].description = editMeta.description
+      flowData.value.tables[code].items = detailTarget.value.items
+      flowData.value.tables[code].total_score = editTotalScore.value
+      flowScoreTables.save(flowData.value)
+    }
+  }
   toast.show('评分表已更新', 'success')
 }
 
@@ -329,6 +390,7 @@ const allColumns = [
   { key: 'template_name', label: '评分表名称' },
   { key: 'specialty', label: '专业' },
   { key: 'status', label: '状态' },
+  { key: 'category', label: '版本' },
   { key: 'creator_name', label: '创建人' },
   { key: 'created_at', label: '创建时间' },
   { key: 'updated_at', label: '更新时间' }
@@ -344,6 +406,7 @@ const filteredData = computed(() => allData.value.filter(item => {
   if (filters.keyword && !item.template_name.includes(filters.keyword) && !item.template_code.includes(filters.keyword)) return false
   if (filters.specialty && item.specialty !== filters.specialty) return false
   if (filters.status && item.status !== filters.status) return false
+  if (filters.category && item.category !== filters.category) return false
   return true
 }))
 
@@ -380,13 +443,13 @@ const handleReset = () => {
 
 const batchEnable = () => {
   allData.value.forEach(item => {
-    if (selectedRows.value.includes(item.id)) { item.enabled = true; item.status = '已发布' }
+    if (selectedRows.value.includes(item.id) && item.category !== '全流程版') { item.enabled = true; item.status = '已发布' }
   })
   selectedRows.value = []
 }
 
 const batchDisable = () => {
-  const selected = allData.value.filter(item => selectedRows.value.includes(item.id))
+  const selected = allData.value.filter(item => selectedRows.value.includes(item.id) && item.category !== '全流程版')
   if (selected.length === 0) return
   confirm(`确认停用选中的 ${selected.length} 个评分表吗？`).then(ok => {
     if (ok) {
@@ -400,7 +463,21 @@ const batchDelete = () => {
   if (selectedRows.value.length === 0) return
   confirm(`确认删除选中的 ${selectedRows.value.length} 个评分表吗？`).then(ok => {
     if (ok) {
-      allData.value = allData.value.filter(item => !selectedRows.value.includes(item.id))
+      let removedFlow = false
+      allData.value = allData.value.filter(item => {
+        if (selectedRows.value.includes(item.id)) {
+          if (item.category === '全流程版') {
+            const code = item.template_code
+            if (flowData.value.tables[code]) {
+              delete flowData.value.tables[code]
+              removedFlow = true
+            }
+          }
+          return false
+        }
+        return true
+      })
+      if (removedFlow) flowScoreTables.save(flowData.value)
       selectedRows.value = []
     }
   }).catch(() => {})
@@ -430,6 +507,13 @@ const editTemplate = (item) => {
 const deleteTemplate = (item) => {
   confirm(`确认删除评分表「${item.template_name}」吗？`).then(ok => {
     if (ok) {
+      if (item.category === '全流程版') {
+        const code = item.template_code
+        if (flowData.value.tables[code]) {
+          delete flowData.value.tables[code]
+          flowScoreTables.save(flowData.value)
+        }
+      }
       allData.value = allData.value.filter(t => t.id !== item.id)
       if (paginatedData.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
@@ -440,6 +524,25 @@ const deleteTemplate = (item) => {
 
 const copyTemplate = (item) => {
   const newId = Math.max(...allData.value.map(t => t.id)) + 1
+  if (item.category === '全流程版') {
+    const newCode = 'FLOW-' + String(newId).padStart(3, '0')
+    const copy = JSON.parse(JSON.stringify(flowData.value.tables[item.template_code] || {}))
+    copy.code = newCode
+    copy.name = item.template_name + '（副本）'
+    flowData.value.tables[newCode] = copy
+    flowScoreTables.save(flowData.value)
+    allData.value.push({
+      ...JSON.parse(JSON.stringify(item)),
+      id: newId,
+      template_code: newCode,
+      template_name: item.template_name + '（副本）',
+      status: '草稿',
+      enabled: true,
+      created_at: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      updated_at: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    })
+    return
+  }
   const newCode = 'TPL-' + String(newId).padStart(3, '0')
   allData.value.push({
     ...JSON.parse(JSON.stringify(item)),

@@ -61,6 +61,7 @@ import { useCaseLoader } from '@/composables/useCaseLoader'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { preconfigureSession, preconfigureInBackground } from '@/composables/useAISP'
 import { PROJECT_TO_STATION_TARGET, PROJECT_ROUTE_MAP, STATION_ROUTE_MAP } from '@/composables/useStationFlow'
+import { flowScoreTables, pickFlowScheme } from '@ai-sp/shared'
 import { getTemplateFlatItems, getScoreTable, stationScoreTableBindings } from '@ai-sp/shared/score-tables'
 import { parseScoreSheet } from '@ai-sp/shared/score-sheet-parser'
 
@@ -325,34 +326,68 @@ async function parseScoreSheetForSession(data) {
 
   const allStations = store.stationScheme || store.stationFlow?.stations || []
 
+  // full-flow 模式：按管理端配置加载专用 flow 评分表（覆盖内置静态绑定）
+  // flow 评分表按 { moduleId, routeName, weight, scoreTable } 配置，每模块一张表，
+  // 各表由 settle 端按权重汇总总分；此处只负责把各模块 items 解析并分发到 sessionStorage。
+  const isFullFlow = store.trainingVersion === 'full-flow'
+  let flowConfig = null
+  let flowTemplateSheets = null // { code: { name, items } }
+  if (isFullFlow) {
+    try {
+      const flow = await flowScoreTables.load()
+      const scheme = pickFlowScheme(flow, specialty)
+      if (scheme?.modules?.length) {
+        const sheets = {}
+        for (const mod of scheme.modules) {
+          const st = mod.scoreTable
+          if (st?.code && st?.items?.length) sheets[st.code] = { name: st.name || st.code, items: st.items }
+        }
+        if (Object.keys(sheets).length) {
+          flowConfig = { modules: scheme.modules }
+          flowTemplateSheets = sheets
+        }
+      }
+    } catch (e) { /* flow 配置不可用，降级到静态绑定 */ }
+  }
+
   // 1. 遍历所有考站，收集全部模板绑定（去重合并）
   let templateBindings = {} // { TPL-STD: ['病史采集'], TPL-STD-2: ['体格检查'], ... }
-  for (const station of allStations) {
-    if (station?.scoreTables?.length) {
-      for (const st of station.scoreTables) {
-        if (st.templateCode && st.bindProjects?.length) {
-          if (!templateBindings[st.templateCode]) {
-            templateBindings[st.templateCode] = [...st.bindProjects]
-          } else {
-            for (const p of st.bindProjects) {
-              if (!templateBindings[st.templateCode].includes(p)) {
-                templateBindings[st.templateCode].push(p)
+  if (flowConfig) {
+    // full-flow：只绑定 flow 专用评分表，按模块中文名分发到各 target
+    for (const mod of flowConfig.modules) {
+      const st = mod.scoreTable
+      if (!st?.code || !flowTemplateSheets[st.code]) continue
+      if (!templateBindings[st.code]) templateBindings[st.code] = []
+      if (!templateBindings[st.code].includes(mod.name)) templateBindings[st.code].push(mod.name)
+    }
+  } else {
+    for (const station of allStations) {
+      if (station?.scoreTables?.length) {
+        for (const st of station.scoreTables) {
+          if (st.templateCode && st.bindProjects?.length) {
+            if (!templateBindings[st.templateCode]) {
+              templateBindings[st.templateCode] = [...st.bindProjects]
+            } else {
+              for (const p of st.bindProjects) {
+                if (!templateBindings[st.templateCode].includes(p)) {
+                  templateBindings[st.templateCode].push(p)
+                }
               }
             }
           }
         }
-      }
-    } else {
-      // 回退：静态绑定（按站名取 stationScoreTableBindings）
-      const bindings = station.name ? stationScoreTableBindings[station.name] : null
-      if (bindings) {
-        for (const [code, info] of Object.entries(bindings)) {
-          if (!templateBindings[code]) {
-            templateBindings[code] = [...(info.bindProjects || [])]
-          } else {
-            for (const p of (info.bindProjects || [])) {
-              if (!templateBindings[code].includes(p)) {
-                templateBindings[code].push(p)
+      } else {
+        // 回退：静态绑定（按站名取 stationScoreTableBindings）
+        const bindings = station.name ? stationScoreTableBindings[station.name] : null
+        if (bindings) {
+          for (const [code, info] of Object.entries(bindings)) {
+            if (!templateBindings[code]) {
+              templateBindings[code] = [...(info.bindProjects || [])]
+            } else {
+              for (const p of (info.bindProjects || [])) {
+                if (!templateBindings[code].includes(p)) {
+                  templateBindings[code].push(p)
+                }
               }
             }
           }
@@ -374,7 +409,7 @@ async function parseScoreSheetForSession(data) {
   // 2. 逐模板解析
   const parsedSheets = []
   for (const code of boundCodes) {
-    const items = getTemplateFlatItems(code)
+    const items = getTemplateFlatItems(code) || flowTemplateSheets?.[code]?.items
     if (!items?.length) continue
 
     let parsed = null
@@ -394,7 +429,7 @@ async function parseScoreSheetForSession(data) {
       } catch (e) { continue }
     }
 
-    const tpl = getScoreTable(code)
+    const tpl = getScoreTable(code) || flowTemplateSheets?.[code]
     parsedSheets.push({
       templateCode: code,
       templateName: tpl?.name || code,

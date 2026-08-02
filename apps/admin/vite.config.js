@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
 import annoPlugin from '../../scripts/anno-plugin.mjs'
 import stationSchemesPersist from '../../scripts/station-schemes-persist.mjs'
+import flowScoreTablesPersist from '../../scripts/flow-score-tables-persist.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -167,7 +168,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: '/',
     root: __dirname,
-    plugins: [annoPlugin(), stationSchemesPersist(), settingsPlugin(), resolveGenPlugin(env), buildCasesIndexPlugin(), vue()],
+    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), resolveGenPlugin(env), buildCasesIndexPlugin(), vue()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

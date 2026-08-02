@@ -11,6 +11,7 @@ const routes = [
       { path: 'institution-cases', name: 'institutionCases', component: () => import('@/views/case-list/InstitutionCaseList.vue') },
       { path: 'expert-cases', name: 'expertCases', component: () => import('@/views/case-list/ExpertCaseList.vue') },
       { path: 'score-settings', name: 'scoreSettings', component: () => import('@/views/ScoreSettings.vue') },
+      { path: 'flow-scheme-settings', name: 'flowSchemeSettings', component: () => import('@/views/FlowSchemeSettings.vue') },
       { path: 'station-settings', name: 'stationSettings', component: () => import('@/views/StationSettings.vue') },
       { path: 'system-settings', name: 'systemSettings', component: () => import('@/views/SystemSettings.vue') },
       { path: 'exam-records', name: 'examRecords', component: () => import('@/views/ExamRecords.vue') },

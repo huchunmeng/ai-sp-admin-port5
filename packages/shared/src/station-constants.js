@@ -6,6 +6,8 @@
 export const STATION_ID_TO_LABEL = {
   historyTaking: '接诊病人站',
   physicalExam: '体格检查站',
+  ancillaryTests: '辅助检查',
+  diagnosis: '诊断',
   humanity: '交流沟通站',
   humanisticComm: '交流沟通站',
   preliminaryDiag: '初步诊断站',
@@ -35,6 +37,8 @@ export const STATION_TO_SESSION_KEY = {
   historyTaking: 'historyTaking',
   humanity: 'humanisticComm',
   physicalExam: 'physicalExam',
+  ancillaryTests: 'ancillaryTests',
+  diagnosis: 'diagnosis',
   analysis: 'caseAnalysis',
   preliminaryDiag: 'preliminaryDiag',
   treatmentPlan: 'treatmentPlan',
@@ -85,7 +89,9 @@ export const STATION_LABEL_ALIASES = {
 export const PROJECT_TAB_CONFIG = {
   '病史采集': { key: 'history', type: 'dialog', sessionKey: 'historyTaking' },
   '体格检查': { key: 'exam', type: 'exam', sessionKey: 'physicalExam' },
+  '辅助检查': { key: 'ancillary', type: 'exam', sessionKey: 'ancillaryTests' },
   '初步诊断': { key: 'diagnosis', type: 'diagnosis', sessionKey: 'preliminaryDiag' },
+  '诊断': { key: 'diagnosis', type: 'diagnosis', sessionKey: 'diagnosis' },
   '治疗计划': { key: 'treatment', type: 'treatment', sessionKey: 'treatmentPlan' },
   '病历书写': { key: 'record', type: 'record', sessionKey: 'medicalRecord' },
   '病例分析': { key: 'analysis', type: 'analysis', sessionKey: 'caseAnalysis' },
@@ -97,7 +103,9 @@ export const PROJECT_TAB_CONFIG = {
 export const PROJECT_TO_STATION_TARGET = {
   '病史采集': 'historyTaking',
   '体格检查': 'physicalExam',
+  '辅助检查': 'ancillaryTests',
   '初步诊断': 'preliminaryDiag',
+  '诊断': 'diagnosis',
   '治疗计划': 'treatmentPlan',
   '病历书写': 'medicalRecord',
   '病例分析': 'caseAnalysis',
@@ -146,6 +154,45 @@ export function getProfileType(stationId) {
 /** 中文考站名 → 所有英文 ID */
 export function getStationIdsByLabel(label) {
   return STATION_LABEL_TO_IDS[label] || (label ? [label] : [])
+}
+
+/**
+ * 选取启用的 flow 评分方案，并按专业取其内部配置，把各模块的 scoreTableCode 解析为 tables[code]。
+ * 方案结构 { schemes:[{status, majors:[{name, modules:[{moduleId, weight, scoreTableCode}]}]}], tables:{code: scoreTable} }。
+ * 只用一个启用方案：优先 status===true，其次 defaultSchemeId，再次首个方案。
+ * 方案内按专业 specialty 匹配 major.name，未匹配或未传专业 → '通用' 基础，否则首个 major。
+ * 兼容旧结构 { default:{modules}, specialties } / 单方案 modules 数组。
+ */
+export function pickFlowScheme(flowData, specialty) {
+  if (!flowData) return null
+  if (Array.isArray(flowData.schemes) && flowData.schemes.length) {
+    const schemes = flowData.schemes
+    let scheme = schemes.find(s => s.status === true || s.status === undefined)
+    if (!scheme && flowData.defaultSchemeId) scheme = schemes.find(s => s.id === flowData.defaultSchemeId)
+    if (!scheme) scheme = schemes[0]
+    if (!scheme) return null
+    const tables = flowData.tables || {}
+    let modules = null
+    if (Array.isArray(scheme.majors) && scheme.majors.length) {
+      const majors = scheme.majors
+      const target = specialty
+        ? (majors.find(m => m.name === specialty) || majors.find(m => m.name === '通用') || majors[0])
+        : (majors.find(m => m.name === '通用') || majors[0])
+      modules = (target && target.modules) || []
+    } else {
+      modules = scheme.modules || []
+    }
+    return {
+      ...scheme,
+      modules: modules.map(m => {
+        const st = m.scoreTableCode ? tables[m.scoreTableCode] : null
+        return st ? { ...m, scoreTable: st } : m
+      })
+    }
+  }
+  if (flowData.default?.modules?.length) return flowData.default
+  if (Array.isArray(flowData.modules) && flowData.modules.length) return { ...flowData, modules: flowData.modules }
+  return null
 }
 
 /** 获取查找报告文件时需要的所有前缀（英文ID + 中文名 + 所属站名 + 同站其他项目名） */

@@ -93,7 +93,7 @@ const {
   STATION_ID_TO_LABEL, STATION_TO_PROFILE_TYPE, STATION_TO_SESSION_KEY,
   PROFILE_TYPE_LABELS, PROFILE_CONFIG_MAP, STATION_LABEL_TO_IDS,
   STATION_LABEL_ALIASES, getStationLabel, getProfileType,
-  getStationIdsByLabel, getReportLookupPrefixes,
+  getStationIdsByLabel, getReportLookupPrefixes, pickFlowScheme,
 } = await import(pathToFileURL(SHARED_SRC + '/station-constants.js').href)
 const { clamp, repairJSON, derivePersonality, createEmotionEngine } = await import(
   pathToFileURL(SHARED_SRC + '/emotion-engine.js').href
@@ -1302,7 +1302,7 @@ const server = createServer(async (req, res) => {
     if (!LLM_API_KEY) return json(res, 503, { ok: false, error: 'LLM API key not configured' })
     try {
       const body = await parseBody(req)
-      const { caseId: rawCaseId, caseInfo, settleKey, sessionEpoch } = body
+      const { caseId: rawCaseId, caseInfo, settleKey, sessionEpoch, trainingMode } = body
       const caseId = sanitizeId(rawCaseId)
       if (!caseId) return json(res, 400, { ok: false, error: 'Missing caseId' })
       const ANALYZER_SRC = fileURLToPath(new URL('../../score-analyzer/src', import.meta.url))
@@ -1316,32 +1316,77 @@ const server = createServer(async (req, res) => {
         historyTaking: 'history',
         physicalExam: 'physical',
         preliminaryDiag: 'analysis',
+        treatmentPlan: 'analysis',
+        diagnosis: 'analysis',
+        ancillaryTests: 'exam',
         humanity: 'communication',
         medicalRecord: 'medical_record',
         mentalExam: 'psychiatry-history'
       }
 
-      // 服务端兜底：加载并解析评分表模板
+      // full-flow 模式：加载管理端配置的 flow 评分方案（每模块一张评分表，按权重汇总；按专业选取，未配置用通用默认）
+      const isFullFlow = trainingMode === 'full-flow'
+      let flowModulesByKey = null // { routeName/moduleId → module }
+      let flowModuleWeights = null // { routeName/moduleId → weight }
+      if (isFullFlow) {
+        try {
+          const flowPath = join(PROJECT_ROOT, 'packages/shared/data/flow-score-tables.json')
+          if (existsSync(flowPath)) {
+            const flow = JSON.parse(readFileSync(flowPath, 'utf-8'))
+            const scheme = pickFlowScheme(flow, (caseInfo || {}).specialty || '')
+            if (scheme?.modules?.length) {
+              flowModulesByKey = {}
+              flowModuleWeights = {}
+              for (const m of scheme.modules) {
+                const key = m.routeName || m.moduleId
+                flowModulesByKey[key] = m
+                flowModuleWeights[key] = m.weight || 0
+              }
+              console.log(`[sp-api] settle: full-flow 评分方案已加载 (${scheme.name || '通用'} ${scheme.modules.length} 个模块)`)
+            }
+          }
+        } catch (e) {
+          console.warn('[sp-api] settle: flow 评分方案读取失败:', e.message)
+        }
+      }
+
+      // 服务端兜底：加载并解析评分表模板（full-flow 优先用 flow 方案配置，否则按类型映射）
       async function ensureParsedSheet(st, caseInfo) {
         if (st.parsedSheet && st.parsedSheet.length > 0) return st.parsedSheet
-        const firstProjectId = (st.projects && st.projects.length > 0) ? st.projects[0] : null
+        const firstProjectId = (st.projects && st.projects.length > 0) ? st.projects[0] : st.stationId
         if (!firstProjectId) return null
-        const templateType = stationTypeMap[firstProjectId]
-        if (!templateType) return null
+        const { parseScoreSheet } = await import(pathToFileURL(PARSER_SRC).href)
+        let templateItems = null
+        let tplLabel = ''
+        if (isFullFlow && flowModulesByKey?.[firstProjectId]) {
+          const flowTpl = flowModulesByKey[firstProjectId].scoreTable
+          if (flowTpl?.items?.length) {
+            templateItems = flowTpl.items
+            tplLabel = flowTpl.name || flowTpl.code || ''
+          }
+        }
+        if (!templateItems) {
+          const templateType = stationTypeMap[firstProjectId]
+          if (!templateType) return null
+          try {
+            const { getTemplateByType } = await import(pathToFileURL(SCORE_TABLES_SRC).href)
+            const template = getTemplateByType(templateType)
+            if (!template) return null
+            templateItems = template.items || template.scoring_items || []
+            if (typeof templateItems === 'function') templateItems = templateItems()
+            tplLabel = template.name || ''
+          } catch (e) {
+            return null
+          }
+        }
         try {
-          const { getTemplateByType } = await import(pathToFileURL(SCORE_TABLES_SRC).href)
-          const { parseScoreSheet } = await import(pathToFileURL(PARSER_SRC).href)
-          const template = getTemplateByType(templateType)
-          if (!template) return null
-          let templateItems = template.items || template.scoring_items || []
-          if (typeof templateItems === 'function') templateItems = templateItems()
           const sheet = await parseScoreSheet({
             basicData: caseInfo || { case_id: caseId },
             templateItems,
             specialty: (caseInfo || {}).specialty || '',
             llmConfig
           })
-          console.log(`[sp-api] settle: 服务端兜底解析评分表 (${firstProjectId}/${templateType}) → ${sheet.length} 项`)
+          console.log(`[sp-api] settle: 服务端兜底解析评分表 (${firstProjectId}${tplLabel ? '/' + tplLabel : ''}) → ${sheet.length} 项`)
           return sheet
         } catch (e) {
           console.warn(`[sp-api] settle: 兜底解析评分表失败 (${firstProjectId}):`, e.message)
@@ -1396,12 +1441,24 @@ const server = createServer(async (req, res) => {
       ) : []
 
       // 合并且计算总览
+      // full-flow：加权汇总 totalScore = Σ(模块得分/模块满分 × 模块权重)，总分满分 100
       for (const r of scoredResults) {
         stationResults.push(r)
-        totalScore += r.score || 0
-        totalMax += r.maxScore || 0
+        if (isFullFlow && flowModuleWeights) {
+          const w = flowModuleWeights[r.stationId] || 0
+          const maxS = r.maxScore || 0
+          totalScore += maxS > 0 ? (r.score / maxS) * w : 0
+          totalMax += w
+        } else {
+          totalScore += r.score || 0
+          totalMax += r.maxScore || 0
+        }
       }
-      stationResults.push(...noScoreResults)
+      // 未评分的 flow 考站权重仍计入满分（满分固定 100）
+      for (const r of noScoreResults) {
+        stationResults.push(r)
+        if (isFullFlow && flowModuleWeights) totalMax += flowModuleWeights[r.stationId] || 0
+      }
 
       // 保存结算报告 — sessionEpoch 标识本次训练
       const se = sessionEpoch || settleKey || Date.now().toString()
@@ -1967,6 +2024,9 @@ const server = createServer(async (req, res) => {
         historyTaking: 'history',
         physicalExam: 'physical',
         preliminaryDiag: 'analysis',
+        treatmentPlan: 'analysis',
+        diagnosis: 'analysis',
+        ancillaryTests: 'exam',
         humanity: 'communication',
         medicalRecord: 'medical_record',
         mentalExam: 'psychiatry-history'
