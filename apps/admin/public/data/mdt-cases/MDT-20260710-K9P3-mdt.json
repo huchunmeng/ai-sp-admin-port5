@@ -1,0 +1,66 @@
+{
+  "id": "MDT-20260710-K9P3",
+  "caseId": "RESP-20260710-K9P3",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "stages": ["病例汇报", "影像解读", "综合讨论", "方案决策", "总结"],
+  "patientInfo": {
+    "name": "张德明",
+    "gender": "男",
+    "age": 58,
+    "chiefComplaint": "咳嗽、痰中带血2周，加重伴胸闷3天",
+    "presentIllness": "患者2周前无明显诱因出现咳嗽，伴痰中带血，近3天加重伴胸闷、气短。近2月体重下降约5kg。门诊胸部CT示右肺上叶占位，为进一步诊疗入院。",
+    "physicalExam": "生命体征平稳。双肺呼吸音清，未闻及干湿性啰音。浅表淋巴结未触及肿大。",
+    "vitals": "T 36.8℃ / P 78 / R 18 / BP 132/82mmHg",
+    "labTests": "血常规正常。CEA 18ng/ml。肝肾功能正常。",
+    "imagingText": "胸部CT：右肺上叶2.8×2.3cm分叶状结节，伴毛刺征及空泡征，纵隔4R组淋巴结肿大（1.2cm）。",
+    "pastHistory": "吸烟30年，20支/日。否认高血压、糖尿病史。",
+    "familyHistory": "否认肿瘤家族史。"
+  },
+  "disciplines": ["肿瘤科", "影像科", "病理科"],
+  "objective": "明确临床分期、制定初始治疗策略（手术 vs 新辅助）",
+  "teachingPhase": "R2",
+  "levelLabel": "高阶病例",
+  "filterKey": "oncology",
+  "source": "院士精讲",
+  "keyQuestions": [
+    "临床分期如何确定？还需补充哪些检查？",
+    "初始治疗策略：先行手术 vs 先行新辅助治疗？",
+    "若行新辅助，最佳方案是什么？如何评估疗效？",
+    "术后辅助治疗如何决策？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "肿瘤科", "view": "T1cN1M0(IIB)建议先行新辅助化疗±免疫再评估手术，CheckMate 816 显示 pCR 24%" },
+      { "dept": "影像科", "view": "右肺上叶2.8×2.3cm分叶+毛刺+空泡征，纵隔4R淋巴结1.2cm，高度提示肺腺癌" },
+      { "dept": "病理科", "view": "腺癌中分化，TTF-1+/Napsin A+，PD-L1 TPS=60%，NGS 待回报，建议同步做免疫组化" }
+    ],
+    "clinicalKeyPoints": "N2淋巴结定性是手术决策关键；新辅助方案选择依据PD-L1/驱动基因状态；术后辅助治疗取决于病理缓解程度。",
+    "references": ["CheckMate 816", "KEYNOTE-671", "CSCO NSCLC指南2025版"]
+  },
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论58岁男性张德明，咳嗽痰中带血2周、加重伴胸闷3天，CT示右肺上叶占位。核心议题：明确诊断方向与临床分期，制定初始治疗策略。请学员先给出初步诊断。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "影像科", "text": "CT示右肺上叶2.8×2.3cm分叶+毛刺+空泡征，纵隔4R淋巴结1.2cm，高度提示浸润性肺腺癌。请学员先在CT图像上标注异常征象。", "nextTask": "ct01" },
+    { "phase": 2, "speaker": "host", "text": "进入综合讨论，围绕分期与治疗策略四个核心问题展开。" },
+    { "phase": 2, "speaker": "肿瘤科", "text": "T1cN1M0（IIB期），CheckMate 816 显示新辅助化疗+免疫的 pCR 达24%，可争取降期后再手术。" },
+    { "phase": 2, "speaker": "病理科", "text": "补充两点：PD-L1 TPS=60%提示免疫可能获益；NGS驱动基因结果对辅助靶向决策至关重要，建议尽快回报。" },
+    { "phase": 3, "speaker": "host", "text": "请学员先选择你认同的初始治疗方向。", "nextTask": "strategy01" },
+    { "phase": 3, "speaker": "host", "text": "现在展示 MDT 最终决策，请对照分析差异。", "nextTask": "plan01" },
+    { "phase": 4, "speaker": "host", "text": "本次讨论结束，请写下你的反思总结。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断印象", "assess": "diagnosis", "prompt": "写出初步诊断及依据、鉴别诊断、想进一步了解的信息", "rows": 5, "placeholder": "1. 诊断及依据\n2. 鉴别诊断\n3. 想进一步了解的信息", "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：识别出肺占位恶性可能" }], "misses": [{ "icon": "✗", "point": "遗漏：纵隔淋巴结N分期意义未展开" }] } },
+    { "key": "ct01", "type": "exhibit", "label": "胸部CT征象标注", "assess": "imaging", "prompt": "在CT图像上标注异常征象（最多3处）", "image": { "title": "胸部CT·肺窗", "modality": "CT", "expected": ["右肺上叶结节", "纵隔4R淋巴结", "空泡征"] }, "feedback": { "hits": [{ "icon": "✓", "point": "右肺上叶结节" }], "misses": [{ "icon": "✗", "point": "纵隔4R淋巴结" }, { "icon": "✗", "point": "空泡征" }] } },
+    { "key": "strategy01", "type": "choice", "label": "初始治疗方向", "assess": "plan", "prompt": "综合肿瘤科与病理科意见，你倾向哪种初始治疗策略？", "options": ["先行新辅助+再评估手术", "先行手术+术后辅助", "立体定向放疗"], "correct": ["先行新辅助+再评估手术"], "feedback": { "hits": [{ "icon": "✓", "point": "IIB期建议新辅助化疗±免疫，争取降期后手术" }], "misses": [{ "icon": "✗", "point": "需说明新辅助方案依据PD-L1/驱动基因状态" }] } },
+    { "key": "plan01", "type": "text", "label": "初始治疗方案", "assess": "plan", "prompt": "独立制定完整的初始治疗方案（诊断/分期/策略/用药/随访）", "rows": 6, "placeholder": "1. 诊断结论\n2. 治疗策略\n3. 具体方案（药物、剂量、周期）\n4. 随访计划", "feedback": { "hits": [{ "icon": "✓", "point": "外科方案方向正确" }], "misses": [{ "icon": "✗", "point": "遗漏：基因检测指导辅助治疗" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结", "prompt": "写下本次讨论的收获、认知改变与遗留困惑", "rows": 4, "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑", "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "行VATS右肺上叶切除+纵隔淋巴结清扫，术后根据病理及基因检测决定辅助方案（EGFR/ALK阳性→靶向；PD-L1≥50%→免疫；其余→含铂双药4周期）",
+  "followUp": "术后3周胸外科+肿瘤科联合门诊复查，术后2年内每3-6月复查，5年后每年一次",
+  "referencesList": ["CheckMate 816", "KEYNOTE-671", "CSCO NSCLC指南2025版"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论58岁男性右肺上叶占位病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和诊断思路。", "callOut": ["请住院医师说说你的看法", "住院医师，你如何权衡手术与新辅助这两个方案？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何评价肿瘤专家的新辅助建议？", "请你梳理一下目前的共识与分歧"] }
+  }
+}

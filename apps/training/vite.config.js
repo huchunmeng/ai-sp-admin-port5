@@ -11,6 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const ADMIN_CASES_DIR = path.resolve(__dirname, '../admin/public/data/cases')
 const ADMIN_DATA_DIR = path.resolve(__dirname, '../admin/public/data')
+const ADMIN_MDT_CASES_DIR = path.resolve(__dirname, '../admin/public/data/mdt-cases')
 const PROMPTS_DIR = path.resolve(__dirname, '../../services/ai-generator/prompts/06-aisp')
 
 function parseRequestBody(req) {
@@ -130,6 +131,52 @@ export default defineConfig(({ mode }) => {
                       patient_gender: pi.sex === '1' || pi.sex === '男' ? '男' : (pi.sex === '0' || pi.sex === '女' ? '女' : ''),
                       patient_age: String(pi.age || '').replace('岁', ''),
                       patient_pregnancy: pi.pregnancy || ''
+                    })
+                  } catch (e) { /* skip corrupt files */ }
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify(cases))
+              } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ ok: false, error: e.message }))
+              }
+              return
+            }
+            next()
+          })
+        }
+      },
+      {
+        name: 'mdt-cases-index',
+        configureServer(server) {
+          server.middlewares.use(async (req, res, next) => {
+            if (req.method === 'GET' && req.url.split('?')[0] === '/api/mdt-cases') {
+              try {
+                if (!fs.existsSync(ADMIN_MDT_CASES_DIR)) {
+                  res.writeHead(200, { 'Content-Type': 'application/json' })
+                  res.end('[]')
+                  return
+                }
+                const files = fs.readdirSync(ADMIN_MDT_CASES_DIR).filter(f => f.endsWith('-mdt.json'))
+                const cases = []
+                for (const f of files) {
+                  try {
+                    const data = JSON.parse(fs.readFileSync(path.join(ADMIN_MDT_CASES_DIR, f), 'utf-8'))
+                    const pi = data.patientInfo || {}
+                    cases.push({
+                      id: data.id || f.replace('-mdt.json', ''),
+                      caseId: data.caseId || '',
+                      sourceType: data.sourceType || 'manual',
+                      patientName: pi.name || '',
+                      gender: pi.gender || '',
+                      age: pi.age || '',
+                      disciplines: data.disciplines || [],
+                      objective: data.objective || '',
+                      teachingPhase: data.teachingPhase || '',
+                      levelLabel: data.levelLabel || '',
+                      filterKey: data.filterKey || '',
+                      source: data.source || '',
+                      updatedAt: data.updatedAt || ''
                     })
                   } catch (e) { /* skip corrupt files */ }
                 }

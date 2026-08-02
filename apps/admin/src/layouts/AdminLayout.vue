@@ -138,7 +138,9 @@ const MENU_CONFIG = [
       { id: 'institution-cases', label: '机构病例库', route: '/institution-cases' },
       { id: 'expert-cases', label: '专家病例库', route: '/expert-cases' },
       { id: 'score-settings', label: '评分表管理', route: '/score-settings' },
-      { id: 'case-level-list', label: 'AI伴学病例库', route: '/case-level-list' }
+      { id: 'case-level-list', label: 'AI伴学病例库', route: '/case-level-list' },
+      { id: 'raw-records', label: '原始病历素材库', route: '/raw-records' },
+      { id: 'mdt-cases', label: 'MDT病例管理', route: '/mdt-cases' }
   ]},
   { module: '培训管理', icon: '🎓', pages: [
       { id: 'training-records', label: '训练记录', route: '/training-records' }

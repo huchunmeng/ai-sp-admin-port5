@@ -1,0 +1,67 @@
+{
+  "id": "MDT-20260705-B8Y1",
+  "caseId": "EM-20260416-7A2K",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "stages": ["病例汇报", "影像解读", "综合讨论", "方案决策", "总结"],
+  "patientInfo": {
+    "name": "李美华",
+    "gender": "女",
+    "age": 58,
+    "chiefComplaint": "进行性呼吸困难伴干咳6月，HRCT示双肺网格状改变伴蜂窝影",
+    "presentIllness": "患者6月前无明显诱因出现进行性呼吸困难伴干咳，无发热盗汗。近2月活动耐力明显下降，6分钟步行试验320m，SpO2最低降至88%。门诊HRCT示双肺网格状改变伴蜂窝影，ANA 1:640阳性、抗Jo-1抗体阳性，为进一步诊疗入院。",
+    "physicalExam": "双肺底可闻及Velcro啰音。杵状指。双下肢无明显水肿。浅表淋巴结未触及肿大。",
+    "vitals": "T 36.6℃ / P 82 / R 22 / BP 128/76mmHg / SpO2 94%（静息）",
+    "labTests": "ANA 1:640（斑点型），抗Jo-1抗体强阳性，CK 380U/L，CRP 28mg/L。肺功能：限制性通气功能障碍（FVC 62%预计值），DLCO 45%预计值。",
+    "imagingText": "HRCT：双下肺外周分布网格状阴影伴牵引性支气管扩张，部分区域蜂窝样改变（<5%肺容积），合并GGO及实变灶。",
+    "pastHistory": "无高血压、糖尿病史。否认吸烟史。",
+    "familyHistory": "否认结缔组织病及间质性肺病家族史。"
+  },
+  "disciplines": ["呼吸科", "风湿免疫科", "影像科"],
+  "objective": "明确间质性肺炎分型及是否启动免疫抑制治疗",
+  "teachingPhase": "R3",
+  "levelLabel": "疑难病例",
+  "filterKey": "respiratory",
+  "source": "院士精讲",
+  "keyQuestions": [
+    "UIP vs NSIP vs OP的影像学鉴别要点？该患者符合何种类型？",
+    "抗Jo-1抗体阳性→抗合成酶综合征：ILD严重程度与肌炎活动度的关系？",
+    "免疫抑制方案选择：糖皮质激素单药 vs 联合MMF/CTX/AZA？",
+    "抗纤维化治疗时机：尼达尼布/吡非尼酮是否适用？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "呼吸科", "view": "HRCT表现为NSIP合并OP样改变，符合抗合成酶综合征相关ILD。建议支气管肺泡灌洗排除感染后启动免疫抑制治疗。肺功能基线已受损，需积极干预。" },
+      { "dept": "风湿免疫科", "view": "抗Jo-1抗体阳性+ILD+肌炎表现，诊断抗合成酶综合征明确。推荐甲泼尼龙冲击(500mg/d×3d)后序贯口服泼尼松1mg/kg/d，联合MMF 1.5g/d。" },
+      { "dept": "影像科", "view": "HRCT显示双下肺外周分布为主，网格影+GGO混杂，符合NSIP pattern，合并OP样实变灶。蜂窝样改变局限（<5%肺容积），提示尚处于可逆阶段。" }
+    ],
+    "clinicalKeyPoints": "间质性肺炎分型（UIP/NSIP/OP）决定治疗方向；抗Jo-1抗体提示抗合成酶综合征，需免疫抑制联合治疗；肺功能与HRCT蜂窝范围共同评估病变可逆性。",
+    "references": ["2022 ATS/ERS/JRS/ALAT IPF诊断指南", "2023 ACR/EULAR抗合成酶综合征分类标准", "2024 中国结缔组织病相关间质性肺病诊治专家共识", "INBUILD研究：尼达尼布治疗进展性纤维化ILD"]
+  },
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论58岁女性李美华，进行性呼吸困难伴干咳6月，HRCT示双肺网格状改变伴蜂窝影，ANA 1:640、抗Jo-1抗体阳性。核心议题：明确间质性肺炎分型，决定是否启动免疫抑制治疗。请学员先给出初步诊断。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "影像科", "text": "HRCT示双下肺外周分布网格状阴影，合并GGO与实变灶，蜂窝样改变局限。请学员先在HRCT图像上标注异常征象。", "nextTask": "hrct01" },
+    { "phase": 2, "speaker": "host", "text": "进入综合讨论，重点权衡免疫抑制治疗时机与方案选择。" },
+    { "phase": 2, "speaker": "呼吸科", "text": "HRCT表现为NSIP合并OP样改变，符合抗合成酶综合征相关ILD。建议支气管肺泡灌洗排除感染后启动免疫抑制治疗，肺功能基线已受损，需积极干预。" },
+    { "phase": 2, "speaker": "风湿免疫科", "text": "抗Jo-1抗体阳性+ILD+肌炎表现，诊断抗合成酶综合征明确。推荐甲泼尼龙冲击(500mg/d×3d)后序贯口服泼尼松1mg/kg/d，联合MMF 1.5g/d。" },
+    { "phase": 2, "speaker": "影像科", "text": "蜂窝样改变局限（<5%肺容积），提示尚处于可逆阶段，是积极免疫抑制治疗的窗口期。" },
+    { "phase": 3, "speaker": "host", "text": "请学员先选择你认同的免疫抑制治疗方向。", "nextTask": "immuno01" },
+    { "phase": 3, "speaker": "host", "text": "请制定完整的免疫抑制+随访方案。", "nextTask": "plan01" },
+    { "phase": 4, "speaker": "host", "text": "本次讨论结束，请写下你的反思总结。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断与分型", "assess": "diagnosis", "prompt": "写出初步诊断、影像分型判断（UIP/NSIP/OP）及依据、鉴别诊断", "rows": 5, "placeholder": "1. 诊断及分型依据\n2. 鉴别诊断\n3. 想进一步了解的信息", "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：识别出间质性肺病可能" }], "misses": [{ "icon": "✗", "point": "遗漏：未结合抗Jo-1抗体明确抗合成酶综合征分型" }] } },
+    { "key": "hrct01", "type": "exhibit", "label": "HRCT征象标注", "assess": "imaging", "prompt": "在HRCT图像上标注异常征象（最多3处）", "image": { "title": "胸部HRCT·肺窗", "modality": "CT", "expected": ["双下肺网格状阴影", "牵引性支气管扩张", "蜂窝样改变"] }, "feedback": { "hits": [{ "icon": "✓", "point": "双下肺网格状阴影" }], "misses": [{ "icon": "✗", "point": "牵引性支气管扩张" }, { "icon": "✗", "point": "蜂窝样改变" }] } },
+    { "key": "immuno01", "type": "choice", "label": "免疫抑制方向", "assess": "plan", "prompt": "综合呼吸科与风湿免疫科意见，你倾向哪种免疫抑制方案？", "options": ["激素+MMF联合治疗", "糖皮质激素单药治疗", "仅观察随访"], "correct": ["激素+MMF联合治疗"], "feedback": { "hits": [{ "icon": "✓", "point": "联合免疫抑制符合抗合成酶综合征相关ILD标准治疗" }], "misses": [{ "icon": "✗", "point": "需说明激素冲击→序贯口服的给药路径与MMF起始剂量" }] } },
+    { "key": "plan01", "type": "text", "label": "免疫抑制与随访方案", "assess": "plan", "prompt": "独立制定完整的免疫抑制+随访方案（诱导缓解/维持/监测指标/复评时机）", "rows": 6, "placeholder": "1. 诱导缓解方案\n2. 维持治疗\n3. 监测指标与复评时机\n4. 随访计划", "feedback": { "hits": [{ "icon": "✓", "point": "认识到免疫抑制治疗的必要性" }], "misses": [{ "icon": "✗", "point": "遗漏：激素冲击+MMF联合方案的循证依据与减量节奏" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结", "prompt": "写下本次讨论的收获、认知改变与遗留困惑", "rows": 4, "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑", "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "诊断：抗合成酶综合征相关间质性肺病（NSIP+OP pattern）。行甲泼尼龙冲击(500mg/d×3d)后序贯口服泼尼松1mg/kg/d，联合MMF 1.5g/d。监测肺功能及CK，6月复查HRCT评估疗效，必要时加用抗纤维化治疗（尼达尼布）。",
+  "followUp": "每2周门诊复查肺功能+CRP+CK；3月复查HRCT评估纤维化进展；症状稳定后泼尼松缓慢减量，长期免疫抑制维持。",
+  "referencesList": ["2022 ATS/ERS/JRS/ALAT IPF诊断指南", "2023 ACR/EULAR抗合成酶综合征分类标准", "2024 中国结缔组织病相关间质性肺病诊治专家共识", "INBUILD研究：尼达尼布治疗进展性纤维化ILD"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论58岁女性进行性呼吸困难伴干咳6月病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和诊断思路。", "callOut": ["请住院医师说说你的看法", "住院医师，你如何权衡免疫抑制与观察随访两个方案？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何评价风湿免疫专家的联合免疫抑制建议？", "请你梳理一下目前的共识与分歧"] }
+  }
+}

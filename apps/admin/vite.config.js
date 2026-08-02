@@ -162,13 +162,176 @@ function settingsPlugin() {
   }
 }
 
+// ── 原始病历素材库 + MDT 病例 数据 API（单文件 JSON 集合）──
+
+const RAW_RECORDS_DIR = path.resolve(__dirname, 'public/data/raw-records')
+const MDT_CASES_DIR = path.resolve(__dirname, 'public/data/mdt-cases')
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+}
+
+function parseJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = ''
+    req.on('data', chunk => { body += chunk })
+    req.on('end', () => {
+      try { resolve(JSON.parse(body)) }
+      catch (e) { reject(e) }
+    })
+    req.on('error', reject)
+  })
+}
+
+function corsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+}
+
+const SAFE_ID = /^[a-zA-Z0-9_-]+$/
+
+// 单文件 JSON 集合通用 API：GET 索引 / POST 保存 / GET 详情 / DELETE
+function jsonCollectionApi(name, dir, suffix, buildSummary) {
+  const filePath = (id) => path.join(dir, `${id}${suffix}`)
+  return {
+    name,
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const urlPath = req.url.split('?')[0]
+        const prefix = `/api/${name}/`
+        const isCollection = urlPath === `/api/${name}`
+        if (!isCollection && !urlPath.startsWith(prefix)) { next(); return }
+        if (req.method === 'OPTIONS') { corsHeaders(res); res.writeHead(204); res.end(); return }
+
+        if (isCollection) {
+          if (req.method === 'GET') {
+            corsHeaders(res)
+            try {
+              ensureDir(dir)
+              const files = fs.readdirSync(dir).filter(f => f.endsWith(suffix))
+              const list = []
+              for (const f of files) {
+                try {
+                  const data = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8'))
+                  list.push(buildSummary(data, f.replace(suffix, '')))
+                } catch (e) { /* skip corrupt */ }
+              }
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify(list))
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: false, error: e.message }))
+            }
+            return
+          }
+          if (req.method === 'POST') {
+            corsHeaders(res)
+            try {
+              const body = await parseJsonBody(req)
+              const id = String(body.id || '').trim()
+              if (!id || !SAFE_ID.test(id)) {
+                res.writeHead(400, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ ok: false, error: 'Invalid or missing id' }))
+                return
+              }
+              const data = body.data || {}
+              ensureDir(dir)
+              data.id = id
+              data.updatedAt = new Date().toISOString()
+              fs.writeFileSync(filePath(id), JSON.stringify(data, null, 2), 'utf-8')
+              console.log(`[${name}] 保存: ${id}`)
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: true, id }))
+            } catch (e) {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: false, error: e.message }))
+            }
+            return
+          }
+          next(); return
+        }
+
+        const idMatch = urlPath.slice(prefix.length).replace(/\/$/, '')
+        if (!idMatch || !SAFE_ID.test(idMatch)) { next(); return }
+        if (req.method === 'GET') {
+          corsHeaders(res)
+          try {
+            const fp = filePath(idMatch)
+            if (!fs.existsSync(fp)) {
+              res.writeHead(404, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: false, error: 'Not found' }))
+              return
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(fs.readFileSync(fp, 'utf-8'))
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ ok: false, error: e.message }))
+          }
+          return
+        }
+        if (req.method === 'DELETE') {
+          corsHeaders(res)
+          try {
+            const fp = filePath(idMatch)
+            if (fs.existsSync(fp)) fs.unlinkSync(fp)
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ ok: true, id: idMatch }))
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ ok: false, error: e.message }))
+          }
+          return
+        }
+        next()
+      })
+    }
+  }
+}
+
+const rawRecordsApi = () => jsonCollectionApi('raw-records', RAW_RECORDS_DIR, '.json', (data, id) => {
+  const pi = data.patientInfo || {}
+  return {
+    id,
+    title: data.title || '',
+    patientName: pi.name || '',
+    gender: pi.gender || '',
+    age: pi.age ?? '',
+    specialty: data.specialty || '',
+    disease: data.disease || '',
+    recordType: data.recordType || '',
+    source: data.source || '',
+    importedAt: data.importedAt || data.updatedAt || ''
+  }
+})
+
+const mdtCasesPersist = () => jsonCollectionApi('mdt-cases', MDT_CASES_DIR, '-mdt.json', (data, id) => {
+  const pi = data.patientInfo || {}
+  return {
+    id,
+    caseId: data.caseId || '',
+    sourceType: data.sourceType || 'manual',
+    patientName: pi.name || '',
+    gender: pi.gender || '',
+    age: pi.age ?? '',
+    disciplines: data.disciplines || [],
+    objective: data.objective || '',
+    teachingPhase: data.teachingPhase || '',
+    levelLabel: data.levelLabel || '',
+    filterKey: data.filterKey || '',
+    source: data.source || '',
+    updatedAt: data.updatedAt || ''
+  }
+})
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '')
 
   return {
     base: '/',
     root: __dirname,
-    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), resolveGenPlugin(env), buildCasesIndexPlugin(), vue()],
+    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), rawRecordsApi(), mdtCasesPersist(), resolveGenPlugin(env), buildCasesIndexPlugin(), vue()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

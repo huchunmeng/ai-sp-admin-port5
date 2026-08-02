@@ -1,0 +1,65 @@
+{
+  "id": "MDT-20260712-G5N3",
+  "caseId": "SU-20260416-9C2D",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "stages": ["病例汇报", "综合讨论", "方案决策", "总结"],
+  "patientInfo": {
+    "name": "赵小明",
+    "gender": "男",
+    "age": 45,
+    "chiefComplaint": "上腹隐痛伴消瘦3月，体重下降8kg",
+    "presentIllness": "患者3月前无明显诱因出现上腹隐痛，伴消瘦，体重下降约8kg（原体重72kg）。胃镜检查示胃窦部3.0×2.5cm溃疡型病变，病理示低分化腺癌。为进一步诊疗入院。",
+    "physicalExam": "腹部平坦，上腹部轻压痛，未触及明显肿块。浅表淋巴结未触及肿大。",
+    "vitals": "T 36.6℃ / P 76 / R 18 / BP 126/80mmHg",
+    "labTests": "CEA 18ng/ml，CA19-9 85U/ml。血红蛋白110g/L。病理免疫组化：HER2(-)，PD-L1 CPS=5，MSI-H。",
+    "imagingText": "腹部增强CT示胃窦部占位伴胃周淋巴结肿大（最大1.5cm），未见远处转移。EUS示浸润深度T3。临床分期cT3N1M0（IIB期）。",
+    "pastHistory": "吸烟20年，饮酒15年。无高血压、糖尿病史。",
+    "familyHistory": "否认胃癌家族史。"
+  },
+  "disciplines": ["消化科", "肿瘤科", "普外科"],
+  "objective": "胃癌分期评估及新辅助化疗 vs 直接手术决策",
+  "teachingPhase": "R1",
+  "levelLabel": "基础病例",
+  "filterKey": "oncology",
+  "source": "院士精讲",
+  "keyQuestions": [
+    "cT3N1M0胃癌：是否需行诊断性腹腔镜探查排除腹膜转移？",
+    "MSI-H胃癌的预后意义及对治疗决策的影响？",
+    "新辅助化疗（FLOT方案）vs 直接手术（D2根治术）的循证依据？",
+    "术后辅助治疗方案：是否需要免疫治疗（PD-1抑制剂）？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "消化科", "view": "胃镜+EUS评估浸润深度准确率约85%。建议完善EUS进一步明确T分期，并行诊断性腹腔镜探查排除隐匿性腹膜转移。MSI-H提示预后较好但可能对化疗不敏感。" },
+      { "dept": "肿瘤科", "view": "cT3N1M0（IIB期），NCCN指南推荐围手术期化疗（FLOT方案4周期术前+4周期术后）。但MSI-H肿瘤对5-FU/铂类敏感性低，CheckMate 649等研究提示免疫治疗可能获益。建议MDT讨论是否直接手术。" },
+      { "dept": "普外科", "view": "D2根治术（远端胃大部切除+D2淋巴结清扫）是标准术式。若选择新辅助化疗，化疗后4-6周再评估手术。MSI-H患者若直接手术，术后pStage可能升级，需根据病理决定辅助方案。" }
+    ],
+    "clinicalKeyPoints": "胃癌治疗前需精准分期（EUS+诊断性腹腔镜）；MSI-H对化疗敏感性低但免疫可能获益；cT3N1M0围手术期化疗为标准选择；术后辅助取决于病理缓解与分子分型。",
+    "references": ["2024 NCCN胃癌临床实践指南(v2.2024)", "2023 CSCO胃癌诊疗指南", "FLOT4-AIO研究：围手术期FLOT vs ECF/ECX", "CheckMate 649/KEYNOTE-859研究：免疫治疗在胃癌中的应用"]
+  },
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论45岁男性赵小明，上腹隐痛伴消瘦3月，体重下降8kg。胃镜示胃窦部溃疡型病变，病理低分化腺癌，MSI-H。核心议题：胃癌分期评估及新辅助化疗 vs 直接手术决策。请学员先给出初步诊断与分期判断。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "host", "text": "进入综合讨论。MSI-H是本次决策的关键变量，请各科围绕分期手段与治疗路径发表意见。" },
+    { "phase": 1, "speaker": "消化科", "text": "建议完善EUS进一步明确T分期，并行诊断性腹腔镜探查排除隐匿性腹膜转移。MSI-H提示预后较好但可能对化疗不敏感。" },
+    { "phase": 1, "speaker": "肿瘤科", "text": "cT3N1M0（IIB期），NCCN推荐围手术期化疗（FLOT方案4周期术前+4周期术后）。但MSI-H对5-FU/铂类敏感性低，免疫治疗可能获益，建议MDT讨论是否直接手术。" },
+    { "phase": 1, "speaker": "普外科", "text": "D2根治术是标准术式。若选择新辅助化疗，化疗后4-6周再评估手术。MSI-H若直接手术，术后pStage可能升级，需根据病理决定辅助方案。" },
+    { "phase": 2, "speaker": "host", "text": "请学员先选择你认同的初始治疗策略。", "nextTask": "strategy01" },
+    { "phase": 2, "speaker": "host", "text": "现在请独立制定完整的治疗方案。", "nextTask": "plan01" },
+    { "phase": 3, "speaker": "host", "text": "本次讨论结束，请写下你的反思总结。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断与分期", "assess": "diagnosis", "prompt": "写出初步诊断、临床分期（TNM）判断及依据、鉴别诊断", "rows": 5, "placeholder": "1. 诊断及分期依据\n2. 鉴别诊断\n3. 想进一步了解的信息", "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：识别出胃癌恶性诊断" }], "misses": [{ "icon": "✗", "point": "遗漏：MSI-H分子分型对治疗决策的影响" }] } },
+    { "key": "strategy01", "type": "choice", "label": "初始治疗策略", "assess": "plan", "prompt": "综合消化科、肿瘤科与普外科意见，你倾向哪种初始治疗策略？", "options": ["新辅助化疗（FLOT）+D2根治术", "直接D2根治术+术后辅助", "PD-1免疫治疗+化疗"], "correct": ["新辅助化疗（FLOT）+D2根治术"], "feedback": { "hits": [{ "icon": "✓", "point": "IIB期围手术期化疗+根治性手术是标准路径" }], "misses": [{ "icon": "✗", "point": "需说明MSI-H背景下对FLOT敏感性及免疫治疗时机的权衡" }] } },
+    { "key": "plan01", "type": "text", "label": "完整治疗方案", "assess": "plan", "prompt": "独立制定完整的治疗方案（分期策略/治疗路径/用药方案/随访）", "rows": 6, "placeholder": "1. 分期策略\n2. 治疗路径（新辅助→手术→辅助）\n3. 具体用药方案\n4. 随访计划", "feedback": { "hits": [{ "icon": "✓", "point": "外科方案方向正确" }], "misses": [{ "icon": "✗", "point": "遗漏：诊断性腹腔镜探查与MSI-H免疫治疗决策" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结", "prompt": "写下本次讨论的收获、认知改变与遗留困惑", "rows": 4, "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑", "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "先行诊断性腹腔镜探查+EUS分期，排除腹膜转移后行围手术期化疗（FLOT方案4周期术前），再评估行D2根治术（远端胃大部切除+D2淋巴结清扫）。术后根据病理缓解及MSI-H状态决定辅助方案（PD-1抑制剂免疫治疗）。",
+  "followUp": "术后3周肿瘤科+普外科联合门诊；术后2年内每3-6月复查胃镜+CT；5年后每年一次。",
+  "referencesList": ["2024 NCCN胃癌临床实践指南(v2.2024)", "2023 CSCO胃癌诊疗指南", "FLOT4-AIO研究：围手术期FLOT vs ECF/ECX", "CheckMate 649/KEYNOTE-859研究：免疫治疗在胃癌中的应用"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论45岁男性胃癌病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和治疗策略。", "callOut": ["请住院医师说说你的看法", "住院医师，你如何权衡新辅助化疗与直接手术？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何评价肿瘤专家的新辅助化疗建议？", "请你梳理一下目前的共识与分歧"] }
+  }
+}

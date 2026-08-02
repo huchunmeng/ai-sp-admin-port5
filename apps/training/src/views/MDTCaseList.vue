@@ -64,15 +64,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { MDT_CASES, disciplineIcon } from '@/composables/useMDTData'
+import { loadMDTCases, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
 
 const router = useRouter()
-const loading = ref(false)
+const loading = ref(true)
 const activeFilter = ref('all')
-
-const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -83,7 +81,7 @@ const filters = [
   { key: 'endocrine', label: '内分泌' },
 ]
 
-const mdtCases = ref(MDT_CASES.map((c, idx) => ({ ...c, source: ELITE_SOURCES[idx % 3] })))
+const mdtCases = ref([])
 
 const filteredCases = computed(() => {
   if (activeFilter.value === 'all') return mdtCases.value
@@ -102,10 +100,16 @@ function sourceClass(src) {
 }
 
 function viewDetail(c) {
-  router.push({ name: 'caseDetail', params: { caseId: c.realCaseId }, query: { from: 'mdt', mdtId: c.id } })
+  router.push({ name: 'mdtDiscussion', query: { mdtId: c.id } })
 }
 
-onMounted(() => { loading.value = false })
+async function load() {
+  loading.value = true
+  mdtCases.value = await loadMDTCases()
+  loading.value = false
+}
+
+onMounted(load)
 </script>
 
 <style scoped>

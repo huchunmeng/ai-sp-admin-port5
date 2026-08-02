@@ -22,6 +22,11 @@ const routes = [
       // 病例分级管理（老师配置病例分级标签+AI伴学开关）
       { path: 'case-level-list', name: 'caseLevelList', component: () => import('@/views/new-features/CaseLevelList.vue') },
       { path: 'ai-companion', name: 'aiCompanionDetail', component: () => import('@/views/new-features/AICompanionDetail.vue') },
+      // 原始病历素材库 + MDT 病例管理
+      { path: 'raw-records', name: 'rawRecords', component: () => import('@/views/raw-records/RawRecordList.vue') },
+      { path: 'raw-record-editor/:id?', name: 'rawRecordEditor', props: true, component: () => import('@/views/raw-records/RawRecordEditor.vue') },
+      { path: 'mdt-cases', name: 'mdtCases', component: () => import('@/views/mdt-case-manage/MDTCaseList.vue') },
+      { path: 'mdt-case-editor/:mdtId?', name: 'mdtCaseEditor', props: true, component: () => import('@/views/mdt-case-manage/MDTEditor.vue') },
 
     ]
   }

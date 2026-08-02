@@ -1,0 +1,66 @@
+{
+  "id": "MDT-20260701-C4K7",
+  "caseId": "EM-20260526-X8K2",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "stages": ["病例汇报", "影像解读", "综合讨论", "方案决策", "总结"],
+  "patientInfo": {
+    "name": "陈建国",
+    "gender": "男",
+    "age": 62,
+    "chiefComplaint": "持续性胸骨后压榨样疼痛3小时，含服硝酸甘油未缓解",
+    "presentIllness": "患者3小时前无明显诱因出现持续性胸骨后压榨样疼痛，向背部放射，含服硝酸甘油未缓解，伴大汗。急诊收入院。既往高血压10年、2型糖尿病8年、慢性肾脏病（CKD 3期）。",
+    "physicalExam": "神清，痛苦面容。双肺呼吸音清。心率88次/分，律齐，各瓣膜听诊区未闻及杂音。双下肢无水肿。",
+    "vitals": "T 36.5℃ / P 88 / R 20 / BP 142/88mmHg",
+    "labTests": "肌钙蛋白I显著升高。Cr 280μmol/L，eGFR约22ml/min/1.73m²。血钾5.1mmol/L。",
+    "imagingText": "心电图：V1-V4导联ST段抬高。冠脉造影：前降支近段95%狭窄、回旋支中段80%狭窄、右冠远段75%狭窄。SYNTAX评分32分。",
+    "pastHistory": "高血压10年，2型糖尿病8年，慢性肾脏病（CKD 3期），服二甲双胍0.5g tid。",
+    "familyHistory": "否认早发冠心病家族史。"
+  },
+  "disciplines": ["心内科", "心外科", "肾内科"],
+  "objective": "制定冠脉血运重建策略，平衡造影剂肾损伤风险",
+  "teachingPhase": "R2",
+  "levelLabel": "高阶病例",
+  "filterKey": "cardio",
+  "source": "院士精讲",
+  "keyQuestions": [
+    "CKD 3期患者行CABG vs PCI的获益/风险如何权衡？",
+    "造影剂肾病预防策略：水化方案、N-乙酰半胱氨酸证据级别？",
+    "抗血小板方案：阿司匹林+P2Y12抑制剂在CKD患者中的剂量调整？",
+    "术后肾功能监测频率及替代终点指标选择？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "心内科", "view": "建议PCI治疗，优先处理LAD罪犯病变，分次处理多支血管以减少造影剂用量。推荐等渗造影剂碘克沙醇，术前术后充分水化。" },
+      { "dept": "心外科", "view": "三支病变+糖尿病+CKD，SYNTAX评分32分，CABG远期预后优于PCI。但需评估手术耐受性及体外循环对肾功能的影响。" },
+      { "dept": "肾内科", "view": "Cr 280μmol/L，eGFR约22ml/min。建议造影前48h停用二甲双胍，水化方案：0.9%NaCl 1ml/kg/h术前12h至术后24h。术后监测Cr q12h×3d。" }
+    ],
+    "clinicalKeyPoints": "CKD合并多支血管病变血运重建权衡核心是造影剂肾损伤 vs 外科手术风险；SYNTAX评分指导策略；围术期肾功能保护贯穿全程。",
+    "references": ["2024 ESC/EACTS心肌血运重建指南", "2023 AHA/ACC慢性冠心病管理指南", "KDIGO 2024慢性肾脏病评估与管理临床实践指南", "ACR造影剂肾病防治共识(2023版)"]
+  },
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论62岁男性陈建国，持续胸痛3小时，ST段抬高型心肌梗死，合并CKD 3期。核心议题：如何平衡血运重建获益与造影剂肾损伤风险。请学员先给出初步诊断印象。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "心内科", "text": "心电图V1-V4导联ST段抬高，肌钙蛋白I显著升高。冠脉造影示三支病变，SYNTAX评分32分。请学员先在冠脉造影图上标注病变血管。", "nextTask": "angio01" },
+    { "phase": 2, "speaker": "host", "text": "进入综合讨论，重点权衡血运重建方式与肾功能保护。" },
+    { "phase": 2, "speaker": "心外科", "text": "三支病变+糖尿病+CKD，SYNTAX 32分，指南建议CABG，远期预后优于PCI，且可避免重复造影剂暴露。" },
+    { "phase": 2, "speaker": "肾内科", "text": "无论何种策略，务必术前48h停用二甲双胍、等渗造影剂、充分水化，术后严密监测肾功能。" },
+    { "phase": 3, "speaker": "host", "text": "请学员先独立选择你倾向的血运重建策略。", "nextTask": "strategy01" },
+    { "phase": 3, "speaker": "host", "text": "现在展示 MDT 最终决策，请对照分析差异。", "nextTask": "plan01" },
+    { "phase": 4, "speaker": "host", "text": "本次讨论已近尾声，请写下你的反思总结。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断印象", "assess": "diagnosis", "prompt": "写出初步诊断及依据、鉴别诊断，以及希望进一步了解的信息（注意合并CKD 3期对全程决策的制约）", "rows": 5, "placeholder": "1. 诊断及依据\n2. 鉴别诊断\n3. 想进一步了解的信息", "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：急性ST段抬高型心肌梗死" }], "misses": [{ "icon": "✗", "point": "遗漏：未强调合并CKD 3期对全程决策的制约" }] } },
+    { "key": "angio01", "type": "exhibit", "label": "冠脉造影标注", "assess": "imaging", "prompt": "在冠脉造影图像上标注病变血管（最多3处）", "image": { "title": "冠脉造影", "modality": "DSA", "expected": ["前降支近段", "回旋支中段", "右冠远段"] }, "feedback": { "hits": [{ "icon": "✓", "point": "前降支近段（罪犯病变）" }], "misses": [{ "icon": "✗", "point": "回旋支中段" }, { "icon": "✗", "point": "右冠远段" }] } },
+    { "key": "strategy01", "type": "choice", "label": "血运重建策略", "assess": "plan", "prompt": "综合心内外科与肾内科意见，你倾向哪种血运重建策略？", "options": ["CABG（冠状动脉旁路移植术）", "分次PCI+充分水化", "药物保守强化治疗"], "correct": ["CABG（冠状动脉旁路移植术）"], "feedback": { "hits": [{ "icon": "✓", "point": "CABG远期预后优于PCI，且避免反复造影剂暴露" }], "misses": [{ "icon": "✗", "point": "需同时落实肾功能保护（停用二甲双胍/等渗造影剂/水化）" }] } },
+    { "key": "plan01", "type": "text", "label": "治疗方案制定", "assess": "plan", "prompt": "独立制定完整的血运重建+肾功能保护方案（策略/围术期管理/抗血小板/随访）", "rows": 6, "placeholder": "1. 血运重建策略\n2. 围术期肾功能保护\n3. 抗血小板方案\n4. 随访计划", "feedback": { "hits": [{ "icon": "✓", "point": "认识到肾功能保护的重要性" }], "misses": [{ "icon": "✗", "point": "遗漏：CABG远期优势与SYNTAX评分的循证依据" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结", "prompt": "写下本次讨论的收获、认知改变与遗留困惑", "rows": 4, "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑", "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "心脏团队决策：行CABG（三支病变+糖尿病+CKD，SYNTAX 32分，远期获益明确，避免反复造影剂暴露）。围术期停用二甲双胍，若术中需造影优先等渗造影剂并充分水化，术后监测Cr q12h×3d，强化他汀+双联抗血小板（CKD剂量调整）。",
+  "followUp": "术后1周复查肾功能；2周心外科+肾内科联合门诊；3月复查冠脉CTA/心功能，长期心脏康复与危险因素管理。",
+  "referencesList": ["2024 ESC/EACTS心肌血运重建指南", "KDIGO 2024慢性肾脏病评估与管理临床实践指南", "ACR造影剂肾病防治共识(2023版)"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论62岁男性急性心梗合并肾功能不全病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和血运重建思路。", "callOut": ["请住院医师说说你的看法", "住院医师，CABG与PCI你倾向哪个？依据是什么？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何权衡心外科与心内科的方案分歧？", "请你梳理一下目前的共识与分歧"] }
+  }
+}

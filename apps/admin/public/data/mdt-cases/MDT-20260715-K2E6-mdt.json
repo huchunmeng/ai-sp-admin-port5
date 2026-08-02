@@ -1,0 +1,67 @@
+{
+  "id": "MDT-20260715-K2E6",
+  "caseId": "IM-20260527-A9GW",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "stages": ["病例汇报", "综合讨论", "方案决策"],
+  "patientInfo": {
+    "name": "刘丽华",
+    "gender": "女",
+    "age": 68,
+    "chiefComplaint": "2型糖尿病20年，近期HbA1c 9.8%，合并增殖性视网膜病变与微量白蛋白尿",
+    "presentIllness": "患者2型糖尿病史20年。近期自测空腹血糖9-12mmol/L，餐后2h血糖14-18mmol/L，HbA1c 9.8%。合并双眼增殖性糖尿病视网膜病变、微量白蛋白尿。为进一步综合管理入院。",
+    "physicalExam": "神清。眼底检查见双眼视网膜新生血管。双下肢无水肿。足背动脉搏动良好。",
+    "vitals": "T 36.5℃ / P 74 / R 18 / BP 148/82mmHg",
+    "labTests": "HbA1c 9.8%。UACR 85mg/g，eGFR 68ml/min/1.73m²。LDL-C 3.6mmol/L。",
+    "imagingText": "眼底荧光血管造影示双眼增殖性糖尿病视网膜病变（PDR）伴临床显著性黄斑水肿。",
+    "pastHistory": "高血压史（服氨氯地平5mg qd），血脂异常。目前用药：二甲双胍0.5g tid+格列美脲4mg qd。",
+    "familyHistory": "否认糖尿病家族史。"
+  },
+  "disciplines": ["内分泌科", "眼科", "肾内科"],
+  "objective": "综合管理血糖/血压/血脂，延缓微血管并发症进展",
+  "teachingPhase": "R1",
+  "levelLabel": "基础病例",
+  "filterKey": "endocrine",
+  "source": "院士精讲",
+  "keyQuestions": [
+    "HbA1c 9.8%如何优化降糖方案：SGLT2i/GLP-1RA的肾脏保护循证依据？",
+    "PDR合并DKD：全视网膜光凝是否影响肾功能？抗VEGF vs 激光的优先选择？",
+    "血压目标：合并DKD患者是否应更严格控制（<130/80mmHg）？",
+    "他汀+ACEI/ARB联合治疗在DKD一级预防中的作用？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "内分泌科", "view": "HbA1c 9.8%提示血糖控制差。建议加用SGLT2i（达格列净10mg qd）联合GLP-1RA（司美格鲁肽0.5mg qw起始），二者均有肾脏保护证据。注意告知SGLT2i的泌尿系感染风险。格列美脲可减量至2mg qd。" },
+      { "dept": "眼科", "view": "双眼PDR伴临床显著性黄斑水肿，建议先行抗VEGF（雷珠单抗）玻璃体腔注射控制黄斑水肿并抑制新生血管，2周后再行全视网膜光凝。PRP对肾功能无直接影响，但需注意造影剂荧光素钠经肾排泄。" },
+      { "dept": "肾内科", "view": "UACR 85mg/g+eGFR 68，诊断DKD G2A2期。建议加用ACEI（培哚普利4mg qd），目标血压<130/80mmHg。SGLT2i可延缓eGFR下降速率。联合用药注意监测血钾和肾功能，2周后复查。" }
+    ],
+    "clinicalKeyPoints": "糖尿病微血管并发症需多学科协同管理；SGLT2i/GLP-1RA兼顾降糖与肾脏保护；PDR治疗需抗VEGF与激光序贯；DKD患者血压目标更严格（<130/80mmHg）。",
+    "references": ["2024 ADA糖尿病医学诊疗标准", "KDIGO 2024慢性肾脏病合并糖尿病管理指南", "2023 AAO糖尿病视网膜病变临床指南", "EMPA-REG/DAPA-CKD/CREDENCE研究：SGLT2i肾脏保护证据"]
+  },
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论68岁女性刘丽华，2型糖尿病20年，HbA1c 9.8%，合并增殖性视网膜病变与微量白蛋白尿。核心议题：综合管理血糖/血压/血脂，延缓微血管并发症进展。请学员先给出初步诊断与并发症评估。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "host", "text": "进入综合讨论，重点权衡降糖方案调整与眼科治疗时机。" },
+    { "phase": 1, "speaker": "内分泌科", "text": "HbA1c 9.8%提示血糖控制差。建议加用SGLT2i（达格列净10mg qd）联合GLP-1RA（司美格鲁肽0.5mg qw起始），二者均有肾脏保护证据。注意告知SGLT2i的泌尿系感染风险。格列美脲可减量至2mg qd。" },
+    { "phase": 1, "speaker": "眼科", "text": "双眼PDR伴临床显著性黄斑水肿，建议先行抗VEGF（雷珠单抗）玻璃体腔注射控制黄斑水肿并抑制新生血管，2周后再行全视网膜光凝。PRP对肾功能无直接影响。" },
+    { "phase": 1, "speaker": "肾内科", "text": "UACR 85mg/g+eGFR 68，诊断DKD G2A2期。建议加用ACEI（培哚普利4mg qd），目标血压<130/80mmHg。SGLT2i可延缓eGFR下降速率。联合用药注意监测血钾和肾功能，2周后复查。" },
+    { "phase": 2, "speaker": "host", "text": "请学员先选择你认同的综合管理首要目标。", "nextTask": "goal01" },
+    { "phase": 2, "speaker": "host", "text": "接下来选择具体的降糖方案调整方向。", "nextTask": "drug01" },
+    { "phase": 2, "speaker": "host", "text": "现在请独立制定完整的综合管理方案。", "nextTask": "plan01" },
+    { "phase": 2, "speaker": "host", "text": "本次讨论结束，请写下你的反思总结。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断与并发症评估", "assess": "diagnosis", "prompt": "写出初步诊断、并发症评估及依据、想进一步了解的信息", "rows": 5, "placeholder": "1. 诊断及并发症评估\n2. 鉴别诊断\n3. 想进一步了解的信息", "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：识别出糖尿病并发症多系统受累" }], "misses": [{ "icon": "✗", "point": "遗漏：PDR与DKD的关联管理需多学科协同" }] } },
+    { "key": "goal01", "type": "choice", "label": "综合管理首要目标", "assess": "plan", "prompt": "综合各学科意见，这位患者综合管理的首要目标应是什么？", "options": ["强化降糖联合心肾保护（SGLT2i/GLP-1RA）", "仅优化降糖方案控制血糖", "先处理眼底病变再谈血糖"], "correct": ["强化降糖联合心肾保护（SGLT2i/GLP-1RA）"], "feedback": { "hits": [{ "icon": "✓", "point": "降糖同时兼顾肾脏保护是DKD管理核心" }], "misses": [{ "icon": "✗", "point": "需同步管理血压血脂并统筹眼科治疗时机" }] } },
+    { "key": "drug01", "type": "choice", "label": "降糖方案调整方向", "assess": "plan", "prompt": "在现有二甲双胍+格列美脲基础上，如何调整降糖方案？", "options": ["联合SGLT2i+GLP-1RA强化降糖", "加用阿卡波糖控制餐后血糖", "维持现有方案并密切随访"], "correct": ["联合SGLT2i+GLP-1RA强化降糖"], "feedback": { "hits": [{ "icon": "✓", "point": "SGLT2i/GLP-1RA兼具降糖与心肾保护循证证据" }], "misses": [{ "icon": "✗", "point": "遗漏：格列美脲可减量以降低低血糖风险" }] } },
+    { "key": "plan01", "type": "text", "label": "完整综合管理方案", "assess": "plan", "prompt": "独立制定完整的综合管理方案（血糖/血压/血脂/眼底治疗/随访）", "rows": 6, "placeholder": "1. 降糖方案\n2. 血压血脂目标与用药\n3. 眼底治疗顺序（抗VEGF/激光）\n4. 随访计划", "feedback": { "hits": [{ "icon": "✓", "point": "认识到多学科综合管理重要性" }], "misses": [{ "icon": "✗", "point": "遗漏：抗VEGF与全视网膜光凝的序贯时机" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结", "prompt": "写下本次讨论的收获、认知改变与遗留困惑", "rows": 4, "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑", "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "综合管理：降糖加用SGLT2i（达格列净10mg qd）+GLP-1RA（司美格鲁肽0.5mg qw），格列美脲减量至2mg qd；降压加用ACEI（培哚普利4mg qd），目标<130/80mmHg；他汀强化治疗，LDL-C<1.8mmol/L。眼科：先行抗VEGF（雷珠单抗）玻璃体腔注射，2周后全视网膜光凝。",
+  "followUp": "2周后复查血钾、肾功能；1月复查血糖谱+HbA1c；眼底按疗程随访；3月复查UACR及眼底造影。",
+  "referencesList": ["2024 ADA糖尿病医学诊疗标准", "KDIGO 2024慢性肾脏病合并糖尿病管理指南", "2023 AAO糖尿病视网膜病变临床指南", "EMPA-REG/DAPA-CKD/CREDENCE研究：SGLT2i肾脏保护证据"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论68岁女性2型糖尿病并发症综合管理病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和综合管理思路。", "callOut": ["请住院医师说说你的看法", "住院医师，你如何看待SGLT2i在这位患者中的应用？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何统筹各学科的降糖与眼科治疗方案？", "请你梳理一下目前的共识与分歧"] }
+  }
+}

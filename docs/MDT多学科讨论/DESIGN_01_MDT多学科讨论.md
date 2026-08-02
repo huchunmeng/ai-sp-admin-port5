@@ -78,12 +78,15 @@ MDT 多学科讨论是一个**完全独立的新功能**：不依赖 flow mode �
 
 | 文件 | 状态 | 说明 |
 |------|------|------|
-| `apps/training/src/views/MDTCaseList.vue` | ✅ 已有 | MDT 病例列表，数据来自 `useMDTData.js` |
-| `apps/training/src/views/MDTDiscussion.vue` | ⚠️ 静态演示 | 讨论流为硬编码 `chatItems`，病例信息为手写常量 |
-| `apps/training/src/composables/useMDTData.js` | ⚠️ 待扩展 | 5 个病例模板，已有 disciplines / keyQuestions / disciplinePerspectives / discussionAgenda / references |
+| `apps/admin/src/views/raw-records/` | ✅ 阶段1 | 原始病历素材库（导入原文保存，供 SP/MDT 制作引用） |
+| `apps/admin/src/views/mdt-case-manage/` | ✅ 阶段1 | MDT 病例管理（列表 + 编辑器，三种来源） |
+| `apps/admin/public/data/mdt-cases/` | ✅ 阶段1 | 6 个种子 MDT 病例 `{id}-mdt.json`（自包含 patientInfo + knowledgeBase + 剧本） |
+| `apps/training/src/views/MDTCaseList.vue` | ✅ 阶段1 | 从管理端索引加载，点击直接进 `mdtDiscussion` |
+| `apps/training/src/views/MDTDiscussion.vue` | ✅ 阶段1 | 数据驱动 + 准备面板选角色 + Learner-paced 讨论流 + 插话 LLM |
+| `apps/training/src/composables/useMDTData.js` | ✅ 阶段1 | 加载层（loadMDTCases / loadMDTCase / disciplineIcon） |
 | `apps/admin/src/views/new-features/MDTDiscussion.vue` | ✅ 预览页 | 管理端对训练端形态的预览，不承担配置编辑 |
 
-**本文档定义的目标形态**：`useMDTData.js` 扩展为可驱动讨论的完整剧本，`MDTDiscussion.vue` 改为数据驱动 + 三种学生角色，讨论由 AI 编排器（`useMDTDirector`）动态推进。
+**本文档定义的目标形态**：阶段1（脚本驱动）已落地；阶段2 讨论由 AI 编排器（`useMDTDirector`）动态推进；阶段3 多智能体编排（预留）。
 
 ---
 
@@ -100,6 +103,8 @@ MDT 训练固定 5 个阶段，与真实 MDT 会议流程对应。每阶段有�
 | 2 学科意见与综合讨论 | 各学科依次发言 + 制造分歧交锋 | **学会识别学科视角差异与权衡**（MDT 核心价值） | 观察者：自由提问；住院医师：被点名谈观点；主诊：追问分歧 |
 | 3 方案决策 | 各专家给方案，学员独立制定方案，对比 MDT 决策 | 学会从多方案中做综合决策 | 全部角色：投票 + 独立制定方案 |
 | 4 总结决策 | MDT 最终决策 + 文献依据 + 随访计划 | 学会循证依据与方案落地 | 全部角色：反思总结 + 成长画像 |
+
+> **阶段可配置**：上表 5 阶段是**默认骨架**。病例 JSON 的 `stages` 数组可覆盖（如 4 阶段不设影像解读、3 阶段仅汇报/讨论/决策），任务也按 `key` 自由组合——病例不共享固定流程，各病例按其讨论主题差异化编排。
 
 ### 2.2 学习者掌控节奏（Learner-paced）
 
@@ -270,68 +275,94 @@ trainingSession.mdt                      ← Pinia 持久化
 | 层 | 复用（现有） | 新增（本模块） |
 |----|------------|--------------|
 | LLM 通信 | `useAIChat.js` | — |
-| 病例加载 | `useCaseLoader.js`（真实 SP 病例图片/基础信息） | — |
+| 病例加载 | `/data/mdt-cases/{id}-mdt.json`（训练端 `serve-admin-data` 中间件，MDT 自包含 patientInfo） | 管理端 `rawRecordsApi` / `mdtCasesPersist` / 训练端 `mdt-cases-index` 插件 |
 | 难度标签 | `@ai-sp/shared`（getDifficultyLabel / getCaseLevel） | — |
 | 讨论引擎 | — | `useMDTDirector.js` |
-| 病例数据 | — | `useMDTData.js` 扩展 |
-| 会话存储 | `trainingSession`（新增 `mdt` key） | — |
+| 病例数据 | `useMDTData.js` 加载层（loadMDTCases / loadMDTCase） | 管理端 `views/mdt-case-manage/` 编辑器 |
+| 会话存储 | `trainingSession`（`saveSessionStage('mdt', ...)`） | — |
 
 ---
 
 ## 5. 数据模型
 
-### 5.1 MDTCase — 病例剧本数据（`useMDTData.js` 扩展）
+### 5.1 MDTCase — 病例剧本数据（管理端 `{id}-mdt.json` 文件）
 
-现有字段保留（`disciplines` / `keyQuestions` / `disciplinePerspectives` / `discussionAgenda` / `references`），新增以下字段：
+MDT 病例在**管理端独立管理**，存储为 `apps/admin/public/data/mdt-cases/{id}-mdt.json`，**自包含 `patientInfo` 摘要与知识库**（训练端左侧面板直接渲染，不再经 `useCaseLoader` 关联真实 SP 病例）。训练端通过 `GET /api/mdt-cases` 加载索引、`/data/mdt-cases/{id}-mdt.json` 拉取完整数据。
 
 ```typescript
 interface MDTCase {
-  // ── 现有字段 ──
+  // ── 基础信息 ──
   id: string                      // 如 'MDT-20260701-C4K7'
-  realCaseId: string              // 关联真实 SP 病例，加载患者图片/基础信息
-  patientName: string
-  gender: '男' | '女'
-  age: number
+  caseId: string                  // 关联来源 SP 病例（sourceType==='raw' 时关联素材库病历）
+  sourceType: 'ai' | 'raw' | 'manual'   // 来源：系统内自建 / 基于原始病历 / 作者手动输入
+  sourceRecordId?: string         // sourceType==='raw' 时引用素材库病历 id
+  stages?: string[]               // 讨论阶段标签（覆盖默认5段；缺省 ['病例汇报','影像解读','综合讨论','方案决策','总结']）
+  // ── 病例摘要（自包含）──
+  patientInfo: {
+    name: string
+    gender: '男' | '女'
+    age: number
+    chiefComplaint: string        // 主诉
+    presentIllness: string        // 现病史
+    physicalExam: string          // 体格检查
+    vitals: string                // 生命体征
+    labTests: string              // 实验室检查
+    imagingText: string           // 影像检查
+    pastHistory: string           // 既往史
+    familyHistory: string         // 家族史
+  }
   disciplines: string[]           // 参与学科，如 ['心内科','心外科','肾内科']
-  keyQuestions: string[]          // 核心议题
-  disciplinePerspectives: Array<{ dept: string; view: string }>  // 各学科观点（分歧来源）
-  discussionAgenda: Array<{ phase: string; duration: string; desc: string }>
-  references: string[]
+  objective: string               // 本次 MDT 核心议题
+  keyQuestions: string[]          // 讨论问题列表
   // ── 展示字段 ──
   teachingPhase: string           // 难度标签（展示用，不驱动角色）
   levelLabel: string              // 基础病例 / 高阶病例 / 疑难病例
+  filterKey: string               // 列表筛选键（cardio / respiratory / neuro / ...）
   source: string                  // 来源：院士精讲 / 金牌导师 / 国家级质控中心
-  // ── 新增：剧本 ──
-  agenda: MDTScriptEntry[]        // 5阶段讨论剧本（阶段1 用它驱动）
-  tasks: MDTTaskDef[]             // 学生任务定义
+  // ── 知识库 ──
+  knowledgeBase: {
+    disciplinePerspectives: Array<{ dept: string; view: string }>  // 各学科观点（分歧来源）
+    clinicalKeyPoints: string     // 临床要点
+    references: string[]
+  }
+  // ── 剧本 ──
+  agenda: MDTScriptEntry[]        // 讨论剧本（阶段1 用它驱动，逐条播放）
+  tasks: MDTTaskDef[]             // 学生任务定义（通用任务模型，按 key 自由组合）
   decision: string                // MDT 最终决策
   followUp: string                // 随访计划
-  referencesList: string[]        // 参考文献（供阶段4 展示，可复用 references）
-  feedback: MDTFeedback           // 阶段1 标准反馈（阶段2 起由 LLM 生成）
+  referencesList: string[]        // 参考文献（阶段4 展示）
   roleScripts: MDTRoleScripts     // 三种角色的开场白/点名模板
 }
 
 interface MDTScriptEntry {
-  phase: number                   // 所属阶段 0-4
-  speaker: string                 // 'host' | 'onco' | 'radio' | 'path' | ... 发言人标识
+  phase: number                   // 所属阶段（对齐 stages 下标，从 0 开始）
+  speaker: string                 // 'host'（主持人）或学科名，如 '呼吸科' / '影像科'
   text: string                    // 发言内容
-  nextTask?: string               // 发言后触发的任务卡片 type（可选）
+  nextTask?: string               // 发言后暂停并弹出的任务卡片 key（可选，引用 tasks[].key）
 }
 
 interface MDTTaskDef {
-  type: 'diagnosis' | 'imaging' | 'vote' | 'plan' | 'reflect'
-  phase: number
+  key: string                     // 唯一标识，agenda.nextTask 引用它
+  type: 'text' | 'choice' | 'exhibit'   // 通用任务类型：文字作答 / 选择作答 / 影像标注
+  label: string                   // 任务标题（如：初步诊断印象）
+  assess?: 'diagnosis' | 'imaging' | 'plan'  // 能力画像维度；缺省不纳入画像
   prompt: string                  // 任务说明
-  // imaging 特有
+  // text 特有
+  rows?: number                   // textarea 行数
+  placeholder?: string            // 占位提示（换行用 \n）
+  // choice 特有
+  options?: string[]              // 选项
+  correct?: string[]              // 正确答案（能力画像比对用）
+  multi?: boolean                 // 是否多选（默认单选）
+  // exhibit 特有
   image?: { title: string; modality: string; expected: string[] }  // 标注期望病灶
-  // vote 特有
-  options?: string[]
+  // 任务级反馈（阶段1 展示；阶段2 起由 LLM 生成）
+  feedback?: MDTTaskFeedback
 }
 
-interface MDTFeedback {
-  diagnosis?: Array<{ icon: string; point: string }>   // 诊断任务反馈
-  imaging?: { hits: string[]; misses: string[] }        // 影像标注反馈
-  plan?: Array<{ icon: string; point: string }>         // 方案对比反馈
+interface MDTTaskFeedback {
+  hits: Array<{ icon: string; point: string }>    // 命中（学员答对/答到位时展示）
+  misses: Array<{ icon: string; point: string }>  // 遗漏（未覆盖的角度）
 }
 
 interface MDTRoleScripts {
@@ -352,15 +383,12 @@ interface MDTSession {
   studentRole: 'observer' | 'resident' | 'attending'
   startedAt: string
   completedAt?: string
-  currentStage: number            // 0-4
+  currentStage: number            // 对齐 stages 下标
   messages: MDTMessage[]          // 完整讨论流（含任务卡片占位）
-  tasks: {
-    diagnosis?: { value: string; submittedAt?: string }
-    imaging?:   { markers: Array<{ x: string; y: string }>; submittedAt?: string }
-    vote?:      { choice: string }
-    plan?:      { text: string }
-    reflect?:   { text: string }
-  }
+  tasks: Record<string, any>      // 按任务 key 存作答：text→string / choice→string|string[] / exhibit→markers[]
+  selectedChoices?: Record<string, string[]>  // choice 多选暂存
+  submitted?: Record<string, boolean>          // 已完成任务 key
+  pendingTask?: string            // 中断时待完成任务 key
 }
 
 interface MDTMessage {
@@ -368,7 +396,7 @@ interface MDTMessage {
   sender?: string                 // 专家名
   speaker?: 'host' | 'onco' | 'radio' | 'path' | ...  // 发言人标识（驱动头像）
   text: string
-  taskType?: string               // type === 'task-card' 时
+  taskKey?: string                // type === 'task-card' 时
   cardMeta?: string               // 任务卡摘要（已提交显示摘要）
   cardDone?: boolean
 }
@@ -407,31 +435,41 @@ const ROLE_CONFIG = {
 
 | 文件 | 改动 |
 |------|------|
-| `useMDTData.js` | 补充 5 个病例的 `agenda` / `tasks` / `decision` / `followUp` / `feedback` / `roleScripts` |
-| `MDTDiscussion.vue` | `chatItems` 从 `getMDTCase(mdtId).agenda` 加载；病例信息从 `realCaseId` 映射的真实 SP 病例加载 |
-| `stores/training.js` | 新增 `trainingSession.mdt` 读写与 localStorage 持久化 |
-| `MDTCaseList.vue` | 点击卡片改为携带 `mdtId` 进入 `mdtDiscussion`（保留现有经 `caseDetail` 的中转也可） |
+| 管理端 `views/mdt-case-manage/` | **新建**：MDT 病例管理（列表 + 编辑器，三种来源：系统内自建 / 基于原始病历 / 作者手动输入；任务表单为通用任务模型 text/choice/exhibit + 任务级反馈） |
+| 管理端 `views/raw-records/` | **新建**：原始病历素材库（导入原文保存，供 SP/MDT 制作引用） |
+| 管理端 `vite.config.js` | **扩展**：`rawRecordsApi()` + `mdtCasesPersist()` 插件（读写 `public/data/`，带 CORS） |
+| 管理端 `public/data/mdt-cases/` | 6 个种子 MDT 病例 `{id}-mdt.json`（自包含 patientInfo + knowledgeBase + 剧本 + 通用任务，病例间 stages/tasks 差异化） |
+| `useMDTData.js` | 改为**加载层**：删内置病例，`loadMDTCases()` → `GET /api/mdt-cases` 索引、`loadMDTCase(id)` → `GET /data/mdt-cases/{id}-mdt.json` |
+| `roleConfig.js` | **新建**：三种学生角色配置常量（DESIGN_01 5.3） |
+| `MDTDiscussion.vue` | 数据驱动：准备面板选角色 → Learner-paced 讨论流（agenda 逐条播 + 「继续讨论」交回主持权）→ **通用任务弹窗**（按 tasks[].type 渲染 text/choice/exhibit）→ 插话 LLM 回应 → 能力画像按 assess 聚合 → 会话恢复 |
+| `MDTCaseList.vue` | 从索引加载病例，点击卡片直接携带 `mdtId` 进入 `mdtDiscussion` |
+| 训练端 `vite.config.js` | **扩展**：`mdt-cases-index` 插件（`GET /api/mdt-cases` 实时扫描管理端 mdt-cases 目录） |
+| `stores/training.js` | 复用现有 `saveSessionStage('mdt', data)`，无改动 |
 
 ### 6.2 讨论流加载
 
 ```javascript
-// MDTDiscussion.vue — 阶段1 数据驱动
-const { getMDTCase } = useMDTData()
-const caseData = computed(() => getMDTCase(route.query.mdtId || route.params.caseId))
-
-// 从剧本构建初始消息流（+ 已恢复的会话消息）
-const chatItems = ref([])
-function buildAgendaMessages(role) {
-  const items = []
-  // 1. 角色开场白（来自 caseData.roleScripts[role].opening）
-  items.push({ type: 'expert', speaker: 'host', text: caseData.value.roleScripts[role].opening })
-  // 2. 按阶段顺序播放 agenda 条目
-  for (const entry of caseData.value.agenda) {
-    items.push({ type: 'expert', speaker: entry.speaker, text: entry.text })
-    if (entry.nextTask) items.push({ type: 'task-card', taskType: entry.nextTask })
-  }
-  return items
+// MDTDiscussion.vue — 阶段1 数据驱动（Learner-paced）
+const caseData = ref(null)
+async function load() {
+  caseData.value = await loadMDTCase(route.query.mdtId || route.params.caseId)
+  // 已保存会话则 restoreSession（恢复 messages / agendaIndex / pendingTask）
 }
+
+// 逐条播放 agenda（开场白 → 各阶段发言），遇 nextTask 暂停进入学员回合
+async function playAgenda() {
+  while (agendaIndex < caseData.value.agenda.length) {
+    const entry = caseData.value.agenda[agendaIndex++]
+    currentStage = entry.phase
+    await playExpert(entry.speaker, entry.text)   // 打字节奏 + 正在发言指示
+    if (entry.nextTask) {                          // 暂停：任务卡片弹出
+      pendingTask = entry.nextTask
+      return
+    }
+  }
+  finishDiscussion()                               // 播完 → 决策/随访/参考文献 + 结束
+}
+// 「继续讨论」按钮：完成任务后交回主持权恢复播放（Learner-paced 核心）
 ```
 
 ### 6.3 学员插话 — 唯一的 AI 调用点
@@ -488,15 +526,17 @@ function initMDTSession({ mdtId, caseId, studentRole }) {
 
 ### 6.5 阶段1 的能力画像
 
-只算可规则比对的维度：
+按任务 `assess` 维度聚合可规则比对的分数（与任务组合解耦，病例自由编排）：
 
-| 维度 | 规则 |
-|------|------|
-| 诊断判断力 | 学员诊断文本命中 `decision` 关键子串（如疾病名）的比例 |
-| 影像识读能力 | 标注数 与 `image.expected` 匹配（按病灶区域命中） |
-| 方案一致性 | 学员方案命中 `decision` 关键方案词的比例 |
+| 维度 | assess | 规则 |
+|------|--------|------|
+| 诊断判断力 | `diagnosis` | text 任务：命中 hits/misses 的比值；choice 任务：选中 `correct` 的正确率 |
+| 影像识读能力 | `imaging` | exhibit 任务：标注数 与 `image.expected` 匹配（命中数/总数） |
+| 方案一致性 | `plan` | text 任务：命中 hits/misses 的比值；choice 任务：选中 `correct` 的正确率 |
 
-批判性思维 / 循证 / 反思显示"待 AI 评估"提示语，不硬编码数值。
+- 同一 assess 维度可关联多个任务，得分取各任务命中比的平均
+- 无标准答案的任务（如反思）与无 assess 的任务不计数；已作答但全无规则比对 → "已作答，规则比对后待AI点评"
+- 批判性思维 / 循证决策 / 反思深度始终追加 3 行显示"待 AI 评估（阶段2 接入）"，不硬编码数值
 
 ---
 
@@ -702,7 +742,7 @@ const expertPorts = {
 
 | 栏 | 内容 |
 |----|------|
-| 左栏 | 病例信息分页（基本信息 / 病史资料 / 检查报告 / MDT议题）——已有，病例数据改为从 `realCaseId` 加载 |
+| 左栏 | 病例信息分页（基本信息 / 病史资料 / 检查报告 / MDT议题）——已有，病例数据从 mdt 文件自包含的 `patientInfo` 渲染 |
 | 中栏 | 讨论流 + 输入栏——已有，改为数据驱动 + 角色差异 |
 | 右栏 | 参与者名单——已有，标注当前发言专家 + 学员角色标识 |
 
@@ -719,11 +759,13 @@ const expertPorts = {
 
 ### 9.3 任务卡片
 
-现有 5 种卡片（诊断 / 影像标注 / 投票 / 方案 / 反思）保留，改为数据驱动：
+**通用任务模型**：3 种类型（text 文字作答 / choice 选择作答 / exhibit 影像标注），`agenda.nextTask` 引用任务 `key`，病例按需自由组合，不再固定 5 连：
 
-- 卡片定义来自 `caseData.tasks`（prompt / options / image.expected）
-- 提交后写入 `trainingSession.mdt.tasks`，卡片显示摘要（如"已提交方案：... 前60字"）
-- 阶段1：提交后播放 `caseData.feedback` 标准反馈；阶段2：提交后触发 LLM 过程反馈
+- 卡片定义来自 `caseData.tasks`（key / type / label / prompt / options / correct / image.expected）
+- 一个通用弹窗按 `type` 渲染：text→textarea（rows/placeholder）、choice→单选/多选（multi）、exhibit→图像标注区（最多3处）
+- 提交后写入 `trainingSession.mdt.tasks[taskKey]`，卡片显示摘要（如"已提交方案：... 前60字"）
+- 阶段1：提交后播放 `tasks[].feedback` 任务级反馈（hits/misses）；阶段2：提交后触发 LLM 过程反馈
+- 允许跳过（skip），跳过不产生反馈
 
 ### 9.4 成长画像弹窗
 
@@ -738,17 +780,35 @@ const expertPorts = {
 ### 10.1 文件清单
 
 ```
+apps/admin/src/
+├── views/raw-records/            ← 新建：原始病历素材库
+│   ├── RawRecordList.vue         ← 素材库表格（导入/查看/编辑/删除）
+│   └── RawRecordEditor.vue       ← 导入/编辑（元数据 + 原文）
+├── views/mdt-case-manage/        ← 新建：MDT 病例管理
+│   ├── MDTCaseList.vue           ← MDT 病例表格（新增选三种来源）
+│   ├── MDTEditor.vue             ← 编辑器主入口（Tab 分区 + 来源选择）
+│   ├── MDTBasicForm.vue          ← patientInfo / disciplines / objective / teachingPhase
+│   ├── MDTKnowledgeForm.vue      ← keyQuestions + knowledgeBase
+│   ├── MDTScriptForm.vue         ← stages 阶段 + agenda 列表 + tasks 列表（通用任务模型，key/type/assess/options/correct/feedback）
+│   ├── MDTDecisionForm.vue       ← decision / followUp / referencesList（任务级反馈已并入 MDTScriptForm）
+│   └── MDTRoleScriptForm.vue     ← roleScripts 三角色话术
+├── vite.config.js                ← 扩展：rawRecordsApi + mdtCasesPersist 插件
+└── public/data/
+    ├── raw-records/              ← 素材库原文 {id}.json
+    └── mdt-cases/                ← MDT 病例 {id}-mdt.json（6 个种子）
+
 apps/training/src/
 ├── composables/
 │   ├── useMDTDirector.js        ← 阶段2 新建：MDT 编排器（五层流水线）
-│   ├── useMDTData.js            ← 扩展：agenda/tasks/decision/feedback/roleScripts
+│   ├── useMDTData.js            ← 改造：加载层（loadMDTCases / loadMDTCase / disciplineIcon）
 │   ├── roleConfig.js            ← 新建：三种学生角色配置常量
 │   └── useAIChat.js             ← 复用（现有）
 ├── views/
-│   ├── MDTCaseList.vue          ← 已有（微调：入口带 mdtId）
-│   └── MDTDiscussion.vue        ← 改造：数据驱动 + 准备面板 + 三角色
+│   ├── MDTCaseList.vue          ← 改造：从索引加载，点击直接进 mdtDiscussion
+│   └── MDTDiscussion.vue        ← 改造：数据驱动 + 准备面板 + Learner-paced 讨论流
 ├── stores/
-│   └── training.js              ← 扩展：trainingSession.mdt 读写 + 持久化
+│   └── training.js              ← 复用（saveSessionStage 已有）
+├── vite.config.js               ← 扩展：mdt-cases-index 插件
 └── router/index.js              ← 已有（mdtCaseList / mdtDiscussion 已挂载）
 ```
 
@@ -759,8 +819,7 @@ MDTDiscussion.vue
   ├── useMDTDirector.js ──→ useAIChat.js ──→ (/api/llm)
   │         │
   │         └──→ roleConfig.js
-  ├── useMDTData.js  ──→ (病例剧本)
-  ├── useCaseLoader.js  ──→ (真实 SP 病例信息/图片)
+  ├── useMDTData.js  ──→ (/api/mdt-cases 索引 + /data/mdt-cases/{id}-mdt.json)
   ├── usePatientImage.js  ──→ (患者头像匹配)
   └── stores/training.js  ──→ (trainingSession.mdt)
 ```
@@ -771,14 +830,14 @@ MDTDiscussion.vue
 
 ### 11.1 新增一个 MDT 病例
 
-在 `useMDTData.js` 的 `CASE_TEMPLATES` 中添加模板（参考 [附录B](#附录bmdt-病例模板示例)）：
+在管理端「病例管理 → MDT病例管理」新建病例（选择来源：系统内自建 / 基于原始病历 / 作者手动输入），保存后写入 `apps/admin/public/data/mdt-cases/{id}-mdt.json`（参考 [附录B](#附录bmdt-病例模板示例)）：
 
-1. **基础信息**：`id` / `realCaseId`（关联真实 SP 病例）/ 患者 / 学科 / 难度标签
-2. **讨论内容**：`keyQuestions`（核心议题）、`disciplinePerspectives`（各学科观点，**必须含至少一对观点冲突**）
-3. **剧本**：`agenda`（5 阶段发言条目 + nextTask 触发点）
-4. **任务**：`tasks`（诊断/影像/投票/方案/反思的定义）
-5. **收敛结果**：`decision`（最终决策）、`followUp`（随访）、`referencesList`（文献）
-6. **反馈**：`feedback`（阶段1 标准反馈）
+1. **基础信息**：`id` / `caseId`（关联来源）/ `sourceType` / `patientInfo`（自包含摘要）/ 学科 / 难度标签
+2. **讨论内容**：`keyQuestions`（核心议题）、`knowledgeBase.disciplinePerspectives`（各学科观点，**必须含至少一对观点冲突**）
+3. **阶段**：`stages`（可覆盖默认5段，按议题精简，如决策型病例 3 段）
+4. **剧本**：`agenda`（阶段发言条目 + `nextTask` 触发点，引用任务 key）
+5. **任务**：`tasks`（通用任务模型：text / choice / exhibit，按 key 自由组合，每个任务带 `assess` + `feedback`）
+6. **收敛结果**：`decision`（最终决策）、`followUp`（随访）、`referencesList`（文献）
 7. **角色话术**：`roleScripts`（三种角色开场白/点名语）
 
 ### 11.2 调试开关
@@ -865,65 +924,87 @@ MDT 本质是教学训练工具，不是纯模拟观看。学员在真实会议�
 
 ## 附录B：MDT 病例模板示例
 
-以肺癌病例为例（`useMDTData.js` 新增字段完整形态）：
+以肺癌病例为例（`apps/admin/public/data/mdt-cases/MDT-20260710-K9P3-mdt.json` 完整形态，作者手动输入）：
 
-```javascript
+```json
 {
-  id: 'MDT-20260710-K9P3',
-  realCaseId: 'RESP-20260710-K9P3',
-  patientName: '张德明', gender: '男', age: 58,
-  disciplines: ['肿瘤科', '影像科', '病理科'],
-  teachingPhase: 'R2', levelLabel: '高阶病例',
-  chiefComplaint: '咳嗽、痰中带血2周，加重伴胸闷3天',
-  keyQuestions: [
-    '临床分期如何确定？还需补充哪些检查？',
-    '初始治疗策略：先行手术 vs 先行新辅助治疗？',
-    '若行新辅助，最佳方案是什么？如何评估疗效？',
-    '术后辅助治疗如何决策？',
-  ],
-  disciplinePerspectives: [
-    { dept: '肿瘤科', view: 'T1cN1M0(IIB)建议先行新辅助化疗±免疫再评估手术，CheckMate 816 显示 pCR 24%' },
-    { dept: '影像科', view: '右肺上叶2.8×2.3cm分叶+毛刺+空泡征，纵隔4R淋巴结1.2cm，高度提示肺腺癌' },
-    { dept: '病理科', view: '腺癌中分化，TTF-1+/Napsin A+，PD-L1 TPS=60%，NGS 待回报，建议同步做免疫组化' },
-  ],
-  discussionAgenda: [ /* 已有 */ ],
-  references: [ /* 已有 */ ],
-  agenda: [
-    { phase: 0, speaker: 'host',  text: '各位专家，今天讨论58岁男性张德明…本次核心议题：明确诊断方向，制定初始治疗策略。', nextTask: 'diagnosis' },
-    { phase: 1, speaker: 'radio', text: 'CT示右肺上叶2.8×2.3cm结节，分叶+毛刺+空泡征…请学员先标注异常征象。', nextTask: 'imaging' },
-    { phase: 2, speaker: 'host',  text: '现在进入综合讨论，围绕四个问题展开。' },
-    { phase: 2, speaker: 'onco',  text: '我倾向于先行新辅助…' },
-    { phase: 2, speaker: 'path',  text: '补充两点…' },
-    { phase: 3, speaker: 'host',  text: '请各位给出方案，学员也请独立制定你的治疗方案。', nextTask: 'vote' },
-    { phase: 3, speaker: 'host',  text: '现在展示 MDT 最终决策，请对照分析差异。', nextTask: 'plan' },
-    { phase: 4, speaker: 'host',  text: '本次讨论结束，请写下你的反思。', nextTask: 'reflect' },
-  ],
-  tasks: [
-    { type: 'diagnosis', phase: 0, prompt: '写出初步诊断及依据、鉴别诊断、想进一步了解的信息' },
-    { type: 'imaging', phase: 1, prompt: '在CT图像上标注异常征象（最多3处）',
-      image: { title: '胸部CT·肺窗', modality: 'CT', expected: ['右肺上叶结节', '纵隔4R淋巴结', '空泡征'] } },
-    { type: 'vote', phase: 3, options: ['先行手术+术后辅助', '先行新辅助+再评估', '立体定向放疗'] },
-    { type: 'plan', phase: 3, prompt: '独立制定完整治疗方案（诊断/策略/用药/随访）' },
-    { type: 'reflect', phase: 4, prompt: '写下收获、认知改变、遗留困惑' },
-  ],
-  decision: '行VATS右肺上叶切除+纵隔淋巴结清扫，术后根据病理及基因检测决定辅助方案（EGFR/ALK阳性→靶向；PD-L1≥50%→免疫；其余→含铂双药4周期）',
-  followUp: '术后3周胸外科+肿瘤科联合门诊复查，术后2年内每3-6月复查，5年后每年一次',
-  referencesList: [ 'CheckMate 816', 'KEYNOTE-671', 'CSCO NSCLC指南2025版' ],
-  feedback: {
-    diagnosis: [
-      { icon: '✓', point: '方向正确：识别出肺占位恶性可能' },
-      { icon: '✗', point: '遗漏：纵隔淋巴结N分期意义未展开' },
-    ],
-    imaging: { hits: ['右肺上叶结节'], misses: ['纵隔4R淋巴结', '空泡征'] },
-    plan: [
-      { icon: '✓', point: '外科方案方向正确' },
-      { icon: '✗', point: '遗漏：基因检测指导辅助治疗' },
-    ],
+  "id": "MDT-20260710-K9P3",
+  "caseId": "RESP-20260710-K9P3",
+  "sourceType": "manual",
+  "sourceRecordId": "",
+  "patientInfo": {
+    "name": "张德明", "gender": "男", "age": 58,
+    "chiefComplaint": "咳嗽、痰中带血2周，加重伴胸闷3天",
+    "presentIllness": "患者2周前无明显诱因出现咳嗽，伴痰中带血，近3天加重伴胸闷、气短。近2月体重下降约5kg。",
+    "physicalExam": "生命体征平稳。双肺呼吸音清，浅表淋巴结未触及肿大。",
+    "vitals": "T 36.8℃ / P 78 / R 18 / BP 132/82mmHg",
+    "labTests": "血常规正常。CEA 18ng/ml。肝肾功能正常。",
+    "imagingText": "胸部CT：右肺上叶2.8×2.3cm分叶状结节，伴毛刺征及空泡征，纵隔4R组淋巴结肿大（1.2cm）。",
+    "pastHistory": "吸烟30年，20支/日。", "familyHistory": "否认肿瘤家族史。"
   },
-  roleScripts: {
-    observer:  { opening: '各位专家，今天讨论…请学员旁听，可随时提问。', interruptHint: '输入你的疑问...' },
-    resident:  { opening: '请住院医师先说说你对这个病例的初步印象。', callOut: ['请住院医师说说你的看法', '住院医师，你如何权衡这两个方案？'] },
-    attending: { opening: '您作为主诊医师，请先汇报病例并组织本次讨论。', promptTemplates: ['你如何评价肿瘤专家的方案？', '请你梳理一下目前的共识与分歧'] },
+  "disciplines": ["肿瘤科", "影像科", "病理科"],
+  "objective": "明确临床分期、制定初始治疗策略（手术 vs 新辅助）",
+  "teachingPhase": "R2", "levelLabel": "高阶病例", "filterKey": "oncology", "source": "院士精讲",
+  "keyQuestions": [
+    "临床分期如何确定？还需补充哪些检查？",
+    "初始治疗策略：先行手术 vs 先行新辅助治疗？",
+    "若行新辅助，最佳方案是什么？如何评估疗效？",
+    "术后辅助治疗如何决策？"
+  ],
+  "knowledgeBase": {
+    "disciplinePerspectives": [
+      { "dept": "肿瘤科", "view": "T1cN1M0(IIB)建议先行新辅助化疗±免疫再评估手术，CheckMate 816 显示 pCR 24%" },
+      { "dept": "影像科", "view": "右肺上叶2.8×2.3cm分叶+毛刺+空泡征，纵隔4R淋巴结1.2cm，高度提示肺腺癌" },
+      { "dept": "病理科", "view": "腺癌中分化，TTF-1+/Napsin A+，PD-L1 TPS=60%，NGS 待回报" }
+    ],
+    "clinicalKeyPoints": "N2淋巴结定性是手术决策关键；新辅助方案选择依据PD-L1/驱动基因状态。",
+    "references": ["CheckMate 816", "KEYNOTE-671", "CSCO NSCLC指南2025版"]
   },
+  "stages": ["病例汇报", "影像解读", "综合讨论", "方案决策", "总结"],
+  "agenda": [
+    { "phase": 0, "speaker": "host", "text": "各位专家，今天讨论58岁男性张德明…核心议题：明确诊断方向，制定初始治疗策略。", "nextTask": "diag01" },
+    { "phase": 1, "speaker": "影像科", "text": "CT示右肺上叶2.8×2.3cm结节，分叶+毛刺+空泡征…请学员先标注异常征象。", "nextTask": "ct01" },
+    { "phase": 2, "speaker": "host", "text": "现在进入综合讨论，围绕四个问题展开。" },
+    { "phase": 2, "speaker": "肿瘤科", "text": "我倾向于先行新辅助治疗。CheckMate 816 显示新辅助化疗+免疫 pCR 达24%，可争取降期后再手术。" },
+    { "phase": 2, "speaker": "病理科", "text": "补充两点：PD-L1 TPS=60%提示免疫可能获益；NGS驱动基因结果对辅助靶向决策至关重要。" },
+    { "phase": 3, "speaker": "host", "text": "请学员先选择你认同的初始治疗方向。", "nextTask": "strategy01" },
+    { "phase": 3, "speaker": "host", "text": "现在展示 MDT 最终决策，请对照分析差异。", "nextTask": "plan01" },
+    { "phase": 4, "speaker": "host", "text": "本次讨论结束，请写下你的反思。", "nextTask": "reflect01" }
+  ],
+  "tasks": [
+    { "key": "diag01", "type": "text", "label": "初步诊断印象", "assess": "diagnosis",
+      "prompt": "写出初步诊断及依据、鉴别诊断、想进一步了解的信息", "rows": 5,
+      "placeholder": "1. 诊断及依据\n2. 鉴别诊断\n3. 想进一步了解的信息",
+      "feedback": { "hits": [{ "icon": "✓", "point": "方向正确：识别出肺占位恶性可能" }],
+        "misses": [{ "icon": "✗", "point": "遗漏：纵隔淋巴结N分期意义未展开" }] } },
+    { "key": "ct01", "type": "exhibit", "label": "胸部CT征象标注", "assess": "imaging",
+      "prompt": "在CT图像上标注异常征象（最多3处）",
+      "image": { "title": "胸部CT·肺窗", "modality": "CT", "expected": ["右肺上叶结节", "纵隔4R淋巴结", "空泡征"] },
+      "feedback": { "hits": [{ "icon": "✓", "point": "右肺上叶结节" }],
+        "misses": [{ "icon": "✗", "point": "纵隔4R淋巴结" }, { "icon": "✗", "point": "空泡征" }] } },
+    { "key": "strategy01", "type": "choice", "label": "初始治疗方向", "assess": "plan",
+      "prompt": "综合肿瘤科与病理科意见，你倾向哪种初始治疗策略？",
+      "options": ["先行新辅助+再评估手术", "先行手术+术后辅助", "立体定向放疗"],
+      "correct": ["先行新辅助+再评估手术"],
+      "feedback": { "hits": [{ "icon": "✓", "point": "IIB期建议新辅助化疗±免疫，争取降期后手术" }],
+        "misses": [{ "icon": "✗", "point": "需说明新辅助方案依据PD-L1/驱动基因状态" }] } },
+    { "key": "plan01", "type": "text", "label": "初始治疗方案", "assess": "plan",
+      "prompt": "独立制定完整的初始治疗方案（诊断/分期/策略/用药/随访）", "rows": 6,
+      "placeholder": "1. 诊断结论\n2. 治疗策略\n3. 具体方案\n4. 随访计划",
+      "feedback": { "hits": [{ "icon": "✓", "point": "外科方案方向正确" }],
+        "misses": [{ "icon": "✗", "point": "遗漏：基因检测指导辅助治疗" }] } },
+    { "key": "reflect01", "type": "text", "label": "反思总结",
+      "prompt": "写下收获、认知改变、遗留困惑", "rows": 4,
+      "placeholder": "1. 学到了什么\n2. 哪些认知被改变\n3. 遗留困惑",
+      "feedback": { "hits": [], "misses": [] } }
+  ],
+  "decision": "行VATS右肺上叶切除+纵隔淋巴结清扫，术后根据病理及基因检测决定辅助方案（EGFR/ALK阳性→靶向；PD-L1≥50%→免疫；其余→含铂双药4周期）",
+  "followUp": "术后3周胸外科+肿瘤科联合门诊复查，术后2年内每3-6月复查，5年后每年一次",
+  "referencesList": ["CheckMate 816", "KEYNOTE-671", "CSCO NSCLC指南2025版"],
+  "roleScripts": {
+    "observer": { "opening": "各位专家，今天讨论58岁男性右肺上叶占位病例。请学员旁听全程讨论，可随时提问。", "interruptHint": "输入你的疑问..." },
+    "resident": { "opening": "请住院医师先说说你对这个病例的初步印象和诊断思路。", "callOut": ["请住院医师说说你的看法", "住院医师，你如何权衡手术与新辅助这两个方案？"] },
+    "attending": { "opening": "您作为主诊医师，请先汇报病例要点并组织本次讨论。", "promptTemplates": ["你如何评价肿瘤专家的新辅助建议？", "请你梳理一下目前的共识与分歧"] }
+  }
 }
 ```
