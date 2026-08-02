@@ -2,6 +2,13 @@
 
 ## 2026-08-03
 
+### MDT 多学科讨论 — 阶段1 代码落地（管理端病例管理 + 素材库 + 训练端脚本驱动）
+
+- 管理端：新增「病例管理」菜单下 MDT 病例管理（`mdt-case-manage/`：MDTCaseList + MDTEditor + 5 子表单，三种来源：系统内自建 / 基于原始病历 / 作者手动输入）+ 原始病历素材库（`raw-records/`：RawRecordList + RawRecordEditor）；vite 插件 `rawRecordsApi()` + `mdtCasesPersist()`（读写 `public/data/` 带 CORS）
+- 数据管线：MDT 病例存 `public/data/mdt-cases/{id}-mdt.json`（自包含 patientInfo + knowledgeBase + 剧本 + 任务 + roleScripts）；训练端 `mdt-cases-index` 插件实时扫描生成索引、`/data/mdt-cases/` 文件服务
+- 训练端：`useMDTData.js` 改为加载层（删内置 74 衍生病例）+ `roleConfig.js` 三种学生角色配置 + `MDTCaseList` 从索引加载直进讨论 + `MDTDiscussion` 数据驱动（准备面板选角色 → Learner-paced 讨论流 → 任务卡片 → 插话 LLM 回应 → 会话恢复）
+- 6 个种子 MDT 病例入库（心梗 / 间质性肺炎 / 卒中 / 肺癌 / 胃癌 / 糖尿病）
+
 ### MDT 任务模型升级：通用任务 + 病例差异化编排
 
 - **问题**：全部 MDT 病例共用同一固定流程（诊断→影像→投票→方案→反思五连），病例间无差异，训练体验同质化
