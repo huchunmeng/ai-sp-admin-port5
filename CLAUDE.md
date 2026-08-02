@@ -81,7 +81,7 @@ ai-sp-admin/
 │       ├── package.json
 │       └── src/index.js
 ├── CLAUDE.md
-└── CHANGELOG.md
+└── 项目日志.md
 ```
 
 ## 共享层与各端边界
