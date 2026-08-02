@@ -16,6 +16,49 @@ const PROMPT_MAP = {
   mentalExam: ['07-mental-exam', '0701-prompt.txt']
 }
 
+// ── 病历知识库（medicalRecords）格式化 ──────────────────────
+
+const KB_FTYPE_LABELS = {
+  'In_Record': '入院记录', 'FirstRecord': '首次病程记录', 'NormalRecord': '病程记录',
+  'AttendingInvestigate': '主治医师查房', 'DirectorInvestigate': '主任医师查房',
+  'Consultation_Record': '会诊记录', 'ShiftToRecord': '转入记录', 'TurnOutRecord': '转出记录',
+  'Preoperative_summary': '术前小结', 'Preoperative_discussion': '术前讨论',
+  'Ops_Agree_Record': '手术同意记录', 'OpsSafeCheck': '手术安全核查',
+  'Operation_Record': '手术记录', 'OperRecord': '操作记录', 'OpsFirstRecord': '术后首次病程',
+  'Special_Check_Record': '特殊检查记录', 'LeaveHospitalRecord': '出院前病程',
+  'Out_Record': '出院记录', 'others': '其他记录'
+}
+
+const KB_FTYPE_ORDER = [
+  'In_Record', 'FirstRecord', 'NormalRecord',
+  'AttendingInvestigate', 'DirectorInvestigate', 'Consultation_Record',
+  'ShiftToRecord', 'TurnOutRecord',
+  'Preoperative_summary', 'Preoperative_discussion', 'Ops_Agree_Record',
+  'OpsSafeCheck', 'Operation_Record', 'OperRecord', 'OpsFirstRecord',
+  'Special_Check_Record', 'LeaveHospitalRecord', 'Out_Record',
+  'others'
+]
+
+function formatMedicalRecords(records) {
+  if (!records || typeof records !== 'object') return ''
+  const lines = []
+  for (const ftype of KB_FTYPE_ORDER) {
+    const list = records[ftype]
+    if (!Array.isArray(list) || list.length === 0) continue
+    const label = KB_FTYPE_LABELS[ftype] || ftype
+    for (const rec of list) {
+      if (!rec || !rec.content) continue
+      const meta = [`【${label}】`]
+      if (rec.createDate) meta.push(`时间：${rec.createDate}`)
+      if (rec.doctorCode) meta.push(`医师：${rec.doctorCode}`)
+      lines.push(meta.join(' '))
+      lines.push(rec.content)
+      lines.push('')
+    }
+  }
+  return lines.join('\n').trim()
+}
+
 // ── 缓存 ──────────────────────────────────────────────────
 
 let configCache = null
@@ -103,7 +146,7 @@ function getPhaseConfig(config, level) {
 
 // ── 提示词填充函数 ────────────────────────────────────────
 
-export function fillBasicPrompt(config) {
+export function fillBasicPrompt(config, options = {}) {
   const cfg = loadConfig()
   const configKey = specialtyId(config.specialty)
   const specConfig = cfg[configKey] || cfg.internal_medicine
@@ -111,9 +154,14 @@ export function fillBasicPrompt(config) {
   const level = config.teaching_phase || 'R1'
   const trainingPhase = LEVEL_TO_PHASE[level] || '住院医师'
 
+  const kbText = formatMedicalRecords(options.medicalRecords)
+  const hasKB = !!kbText
+  const inputMode = hasKB ? '病历知识库模式' : '参数生成模式'
+  const uploadedDocument = hasKB ? kbText : '无（当前为参数生成模式，非文档提取模式）'
+
   let prompt = loadPrompt('basic')
-  prompt = prompt.replace(/\{\{input_mode\}\}/g, '参数生成模式')
-  prompt = prompt.replace(/\{\{uploaded_document\}\}/g, '无（当前为参数生成模式，非文档提取模式）')
+  prompt = prompt.replace(/\{\{input_mode\}\}/g, inputMode)
+  prompt = prompt.replace(/\{\{uploaded_document\}\}/g, uploadedDocument)
   prompt = prompt.replace(/\{\{specialty_name\}\}/g, config.specialty || '内科')
   prompt = prompt.replace(/\{\{disease_name\}\}/g, config.disease || '高血压')
   prompt = prompt.replace(/\{\{difficulty\}\}/g, level)

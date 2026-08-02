@@ -10,6 +10,21 @@ import { generateV1ScoreSheet } from './src/views/case-editor/score-sheet-genera
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CASES_DIR = path.resolve(__dirname, 'public/data/cases')
 
+// ── 病历知识库加载 ─────────────────────────────────────────
+
+function loadMedicalRecordsForCase(caseId) {
+  if (!caseId) return null
+  const filePath = path.join(CASES_DIR, `${caseId}-medicalRecords.json`)
+  if (!fs.existsSync(filePath)) return null
+  try {
+    const json = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+    return json.records || null
+  } catch (e) {
+    console.warn(`[aiGen] Failed to load medicalRecords for ${caseId}: ${e.message}`)
+    return null
+  }
+}
+
 // ── 请求体解析 ────────────────────────────────────────────
 
 function parseRequestBody(req) {
@@ -137,9 +152,11 @@ export function aiGenPlugin(env) {
             let prompt
 
             switch (step) {
-              case 'basic':
-                prompt = fillBasicPrompt(config)
+              case 'basic': {
+                const kb = loadMedicalRecordsForCase(body.caseId || null)
+                prompt = fillBasicPrompt(config, kb ? { medicalRecords: kb } : {})
                 break
+              }
               case 'scoreSheet':
                 if (!prev.basic || !Object.keys(prev.basic).length)
                   throw new Error('scoreSheet step requires basic result first')
@@ -272,8 +289,9 @@ export function aiGenPlugin(env) {
               // 评分表从基础数据派生，客户端生成
               data = { score_sheet: generateV1ScoreSheet(currentData), case_id: caseId }
             } else if (moduleType === 'basic') {
-              // 基础信息通过 LLM 重新生成
-              const prompt = fillBasicPrompt(config)
+              // 基础信息通过 LLM 重新生成（知识库有内容时按知识库生成）
+              const kb = loadMedicalRecordsForCase(caseId)
+              const prompt = fillBasicPrompt(config, kb ? { medicalRecords: kb } : {})
               console.log(`[aiGen] Optimizing basic...`)
               if (!activeGeneration || activeGeneration.caseId !== caseId) {
                 activeGeneration = { caseId, steps: [trackingStep] }
