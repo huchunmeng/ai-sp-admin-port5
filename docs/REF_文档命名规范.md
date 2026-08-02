@@ -23,18 +23,27 @@
 - 日期格式 `YYYYMMDD`，放末尾
 - 同前缀文件按前缀聚合，按日期排序
 - Excel 评分表（`scoring-tables/`）保持现有中文命名
+- **按功能模块组织**：文档放入所属功能模块文件夹 `docs/{功能模块名}/`（如 `docs/临床思维模拟训练/`、`docs/MDT多学科讨论/`），文件编号在模块内连续（如 `DESIGN_01_架构与导航.md`）；根目录仅保留跨模块参考（`REF_*`）与规范
 
 ## 目录
 
 ```
 docs/
-├── PRD_*.md
-├── DESIGN_*.md
-├── DELIVERY_*.md
-├── TEST_*.md
-├── LOG_*.md
-├── REF_*.md
-├── scoring-tables/    ← 各专业评分表 Excel
-├── design/            ← 存量设计文档（不动）
-└── archive/           ← 归档
+├── 临床思维模拟训练/   ← 功能模块：flow mode
+│   ├── DESIGN_01_架构与导航.md
+│   └── ...
+├── MDT多学科讨论/     ← 功能模块：MDT 训练
+│   └── DESIGN_01_MDT多学科讨论.md
+├── 病例编辑器/         ← 功能模块：病例编辑器（生成/知识库/素材）
+│   ├── DESIGN_01_病例生成系统.md
+│   ├── DESIGN_02_病历知识库模块.md
+│   ├── DESIGN_03_专家知识库编辑器模块.md
+│   └── PRD_01_检查素材模块.md
+├── 情绪系统/           ← 功能模块：SP 情绪状态机
+│   └── DESIGN_01_情绪系统v7.md
+├── REF_*.md          ← 跨模块参考/规范（保留在根目录）
+├── LOG_*.md / TEST_*.md ← 跨模块日志/测试（保留在根目录）
+├── scoring-tables/   ← 各专业评分表 Excel
+├── design/           ← 存量设计文档（不动）
+└── archive/          ← 归档
 ```
