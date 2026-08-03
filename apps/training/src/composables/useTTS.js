@@ -94,7 +94,7 @@ async function fetchTtsModel() {
   if (_ttsModelLoading) return _ttsModelLoading
   _ttsModelLoading = (async () => {
     try {
-      const res = await fetch(`${SP_API_URL}/api/sp/admin/settings`)
+      const res = await fetch(`${SP_API_URL}/admin/settings`)
       const data = await res.json()
       _ttsModel = data.ttsModel || 'cosyvoice-v3-flash'
     } catch {

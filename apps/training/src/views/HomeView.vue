@@ -109,61 +109,52 @@
         </div>
       </section>
 
-      <!-- 精品病例 + VR -->
-      <div class="elite-vr-row">
-        <section class="zone-section zone-elite" style="flex:3;min-width:0;">
-          <div class="zone-header">
-            <span class="zone-title"><i class="fa-solid fa-crown"></i> 精品病例</span>
-          </div>
-          <div class="zone-body">
-            <div class="elite-grid">
-              <div class="elite-card elite-academician" @click="goAcademicianCases">
-                <div class="elite-card-top">
-                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#312e81,#4f46e5);">
-                    <i class="fa-solid fa-chalkboard-user"></i>
-                  </div>
-                  <span class="elite-count">{{ academicianCount }} 例</span>
+      <!-- 名医名课研习（精品病例 + VR研习空间） -->
+      <section class="zone-section zone-elite">
+        <div class="zone-header">
+          <span class="zone-title"><i class="fa-solid fa-graduation-cap"></i> 名医名课研习</span>
+        </div>
+        <div class="zone-body">
+          <div class="elite-grid">
+            <div class="elite-card elite-academician" @click="goAcademicianCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#312e81,#4f46e5);">
+                  <i class="fa-solid fa-chalkboard-user"></i>
                 </div>
-                <div class="elite-card-body">
-                  <div class="elite-title">院士精讲病例</div>
-                  <div class="elite-desc">顶尖专家深度解析疑难罕见病例，传授临床思维精髓</div>
-                </div>
-                <i class="fa-solid fa-chevron-right elite-arrow"></i>
+                <span class="elite-count">{{ academicianCount }} 例</span>
               </div>
-              <div class="elite-card elite-mentor" @click="goMentorCases">
-                <div class="elite-card-top">
-                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
-                    <i class="fa-solid fa-medal"></i>
-                  </div>
-                  <span class="elite-count">{{ mentorCount }} 例</span>
-                </div>
-                <div class="elite-card-body">
-                  <div class="elite-title">金牌导师病例</div>
-                  <div class="elite-desc">一线临床名师手把手带教，覆盖常见病与多发病实战</div>
-                </div>
-                <i class="fa-solid fa-chevron-right elite-arrow"></i>
+              <div class="elite-card-body">
+                <div class="elite-title">院士精讲病例</div>
+                <div class="elite-desc">顶尖专家深度解析疑难罕见病例，传授临床思维精髓</div>
               </div>
-              <div class="elite-card elite-national" @click="goNationalCenterCases">
-                <div class="elite-card-top">
-                  <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
-                    <i class="fa-solid fa-building-columns"></i>
-                  </div>
-                  <span class="elite-count">{{ nationalCenterCount }} 例</span>
-                </div>
-                <div class="elite-card-body">
-                  <div class="elite-title">国家级质控中心病例</div>
-                  <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
-                </div>
-                <i class="fa-solid fa-chevron-right elite-arrow"></i>
-              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
             </div>
-          </div>
-        </section>
-        <section class="zone-section zone-vr" style="flex:1;min-width:0;">
-          <div class="zone-header">
-            <span class="zone-title"><i class="fa-solid fa-vr-cardboard"></i> VR研习空间</span>
-          </div>
-          <div class="zone-body">
+            <div class="elite-card elite-mentor" @click="goMentorCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#b45309,#f59e0b);">
+                  <i class="fa-solid fa-medal"></i>
+                </div>
+                <span class="elite-count">{{ mentorCount }} 例</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">金牌导师病例</div>
+                <div class="elite-desc">一线临床名师手把手带教，覆盖常见病与多发病实战</div>
+              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
+            </div>
+            <div class="elite-card elite-national" @click="goNationalCenterCases">
+              <div class="elite-card-top">
+                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+                  <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <span class="elite-count">{{ nationalCenterCount }} 例</span>
+              </div>
+              <div class="elite-card-body">
+                <div class="elite-title">国家级质控中心病例</div>
+                <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
+              </div>
+              <i class="fa-solid fa-chevron-right elite-arrow"></i>
+            </div>
             <div class="elite-card elite-vr" @click="openVRLab">
               <div class="elite-card-top">
                 <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#0d9488,#14b8a6);">
@@ -172,14 +163,14 @@
                 <span class="elite-count">国家级一流课程</span>
               </div>
               <div class="elite-card-body">
-                <div class="elite-title">磁共振成像虚拟仿真实验</div>
-                <div class="elite-desc">MRI原理、信号基础、设备认知、扫描成像质量评估</div>
+                <div class="elite-title">VR研习空间</div>
+                <div class="elite-desc">磁共振成像虚拟仿真 · VR脑解剖图谱教学</div>
               </div>
               <i class="fa-solid fa-arrow-up-right-from-square elite-arrow"></i>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <!-- 为你推荐 -->
       <section class="zone-section zone-recommend">
@@ -459,7 +450,7 @@ function goAdaptiveLearning() {
 }
 
 function openVRLab() {
-  window.open('https://xnfz.seu.edu.cn/exp/272.html', '_blank')
+  router.push({ name: 'vrLab' })
 }
 
 function goRecords() {
@@ -787,12 +778,8 @@ onMounted(() => {
 .entry-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #d1d5db; font-size: 11px; }
 .entry-card:hover .entry-arrow { color: #6b7280; }
 
-/* ─── 精品病例 ─── */
-.elite-vr-row { display: flex; gap: 14px; }
-.elite-vr-row .zone-elite { flex: 3; min-width: 0; }
-.elite-vr-row .zone-vr { flex: 1; min-width: 0; }
-
-.elite-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+/* ─── 名医名课研习 ─── */
+.elite-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .elite-card {
   background: #fafbfc; border-radius: 12px; padding: 16px;
   border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s; position: relative;
@@ -818,7 +805,6 @@ onMounted(() => {
 .elite-card:hover .elite-arrow { color: #6b7280; }
 
 .elite-vr:hover { border-color: #0d9488; }
-.zone-vr { border-left: 4px solid #0d9488; }
 
 /* ─── 推荐病例 ─── */
 .recommend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

@@ -81,12 +81,13 @@ MDT 多学科讨论是一个**完全独立的新功能**：不依赖 flow mode �
 | `apps/admin/src/views/raw-records/` | ✅ 阶段1 | 原始病历素材库（导入原文保存，供 SP/MDT 制作引用） |
 | `apps/admin/src/views/mdt-case-manage/` | ✅ 阶段1 | MDT 病例管理（列表 + 编辑器，三种来源） |
 | `apps/admin/public/data/mdt-cases/` | ✅ 阶段1 | 6 个种子 MDT 病例 `{id}-mdt.json`（自包含 patientInfo + knowledgeBase + 剧本） |
-| `apps/training/src/views/MDTCaseList.vue` | ✅ 阶段1 | 从管理端索引加载，点击直接进 `mdtDiscussion` |
-| `apps/training/src/views/MDTDiscussion.vue` | ✅ 阶段1 | 数据驱动 + 准备面板选角色 + Learner-paced 讨论流 + 插话 LLM |
+| `apps/training/src/views/MDTCaseList.vue` | ✅ 阶段1 | 从管理端索引加载，点击先进病例详情页（`caseDetail?from=mdt`），再进讨论室 |
+| `apps/training/src/composables/useMDTDirector.js` | ✅ 阶段2 | MDT 编排器（五层流水线：意图识别 / 角色差异化插话 / 任务LLM反馈 / 阶段引导+分歧收敛 / 画像LLM评估） |
+| `apps/training/src/views/MDTDiscussion.vue` | ✅ 阶段2 | 数据驱动 + 准备面板选角色 + Learner-paced 讨论流 + 编排器接入 + attending确认方案弹窗 + 住院医师点名卡片高亮 UI |
 | `apps/training/src/composables/useMDTData.js` | ✅ 阶段1 | 加载层（loadMDTCases / loadMDTCase / disciplineIcon） |
 | `apps/admin/src/views/new-features/MDTDiscussion.vue` | ✅ 预览页 | 管理端对训练端形态的预览，不承担配置编辑 |
 
-**本文档定义的目标形态**：阶段1（脚本驱动）已落地；阶段2 讨论由 AI 编排器（`useMDTDirector`）动态推进；阶段3 多智能体编排（预留）。
+**本文档定义的目标形态**：阶段1（脚本驱动）已落地；阶段2 讨论由 AI 编排器（`useMDTDirector`）动态推进——编排已全部落地（意图识别 / 角色差异化插话 / 任务 LLM 反馈 / 阶段引导 + 分歧收敛 / 画像 LLM 评估 / attending 确认方案弹窗 / 住院医师点名卡片高亮 UI）；阶段3 多智能体编排已落地（`mdt/expertPorts.js` 独立端口 + `mdt/convergence.js` 分歧收敛，18 个专家知识库 LLM 批量生成）。**体验层**已落地：全部发言流式逐字展示、开场统一欢迎引入（`buildMdtIntro`）、住院医师点名延后到内容播完后；**阶段0 病例汇报**按真实 MDT 流程分节完整播报（`buildCaseReport` 从 patientInfo 拼接主诉/现病史/既往史/家族史/查体/生命体征/实验室/影像 + 核心议题，替代 agenda 单句开场，全病例通用）。**训练记录存档**已落地：每次讨论自动归档完整对话 + 能力画像 + 任务作答，服务端落盘，`MDTRecordView` 可回放复盘（见 9.5）。**病例详情页 + 记录弹窗（2026-08-03）**已落地：MDT 病例列表点击先进**病例详情页**（`CaseDetail.vue` MDT 分支，修复 loadMDTCase 加载 + 字段名对齐，三页签丰富内容：病例资料各节 / 学科专家姓名·头衔·人设·知识库折叠 / 讨论议程·任务清单·最终决策·随访·参考），从详情页「训练记录」用**弹窗**（`MDTRecordModal.vue`）按病例查看 MDT 记录并展开完整回放（共享回放体 `MDTRecordBody.vue`），不再跳独立路由页。
 
 ---
 
@@ -196,13 +197,10 @@ MDT 训练固定 5 个阶段，与真实 MDT 会议流程对应。每阶段有�
 
 三者在同一个 `MDTDiscussion.vue` 内由 `studentRole` 驱动，差异集中在三处：
 
-1. **主持人开场白**不同：
-   - 观察者："请学员旁听本次讨论，可随时提出疑问，专家会解答。"
-   - 住院医师："请住院医师先说说出你对这个病例的初步印象。"
-   - 主诊医师："您作为主诊医师，请先汇报病例，并组织本次讨论。"
+1. **开场引入**：三角色统一以主持人欢迎语开场（欢迎 + 病例概要 + 核心议题 + 参与学科 + 讨论流程，`buildMdtIntro` 数据驱动），再进入病例介绍；**不预置角色开场白**——resident/attending 的 `roleScripts.opening` 均为"请先发言"类提示，在病例介绍前会突兀地要求学员发言，且与 agenda 首条任务（diag01）重复，故不再使用。
 2. **发言触发**不同：
    - 观察者：无强制发言点，输入框随时可插话
-   - 住院医师：每阶段开场被点名发言 → 专家引导性反馈 → 继续议程
+   - 住院医师：每阶段**内容播完后**被点名发言（点名延后到该阶段首条内容呈现之后）→ 专家引导性反馈 → 继续议程
    - 主诊医师：由学员发起每个讨论环节，专家响应学员的引导
 3. **决策权**不同：
    - 主诊医师在阶段3 需要自己拍板方案，主持人引导专家补充分歧后收敛；其余角色由主持人直接给出 MDT 决策。
@@ -456,18 +454,19 @@ async function load() {
   // 已保存会话则 restoreSession（恢复 messages / agendaIndex / pendingTask）
 }
 
-// 逐条播放 agenda（开场白 → 各阶段发言），遇 nextTask 暂停进入学员回合
+// 逐条播放 agenda（阶段0 病例汇报已由 startDiscussion 的 buildCaseReport 完整播报 → 跳过首条 host 文本仅保留 nextTask；其余各阶段发言）
 async function playAgenda() {
   while (agendaIndex < caseData.value.agenda.length) {
     const entry = caseData.value.agenda[agendaIndex++]
     currentStage = entry.phase
-    await playExpert(entry.speaker, entry.text)   // 打字节奏 + 正在发言指示
-    if (entry.nextTask) {                          // 暂停：任务卡片弹出
+    if (entry.speaker === 'host' && caseReportPlayed) { caseReportPlayed = false }
+    else await playExpert(entry.speaker, entry.text)   // 打字节奏 + 流式逐字 + 正在发言指示
+    if (entry.nextTask) {                              // 暂停：任务卡片弹出
       pendingTask = entry.nextTask
       return
     }
   }
-  finishDiscussion()                               // 播完 → 决策/随访/参考文献 + 结束
+  finishDiscussion()                                   // 播完 → 决策/随访/参考文献 + 结束
 }
 // 「继续讨论」按钮：完成任务后交回主持权恢复播放（Learner-paced 核心）
 ```
@@ -576,7 +575,7 @@ advanceStage():
   1. currentStage++ (0→4)
   2. 读 caseData.agenda 中该阶段条目，逐条播放（每条间隔，显示"正在发言"）
   3. 阶段开头按 studentRole 注入：
-     - resident → 主持人点名"请住院医师先说说…"
+     - resident → 主持人点名（**延后到该阶段首条内容播完后触发**，作答后接该阶段任务卡）
      - attending → 主持人提示"请主诊医师发起本环节"
   4. 该阶段议程播完后 → 触发对应任务卡片（entry.nextTask）
   5. 记录 stage 完成状态到 trainingSession.mdt
@@ -673,9 +672,16 @@ function selectMDTStrategy(intent, studentRole, phase) {
 
 ---
 
-## 8. 技术实现：阶段3 多智能体编排（预留）
+## 8. 技术实现：阶段3 多智能体编排（✅ 已落地）
 
 > **目标**：让各专家真正独立思考、产生更真实的观点交锋。按需升级，不阻塞阶段2。
+
+**落地状态（2026-08-03）**：
+- 数据模型：`knowledgeBase.disciplinePerspectives[].{expertName, expertTitle, persona, expertKB}`，`expertKB` 非空 = 阶段3 开关（`hasStage3`）。
+- 专家知识库：`scripts/gen-mdt-experts.mjs` LLM 批量生成 6 病例 × 3 学科 = 18 专家，幂等 / `--force` / `--only` / `--check`。
+- 编排层：`mdt/expertPorts.js`（端口抽象 + 三段式 prompt）、`mdt/convergence.js`（`identifyDisagreements` → `secondRoundResponses` → `convergeToDraft` → `convergeDisagreements` 总编排）。
+- 组件：`MDTDiscussion.vue` 非 host 专家经 `speakAsExpert` 动态生成（后发言者引用前面讨论），决策阶段 `runConvergence` 注入分歧收敛；`agentsTyping` 并发计数替代单一 `isTyping`。
+- 降级：任一环节 LLM 失败回退剧本文本 / 规则分歧语；无 `expertKB` 的病例全程走阶段1/2 静态，零回归。
 
 ### 8.1 演进原则：先抽象端口，后替换实现
 
@@ -747,15 +753,16 @@ const expertPorts = {
 | 右栏 | 参与者名单——已有，标注当前发言专家 + 学员角色标识 |
 
 **角色差异的 UI 表现：**
-- 主持人点名发言：对话流中出现高亮"点名卡片"（"主持人：请住院医师先说初步诊断"），输入框 placeholder 变为"请发表你的观点..."
-- 主诊医师拍板：阶段3 学员方案提交后，弹窗"确认最终方案"按钮（仅 attending 角色显示）
+- ✅ 主持人点名发言：对话流中出现高亮"点名卡片"（"主持人：请住院医师先说初步诊断"），输入框 placeholder 变为"请发表你的观点..."
+- ✅ 主诊医师拍板：阶段3 学员方案提交后，弹窗"确认最终方案"按钮（仅 attending 角色显示）
 - 学员角色标识：右栏学员行显示"👁 观察者 / 🩺 住院医师 / 🎯 主诊医师"
 
 **话轮控制 UI（Learner-paced）：**
+- 专家发言/反馈/开场引入均**流式逐字展示**（`msgText` 按自然语速 reveal：短文本约 45 字/秒、长文 75 字/秒，为后续语音输入输出预留），打字指示器在流式展示期间隐藏
 - 专家发言播放/生成中：输入框短暂禁用（placeholder"专家正在发言…"），播完立即回到学员回合
-- 学员回合：输入框可用；学员发言后专家回应，**不自动推进**
+- 学员回合：输入框可用；学员发言后专家回应，**不自动推进**（住院医师被点名作答后自动续播）
 - 「继续讨论」按钮：学员回合底部常驻，点击把话轮交回主持人继续推进
-- 住院医师被点名：点名提示卡片 + 输入框高亮，可"这次跳过"
+- ✅ 住院医师被点名：点名延后到该阶段内容播完后触发（点名提示卡片 + 输入框高亮，可"这次跳过"；作答后自动续播当前阶段并接该阶段任务卡）
 
 ### 9.3 任务卡片
 
@@ -772,6 +779,29 @@ const expertPorts = {
 - 阶段1：显示可规则计算的维度（诊断/影像/方案），其余维度显示"待AI评估"
 - 阶段2：全部维度显示，来自真实行为 + LLM 评估
 - 每维度：得分（0-100）+ 一句评价
+
+### 9.5 训练记录存档与回放（✅ 已落地 2026-08-03）
+
+**目的**：每次 MDT 训练自动归档**完整对话**（含专家发言/学员发言/任务卡/决策/随访/参考），供复盘专家AI表现与讨论流程合理性，驱动持续优化。
+
+**触发时机**（`MDTDiscussion.vue` 的 `archiveMdtSession`）：
+- 讨论结束（`finishDiscussion`）：立即归档完整记录；能力画像 LLM 异步完成后同会话**升级**补入画像
+- 中途离开讨论页（`onBeforeUnmount`）：存档 `done:false` 中断记录（流程卡点/专家异常同样留痕）
+- 恢复已结束会话：补归档（含改版前的旧会话回填）
+
+**去重与升级**：以 `trainingSession.mdt.startedAt` 生成**会话级 sessionEpoch**，同一会话多次归档（中断→完成）合并为一条并升级为完整内容（时长替换而非累加）。
+
+**记录内容**（写入 `store.addTrainingRecord`，stationId=`mdt`，trainingVersion=`mdt`，score=`null` 过程性反馈）：
+- `messages`：完整对话（`{type, speaker, text}`，expert/student/callout/task/decision/followup/references）
+- `portraitAssess`：LLM 能力画像（批判性/循证/反思）
+- `tasks` / `selectedChoices` / `submitted` / `skipped` / `taskLabels`：任务作答
+- `studentRole` / `startedAt` / `finishedAt` / `duration` / `caseId` / `mdtId` / `caseTitle`
+
+**落盘**：localStorage `training_records`（可离线读）+ 服务端 `services/sp-api/data/training-records/{caseId_mdt_ts}.json`（经 `/api/training-records` 同步，**完整存档的主副本**）。
+
+**回放入口**：
+- **病例详情页弹窗（主入口）**：`CaseDetail.vue` MDT 分支「训练记录」→ `MDTRecordModal.vue` 弹窗，按当前 `mdtId` 过滤本病例 MDT 记录，点击展开完整回放（复用共享回放体 `MDTRecordBody.vue`：能力画像 / 任务作答 / 完整对话），不跳路由。
+- `MDTRecordView.vue`（路由 `mdtRecords`）按时间倒序列出**全部** MDT 归档，可展开回放；入口在 MDT 病例列表「训练记录」按钮、讨论结束横幅「历史记录」按钮。
 
 ---
 
@@ -799,17 +829,18 @@ apps/admin/src/
 
 apps/training/src/
 ├── composables/
-│   ├── useMDTDirector.js        ← 阶段2 新建：MDT 编排器（五层流水线）
+│   ├── useMDTDirector.js        ← 阶段2 ✅：MDT 编排器（五层流水线）
 │   ├── useMDTData.js            ← 改造：加载层（loadMDTCases / loadMDTCase / disciplineIcon）
 │   ├── roleConfig.js            ← 新建：三种学生角色配置常量
 │   └── useAIChat.js             ← 复用（现有）
 ├── views/
-│   ├── MDTCaseList.vue          ← 改造：从索引加载，点击直接进 mdtDiscussion
-│   └── MDTDiscussion.vue        ← 改造：数据驱动 + 准备面板 + Learner-paced 讨论流
+│   ├── MDTCaseList.vue          ← 改造：从索引加载，点击直接进 mdtDiscussion；顶部「训练记录」入口
+│   ├── MDTDiscussion.vue        ← 改造：数据驱动 + 准备面板 + Learner-paced 讨论流 + 完整对话归档（结束/画像/中断）
+│   └── MDTRecordView.vue        ← 新建 ✅：MDT 训练记录回放（列表 + 展开完整对话/能力画像/任务作答）
 ├── stores/
-│   └── training.js              ← 复用（saveSessionStage 已有）
+│   └── training.js              ← 复用（saveSessionStage 已有）；addTrainingRecord 支持会话级 epoch 与同会话升级 + getMdtRecords
 ├── vite.config.js               ← 扩展：mdt-cases-index 插件
-└── router/index.js              ← 已有（mdtCaseList / mdtDiscussion 已挂载）
+└── router/index.js              ← 已有（mdtCaseList / mdtDiscussion / mdtRecords 已挂载）
 ```
 
 ### 10.2 依赖图

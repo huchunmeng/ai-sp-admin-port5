@@ -32,6 +32,17 @@ export const TEACHING_PHASES = [
 
 export const LEVEL_LABELS = ['基础病例', '高阶病例', '疑难病例']
 
+export function createEmptyDisciplinePerspective() {
+  return {
+    dept: '',
+    view: '',
+    expertName: '',
+    expertTitle: '',
+    persona: '',
+    expertKB: '',
+  }
+}
+
 export function createEmptyMDTCase() {
   return {
     id: '',

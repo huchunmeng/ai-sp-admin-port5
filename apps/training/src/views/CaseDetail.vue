@@ -2,8 +2,14 @@
   <div class="case-detail-page" :class="{ 'mdt-mode': isFromMDT }">
     <div class="detail-content">
       <!-- MDT 布局 -->
-      <template v-if="isFromMDT && mdtCase">
-        <div class="mdt-layout">
+      <template v-if="isFromMDT">
+        <div v-if="!mdtLoaded" class="mdt-loading">
+          <i class="fa-solid fa-spinner fa-spin"></i> 加载病例详情...
+        </div>
+        <div v-else-if="!mdtCase" class="mdt-loading">
+          <i class="fa-solid fa-circle-exclamation"></i> 未找到该 MDT 病例
+        </div>
+        <div v-else class="mdt-layout">
           <!-- 顶部患者信息条 -->
           <div class="mdt-patient-bar">
             <div class="mdt-bar-avatar">
@@ -40,11 +46,16 @@
 
           <!-- 滚动内容区 -->
           <div class="mdt-scroll-area">
-            <!-- Tab 0: 临床概览 -->
+            <!-- Tab 0: 病例资料 -->
             <div class="mdt-tab-content" v-if="mdtActiveTab === 0">
               <div class="section-card">
-                <div class="section-title"><i class="fa-solid fa-file-medical"></i> 临床摘要</div>
-                <p>{{ mdtCase.clinicalSummary }}</p>
+                <div class="section-title"><i class="fa-solid fa-file-medical"></i> 病例资料</div>
+                <div class="mdt-patient-sec-list">
+                  <div class="mdt-patient-sec" v-for="(sec, si) in mdtPatientSections" :key="si">
+                    <div class="mdt-patient-sec-label"><i class="fa-solid fa-file-lines"></i> {{ sec.label }}</div>
+                    <p class="mdt-patient-sec-value">{{ sec.value }}</p>
+                  </div>
+                </div>
               </div>
               <div class="section-card">
                 <div class="section-title"><i class="fa-solid fa-circle-question"></i> 关键讨论问题</div>
@@ -60,12 +71,24 @@
             <!-- Tab 1: 学科视角 -->
             <div class="mdt-tab-content" v-if="mdtActiveTab === 1">
               <div class="mdt-perspective-list">
-                <div class="mdt-perspective-item" v-for="(dp, dpi) in mdtCase.disciplinePerspectives" :key="dpi">
+                <div class="mdt-perspective-item" v-for="(dp, dpi) in mdtPerspectives" :key="dpi">
                   <div class="mdt-perspective-header">
                     <span class="mdt-perspective-icon"><i :class="disciplineIcon(dp.dept)"></i></span>
-                    <span class="mdt-perspective-dept">{{ dp.dept }}</span>
+                    <div class="mdt-perspective-info">
+                      <div class="mdt-perspective-dept-row">
+                        <span class="mdt-perspective-dept">{{ dp.dept }}</span>
+                        <span class="mdt-perspective-persona" v-if="dp.persona">{{ dp.persona }}</span>
+                      </div>
+                      <div class="mdt-perspective-expert" v-if="dp.expertName">
+                        <i class="fa-solid fa-user-doctor"></i> {{ dp.expertName }}<span v-if="dp.expertTitle"> · {{ dp.expertTitle }}</span>
+                      </div>
+                    </div>
                   </div>
                   <p class="mdt-perspective-text">{{ dp.view }}</p>
+                  <details class="mdt-expertkb" v-if="dp.expertKB">
+                    <summary><i class="fa-solid fa-book-medical"></i> 专家知识库</summary>
+                    <p class="mdt-expertkb-text">{{ dp.expertKB }}</p>
+                  </details>
                 </div>
               </div>
             </div>
@@ -89,6 +112,13 @@
                       <div class="mdt-info-value">{{ mdtCase.levelLabel }} ({{ mdtCase.teachingPhase }})</div>
                     </div>
                   </div>
+                  <div class="mdt-info-item" v-if="mdtCase.stages && mdtCase.stages.length">
+                    <div class="mdt-info-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fa-solid fa-route"></i></div>
+                    <div>
+                      <div class="mdt-info-label">讨论阶段</div>
+                      <div class="mdt-info-value">{{ mdtCase.stages.join(' → ') }}</div>
+                    </div>
+                  </div>
                   <div class="mdt-info-item mdt-info-full">
                     <div class="mdt-info-icon" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-bullseye"></i></div>
                     <div>
@@ -101,20 +131,43 @@
               <div class="section-card">
                 <div class="section-title"><i class="fa-solid fa-list-ol"></i> 讨论流程</div>
                 <div class="mdt-agenda-list">
-                  <div class="mdt-agenda-item" v-for="(ag, agi) in mdtCase.discussionAgenda" :key="agi">
+                  <div class="mdt-agenda-item" v-for="(ag, agi) in mdtCase.agenda" :key="agi">
                     <div class="mdt-agenda-phase">
                       <span class="mdt-agenda-num">{{ agi + 1 }}</span>
-                      <span class="mdt-agenda-name">{{ ag.phase }}</span>
-                      <span class="mdt-agenda-dur">{{ ag.duration }}</span>
+                      <span class="mdt-agenda-name">{{ mdtStageName(ag) }}</span>
+                      <span class="mdt-agenda-speaker" :class="{ 'sp-host': !ag.speaker || ag.speaker === 'host' }">{{ mdtSpeakerLabel(ag.speaker) }}</span>
+                      <span class="mdt-agenda-dur" v-if="ag.nextTask">任务：{{ taskLabelByKey(ag.nextTask) }}</span>
                     </div>
-                    <p class="mdt-agenda-desc">{{ ag.desc }}</p>
+                    <p class="mdt-agenda-desc">{{ ag.text }}</p>
                   </div>
                 </div>
               </div>
-              <div class="section-card">
+              <div class="section-card" v-if="mdtCase.tasks && mdtCase.tasks.length">
+                <div class="section-title"><i class="fa-solid fa-clipboard-list"></i> 任务清单</div>
+                <div class="mdt-task-list">
+                  <div class="mdt-task-item" v-for="(t, ti) in mdtCase.tasks" :key="t.key || ti">
+                    <div class="mdt-task-head">
+                      <span class="mdt-task-key">{{ ti + 1 }}</span>
+                      <span class="mdt-task-label">{{ t.label || t.key }}</span>
+                      <span class="mdt-task-type" :class="'type-' + t.type">{{ taskTypeLabel(t.type) }}</span>
+                      <span class="mdt-task-assess" v-if="t.assess">{{ t.assess }}</span>
+                    </div>
+                    <p class="mdt-task-prompt" v-if="t.prompt">{{ t.prompt }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="section-card" v-if="mdtCase.decision">
+                <div class="section-title"><i class="fa-solid fa-file-signature"></i> MDT 最终决策</div>
+                <p>{{ mdtCase.decision }}</p>
+              </div>
+              <div class="section-card" v-if="mdtCase.followUp">
+                <div class="section-title"><i class="fa-solid fa-calendar-check"></i> 随访计划</div>
+                <p>{{ mdtCase.followUp }}</p>
+              </div>
+              <div class="section-card" v-if="mdtReferences.length">
                 <div class="section-title"><i class="fa-solid fa-book-open"></i> 参考指南与文献</div>
                 <div class="mdt-ref-list">
-                  <div class="mdt-ref-item" v-for="(ref, ri) in mdtCase.references" :key="ri">
+                  <div class="mdt-ref-item" v-for="(ref, ri) in mdtReferences" :key="ri">
                     <i class="fa-solid fa-file-lines"></i> {{ ref }}
                   </div>
                 </div>
@@ -224,6 +277,8 @@
 
       <TrainingRecords v-if="showRecordsModal" :caseId="c.id" :versionFilter="recordsVersionFilter" @close="handleCloseRecords" @viewReport="handleViewReport" />
 
+      <MDTRecordModal v-if="showMdtRecordsModal" :mdtId="route.query.mdtId" :caseTitle="mdtCase?.patientInfo?.name" @close="showMdtRecordsModal = false" />
+
       <!-- 人文沟通场景选择弹窗 -->
       <div class="station-select-overlay" v-if="showScenarioModal" @click.self="showScenarioModal = false">
         <div class="station-select-modal">
@@ -280,8 +335,9 @@ import { BUILTIN_STATIONS, getDifficultyLabel, getCaseLevel, getCaseLevelLabel }
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { useTTS } from '@/composables/useTTS'
 import { parseVitals } from '@/composables/useUtils'
-import { getMDTCase, disciplineIcon } from '@/composables/useMDTData'
+import { loadMDTCase, getMDTCase, disciplineIcon } from '@/composables/useMDTData'
 import TrainingRecords from '@/views/TrainingRecords.vue'
+import MDTRecordModal from '@/views/MDTRecordModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -294,6 +350,8 @@ const lang = ref(store.lang || 'zh')
 const showStationModal = ref(false)
 const showScenarioModal = ref(false)
 const showRecordsModal = ref(false)
+const showMdtRecordsModal = ref(false)
+const mdtLoaded = ref(false)
 const settling = ref(false)
 const caseData = ref({ basic: null })
 
@@ -310,10 +368,44 @@ const mdtCase = computed(() => {
 })
 const mdtActiveTab = ref(0)
 const mdtTabs = [
-  { label: '临床概览', icon: 'fa-solid fa-file-medical' },
+  { label: '病例资料', icon: 'fa-solid fa-file-medical' },
   { label: '学科视角', icon: 'fa-solid fa-microscope' },
   { label: '讨论议程', icon: 'fa-solid fa-list-ol' },
 ]
+
+const MDT_PATIENT_LABELS = [
+  ['chiefComplaint', '主诉'],
+  ['presentIllness', '现病史'],
+  ['physicalExam', '查体'],
+  ['vitals', '生命体征'],
+  ['labTests', '实验室检查'],
+  ['imagingText', '影像所见'],
+  ['pastHistory', '既往史'],
+  ['familyHistory', '家族史'],
+]
+const mdtPatientSections = computed(() => {
+  const pi = mdtCase.value?.patientInfo || {}
+  return MDT_PATIENT_LABELS.filter(([k]) => pi[k]).map(([k, label]) => ({ label, value: pi[k] }))
+})
+const mdtReferences = computed(() => {
+  const m = mdtCase.value
+  return (m?.referencesList?.length ? m.referencesList : m?.knowledgeBase?.references) || []
+})
+const mdtPerspectives = computed(() => mdtCase.value?.knowledgeBase?.disciplinePerspectives || [])
+function mdtStageName(ag) {
+  const stages = mdtCase.value?.stages || []
+  return stages[ag.phase] || ('阶段 ' + ((ag.phase ?? 0) + 1))
+}
+function mdtSpeakerLabel(speaker) {
+  return (!speaker || speaker === 'host') ? '主持人' : speaker
+}
+function taskLabelByKey(key) {
+  const t = (mdtCase.value?.tasks || []).find(t => t.key === key)
+  return t ? t.label : key
+}
+function taskTypeLabel(type) {
+  return { text: '文本', choice: '选择', exhibit: '影像标注' }[type] || type || ''
+}
 
 function goMDTDiscussion() {
   router.push({ name: 'mdtDiscussion', params: { caseId: c.value.id }, query: { mdtId: route.query.mdtId } })
@@ -327,22 +419,23 @@ const c = computed(() => {
   if (!basic) {
     // MDT fallback: use MDT case data for patient info
     if (mdt) {
+      const mpi = mdt.patientInfo || {}
       return {
         id: mdt.id,
-        title: mdt.patientName + ' · ' + mdt.disciplines[0],
+        title: (mpi.name || '') + ' · ' + (mdt.disciplines?.[0] || ''),
         difficulty: mdt.teachingPhase,
-        specialty: mdt.disciplines[0],
+        specialty: mdt.disciplines?.[0] || '',
         disease: '',
         source: '',
         patient: {
-          name: mdt.patientName,
-          gender: mdt.gender,
-          age: String(mdt.age),
-          avatar: matchPatientImage({ gender: mdt.gender, age: mdt.age }, 'patient'),
-          fullBodyImage: matchPatientImage({ gender: mdt.gender, age: mdt.age }, 'full'),
+          name: mpi.name || '',
+          gender: mpi.gender || '',
+          age: mpi.age != null ? String(mpi.age) : '',
+          avatar: matchPatientImage({ gender: mpi.gender, age: mpi.age }, 'patient'),
+          fullBodyImage: matchPatientImage({ gender: mpi.gender, age: mpi.age }, 'full'),
         },
-        chiefComplaint: mdt.chiefComplaint,
-        symptoms: mdt.disciplines,
+        chiefComplaint: mpi.chiefComplaint || '',
+        symptoms: mdt.disciplines || [],
         vitals: {}
       }
     }
@@ -376,22 +469,23 @@ const c = computed(() => {
   const preg = pi.pregnancy || basic.pregnancy || ''
   // MDT mode: overlay MDT-specific content on real patient image
   if (mdt) {
+    const mpi = mdt.patientInfo || {}
     return {
       id: mdt.id,
-      title: mdt.patientName + ' · ' + mdt.disciplines[0],
+      title: (pi.name || mpi.name || '') + ' · ' + (mdt.disciplines?.[0] || ''),
       difficulty: mdt.teachingPhase,
-      specialty: mdt.disciplines[0],
+      specialty: mdt.disciplines?.[0] || '',
       disease: basic.disease || '',
       source: '',
       patient: {
-        name: pi.name || mdt.patientName,
+        name: pi.name || mpi.name || '',
         gender,
         age: ageStr,
         avatar: matchPatientImage({ gender, age: ageNum, isPregnant: preg }, 'patient'),
         fullBodyImage: matchPatientImage({ gender, age: ageNum, isPregnant: preg }, 'full'),
       },
-      chiefComplaint: mdt.chiefComplaint,
-      symptoms: mdt.disciplines,
+      chiefComplaint: mpi.chiefComplaint || basic.chief_complaint || '',
+      symptoms: mdt.disciplines || [],
       vitals: parseVitals(basic.physical_exam?.vital_signs),
     }
   }
@@ -509,11 +603,20 @@ async function selectHumanityScenario(sc) {
 }
 
 function viewRecords() {
+  if (isFromMDT.value) {
+    showMdtRecordsModal.value = true
+    return
+  }
   showRecordsModal.value = true
 }
 
 function handleViewReport() {
   showRecordsModal.value = false
+  // MDT 记录走独立对话回放视图（ScoreReport 面向考站评分，不适用）
+  if (store.currentRecord?.stationId === 'mdt') {
+    router.push({ name: 'mdtRecords', query: store.currentRecord?.sessionEpoch ? { focus: store.currentRecord.sessionEpoch } : {} })
+    return
+  }
   router.push({ name: 'scoreReport', query: { caseId: c.value.id, source: 'records', stationId: store.currentRecord?.stationId, recordedAt: store.currentRecord?.recordedAt, sessionEpoch: store.currentRecord?.sessionEpoch || store.sessionEpoch } })
 }
 
@@ -638,6 +741,12 @@ onMounted(async () => {
   // MDT模式锁定body滚动，防止视口滚动条切换导致宽度跳动
   if (isFromMDT.value) {
     document.body.style.overflow = 'hidden'
+    const mdtId = route.query.mdtId
+    if (mdtId) {
+      await loadMDTCase(mdtId)
+    }
+    mdtLoaded.value = true
+    return
   }
 
   const caseId = route.params.caseId || store.currentCase?.id
@@ -666,8 +775,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.case-detail-page { height: calc(100vh - 96px); }
-.detail-content { padding: 24px; max-width: 1200px; margin: 0 auto; flex: 1; overflow: hidden; width: 100%; display: flex; flex-direction: column; }
+.case-detail-page { height: calc(100vh - 96px); display: flex; flex-direction: column; }
+.detail-content { padding: 24px; max-width: 1200px; margin: 0 auto; flex: 1; overflow: hidden; width: 100%; display: flex; flex-direction: column; min-height: 0; }
 .case-detail-page.mdt-mode .detail-content { padding: 18px 24px 12px; }
 
 
@@ -675,6 +784,7 @@ onUnmounted(() => {
 .mdt-layout {
   display: flex; flex-direction: column; flex: 1;
   max-width: 860px; margin: 0 auto; width: 100%;
+  min-height: 0; /* 允许子滚动区收缩 */
 }
 
 /* ─── MDT 患者信息条 ─── */
@@ -729,12 +839,12 @@ onUnmounted(() => {
 @keyframes tabFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ─── MDT 滚动内容区 ─── */
-.mdt-scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; }
+.mdt-scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; min-height: 0; }
 
 /* ─── 非MDT双栏 ─── */
 .detail-two-col { display: flex; gap: 24px; flex: 1; overflow: hidden; }
 .detail-left-col { flex: 0 0 480px; display: flex; flex-direction: column; }
-.detail-right-col { flex: 1; min-width: 0; }
+.detail-right-col { flex: 1; min-width: 0; overflow-y: auto; }
 
 .detail-left-col .fullbody-photo {
   border-radius: 12px; overflow: hidden; flex: 1; min-height: 0;
@@ -847,7 +957,7 @@ onUnmounted(() => {
   transition: box-shadow .15s, border-color .15s;
 }
 .mdt-perspective-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.mdt-perspective-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mdt-perspective-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
 .mdt-perspective-icon {
   width: 30px; height: 30px; border-radius: 7px;
   background: #ecf5ff; color: #409EFF;
@@ -882,6 +992,64 @@ onUnmounted(() => {
 }
 .mdt-ref-item:hover { background: #eff6ff; }
 .mdt-ref-item i { color: #409EFF; font-size: 11px; flex-shrink: 0; }
+
+/* ─── MDT Loading / Empty ─── */
+.mdt-loading {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 10px; color: #9ca3af; font-size: 14px; padding: 60px 0;
+}
+
+/* ─── MDT Patient Sections ─── */
+.mdt-patient-sec-list { display: flex; flex-direction: column; gap: 14px; }
+.mdt-patient-sec { padding: 12px 14px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #409EFF; }
+.mdt-patient-sec-label { font-size: 12px; font-weight: 600; color: #409EFF; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+.mdt-patient-sec-value { margin: 0; font-size: 13px; color: #4b5563; line-height: 1.7; }
+
+/* ─── MDT Perspective Expert Info ─── */
+.mdt-perspective-info { flex: 1; min-width: 0; }
+.mdt-perspective-dept-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mdt-perspective-persona {
+  font-size: 11px; color: #6b7280; background: #f3f4f6;
+  padding: 1px 8px; border-radius: 4px;
+}
+.mdt-perspective-expert { font-size: 12px; color: #6b7280; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+.mdt-perspective-expert i { color: #409EFF; font-size: 11px; }
+.mdt-expertkb { margin-top: 10px; border-top: 1px dashed #e5e7eb; padding-top: 8px; }
+.mdt-expertkb summary {
+  cursor: pointer; font-size: 12px; font-weight: 600; color: #1e40af;
+  display: flex; align-items: center; gap: 6px; user-select: none;
+}
+.mdt-expertkb summary:hover { color: #409EFF; }
+.mdt-expertkb summary i { color: #409EFF; font-size: 12px; }
+.mdt-expertkb-text { margin: 8px 0 0; font-size: 12px; color: #4b5563; line-height: 1.7; }
+
+/* ─── MDT Agenda Speaker ─── */
+.mdt-agenda-speaker {
+  font-size: 11px; color: #1e40af; background: #eff6ff;
+  padding: 1px 8px; border-radius: 4px;
+}
+.mdt-agenda-speaker.sp-host { color: #6b7280; background: #f3f4f6; }
+
+/* ─── MDT Task List ─── */
+.mdt-task-list { display: flex; flex-direction: column; gap: 8px; }
+.mdt-task-item {
+  border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;
+  background: #fafbfc; transition: border-color .15s;
+}
+.mdt-task-item:hover { border-color: #409EFF; }
+.mdt-task-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mdt-task-key {
+  width: 20px; height: 20px; border-radius: 50%; background: #409EFF;
+  color: #fff; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mdt-task-label { font-size: 13px; font-weight: 600; color: #1f2937; }
+.mdt-task-type { font-size: 10px; padding: 1px 8px; border-radius: 4px; background: #f3f4f6; color: #6b7280; }
+.mdt-task-type.type-text { background: #eef2ff; color: #4338ca; }
+.mdt-task-type.type-choice { background: #fef3c7; color: #b45309; }
+.mdt-task-type.type-exhibit { background: #ecfdf5; color: #047857; }
+.mdt-task-assess { font-size: 10px; padding: 1px 8px; border-radius: 4px; background: #ecf5ff; color: #1e40af; }
+.mdt-task-prompt { margin: 6px 0 0 28px; font-size: 12px; color: #6b7280; line-height: 1.6; }
 
 /* ─── Modals (shared) ─── */
 .station-select-overlay {

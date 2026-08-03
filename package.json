@@ -22,6 +22,7 @@
     "build:exam": "npm run build --workspace=ai-sp-exam",
     "build:app-training": "npm run build --workspace=ai-sp-app-training",
     "build:ops": "npm run build --workspace=ai-sp-ops",
+    "gen:mdt-experts": "node scripts/gen-mdt-experts.mjs",
     "build:all": "npm run build:admin && npm run build:training && npm run build:exam && npm run build:app-training && npm run build:ops",
     "install:all": "npm install",
     "prod:start": "node services/prod-server/src/index.js",

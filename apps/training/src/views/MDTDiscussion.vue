@@ -61,6 +61,8 @@
       <div v-if="phase === 'ended'" class="mdt-ended-bar">
         <span><i class="fa-solid fa-flag-checkered"></i> 本次 MDT 讨论已结束</span>
         <button class="btn btn-primary btn-sm" @click="showResult = true"><i class="fa-solid fa-chart-pie"></i> 查看能力画像</button>
+        <button class="btn btn-sm" @click="goRecords"><i class="fa-solid fa-folder-open"></i> 历史记录</button>
+        <button class="btn btn-sm" @click="restartDiscussion"><i class="fa-solid fa-rotate-right"></i> 重新开始</button>
       </div>
 
       <!-- 主体：三栏布局 -->
@@ -174,7 +176,7 @@
                 </div>
                 <div class="mdt-msg-body">
                   <div class="mdt-msg-sender">{{ memberOf(item.speaker).name }}</div>
-                  <div class="mdt-msg-text" style="white-space:pre-wrap;">{{ item.text }}</div>
+                  <div class="mdt-msg-text" style="white-space:pre-wrap;">{{ msgText(item) }}</div>
                 </div>
               </div>
 
@@ -202,6 +204,16 @@
                 <div class="chat-card-status" v-else><i class="fa-solid fa-chevron-right" style="color:#9ca3af;"></i></div>
               </div>
 
+              <!-- 主持人点名卡片 -->
+              <div v-else-if="item.type === 'callout'" class="callout-card">
+                <div class="callout-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                <div class="callout-body">
+                  <div class="callout-title">主持人点名</div>
+                  <div class="callout-text">{{ item.text }}</div>
+                  <button v-if="pendingCallout" class="btn-skip-callout" @click="skipCallout">这次跳过 <i class="fa-solid fa-forward"></i></button>
+                </div>
+              </div>
+
               <!-- MDT最终决策 -->
               <div v-else-if="item.type === 'decision'" class="mdt-decision-card">
                 <div class="decision-header"><i class="fa-solid fa-gavel"></i> MDT最终决策</div>
@@ -224,7 +236,7 @@
             </template>
 
             <!-- 打字指示器 -->
-            <div v-if="isTyping" class="mdt-msg">
+            <div v-if="showTypingIndicator" class="mdt-msg">
               <div :class="['mdt-msg-avatar', currentSpeaker.avatarClass]">
                 <img v-if="currentSpeaker.avatar" :src="currentSpeaker.avatar" class="avatar-img" />
                 <span v-else>{{ currentSpeaker.initials }}</span>
@@ -248,7 +260,7 @@
           <!-- 底部输入栏 -->
           <div class="mdt-input-bar">
             <button class="input-voice-btn" title="语音输入"><i class="fa-solid fa-microphone"></i></button>
-            <input v-model="chatInput" class="chat-input" :placeholder="inputPlaceholder" :disabled="inputDisabled" @keyup.enter="sendMessage" />
+            <input v-model="chatInput" class="chat-input" :class="{ 'callout-input-active': pendingCallout }" :placeholder="inputPlaceholder" :disabled="inputDisabled" @keyup.enter="sendMessage" />
             <button class="input-send-btn" @click="sendMessage" :disabled="!chatInput.trim() || inputDisabled"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
@@ -338,6 +350,24 @@
       </div>
 
   
+      <!-- attending 确认最终方案 -->
+      <div v-if="showConfirm && confirmPlan" class="modal-overlay" @click.self="reviseFinalPlan">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h3><i class="fa-solid fa-gavel"></i> 确认最终方案</h3>
+            <button class="modal-close" @click="reviseFinalPlan"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="modal-body">
+            <p class="confirm-plan-label">你作为主诊医师，请确认本次 MDT 的最终方案：</p>
+            <div class="confirm-plan-text">{{ confirmPlan.text }}</div>
+          </div>
+          <div class="modal-footer confirm-plan-footer">
+            <button class="btn btn-skip" @click="reviseFinalPlan">返回修改</button>
+            <button class="btn btn-primary" @click="confirmFinalPlan"><i class="fa-solid fa-check"></i> 确认方案</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 能力画像弹窗 -->
       <div v-if="showResult" class="modal-overlay" @click.self="showResult = false">
         <div class="modal-container">
@@ -370,19 +400,19 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from '@ai-sp/shared'
 import { loadMDTCase, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
-import { useAIChat } from '@/composables/useAIChat'
+import { useMDTDirector } from '@/composables/useMDTDirector'
 import { useTrainingStore } from '@/stores/training'
-import { ROLE_CONFIG, ROLE_OPTIONS, getRoleConfig } from '@/composables/roleConfig'
+import { ROLE_OPTIONS, getRoleConfig } from '@/composables/roleConfig'
 
 const route = useRoute()
 const router = useRouter()
 const store = useTrainingStore()
-const ai = useAIChat()
+const director = useMDTDirector()
 
 const AVATAR_BASE = '/images/avatars/'
 const EXPERT_AVATARS = [
@@ -412,7 +442,10 @@ const mdtId = ref('')
 const caseData = ref(null)
 const studentRole = ref('resident')
 const currentStage = ref(0)
-const isTyping = ref(false)
+const agentsTyping = ref(0)      // 阶段3 多智能体并发计数（>0 即处于发言中）
+const streamingActive = ref(0)   // 流式展示中（此时隐藏"正在发言"指示器）
+const isTyping = computed(() => agentsTyping.value > 0)
+const showTypingIndicator = computed(() => agentsTyping.value > 0 && streamingActive.value === 0)
 const showResult = ref(false)
 const discussionRef = ref(null)
 const chatItems = ref([])
@@ -420,6 +453,8 @@ const agendaIndex = ref(0)         // 下一要播的 agenda 条目索引
 const pendingTask = ref(null)      // 当前暂停等待的任务类型
 const currentSpeakerKey = ref('host')
 let playing = false
+let agendaRunId = 0            // 讨论运行标记：重开时自增，令旧的 playAgenda 中断，避免残留异步污染新会话
+let caseReportPlayed = false   // startDiscussion 已播完整病例汇报 → 阶段0 首条 host 文本跳过（保留 nextTask）
 
 // 阶段标签数据化：病例 JSON 可提供 stages 覆盖默认五段
 const stages = computed(() => caseData.value?.stages || ['病例汇报', '影像解读', '综合讨论', '方案决策', '总结决策'])
@@ -440,6 +475,16 @@ const skipped = ref({})            // { [taskKey]: boolean }
 const taskValues = ref({})         // { [taskKey]: 作答（text→string / choice→string|string[] / exhibit→markers[]） }
 const selectedChoices = ref({})    // choice 多选暂存 { [taskKey]: string[] }
 const markers = ref([])            // 当前 exhibit 任务的标注点
+
+// 阶段2：LLM 能力画像评估缓存 + attending 确认方案 + 住院医师点名
+const portraitAssess = ref(null)      // [{dim,score,note}]
+const portraitAssessing = ref(false)
+const confirmPlan = ref(null)         // {taskKey, text}
+const showConfirm = ref(false)
+const pendingCallout = ref(false)     // 当前是否有未回应的住院医师点名
+const pendingStageCallout = ref('')   // resident 点名延后：本阶段内容播完后再点名
+const calloutNextTask = ref('')       // 点名作答后接推的任务卡 key（本阶段首条带 nextTask 时）
+let runSeq = 0                        // 重开守卫：丢弃上一轮仍在飞的异步结果（如画像评估）
 
 // 观察者/住院医师无决策权，任务可跳过；主诊医师须全部完成
 const canSkip = computed(() => !getRoleConfig(studentRole.value).decision)
@@ -504,6 +549,9 @@ const currentSpeaker = computed(() =>
 function memberOf(speaker) {
   return members.value.find(m => m.speakerKey === speaker) || members.value[0]
 }
+
+// 阶段3：专家端口（调度与生成分离；病例加载后稳定，重进重建）
+const mdtPorts = computed(() => (caseData.value ? director.buildExpertPorts(caseData.value) : {}))
 
 const learnerAvatar = AVATAR_BASE + encodeURIComponent('学习者.png')
 
@@ -603,12 +651,16 @@ function saveState(extra = {}) {
     agendaIndex: agendaIndex.value,
     currentSpeakerKey: currentSpeakerKey.value,
     pendingTask: pendingTask.value,
-    messages: chatItems.value,
+    messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 剥离流式进度，恢复时全文显示
     tasks: { ...taskValues.value },
     selectedChoices: { ...selectedChoices.value },
     submitted: { ...submitted.value },
     skipped: { ...skipped.value },
     markers: [...markers.value],
+    portraitAssess: portraitAssess.value,
+    pendingCallout: pendingCallout.value,
+    pendingStageCallout: pendingStageCallout.value,
+    calloutNextTask: calloutNextTask.value,
     ...extra,
   })
 }
@@ -624,12 +676,106 @@ function wait(ms) {
   return new Promise(r => setTimeout(r, ms))
 }
 
+function beginTyping(speaker) {
+  agentsTyping.value++
+  if (speaker) currentSpeakerKey.value = speaker
+}
+
+function endTyping() {
+  agentsTyping.value = Math.max(0, agentsTyping.value - 1)
+}
+
+// 流式展示：消息先以空文本入列，按自然语速逐字 reveal
+function msgText(item) {
+  if (item.revealed === undefined) return item.text
+  return item.text.slice(0, item.revealed)
+}
+
+function streamExpertMessage(speaker, text) {
+  chatItems.value.push({ type: 'expert', speaker, text, revealed: 0 })
+  currentSpeakerKey.value = speaker
+  const msg = chatItems.value[chatItems.value.length - 1]   // 取响应式代理，逐字更新驱动模板
+  streamingActive.value++
+  saveState()
+  nextTick(() => scrollToBottom())
+  return animateReveal(msg, text).finally(() => {
+    streamingActive.value = Math.max(0, streamingActive.value - 1)
+  })
+}
+
+function animateReveal(msg, text) {
+  return new Promise(resolve => {
+    const total = (text || '').length
+    if (!total) { msg.revealed = 0; resolve(); return }
+    // 语速自适应：短文本约 45 字/秒，长文略快（后续接语音时改由音频时长驱动）
+    const cps = total < 60 ? 45 : total < 200 ? 60 : 75
+    const tick = 28
+    let shown = 0
+    const step = () => {
+      shown = Math.min(shown + Math.max(1, Math.round(cps * tick / 1000)), total)
+      msg.revealed = shown
+      nextTick(() => scrollToBottom())
+      if (shown >= total) { resolve(); return }
+      setTimeout(step, tick)
+    }
+    step()
+  })
+}
+
 async function playExpert(speaker, text) {
   currentSpeakerKey.value = speaker
-  isTyping.value = true
-  await wait(700 + Math.min(text.length * 3, 900))
-  isTyping.value = false
-  chatItems.value.push({ type: 'expert', speaker, text })
+  beginTyping()
+  await wait(400)   // 静态文本：短暂"准备发言"感，再流式展示
+  await streamExpertMessage(speaker, text)
+  endTyping()
+  nextTick(() => scrollToBottom())
+}
+
+// 阶段3：专家动态发言（LLM 独立生成，失败回退剧本文本）
+async function playGeneratedExpert(entry) {
+  beginTyping(entry.speaker)
+  const result = await director.speakAsExpert({
+    caseData: caseData.value,
+    ports: mdtPorts.value,
+    speaker: entry.speaker,
+    entry,
+    stageIdx: currentStage.value,
+    recentMessages: chatItems.value,
+    studentRole: studentRole.value,
+  })
+  if (result?.ok && result.text) {
+    currentSpeakerKey.value = entry.speaker
+    await streamExpertMessage(entry.speaker, result.text)   // 生成完成 → 流式展示
+    endTyping()
+    await wait(250)
+  } else {
+    endTyping()
+    await playExpert(entry.speaker, entry.text)
+  }
+}
+
+// 阶段3：分歧收敛（识别 → 二次讨论 → 归纳收敛；失败回退规则分歧语）
+async function runConvergence(opening, stageIdx) {
+  const transcripts = chatItems.value.filter(m => m.type === 'expert')
+  beginTyping('host')
+  const result = await director.convergeDisagreements({
+    caseData: caseData.value,
+    ports: mdtPorts.value,
+    studentRole: studentRole.value,
+    transcripts,
+    stageIdx,
+    recentMessages: chatItems.value,
+  })
+  endTyping()
+  if (!result.ok || !result.convergence) {
+    await playExpert('host', opening.disagreement)
+    return
+  }
+  if (result.disagreementMsg) await playExpert('host', result.disagreementMsg)
+  for (const r of result.reRound || []) {
+    await playExpert(r.speaker, r.text)
+  }
+  await playExpert('host', result.convergence)
   saveState()
   nextTick(() => scrollToBottom())
 }
@@ -637,13 +783,56 @@ async function playExpert(speaker, text) {
 async function playAgenda() {
   if (playing) return
   playing = true
+  const myRun = agendaRunId
   try {
     const agenda = caseData.value?.agenda || []
     while (agendaIndex.value < agenda.length) {
+      if (myRun !== agendaRunId) return   // 新一轮讨论已开始 → 放弃本轮剩余播报（重开保护）
       const entry = agenda[agendaIndex.value]
       agendaIndex.value++
-      currentStage.value = entry.phase
-      await playExpert(entry.speaker, entry.text)
+      if (entry.phase !== currentStage.value) {
+        currentStage.value = entry.phase
+        // 阶段开头注入分歧收敛 + 角色点名
+        const opening = director.getStageOpening(caseData.value, studentRole.value, entry.phase)
+        if (opening.disagreement) {
+          if (director.hasStage3(caseData.value)) {
+            await runConvergence(opening, entry.phase)
+          } else {
+            await playExpert('host', opening.disagreement)
+          }
+        }
+        if (opening.callout && studentRole.value === 'resident') {
+          // 住院医师点名延后到本阶段内容播完后再触发，避免内容未呈现就要学员先发言
+          // 同步记下本阶段首条任务 key，刷新恢复时若点名仍在延后可完整补触发
+          pendingStageCallout.value = opening.callout
+          calloutNextTask.value = entry.nextTask || ''
+        } else if (opening.callout) {
+          await playExpert('host', opening.callout)
+        }
+      }
+      // 阶段3：非 host 专家动态生成（独立知识库发言）；否则播剧本文本
+      // 阶段0 首条 host 内容已由 startDiscussion 的完整病例汇报替代 → 跳过文本、仅保留 nextTask 驱动
+      // （仅首条 agenda 生效：若未来病例以专家发言开场则正常播报，不误跳后续 host 内容）
+      const isFirstAgendaEntry = agendaIndex.value === 1
+      if (entry.speaker === 'host' && isFirstAgendaEntry && caseReportPlayed) {
+        caseReportPlayed = false
+      } else if (entry.speaker === 'host') {
+        await playExpert('host', entry.text)
+      } else if (director.hasStage3(caseData.value)) {
+        await playGeneratedExpert(entry)
+      } else {
+        await playExpert(entry.speaker, entry.text)
+      }
+      // 本阶段首条内容播完 → 触发延后的住院医师点名（作答后接本阶段任务卡，calloutNextTask 已在阶段切换时记下）
+      if (pendingStageCallout.value) {
+        const co = pendingStageCallout.value
+        pendingStageCallout.value = ''
+        chatItems.value.push({ type: 'callout', text: co })
+        pendingCallout.value = true
+        saveState()
+        nextTick(() => scrollToBottom())
+        return
+      }
       if (entry.nextTask) {
         pendingTask.value = entry.nextTask
         chatItems.value.push({ type: 'task', taskKey: entry.nextTask })
@@ -656,7 +845,7 @@ async function playAgenda() {
     pendingTask.value = null
     finishDiscussion()
   } finally {
-    playing = false
+    if (myRun === agendaRunId) playing = false   // 仅当前轮次释放锁，避免被重开中断的过期轮次误关新会话
   }
 }
 
@@ -668,9 +857,66 @@ function finishDiscussion() {
   phase.value = 'ended'
   saveState({ done: true })
   nextTick(() => scrollToBottom())
+  archiveMdtSession({ done: true })   // 立即归档完整记录（画像异步完成后同会话升级补充）
+  runPortraitAssessment()
 }
 
-function startDiscussion() {
+// ── 完整对话归档（训练记录，供后续分析专家AI表现与流程合理性）──
+// 以 startedAt 为会话级 epoch，同一会话重复归档（中断→完成）合并为一条并升级为完整内容
+function archiveMdtSession({ done }) {
+  if (!caseData.value) return
+  const s = store.trainingSession?.mdt || {}
+  const startedAt = s.startedAt || new Date().toISOString()
+  const finishedAt = new Date().toISOString()
+  const epoch = Date.parse(startedAt)
+  store.addTrainingRecord({
+    caseId: caseData.value.caseId || mdtId.value,
+    stationId: 'mdt',
+    stationName: 'MDT多学科讨论',
+    sessionEpoch: epoch,
+    trainingVersion: 'mdt',
+    score: null,                      // MDT 非硬评分，过程性反馈
+    done: !!done,
+    duration: Math.max(0, Math.round((Date.parse(finishedAt) - epoch) / 1000)),
+    caseTitle: caseData.value.patientInfo?.name || caseData.value.title || mdtId.value,
+    studentRole: studentRole.value,
+    startedAt,
+    finishedAt,
+    messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 完整对话（含专家发言/学员发言/任务/决策）
+    taskLabels: Object.fromEntries((caseData.value?.tasks || []).map(t => [t.key, t.label])),
+    portraitAssess: portraitAssess.value,
+    tasks: { ...taskValues.value },
+    selectedChoices: { ...selectedChoices.value },
+    submitted: { ...submitted.value },
+    skipped: { ...skipped.value },
+    markers: [...markers.value],
+    mdtId: mdtId.value,
+  })
+}
+
+// 阶段2：LLM 能力画像评估（批判性/循证/反思三维度）
+async function runPortraitAssessment() {
+  if (portraitAssess.value || portraitAssessing.value) return
+  const seq = runSeq
+  portraitAssessing.value = true
+  const result = await director.assessPortrait({
+    caseData: caseData.value,
+    studentRole: studentRole.value,
+    studentMessages: chatItems.value.filter(m => m.type === 'student'),
+    taskValues: { ...taskValues.value },
+    submitted: { ...submitted.value },
+  })
+  portraitAssessing.value = false
+  if (seq !== runSeq) return   // 已重新开始，丢弃过期评估
+  if (result) {
+    portraitAssess.value = result
+    saveState()
+  }
+  // 画像就绪后归档/升级完整记录（同会话按 startedAt 合并）
+  if (phase.value === 'ended') archiveMdtSession({ done: true })
+}
+
+async function startDiscussion() {
   if (!caseData.value) return
   store.saveSessionStage('mdt', {
     mdtId: mdtId.value,
@@ -691,14 +937,107 @@ function startDiscussion() {
   })
   phase.value = 'discussion'
   chatItems.value = []
-  // 观察者直接由 agenda phase 0 病例介绍开场，避免连续两条主持人重复介绍
-  const opening = caseData.value.roleScripts?.[studentRole.value]?.opening
-  if (opening && studentRole.value !== 'observer') pushExpert('host', opening)
+  // 重置运行态：重开时必须清掉上轮遗留的议程游标/阶段/任务/发言人，否则 playAgenda 会从旧位置续播或直接结束
+  agendaIndex.value = 0
+  currentStage.value = 0
+  pendingTask.value = null
+  currentSpeakerKey.value = 'host'
+  agendaRunId++
+  // 开场引入：欢迎 + 病例概要 + 核心议题 + 参与学科 + 流程（数据驱动，避免一上来就让学员发言）
+  const intro = buildMdtIntro(caseData.value)
+  if (intro) await playExpert('host', intro)   // 开场引入也流式展示，营造自然开场
+  // 完整病例汇报：真实 MDT 流程先分节详细讲病例，再进入诊断任务（替代 agenda 阶段0 的单句开场）
+  const report = buildCaseReport(caseData.value)
+  if (report) {
+    caseReportPlayed = true
+    await playExpert('host', report)
+  }
+  // 不再预置角色开场白：resident/attending 的 opening 均为"请先发言"类提示，
+  // 在病例介绍前会突兀地要求学员发言，且与 agenda 首条 nextTask（diag 任务）重复，
+  // 由 intro 引入 + 病例汇报 + 任务卡自然触发学员回合
   playAgenda()
+}
+
+// 完整病例汇报（阶段0）：真实 MDT 流程先分节详细讲病例，再进入诊断任务
+// 内容来自 patientInfo 结构化字段（管理端编辑器维护），逐字段拼接，全病例通用
+function buildCaseReport(cd) {
+  const pi = cd.patientInfo || {}
+  const seg = [`好的，我先完整汇报病例。患者：${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}，主诉：${pi.chiefComplaint || '不详'}。`]
+  if (pi.presentIllness) seg.push(`【现病史】${pi.presentIllness}`)
+  if (pi.pastHistory) seg.push(`【既往史】${pi.pastHistory}`)
+  if (pi.familyHistory) seg.push(`【家族史】${pi.familyHistory}`)
+  if (pi.physicalExam) seg.push(`【查体】${pi.physicalExam}`)
+  if (pi.vitals) seg.push(`【生命体征】${pi.vitals}`)
+  if (pi.labTests) seg.push(`【实验室检查】${pi.labTests}`)
+  if (pi.imagingText) seg.push(`【影像学】${pi.imagingText}`)
+  if (cd.objective) seg.push(`本次核心议题：${cd.objective}。`)
+  return seg.join('\n')
+}
+
+// 开场引入语：欢迎 + 病例 + 核心议题 + 参与学科 + 流程
+function buildMdtIntro(cd) {
+  const pi = cd.patientInfo || {}
+  const parts = [`欢迎参加本次 MDT 多学科讨论，今天围绕${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}（主诉：${pi.chiefComplaint || ''}）进行多学科会诊`]
+  if (cd.objective) parts.push(`核心议题：${cd.objective}`)
+  const disciplines = (cd.disciplines || []).join('、')
+  if (disciplines) parts.push(`参与学科：${disciplines}`)
+  const flow = (cd.stages || []).join(' → ')
+  if (flow) parts.push(`讨论流程：${flow}`)
+  return parts.join('。') + '。'
+}
+
+// 结束/中途重新开始本轮 MDT：重置阶段2/3 运行态与评估缓存，重建会话并重播议程
+function restartDiscussion() {
+  pendingCallout.value = false
+  taskValues.value = {}
+  selectedChoices.value = {}
+  submitted.value = {}
+  skipped.value = {}
+  markers.value = []
+  activeCard.value = null
+  confirmPlan.value = null
+  showConfirm.value = false
+  portraitAssess.value = null
+  portraitAssessing.value = false
+  showResult.value = false
+  pendingStageCallout.value = ''
+  calloutNextTask.value = ''
+  streamingActive.value = 0
+  agentsTyping.value = 0
+  caseReportPlayed = false
+  playing = false   // 若上轮 playAgenda 仍在飞：解除阻塞，由 startDiscussion 的 agendaRunId++ 令其中断
+  runSeq++
+  startDiscussion()
+}
+
+// 打开历史训练记录（完整对话存档回放）
+function goRecords() {
+  const epoch = store.trainingSession?.mdt?.startedAt
+  router.push({ name: 'mdtRecords', query: epoch ? { focus: Date.parse(epoch) } : {} })
+}
+
+// 点名作答/跳过 → 若有延后的任务卡则推送并暂停（等效正常 nextTask 流程）
+function flushCalloutTask() {
+  if (!calloutNextTask.value) return false
+  const key = calloutNextTask.value
+  calloutNextTask.value = ''
+  pendingTask.value = key
+  chatItems.value.push({ type: 'task', taskKey: key })
+  saveState()
+  nextTick(() => scrollToBottom())
+  return true
 }
 
 function continueDiscussion() {
   if (phase.value === 'ended') return
+  if (showConfirm.value) return
+  if (pendingCallout.value) {
+    pendingCallout.value = false
+    if (flushCalloutTask()) return
+    saveState()
+    playAgenda()
+    return
+  }
   if (pendingTask.value && !submitted.value[pendingTask.value]) {
     openCard(pendingTask.value)
     return
@@ -707,13 +1046,25 @@ function continueDiscussion() {
   playAgenda()
 }
 
+// 住院医师被点名 → "这次跳过"：不发言，交回话轮继续推进
+function skipCallout() {
+  if (!pendingCallout.value) return
+  pendingCallout.value = false
+  if (flushCalloutTask()) return
+  saveState()
+  playAgenda()
+}
+
 const continueLabel = computed(() => {
   if (phase.value === 'ended') return '讨论已结束'
+  if (showConfirm.value) return '请确认最终方案'
+  if (pendingCallout.value) return '这次跳过，继续讨论'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '完成任务后继续'
   return '继续讨论'
 })
 const continueHint = computed(() => {
   if (isTyping.value) return '专家正在发言…'
+  if (pendingCallout.value) return '主持人点名请你发言，可输入观点或点击跳过'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或直接输入观点'
   return '点击把话轮交回主持人继续推进'
 })
@@ -723,6 +1074,7 @@ const inputDisabled = computed(() => isTyping.value || phase.value === 'ended')
 const inputPlaceholder = computed(() => {
   if (phase.value === 'ended') return '本次讨论已结束'
   if (isTyping.value) return '专家正在发言…'
+  if (pendingCallout.value) return '请发表你的观点…（主持人已点名）'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或输入你的观点'
   return PLACEHOLDER_BY_ROLE[studentRole.value] || '输入你的观点或疑问，专家将回应...'
 })
@@ -766,15 +1118,75 @@ function buildFeedbackText(key) {
   return gentle ? '已收到你的作答，可对照后续 MDT 决策要点继续思考，对不上也没关系。' : '已收到你的作答。可对照后续 MDT 决策要点，看看你的思路与 MDT 共识的差异。'
 }
 
-function submitCard(key) {
+async function submitCard(key) {
+  const t = getTask(key)
   const value = getTaskValue(key)
   taskValues.value[key] = value
   submitted.value[key] = true
   saveState({ tasks: { ...taskValues.value } })
-  const fbText = buildFeedbackText(key)
-  if (fbText) pushExpert('host', fbText)
+
+  // attending 提交方案类 text 任务 → 先弹「确认最终方案」
+  if (getRoleConfig(studentRole.value).decision && t?.assess === 'plan' && t?.type === 'text') {
+    closeCard()
+    confirmPlan.value = { taskKey: key, text: String(value || '') }
+    showConfirm.value = true
+    return
+  }
+
+  await doSubmitFeedback(key, value)
   closeCard()
   nextTick(() => scrollToBottom())
+}
+
+// 阶段2：任务提交 LLM 过程反馈；choice/exhibit 有客观对错，保留静态反馈
+async function doSubmitFeedback(key, value) {
+  const t = getTask(key)
+  if (t?.type !== 'text') {
+    const fbText = buildFeedbackText(key)
+    if (fbText) pushExpert('host', fbText)
+    return
+  }
+  beginTyping('host')
+  const result = await director.onTaskSubmit({
+    caseData: caseData.value,
+    studentRole: studentRole.value,
+    taskKey: key,
+    taskValue: value,
+    task: t,
+  }, key)
+  if (result?.ok && result.text) {
+    currentSpeakerKey.value = 'host'
+    await streamExpertMessage('host', result.text)
+    endTyping()
+  } else {
+    endTyping()
+    const fbText = buildFeedbackText(key)
+    if (fbText) pushExpert('host', fbText)
+  }
+}
+
+// attending 确认最终方案
+function confirmFinalPlan() {
+  const plan = confirmPlan.value
+  if (!plan) return
+  showConfirm.value = false
+  confirmPlan.value = null
+  pushExpert('host', '已确认主诊医师最终方案。下面展示 MDT 决策，请对照分析差异。')
+  closeCard()
+  nextTick(() => scrollToBottom())
+  doSubmitFeedback(plan.taskKey, plan.text)
+}
+
+function reviseFinalPlan() {
+  const key = confirmPlan.value?.taskKey
+  if (key) {
+    submitted.value[key] = false
+    saveState()
+  }
+  showConfirm.value = false
+  confirmPlan.value = null
+  closeCard()
+  if (key) openCard(key)
 }
 
 function skipCard(key) {
@@ -807,53 +1219,43 @@ function addAnnotation(e) {
   })
 }
 
-// ── 学员插话（唯一 AI 调用点）──
+// ── 学员插话（阶段2：意图识别 + 角色差异化回应）──
 async function sendMessage() {
   const text = chatInput.value.trim()
   if (!text || inputDisabled.value) return
   chatItems.value.push({ type: 'student', text })
   chatInput.value = ''
+  const wasCallout = pendingCallout.value
+  if (pendingCallout.value) pendingCallout.value = false
   saveState()
   nextTick(() => scrollToBottom())
 
-  isTyping.value = true
-  let result = null
-  try {
-    result = await ai.sendMessage(
-      [{ role: 'user', content: text }],
-      buildInterruptSystemPrompt(text),
-      { temperature: 0.6, maxTokens: 800 },
-    )
-  } catch (e) {
-    result = { ok: false, content: '' }
-  }
-  isTyping.value = false
+  beginTyping(currentSpeakerKey.value)
+  const result = await director.onStudentInterrupt({
+    caseData: caseData.value,
+    studentRole: studentRole.value,
+    speakerKey: currentSpeakerKey.value,
+    recentMessages: chatItems.value,
+    taskContext: pendingTask.value ? { key: pendingTask.value, label: getTask(pendingTask.value)?.label || pendingTask.value } : null,
+    currentStage: currentStage.value,
+  }, text)
 
   const speaker = currentSpeakerKey.value
-  const fallback = '你的观点很有价值。结合目前的讨论，建议你关注当前议题的关键决策点，再思考一下其中的权衡。我们继续推进讨论。'
-  chatItems.value.push({ type: 'expert', speaker, text: result?.ok ? result.content : fallback })
-  saveState()
-  nextTick(() => scrollToBottom())
-}
-
-function buildInterruptSystemPrompt(studentMsg) {
-  const cd = caseData.value || {}
-  const speaker = currentSpeakerKey.value === 'host' ? '主持人' : currentSpeakerKey.value
-  const persp = (cd.knowledgeBase?.disciplinePerspectives || []).find(p => p.dept === speaker)
-  const perspText = persp?.view || (speaker === '主持人' ? '协调各学科意见，推动达成共识' : '')
-  const rc = ROLE_CONFIG[studentRole.value]
-  const recent = chatItems.value.slice(-5)
-    .map(m => (m.type === 'expert' ? `[${m.speaker}] ` : '[你] ') + (m.text || '').substring(0, 60))
-    .join('\n')
-  return [
-    `你是MDT会议中的${speaker}${speaker === '主持人' ? '（主持人，主任医师）' : '专家'}，正在主持/参与一场多学科讨论。`,
-    `当前病例：${cd.patientInfo?.chiefComplaint || ''}。核心议题：${cd.objective || ''}。`,
-    `你的学科观点：${perspText}`,
-    `学员身份：${rc?.label || studentRole.value}（${rc?.desc || ''}）${pendingTask.value ? `。当前等待学员完成任务：${getTask(pendingTask.value)?.label || pendingTask.value}` : ''}`,
-    `已发生的讨论：\n${recent}`,
-    `学员刚说：${studentMsg}`,
-    `请从你的视角回应学员。训练定位，以引导性为主：先肯定可取之处，再指出需补充的角度，最后反问一个引导性问题。回复150字以内，自然口语化，像真人专家在会议中说话。`,
-  ].join('\n')
+  if (result?.ok && result.text) {
+    await streamExpertMessage(speaker, result.text)
+    endTyping()
+  } else {
+    endTyping()
+    const fallback = '你的观点很有价值。结合目前的讨论，建议你关注当前议题的关键决策点，再思考一下其中的权衡。我们继续推进讨论。'
+    chatItems.value.push({ type: 'expert', speaker, text: fallback })
+    saveState()
+    nextTick(() => scrollToBottom())
+  }
+  // 住院医师被点名后作答 → 先推送延后的任务卡；否则续播议程
+  if (wasCallout) {
+    if (flushCalloutTask()) return
+    playAgenda()
+  }
 }
 
 // ── 能力画像（阶段1 规则计算）──
@@ -894,9 +1296,14 @@ const portraitRows = computed(() => {
     }
     rows.push({ dim: def.dim, score: Math.round(hit / total * 100), note: `要点命中 ${hit}/${total}` })
   }
-  rows.push({ dim: '批判性思维', score: null, note: '待AI评估（阶段2接入）' })
-  rows.push({ dim: '循证决策能力', score: null, note: '待AI评估（阶段2接入）' })
-  rows.push({ dim: '反思深度', score: null, note: '待AI评估（阶段2接入）' })
+  // 阶段2：批判性/循证/反思由 LLM 评估（结束讨论时触发）
+  if (portraitAssessing.value) {
+    for (const dim of ['批判性思维', '循证决策能力', '反思深度']) rows.push({ dim, score: null, note: 'AI评估中…' })
+  } else if (portraitAssess.value?.length) {
+    for (const p of portraitAssess.value) rows.push({ dim: p.dim, score: p.score, note: p.note })
+  } else {
+    for (const dim of ['批判性思维', '循证决策能力', '反思深度']) rows.push({ dim, score: null, note: '待AI评估' })
+  }
   return rows
 })
 
@@ -920,6 +1327,17 @@ function restoreSession(s) {
   taskValues.value = { ...(s.tasks || {}) }
   selectedChoices.value = { ...(s.selectedChoices || {}) }
   markers.value = s.markers || []
+  portraitAssess.value = s.portraitAssess || null
+  pendingCallout.value = !!s.pendingCallout
+  pendingStageCallout.value = s.pendingStageCallout || ''
+  calloutNextTask.value = s.calloutNextTask || ''
+  // 阶段内容开始播放后刷新：点名仍在延后，但触发点（首条内容）已呈现 → 立即补触发点名卡片
+  if (pendingStageCallout.value) {
+    chatItems.value.push({ type: 'callout', text: pendingStageCallout.value })
+    pendingStageCallout.value = ''
+    pendingCallout.value = true
+    saveState()
+  }
 }
 
 async function load() {
@@ -935,6 +1353,11 @@ async function load() {
   const saved = store.trainingSession?.mdt
   if (saved && saved.mdtId === mdtId.value) {
     restoreSession(saved)
+    if (phase.value === 'ended') {
+      // 画像未完成 → 补触发（完成后会自动归档）；画像已就绪 → 直接补归档（含改版前的旧会话回填）
+      if (!portraitAssess.value) runPortraitAssessment()
+      else archiveMdtSession({ done: true })
+    }
   }
 }
 
@@ -943,6 +1366,13 @@ function scrollToBottom() {
     discussionRef.value.scrollTop = discussionRef.value.scrollHeight
   }
 }
+
+// 中途离开讨论页 → 存档中断会话（供分析流程/专家异常；完成后同会话会升级为完整记录）
+onBeforeUnmount(() => {
+  if (phase.value === 'discussion' && chatItems.value.length > 0) {
+    archiveMdtSession({ done: false })
+  }
+})
 
 onMounted(load)
 </script>
@@ -1208,6 +1638,37 @@ onMounted(load)
 .chat-card-meta { font-size: 12px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-card-status { font-size: 18px; flex-shrink: 0; }
 
+/* ─── 主持人点名卡片 ─── */
+.callout-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  margin: 10px 4px 14px; padding: 14px 16px;
+  background: linear-gradient(135deg, #fffbeb, #fff7ed);
+  border: 1.5px solid #fcd34d; border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+}
+.callout-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #fbbf24; color: #fff; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.callout-body { flex: 1; min-width: 0; }
+.callout-title { font-size: 12px; font-weight: 700; color: #b45309; letter-spacing: .3px; margin-bottom: 4px; }
+.callout-text { font-size: 13px; color: #78350f; line-height: 1.7; white-space: pre-wrap; }
+.btn-skip-callout {
+  margin-top: 8px; padding: 4px 12px; border-radius: 14px;
+  border: 1px solid #fcd34d; background: #fff; color: #b45309;
+  font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 5px; transition: all .2s;
+}
+.btn-skip-callout:hover { background: #fef3c7; border-color: #f59e0b; }
+
+/* 点名时输入框高亮 */
+.chat-input.callout-input-active {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
+  background: #fffbeb;
+}
+
 /* ─── 继续讨论栏 ─── */
 .mdt-continue-bar {
   display: flex; align-items: center; gap: 12px;
@@ -1377,6 +1838,12 @@ onMounted(load)
 .result-table { width: 100%; border-collapse: collapse; }
 .result-table th, .result-table td { padding: 10px 14px; text-align: left; font-size: 13px; border-bottom: 1px solid #e5e7eb; }
 .result-table th { font-size: 12px; color: #6b7280; font-weight: 600; }
+.confirm-plan-label { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+.confirm-plan-text {
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px;
+  font-size: 13px; line-height: 1.7; color: #1f2937; white-space: pre-wrap; max-height: 320px; overflow-y: auto;
+}
+.confirm-plan-footer { justify-content: space-between; }
 
 /* ─── 通用 ─── */
 .badge-error { background: #fee2e2; color: #991b1b; padding: 3px 12px; border-radius: 14px; font-size: 12px; font-weight: 600; }

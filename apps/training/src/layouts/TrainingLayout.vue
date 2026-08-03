@@ -164,6 +164,8 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? 'MDT讨论室' : 'Discussion Room', to: null })
   } else if (name === 'adaptiveLearning') {
     items.push({ label: lang === 'zh' ? '学习画像' : 'Learning Profile', to: null })
+  } else if (name === 'vrLab') {
+    items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
   } else if (stationRoutes.includes(name)) {
     items.push({ label: lang === 'zh' ? '病例详情' : 'Detail', to: { name: 'caseDetail', params: { caseId: store.currentCase ? store.currentCase.id : '' } } })
     const stationLabels = { historyTaking: '病史采集', physicalExam: '体格检查', ancillaryTests: '辅助检查', diagnosis: '诊断', preliminaryDiag: '初步诊断', treatmentPlan: '治疗计划', medicalRecord: '病历书写', caseAnalysis: '病例分析', humanisticComm: '人文沟通' }

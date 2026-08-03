@@ -10,12 +10,25 @@ const mdtDetailCache = new Map()
 export async function loadMDTCases() {
   try {
     const res = await fetch('/api/mdt-cases')
-    const list = res.ok ? await res.json() : []
-    mdtCache = list
-    return list
+    const ct = (res.headers.get('content-type') || '').toLowerCase()
+    if (res.ok && ct.includes('json')) {
+      const list = await res.json()
+      mdtCache = list
+      return list
+    }
+    throw new Error('not json')
   } catch (e) {
-    mdtCache = []
-    return []
+    // 生产构建（preview）无 dev middleware，回退到构建时生成的索引文件
+    try {
+      const res = await fetch('/data/mdt-cases-index.json')
+      const ct = (res.headers.get('content-type') || '').toLowerCase()
+      const list = ct.includes('json') ? await res.json() : []
+      mdtCache = list
+      return list
+    } catch (e2) {
+      mdtCache = []
+      return []
+    }
   }
 }
 
@@ -27,7 +40,9 @@ export async function loadMDTCase(mdtId) {
   if (mdtDetailCache.has(mdtId)) return mdtDetailCache.get(mdtId)
   try {
     const res = await fetch(`/data/mdt-cases/${mdtId}-mdt.json`)
-    if (!res.ok) return null
+    // vite SPA fallback 对不存在的文件返回 200 HTML，需按 content-type 甄别
+    const ct = (res.headers.get('content-type') || '').toLowerCase()
+    if (!res.ok || !ct.includes('json')) return null
     const data = await res.json()
     mdtDetailCache.set(mdtId, data)
     return data

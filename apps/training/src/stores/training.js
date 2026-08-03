@@ -119,17 +119,20 @@ export const useTrainingStore = defineStore('training', () => {
   const RECORDS_KEY = 'training_records'
 
   function addTrainingRecord(record) {
-    // 内置版本统一考站名称
-    if (trainingVersion.value === '1.0') {
-      record.stationName = '病史采集'
-    } else if (trainingVersion.value === 'full-flow') {
-      record.stationName = '临床思维模拟训练'
+    // 内置版本统一考站名称（MDT 独立模块不受影响）
+    if (record.stationId !== 'mdt') {
+      if (trainingVersion.value === '1.0') {
+        record.stationName = '病史采集'
+      } else if (trainingVersion.value === 'full-flow') {
+        record.stationName = '临床思维模拟训练'
+      }
     }
     try {
       const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}')
       const ts = Date.now()
       const recordedAt = new Date().toISOString()
-      const se = sessionEpoch.value
+      // 会话级 epoch 优先（如 MDT 用 startedAt 自建 epoch），否则回退全局 sessionEpoch
+      const se = record.sessionEpoch || sessionEpoch.value
 
       // 同一 sessionEpoch + 同一考站（含同站多项目）合并为一条训练记录
       if (se) {
@@ -147,7 +150,20 @@ export const useTrainingStore = defineStore('training', () => {
         }
         if (existing) {
           const [existingKey, existingRec] = existing
-          existingRec.duration = (existingRec.duration || 0) + (record.duration || 0)
+          if (existingRec.stationId === record.stationId) {
+            // 同考站同会话的重新归档（如 MDT 中断存档 → 完成存档升级）：以新记录为准，时长替换而非累加
+            if (record.duration != null) existingRec.duration = record.duration
+            if (record.messages?.length) existingRec.messages = record.messages
+            if (record.portraitAssess) existingRec.portraitAssess = record.portraitAssess
+            if (record.tasks) existingRec.tasks = record.tasks
+            if (record.done != null) existingRec.done = record.done
+            if (record.caseTitle) existingRec.caseTitle = record.caseTitle
+            if (record.studentRole) existingRec.studentRole = record.studentRole
+            if (record.startedAt) existingRec.startedAt = record.startedAt
+            if (record.finishedAt) existingRec.finishedAt = record.finishedAt
+          } else {
+            existingRec.duration = (existingRec.duration || 0) + (record.duration || 0)
+          }
           if (record.score != null) existingRec.score = record.score
           existingRec.recordedAt = recordedAt
           existingRec.ts = ts
@@ -174,7 +190,7 @@ export const useTrainingStore = defineStore('training', () => {
         ts,
         recordedAt,
         sessionEpoch: se,
-        trainingVersion: trainingVersion.value,
+        trainingVersion: record.trainingVersion || trainingVersion.value,
         ...(sessionData ? { rawData: sessionData } : {}),
       }
       localStorage.setItem(RECORDS_KEY, safeStringify(records))
@@ -237,6 +253,19 @@ export const useTrainingStore = defineStore('training', () => {
         }
       }
       return expanded
+    } catch (e) {
+      return []
+    }
+  }
+
+  // MDT 多学科讨论训练记录：列出全部会话归档（按时间倒序）
+  function getMdtRecords() {
+    try {
+      const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}')
+      return Object.entries(records)
+        .filter(([, r]) => r.stationId === 'mdt')
+        .map(([key, val]) => ({ ...val, id: key }))
+        .sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt))
     } catch (e) {
       return []
     }
@@ -520,7 +549,7 @@ export const useTrainingStore = defineStore('training', () => {
     startStationFlow, advanceStation,
     saveSessionStage, clearSession,
     saveState, saveTrainingSession,
-    addTrainingRecord, getTrainingRecords, getCaseTrainingStatus,
+    addTrainingRecord, getTrainingRecords, getMdtRecords, getCaseTrainingStatus,
     loadRecordsFromServer, loadSessionDataFromServer,
     activeFlow, saveActiveFlow, hasUnfinishedSession, clearActiveFlow, loadActiveFlow,
     clearScoringCache, resetForNewSession,

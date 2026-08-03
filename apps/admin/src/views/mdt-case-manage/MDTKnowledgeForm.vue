@@ -19,10 +19,17 @@
           <option v-for="d in MDT_DISCIPLINES" :key="d" :value="d">{{ d }}</option>
         </select>
         <textarea class="input" rows="3" v-model="f.knowledgeBase.disciplinePerspectives[i].view" placeholder="该学科的观点、循证依据与分歧点"></textarea>
+        <details class="expert-config">
+          <summary>专家配置（阶段3 多智能体，可留空走降级）</summary>
+          <input class="input" style="width:100%;margin-top:6px" v-model="f.knowledgeBase.disciplinePerspectives[i].expertName" placeholder="专家姓名（如：陈明）">
+          <input class="input" style="width:100%;margin-top:4px" v-model="f.knowledgeBase.disciplinePerspectives[i].expertTitle" placeholder="专家头衔（如：心血管内科 · 主任医师）">
+          <input class="input" style="width:100%;margin-top:4px" v-model="f.knowledgeBase.disciplinePerspectives[i].persona" placeholder="人设/发言风格（如：严谨务实，重视循证）">
+          <textarea class="input" rows="5" style="margin-top:4px" v-model="f.knowledgeBase.disciplinePerspectives[i].expertKB" placeholder="该学科独立知识库（LLM 生成，训练端多智能体发言依据；留空=该学科走静态/单智能体降级）"></textarea>
+        </details>
       </div>
       <button class="btn btn-sm btn-danger" @click="f.knowledgeBase.disciplinePerspectives.splice(i, 1)">删除</button>
     </div>
-    <button class="btn btn-sm" @click="f.knowledgeBase.disciplinePerspectives.push({ dept: '', view: '' })">+ 添加学科观点</button>
+    <button class="btn btn-sm" @click="f.knowledgeBase.disciplinePerspectives.push(createEmptyDisciplinePerspective())">+ 添加学科观点</button>
   </div>
 
   <div class="card mb-4">
@@ -41,7 +48,7 @@
 </template>
 
 <script setup>
-import { MDT_DISCIPLINES } from './shared.js'
+import { MDT_DISCIPLINES, createEmptyDisciplinePerspective } from './shared.js'
 
 const props = defineProps({ form: { type: Object, required: true } })
 const f = props.form

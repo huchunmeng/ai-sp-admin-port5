@@ -436,6 +436,40 @@ export default defineConfig(({ mode }) => {
               fs.writeFileSync(path.join(outDir, 'data', 'case-index.json'), JSON.stringify(index), 'utf-8')
               console.log(`[copy-cases-build] 已复制 ${files.length} 个病例文件，索引 ${index.length} 条`)
             }
+
+            // MDT 病例一并复制，保证生产构建（preview）下 MDT 模块可用
+            if (fs.existsSync(ADMIN_MDT_CASES_DIR)) {
+              const mdtDestDir = path.join(outDir, 'data', 'mdt-cases')
+              fs.mkdirSync(mdtDestDir, { recursive: true })
+              const mdtFiles = fs.readdirSync(ADMIN_MDT_CASES_DIR).filter(f => f.endsWith('-mdt.json'))
+              for (const f of mdtFiles) {
+                fs.copyFileSync(path.join(ADMIN_MDT_CASES_DIR, f), path.join(mdtDestDir, f))
+              }
+              const mdtIndex = []
+              for (const f of mdtFiles) {
+                try {
+                  const data = JSON.parse(fs.readFileSync(path.join(ADMIN_MDT_CASES_DIR, f), 'utf-8'))
+                  const pi = data.patientInfo || {}
+                  mdtIndex.push({
+                    id: data.id || f.replace('-mdt.json', ''),
+                    caseId: data.caseId || '',
+                    sourceType: data.sourceType || 'manual',
+                    patientName: pi.name || '',
+                    gender: pi.gender || '',
+                    age: pi.age || '',
+                    disciplines: data.disciplines || [],
+                    objective: data.objective || '',
+                    teachingPhase: data.teachingPhase || '',
+                    levelLabel: data.levelLabel || '',
+                    filterKey: data.filterKey || '',
+                    source: data.source || '',
+                    updatedAt: data.updatedAt || ''
+                  })
+                } catch (e) { /* skip corrupt */ }
+              }
+              fs.writeFileSync(path.join(outDir, 'data', 'mdt-cases-index.json'), JSON.stringify(mdtIndex), 'utf-8')
+              console.log(`[copy-cases-build] 已复制 MDT 病例 ${mdtFiles.length} 个，索引 ${mdtIndex.length} 条`)
+            }
           }
         }
       })(),
