@@ -311,7 +311,9 @@ const mdtCasesPersist = () => jsonCollectionApi('mdt-cases', MDT_CASES_DIR, '-md
   return {
     id,
     caseId: data.caseId || '',
+    name: data.name || '',
     sourceType: data.sourceType || 'manual',
+    sourceRecordId: data.sourceRecordId || '',
     patientName: pi.name || '',
     gender: pi.gender || '',
     age: pi.age ?? '',

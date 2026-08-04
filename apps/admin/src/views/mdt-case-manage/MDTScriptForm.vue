@@ -1,18 +1,16 @@
 <template>
-  <div class="card mb-4">
-    <h4>讨论阶段（stages）</h4>
-    <p class="text-secondary" style="font-size:12px">阶段指示器按此展示；留空则训练端使用默认五阶段。agenda 的「阶段」数字应与此对齐（从 0 开始）</p>
+  <div>
+    <h3>讨论阶段（stages）</h3>
+    <p class="block-desc">阶段指示器按此展示；留空则训练端使用默认五阶段。agenda 的「阶段」数字应与此对齐（从 0 开始）</p>
     <div v-for="(s, i) in f.stages" :key="i" class="list-item">
       <input class="input" v-model="f.stages[i]">
       <button class="btn btn-sm btn-danger" @click="f.stages.splice(i, 1)">删除</button>
     </div>
     <button class="btn btn-sm" @click="f.stages.push('')">+ 添加阶段</button>
-  </div>
 
-  <div class="card mb-4">
-    <h4>讨论剧本（agenda）</h4>
-    <p class="text-secondary" style="font-size:12px">按此顺序逐条播放；带 nextTask 的条目发言后暂停，弹出学员任务卡片</p>
-    <div v-for="(a, i) in f.agenda" :key="i" class="agenda-item">
+    <h3>讨论剧本（agenda）</h3>
+    <p class="block-desc">按此顺序逐条播放；带 nextTask 的条目发言后暂停，弹出学员任务卡片</p>
+    <div v-for="(a, i) in f.agenda" :key="i" class="item-panel">
       <div class="agenda-head">
         <span class="agenda-phase">阶段 {{ a.phase }}</span>
         <input class="input" style="width:70px" type="number" min="0" max="6" v-model.number="f.agenda[i].phase" placeholder="阶段">
@@ -29,12 +27,10 @@
       <textarea class="input" rows="2" v-model="f.agenda[i].text" :placeholder="`第 ${i + 1} 条发言内容`"></textarea>
     </div>
     <button class="btn btn-sm" @click="addAgenda">+ 添加发言</button>
-  </div>
 
-  <div class="card mb-4">
-    <h4>任务卡片（tasks）</h4>
-    <p class="text-secondary" style="font-size:12px">通用任务模型：text（文字作答）/ choice（选择作答）/ exhibit（影像标注）。agenda 的 nextTask 引用任务 key，任务可任意组合。</p>
-    <div v-for="(t, i) in f.tasks" :key="i" class="task-item">
+    <h3>任务卡片（tasks）</h3>
+    <p class="block-desc">通用任务模型：text（文字作答）/ choice（选择作答）/ exhibit（影像标注）。agenda 的 nextTask 引用任务 key，任务可任意组合。</p>
+    <div v-for="(t, i) in f.tasks" :key="i" class="item-panel">
       <div class="task-head">
         <input class="input" style="width:100px" v-model="f.tasks[i].key" placeholder="任务key">
         <select class="select" style="flex:1" v-model="f.tasks[i].type" @change="ensureTaskShape(i)">
@@ -46,9 +42,11 @@
         </select>
         <button class="btn btn-sm btn-danger" @click="f.tasks.splice(i, 1)">删除</button>
       </div>
-      <div class="form-item">
-        <label>任务标题</label>
-        <input class="input" v-model="f.tasks[i].label" placeholder="如：初步诊断印象">
+      <div class="form-grid">
+        <div class="form-item">
+          <label>任务标题</label>
+          <input class="input" v-model="f.tasks[i].label" placeholder="如：初步诊断印象">
+        </div>
       </div>
       <div class="form-item">
         <label>任务说明</label>
@@ -70,11 +68,11 @@
 
       <template v-if="f.tasks[i].type === 'choice'">
         <div class="form-item">
-          <label style="display:flex;align-items:center;gap:8px;font-weight:500">
+          <label class="check-label">
             <input type="checkbox" v-model="f.tasks[i].multi"> 允许多选
           </label>
         </div>
-        <label style="font-weight:500;margin-bottom:6px;display:block">选项（勾选为正确答案）</label>
+        <label class="sub-label">选项（勾选为正确答案）</label>
         <div v-for="(o, oi) in f.tasks[i].options" :key="oi" class="list-item">
           <input type="checkbox" class="opt-check" :checked="isCorrect(i, oi)" @change="toggleCorrect(i, oi)">
           <input class="input" v-model="f.tasks[i].options[oi]">
@@ -94,7 +92,7 @@
             <input class="input" v-model="f.tasks[i].image.modality" placeholder="如：CT">
           </div>
         </div>
-        <label style="font-weight:500;margin-bottom:6px;display:block">标注期望病灶</label>
+        <label class="sub-label">标注期望病灶</label>
         <div v-for="(e, ei) in f.tasks[i].image.expected" :key="ei" class="list-item">
           <input class="input" v-model="f.tasks[i].image.expected[ei]">
           <button class="btn btn-sm btn-danger" @click="f.tasks[i].image.expected.splice(ei, 1)">删除</button>
@@ -104,7 +102,7 @@
 
       <div class="fb-block">
         <label class="fb-label">任务反馈</label>
-        <div class="form-item">
+        <div class="fb-col">
           <label class="fb-sub">命中（学员答对时展示）</label>
           <div v-for="(h, hi) in f.tasks[i].feedback.hits" :key="'h' + hi" class="list-item">
             <input class="input" style="width:70px" v-model="f.tasks[i].feedback.hits[hi].icon" placeholder="✓">
@@ -113,7 +111,7 @@
           </div>
           <button class="btn btn-sm" @click="f.tasks[i].feedback.hits.push({ icon: '✓', point: '' })">+ 添加命中</button>
         </div>
-        <div class="form-item">
+        <div class="fb-col">
           <label class="fb-sub">遗漏（学员遗漏时展示）</label>
           <div v-for="(m, mi) in f.tasks[i].feedback.misses" :key="'m' + mi" class="list-item">
             <input class="input" style="width:70px" v-model="f.tasks[i].feedback.misses[mi].icon" placeholder="✗">
@@ -194,21 +192,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
-h4 { margin: 0 0 6px; font-size: 15px; }
-.agenda-item, .task-item {
+h3 { margin: 28px 0 8px; font-size: 15px; color: var(--text-main); }
+h3:first-child { margin-top: 0; }
+.block-desc { margin: 0 0 12px; font-size: 12px; color: var(--text-secondary); }
+.list-item { display: flex; gap: 8px; margin-bottom: 6px; }
+.list-item > .input { flex: 1; }
+.item-panel {
   border: 1px solid var(--border); border-radius: 10px;
-  padding: 12px; margin-bottom: 12px; background: #fafbfc;
+  padding: 12px; margin-bottom: 12px; background: var(--card-bg);
 }
 .agenda-head, .task-head { display: flex; gap: 8px; margin-bottom: 8px; }
 .agenda-phase { font-size: 13px; font-weight: 600; color: var(--primary); align-self: center; min-width: 56px; }
-.list-item { display: flex; gap: 8px; margin-bottom: 6px; }
-.list-item > .input { flex: 1; }
 .opt-check { align-self: center; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 16px; }
+.form-item { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.form-item label, .sub-label { font-size: 12px; color: var(--text-secondary); }
+.sub-label { display: block; margin-bottom: 6px; }
+.check-label { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text-main); }
 .fb-block {
   margin-top: 10px; border: 1px dashed var(--border); border-radius: 8px;
-  padding: 10px; background: #fff;
+  padding: 10px; background: var(--background);
 }
-.fb-label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; }
+.fb-label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-main); }
+.fb-col { margin-bottom: 8px; }
 .fb-sub { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px; }
 </style>

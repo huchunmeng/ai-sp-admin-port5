@@ -13,6 +13,7 @@
         <table class="table">
           <thead>
             <tr>
+              <th>病例名称</th>
               <th>患者</th>
               <th>参与学科</th>
               <th>难度</th>
@@ -24,9 +25,10 @@
           <tbody>
             <tr v-for="c in cases" :key="c.id">
               <td>
-                <div style="font-weight:500">{{ c.patientName || '—' }}</div>
-                <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px;font-size:11px">{{ c.id }}</code>
+                <a class="record-link" @click="viewCase(c)">{{ c.name || c.id }}</a>
+                <div class="text-secondary" style="font-size:12px">{{ c.sourceRecordId || '手动创建' }}</div>
               </td>
+              <td>{{ c.patientName || '—' }}</td>
               <td>
                 <span v-for="d in c.disciplines" :key="d" class="badge badge-info" style="margin-right:4px">{{ d }}</span>
               </td>
@@ -35,13 +37,14 @@
               <td>{{ formatDate(c.updatedAt) }}</td>
               <td>
                 <div class="flex gap-2">
+                  <button class="btn btn-sm" @click="viewCase(c)">查看</button>
                   <button class="btn btn-sm" @click="editCase(c)">编辑</button>
                   <button class="btn btn-sm btn-danger" @click="deleteCase(c)">删除</button>
                 </div>
               </td>
             </tr>
             <tr v-if="!loading && cases.length === 0">
-              <td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary)">暂无 MDT 病例，点击「新增 MDT 病例」创建</td>
+              <td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary)">暂无 MDT 病例，点击「新增 MDT 病例」创建</td>
             </tr>
           </tbody>
         </table>
@@ -92,6 +95,10 @@ function createCase() {
   router.push({ name: 'mdtCaseEditor' })
 }
 
+function viewCase(c) {
+  router.push({ name: 'mdtCaseView', params: { mdtId: c.id } })
+}
+
 function editCase(c) {
   router.push({ name: 'mdtCaseEditor', params: { mdtId: c.id } })
 }
@@ -107,3 +114,10 @@ function deleteCase(c) {
 
 onMounted(loadCases)
 </script>
+
+<style scoped>
+.record-link {
+  color: var(--primary); font-weight: 500; cursor: pointer; font-size: 13px;
+}
+.record-link:hover { text-decoration: underline; }
+</style>

@@ -26,6 +26,7 @@ const routes = [
       { path: 'raw-records', name: 'rawRecords', component: () => import('@/views/raw-records/RawRecordList.vue') },
       { path: 'raw-record-editor/:id?', name: 'rawRecordEditor', props: true, component: () => import('@/views/raw-records/RawRecordEditor.vue') },
       { path: 'mdt-cases', name: 'mdtCases', component: () => import('@/views/mdt-case-manage/MDTCaseList.vue') },
+      { path: 'mdt-case-view/:mdtId', name: 'mdtCaseView', props: true, component: () => import('@/views/mdt-case-manage/MDTCaseView.vue') },
       { path: 'mdt-case-editor/:mdtId?', name: 'mdtCaseEditor', props: true, component: () => import('@/views/mdt-case-manage/MDTEditor.vue') },
 
     ]

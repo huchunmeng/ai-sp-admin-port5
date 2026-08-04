@@ -47,6 +47,7 @@ export function createEmptyMDTCase() {
   return {
     id: '',
     caseId: '',
+    name: '',
     sourceType: 'manual',
     sourceRecordId: '',
     stages: ['病例汇报', '影像解读', '综合讨论', '方案决策', '总结'],

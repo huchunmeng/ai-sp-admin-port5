@@ -166,7 +166,9 @@ export default defineConfig(({ mode }) => {
                     cases.push({
                       id: data.id || f.replace('-mdt.json', ''),
                       caseId: data.caseId || '',
+                      name: data.name || '',
                       sourceType: data.sourceType || 'manual',
+                      sourceRecordId: data.sourceRecordId || '',
                       patientName: pi.name || '',
                       gender: pi.gender || '',
                       age: pi.age || '',
