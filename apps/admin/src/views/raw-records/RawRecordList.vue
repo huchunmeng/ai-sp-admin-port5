@@ -4,7 +4,8 @@
       <div class="text-secondary">共 {{ records.length }} 份原始病历</div>
       <div class="flex gap-2">
         <button class="btn" @click="loadRecords" :disabled="loading">刷新列表</button>
-        <button class="btn btn-primary" @click="createRecord">+ 导入原始病历</button>
+        <button class="btn" disabled title="占位：Excel 导入待实现，后续在列表页接入（数据源：HIS 原始病历 Excel）">导入 Excel（待实现）</button>
+        <button class="btn btn-primary" @click="createRecord">+ 新建原始病历</button>
       </div>
     </div>
 
@@ -40,7 +41,7 @@
               </td>
             </tr>
             <tr v-if="!loading && records.length === 0">
-              <td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary)">暂无原始病历，点击「导入原始病历」添加（原文保存，供 SP 病例与 MDT 病例制作使用）</td>
+              <td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary)">暂无原始病历，点击「新建原始病历」添加（原文保存，供 SP 病例与 MDT 病例制作使用）</td>
             </tr>
           </tbody>
         </table>

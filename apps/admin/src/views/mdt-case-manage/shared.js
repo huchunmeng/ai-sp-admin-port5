@@ -68,9 +68,14 @@ export function createEmptyMDTCase() {
     decision: '',
     followUp: '',
     referencesList: [],
+    admissionContext: { daysHospitalized: 0, priorCourse: '', priorTherapy: [] },
+    trigger: { type: '跨科矛盾', reason: '' },
+    preMeeting: true,
+    inviteCandidates: [],
+    auxiliaryDisciplines: [],
+    disagreementPairs: [],
     roleScripts: {
       observer: { opening: '', interruptHint: '输入你的疑问...' },
-      resident: { opening: '', callOut: [] },
       attending: { opening: '', promptTemplates: [] }
     }
   }
@@ -81,3 +86,70 @@ export function genMDTId() {
   const ymd = d.toISOString().slice(0, 10).replace(/-/g, '')
   return `MDT-${ymd}-${Date.now().toString(36).slice(-4).toUpperCase()}`
 }
+
+// 原始病历类型中文名（全量 32 种，MDTKBForm / RawRecordEditor / MedicalRecordKB 共用）
+export const FTYPE_LABELS = {
+  'In_Record': '入院记录',
+  'FirstRecord': '首次病程记录',
+  'NormalRecord': '病程记录',
+  'DirectorInvestigate': '主任/副主任医师查房记录',
+  'AttendingInvestigate': '主治医师查房记录',
+  'ShiftToRecord': '转入记录',
+  'TurnOutRecord': '转出记录',
+  'Consultation_Record': '会诊记录',
+  'Multi_Dept_Consult': '多学科会诊记录',
+  'CrisisRecord': '危急值病程记录',
+  'SalvageRecord': '抢救记录',
+  'Special_Check_Record': '特殊检查记录',
+  'BloodRecord': '输血病程记录',
+  'Blood_Transfusion_Record': '输血治疗同意书',
+  'OperRecord': '操作记录',
+  'Operation_Record': '手术记录',
+  'Preoperative_discussion': '术前讨论记录',
+  'Preoperative_summary': '术前小结',
+  'OpsFirstRecord': '术后首次病程记录',
+  'OpsSafeCheck': '手术安全核查表',
+  'Ops_Agree_Record': '手术同意书',
+  'OpsRiskEvaluate': '重大（特殊）手术报告审批表',
+  'DifficultyDiscuss': '疑难病例讨论记录',
+  'MoreDifficultyDiscuss': '疑难病例讨论记录',
+  'CancerDifficultyDiscuss': '肿瘤疑难病例讨论记录',
+  'DeadDiscuss': '死亡病例讨论记录',
+  'Dead_Record': '死亡记录',
+  'LeaveHospitalRecord': '出院前病程记录',
+  'Out_Record': '出院记录',
+  'Vte_ProcessRecord': 'VTE病程记录',
+  'OpsDiscuss': '术前讨论记录',
+  'others': '其他记录'
+}
+
+export const FTYPE_ORDER = [
+  'In_Record', 'FirstRecord', 'NormalRecord',
+  'DirectorInvestigate', 'AttendingInvestigate',
+  'ShiftToRecord', 'TurnOutRecord',
+  'Consultation_Record', 'Multi_Dept_Consult',
+  'CrisisRecord', 'SalvageRecord', 'Special_Check_Record',
+  'BloodRecord', 'Blood_Transfusion_Record',
+  'OperRecord', 'Operation_Record',
+  'Preoperative_discussion', 'Preoperative_summary',
+  'OpsFirstRecord', 'OpsSafeCheck', 'Ops_Agree_Record', 'OpsRiskEvaluate',
+  'DifficultyDiscuss', 'MoreDifficultyDiscuss', 'CancerDifficultyDiscuss', 'DeadDiscuss', 'Dead_Record',
+  'LeaveHospitalRecord', 'Out_Record', 'Vte_ProcessRecord', 'OpsDiscuss', 'others'
+]
+
+export function orderOf(ft) { const i = FTYPE_ORDER.indexOf(ft); return i >= 0 ? i : 999 }
+
+// HIS 住院病历 10 类结构（中大医院信息中心分类规范）。会诊记录从病程记录拆出独立大类；
+// 营养病历/重症监护/临床路径当前数据源无对应 FTYPE，预留空类，未来导入对应编码时自动出现。
+export const FTYPE_GROUPS = [
+  { key: 'admission', label: '入院病历', ftypes: ['In_Record'] },
+  { key: 'progress', label: '病程记录', ftypes: ['FirstRecord', 'NormalRecord', 'DirectorInvestigate', 'AttendingInvestigate', 'ShiftToRecord', 'TurnOutRecord', 'CrisisRecord', 'SalvageRecord', 'BloodRecord', 'OpsFirstRecord', 'LeaveHospitalRecord', 'Vte_ProcessRecord', 'DifficultyDiscuss', 'MoreDifficultyDiscuss', 'CancerDifficultyDiscuss', 'DeadDiscuss', 'Dead_Record'] },
+  { key: 'consultation', label: '会诊记录', ftypes: ['Consultation_Record', 'Multi_Dept_Consult'] },
+  { key: 'surgery', label: '手术信息', ftypes: ['Operation_Record', 'OperRecord', 'Preoperative_discussion', 'OpsDiscuss', 'Preoperative_summary', 'OpsSafeCheck', 'OpsRiskEvaluate'] },
+  { key: 'consent', label: '知情同意', ftypes: ['Ops_Agree_Record', 'Blood_Transfusion_Record'] },
+  { key: 'nutrition', label: '营养病历', ftypes: [] },
+  { key: 'icu', label: '重症监护', ftypes: [] },
+  { key: 'other', label: '其他相关', ftypes: ['Special_Check_Record', 'others'] },
+  { key: 'discharge', label: '出院记录', ftypes: ['Out_Record'] },
+  { key: 'clinical-pathway', label: '临床路径', ftypes: [] }
+]

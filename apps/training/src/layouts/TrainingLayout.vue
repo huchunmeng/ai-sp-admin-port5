@@ -162,6 +162,9 @@ const crumbs = computed(function() {
   } else if (name === 'mdtDiscussion') {
     items.push({ label: lang === 'zh' ? 'MDT病例列表' : 'MDT Cases', to: { name: 'mdtCaseList' } })
     items.push({ label: lang === 'zh' ? 'MDT讨论室' : 'Discussion Room', to: null })
+  } else if (name === 'mdtPreMeeting') {
+    items.push({ label: lang === 'zh' ? 'MDT病例列表' : 'MDT Cases', to: { name: 'mdtCaseList' } })
+    items.push({ label: lang === 'zh' ? '会诊前发起' : 'Pre-Meeting', to: null })
   } else if (name === 'adaptiveLearning') {
     items.push({ label: lang === 'zh' ? '学习画像' : 'Learning Profile', to: null })
   } else if (name === 'vrLab') {

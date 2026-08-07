@@ -10,19 +10,7 @@
       <input class="input" v-model="f.roleScripts.observer.interruptHint" placeholder="如：输入你的疑问...">
     </div>
 
-    <h3>住院医师（resident）</h3>
-    <div class="filter-item" style="width:100%">
-      <label>开场白（主持人点名）</label>
-      <textarea class="input" rows="2" v-model="f.roleScripts.resident.opening" placeholder="如：请住院医师先说说你对这个病例的初步印象。"></textarea>
-    </div>
-    <label class="ref-label">各阶段点名语（callOut）</label>
-    <div v-for="(c, i) in f.roleScripts.resident.callOut" :key="i" class="list-item">
-      <input class="input" v-model="f.roleScripts.resident.callOut[i]" :placeholder="`点名语 ${i + 1}`">
-      <button class="btn btn-sm btn-danger" @click="f.roleScripts.resident.callOut.splice(i, 1)">删除</button>
-    </div>
-    <button class="btn btn-sm" @click="f.roleScripts.resident.callOut.push('')">+ 添加点名语</button>
-
-    <h3>主诊医师（attending）</h3>
+    <h3>主诊·管床·主任（attending）</h3>
     <div class="filter-item" style="width:100%">
       <label>开场白（请主诊汇报）</label>
       <textarea class="input" rows="2" v-model="f.roleScripts.attending.opening" placeholder="如：您作为主诊医师，请先汇报病例并组织本次讨论。"></textarea>

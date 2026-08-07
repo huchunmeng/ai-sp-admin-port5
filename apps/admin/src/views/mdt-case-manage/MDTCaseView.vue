@@ -220,8 +220,8 @@ const taskTypeLabel = (t) => TASK_TYPE_LABELS[t] || t || '—'
 const ASSESS_LABELS = { diagnosis: '诊断判断力', imaging: '影像识读能力', plan: '方案一致性' }
 const assessLabel = (a) => ASSESS_LABELS[a] || a || ''
 
-const ROLE_LABELS = { observer: '观察员', resident: '住院医师', attending: '主诊医师' }
-const roleLabel = (r) => ROLE_LABELS[r] || r
+const ROLE_LABELS = { observer: '观察者', attending: '主诊·管床·主任' }
+const roleLabel = (r) => (r === 'resident' ? '观察者' : (ROLE_LABELS[r] || r))   // 旧病例 resident → 观察者
 
 const SOURCE_LABELS = { ai: '系统内自建', raw: '基于原始病历', manual: '作者手动输入' }
 const sourceLabel = (t) => SOURCE_LABELS[t] || '—'

@@ -31,6 +31,7 @@ const routes = [
       // 新功能页面
       { path: 'mdt-cases', name: 'mdtCaseList', component: () => import('@/views/MDTCaseList.vue') },
       { path: 'mdt-discussion/:caseId?', name: 'mdtDiscussion', component: () => import('@/views/MDTDiscussion.vue') },
+      { path: 'mdt-premeeting/:caseId?', name: 'mdtPreMeeting', component: () => import('@/views/MDTPreMeeting.vue') },
       { path: 'mdt-records', name: 'mdtRecords', component: () => import('@/views/MDTRecordView.vue') },
       { path: 'adaptive-learning', name: 'adaptiveLearning', component: () => import('@/views/AdaptiveLearning.vue') },
       { path: 'vr-lab', name: 'vrLab', component: () => import('@/views/VRLab.vue') },

@@ -78,7 +78,6 @@ function buildDisagreementText(caseData, studentRole) {
   const views = perspectives.map(p => `【${p.dept}】${p.view.replace(/[。.!?]+$/, '')}`)
   const guide = {
     observer: '请学员旁听并思考：结合各方依据，你倾向哪一方，为什么？',
-    resident: '请住院医师结合循证依据谈谈你的倾向，并说明理由。',
     attending: '请主诊医师综合各方意见权衡利弊，确定最终策略方向。',
   }[studentRole] || '请学员权衡各学科意见，发表你的观点。'
   return `综合各位意见，目前分歧集中在：${views.join('；')}。我们进入讨论环节，${guide}`
@@ -87,7 +86,7 @@ function buildDisagreementText(caseData, studentRole) {
 // ── 阶段开头引导（advanceStage 注入部分，纯同步）──
 // 返回 { disagreement, callout }：
 //   disagreement — 分歧收敛语（渲染为普通 host 消息）
-//   callout      — 角色引导语（resident 渲染为高亮点名卡片可"这次跳过"；attending 渲染为普通 host 消息）
+//   callout      — 角色引导语（attending 渲染为普通 host 消息）
 function getStageOpening(caseData, studentRole, stageIdx) {
   if (!caseData) return { disagreement: '', callout: '' }
   const agenda = caseData.agenda || []
@@ -100,12 +99,71 @@ function getStageOpening(caseData, studentRole, stageIdx) {
   const rs = caseData.roleScripts?.[studentRole]
   const stageLabel = (caseData.stages || [])[stageIdx] || `第${stageIdx + 1}阶段`
   let callout = ''
-  if (studentRole === 'resident') {
-    callout = rs?.callOut?.[stageIdx] || `请住院医师结合「${stageLabel}」议题谈谈你的看法。`
-  } else if (studentRole === 'attending') {
+  if (studentRole === 'attending') {
     callout = rs?.promptTemplates?.[stageIdx] || `作为主诊医师，请组织本环节讨论并发表你的观点。`
   }
   return { disagreement, callout }
+}
+
+// ── 会诊前发起（DESIGN_02 §4.2）──
+// 全部纯数据驱动、不调 LLM：情境卡片/申请表预填/审批规则/资料包，沿用 buildCaseReport 的缺字段降级模式
+function buildMdtContext(cd) {
+  if (!cd) return ''
+  const pi = cd.patientInfo || {}
+  const admission = cd.admissionContext || {}
+  const trigger = cd.trigger || {}
+  const priorCourse = admission.priorCourse
+    || (pi.presentIllness ? `${pi.presentIllness.substring(0, 120)}…` : '患者入院后多学科评估，科室内部处理困难')
+  const dayPrefix = admission.daysHospitalized ? `入院第 ${admission.daysHospitalized} 天，` : ''
+  const triggerReason = trigger.reason || cd.objective || (typeof (cd.keyQuestions?.[0]) === 'string' ? cd.keyQuestions[0] : cd.keyQuestions?.[0]?.text) || '多学科协作诊疗'
+  const inviteList = (cd.inviteCandidates?.length ? cd.inviteCandidates : (cd.disciplines || [])).join('、')
+  return [
+    '【会诊前情境】',
+    `· 住院经过：${dayPrefix}${priorCourse}`,
+    `· 触发原因：${triggerReason}`,
+    inviteList ? `· 拟邀请科室：${inviteList}` : '',
+  ].filter(Boolean).join('\n')
+}
+
+function buildApplicationDraft(cd) {
+  const pi = cd.patientInfo || {}
+  const kqs = cd.keyQuestions || []
+  const questions = (kqs.length
+    ? kqs.map(q => (typeof q === 'string' ? q : q.text)).filter(Boolean)
+    : (cd.objective ? [cd.objective] : [])).join('\n')
+  const summary = [pi.chiefComplaint, pi.presentIllness, pi.labTests, pi.imagingText]
+    .filter(Boolean).join('；')
+  const candidates = cd.inviteCandidates?.length ? cd.inviteCandidates : (cd.disciplines || [])
+  return { questions, summary, candidates }
+}
+
+function assessPreMeetingApproval(cd, form) {
+  const missing = []
+  const depts = form?.depts || []
+  if (!form?.questions?.trim()) missing.push('需讨论的问题')
+  if (!form?.summary?.trim()) missing.push('病情摘要')
+  if (depts.length < 2) missing.push('拟邀请科室至少 2 个')
+  const crossDept = (cd.disciplines?.length || cd.inviteCandidates?.length || 0) >= 2
+  if (!crossDept) missing.push('跨学科会诊需求')
+  return { ok: missing.length === 0, missing }
+}
+
+function buildApprovalMessage({ pass, missing, depts }) {
+  if (pass) {
+    return `医务科审核通过：会诊申请资料齐全，涉及 ${(depts || []).length} 个学科，符合跨科会诊条件。请核对预发资料包，确认后进入会诊。`
+  }
+  return `医务科审核未通过，请补充：${(missing || []).join('、')}。请修改申请表后重新提交。`
+}
+
+function buildPreMeetingMaterial(cd) {
+  const pi = cd.patientInfo || {}
+  const views = cd.knowledgeBase?.disciplinePerspectives || []
+  const findView = kw => views.find(p => p.dept && p.dept.includes(kw))?.view || ''
+  return {
+    imaging: pi.imagingText || findView('影像') || '影像资料详见病例影像报告',
+    pathology: findView('病理') || '病理报告待出（病理科已纳入会诊，资料将于会诊前补发）',
+    lab: pi.labTests || '检验结果详见病例实验室检查',
+  }
 }
 
 // ── 插话三段式 Prompt（设计 7.4）──
@@ -170,6 +228,8 @@ function buildTaskFeedbackPrompt(ctx, taskKey) {
   const fb = task?.feedback || {}
   const standard = [...(fb.hits || []), ...(fb.misses || [])]
     .map(f => `${f.icon || '•'} ${f.point}`).join('\n')
+  const isPlan = task?.assess === 'plan' || taskKey === 'plan01'
+  const decisionAnchor = isPlan && cd.decision ? `\nMDT一致决策（供对照）：${cd.decision}` : ''
   const gentle = role.feedbackMode === 'gentle'
   return [
     '你是MDT会议主持人（主任医师），负责点评学员的作答并引导其对照MDT共识改进。以第一人称"我"自称。',
@@ -177,7 +237,7 @@ function buildTaskFeedbackPrompt(ctx, taskKey) {
     `任务：${task?.label || taskKey}`,
     `任务要求：${task?.prompt || ''}`,
     `学员作答：\n${valueText || '（未填写）'}`,
-    `MDT标准要点：\n${standard || '（无固定要点）'}`,
+    `MDT标准要点：\n${standard || '（无固定要点）'}${decisionAnchor}`,
     gentle
       ? '请以引导性语气点评学员作答：先指出做得好的地方，再点出与MDT标准要点的差距，最后用一句话引导学员改进。回复200字以内，对不上也没关系，重在思考过程。'
       : '请以专家点评语气评估学员作答：明确指出与MDT共识的差异与遗漏，给出具体改进建议。回复200字以内。',
@@ -274,6 +334,12 @@ export function useMDTDirector() {
     classifyIntent,
     selectMDTStrategy,
     getStageOpening,
+    buildDisagreementText,
+    buildMdtContext,
+    buildApplicationDraft,
+    assessPreMeetingApproval,
+    buildApprovalMessage,
+    buildPreMeetingMaterial,
     onStudentInterrupt,
     onTaskSubmit,
     assessPortrait,

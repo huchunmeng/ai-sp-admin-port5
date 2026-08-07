@@ -5,7 +5,6 @@
       <div class="hero-left">
         <h2><i class="fa-solid fa-users-between-lines"></i> MDT多学科讨论</h2>
         <p>选择病例，扮演多学科团队成员，展开协作讨论与临床决策</p>
-        <button class="hero-records-btn" @click="goRecords"><i class="fa-solid fa-folder-open"></i> 训练记录</button>
       </div>
       <div class="hero-stats">
         <div class="hero-stat"><strong>{{ mdtCases.length }}</strong><span>可用病例</span></div>
@@ -73,10 +72,6 @@ const router = useRouter()
 const loading = ref(true)
 const activeFilter = ref('all')
 
-function goRecords() {
-  router.push({ name: 'mdtRecords' })
-}
-
 const filters = [
   { key: 'all', label: '全部' },
   { key: 'cardio', label: '心血管' },
@@ -129,11 +124,6 @@ onMounted(load)
 }
 .hero-left h2 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
 .hero-left p { font-size: 12px; opacity: 0.85; }
-.hero-records-btn {
-  margin-top: 8px; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.15);
-  color: #fff; font-size: 12px; padding: 5px 14px; border-radius: 8px; cursor: pointer; transition: background .2s;
-}
-.hero-records-btn:hover { background: rgba(255,255,255,.28); }
 .hero-stats { display: flex; gap: 32px; }
 .hero-stat { text-align: center; }
 .hero-stat strong { display: block; font-size: 18px; font-weight: 700; }

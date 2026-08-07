@@ -21,7 +21,7 @@ export async function identifyDisagreements(caseData, transcripts, studentRole) 
     '你是MDT会议主持人（主任医师），负责识别各学科专家发言中的核心分歧点。',
     `病例：${caseData?.patientInfo?.name || ''}，${caseData?.objective || ''}`,
     `专家发言记录：\n${lines || '（无）'}`,
-    `学员角色：${studentRole || '住院医师'}`,
+    `学员角色：${studentRole || '主诊·管床·主任'}`,
     '请找出 1-3 个最实质的分歧点（两个学科间观点冲突）。只输出一个JSON数组，格式：[{"a":"学科A","b":"学科B","issue":"一句话描述分歧议题"}]，不要输出其他内容。a/b 必须是发言记录中出现的学科名。',
   ].join('\n\n')
   const result = await sendMessage([], sys, { temperature: 0.3, maxTokens: 500 })

@@ -45,11 +45,12 @@ const router = useRouter()
 const route = useRoute()
 const store = useTrainingStore()
 
-const ROLE_LABELS = { observer: '观察者', resident: '住院医师', attending: '主诊医师' }
+const ROLE_LABELS = { observer: '观察者', attending: '主诊·管床·主任' }
 const records = ref([])
 const expanded = reactive({})
 
 function roleLabel(role) {
+  if (role === 'resident') return '观察者'   // 旧记录住院医师 → 观察者
   return ROLE_LABELS[role] || role || '—'
 }
 

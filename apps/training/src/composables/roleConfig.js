@@ -1,28 +1,20 @@
 /**
- * MDT 学员角色配置（DESIGN_01 5.3）
- * 三种角色共享 Learner-paced 原则，差异在发言义务与决策权
+ * MDT 学员角色配置（DESIGN_02：真实 MDT 角色）
+ * 训练端流程重构后只保留主诊·管床·主任一个身份：进入讨论即扮演主诊医师，
+ * 会诊前发起申请、会诊中主导汇报、组织专家意见并拍板最终方案。观察者不再提供选择。
  */
 
 export const ROLE_CONFIG = {
-  observer: {
-    key: 'observer', label: '观察者',
-    duty: '无发言义务', decision: false, feedbackMode: 'gentle',
-    desc: '适合初次接触 MDT 或低年资学员，旁听专家讨论，随时可提问',
-  },
-  resident: {
-    key: 'resident', label: '住院医师',
-    duty: '被点名发言', decision: false, feedbackMode: 'gentle',
-    desc: '模拟真实 MDT 中轮转住院医师，被主持人点名谈观点，专家引导反馈',
-  },
   attending: {
-    key: 'attending', label: '主诊医师',
-    duty: '主导讨论并拍板', decision: true, feedbackMode: 'expert',
-    desc: '模拟发起 MDT 的主诊医师，负责组织讨论并做出最终决策',
+    key: 'attending', label: '主诊·管床·主任',
+    duty: '发起+汇报+组织+拍板', decision: true, feedbackMode: 'expert',
+    desc: '模拟发起 MDT 的主诊·管床·主任：会诊前发起申请，会诊中主导汇报、组织专家意见并拍板最终方案',
+    preMeeting: true,
   },
 }
 
 export const ROLE_OPTIONS = Object.values(ROLE_CONFIG)
 
 export function getRoleConfig(role) {
-  return ROLE_CONFIG[role] || ROLE_CONFIG.observer
+  return ROLE_CONFIG[role] || ROLE_CONFIG.attending
 }

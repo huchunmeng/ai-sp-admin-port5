@@ -88,7 +88,8 @@ export function createEmptyFormData() {
     station_scores: null,
     examination_materials: [],
     expertReview: { enabled: false, expertName: '', expertTitle: '', expertAvatar: '', expertTags: [], expertKB: '', reviewTitle: '' },
-    medicalRecords: {}
+    medicalRecords: {},
+    sourceRecordId: ''
   }
 }
 
@@ -516,6 +517,9 @@ export async function loadCaseDataFromFiles(caseId) {
     }
     if (medicalRecordsData && medicalRecordsData.records) {
       formData.medicalRecords = medicalRecordsData.records
+    }
+    if (medicalRecordsData && medicalRecordsData.sourceRecordId) {
+      formData.sourceRecordId = medicalRecordsData.sourceRecordId
     }
     return { formData, raw: { basicData, scoreSheetData, receptionData, analysisData, humanityData, mentalExamData, metaData, materialsData, expertData, medicalRecordsData } }
   } catch (e) {

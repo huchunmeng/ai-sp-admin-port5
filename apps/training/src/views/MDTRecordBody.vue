@@ -7,9 +7,9 @@
       <div class="rec-meta-item"><span class="lbl">归档时间</span><span>{{ fmtTime(r.recordedAt) }}</span></div>
     </div>
 
-    <!-- 能力画像 -->
+    <!-- 能力评价 -->
     <div class="rec-section" v-if="r.portraitAssess?.length">
-      <h4 class="sec-title"><i class="fa-solid fa-brain"></i> 能力画像</h4>
+      <h4 class="sec-title"><i class="fa-solid fa-brain"></i> 能力评价</h4>
       <div class="portrait-grid">
         <div class="portrait-item" v-for="p in r.portraitAssess" :key="p.dim">
           <div class="pi-top">
@@ -61,13 +61,14 @@
 </template>
 
 <script setup>
-const ROLE_LABELS = { observer: '观察者', resident: '住院医师', attending: '主诊医师' }
+const ROLE_LABELS = { observer: '观察者', attending: '主诊·管床·主任' }
 
 defineProps({
   r: { type: Object, required: true }
 })
 
 function roleLabel(role) {
+  if (role === 'resident') return '观察者'   // 旧记录住院医师 → 观察者
   return ROLE_LABELS[role] || role || '—'
 }
 

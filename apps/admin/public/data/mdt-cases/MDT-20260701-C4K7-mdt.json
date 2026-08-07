@@ -33,6 +33,42 @@
   "levelLabel": "高阶病例",
   "filterKey": "cardio",
   "source": "院士精讲",
+  "admissionContext": {
+    "daysHospitalized": 9,
+    "priorCourse": "入院第9天。患者急诊收治后于入院第2天行冠脉造影示三支病变（前降支近段95%、回旋支中段80%、右冠远段75%狭窄），SYNTAX评分32分。药物治疗下仍有活动性胸痛，心内科主张分次PCI减少造影剂暴露、心外科主张CABG远期获益更优，两科方案冲突，科室内部无法裁决，故提请MDT。",
+    "priorTherapy": [
+      "阿司匹林+替格瑞洛",
+      "阿托伐他汀20mg qn",
+      "硝酸甘油舌下含服"
+    ]
+  },
+  "trigger": {
+    "type": "跨科矛盾",
+    "reason": "心内科主张分次PCI保肾功能，心外科主张CABG远期获益，两科方案冲突，科室内部无法裁决"
+  },
+  "preMeeting": true,
+  "inviteCandidates": [
+    "心内科",
+    "心外科",
+    "肾内科"
+  ],
+  "auxiliaryDisciplines": [
+    "临床药学",
+    "麻醉科"
+  ],
+  "disagreementPairs": [
+    {
+      "pair": [
+        "心内科",
+        "心外科"
+      ],
+      "issue": "CKD3期三支病变：分次PCI vs CABG 如何权衡肾功能保护与远期获益",
+      "stances": {
+        "心内科": "分次PCI优先处理LAD罪犯病变，减少造影剂用量，肾功能风险更低",
+        "心外科": "三支病变+糖尿病+CKD，SYNTAX 32分，CABG远期预后优于PCI且避免重复造影剂暴露"
+      }
+    }
+  ],
   "keyQuestions": [
     "CKD 3期患者行CABG vs PCI的获益/风险如何权衡？",
     "造影剂肾病预防策略：水化方案、N-乙酰半胱氨酸证据级别？",

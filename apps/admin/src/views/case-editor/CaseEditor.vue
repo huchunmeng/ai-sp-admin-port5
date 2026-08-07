@@ -129,7 +129,17 @@
 
       <div class="tab-content">
         <div v-show="activeTab === 'medicalKB'" class="tab-panel" key="medicalKB">
-          <MedicalRecordKB :records="formData.medicalRecords || {}" />
+          <div class="mrkb-link-bar">
+            <span class="mrkb-link-label">关联原始病历：</span>
+            <select v-model="formData.sourceRecordId" class="input" style="max-width:420px">
+              <option value="">不关联（仅用下方独立病历数据）</option>
+              <option v-for="r in rawRecordsList" :key="r.id" :value="r.id">{{ r.title || r.id }}</option>
+            </select>
+            <span v-if="rawRecordsList.length === 0" class="mrkb-link-tip">{{ rawRecordsLoading ? '原始病历列表加载中...' : '（暂无原始病历）' }}</span>
+            <span v-else-if="formData.sourceRecordId" class="mrkb-link-tip"><i class="fas fa-link"></i> 已关联，知识库以该原始病历为准</span>
+            <span v-else class="mrkb-link-tip">选择后可查看该原始病历全量记录</span>
+          </div>
+          <MedicalRecordKB :records="formData.medicalRecords || {}" :source-record-id="formData.sourceRecordId || ''" />
         </div>
         <div v-show="activeTab === 'basic'" class="tab-panel" key="basic">
           <BasicInfoEditor
@@ -783,6 +793,20 @@ const tabs = computed(() => {
 })
 const activeTab = ref('medicalKB')
 
+const rawRecordsList = ref([])
+const rawRecordsLoading = ref(false)
+async function loadRawRecords() {
+  rawRecordsLoading.value = true
+  try {
+    const res = await fetch('/api/raw-records')
+    if (res.ok) {
+      const data = await res.json()
+      rawRecordsList.value = Array.isArray(data) ? data : (data.items || [])
+    }
+  } catch (e) { /* ignore */ }
+  finally { rawRecordsLoading.value = false }
+}
+
 const isSimpleLevel = computed(() => ['U1', 'U2'].includes(formData.value.teaching_phase))
 
 const availableSpecialties = computed(() => {
@@ -1416,9 +1440,9 @@ function saveDraft() {
     })
   }
 
-  const medicalRecords = formData.value.medicalRecords
-  if (medicalRecords && Object.keys(medicalRecords).length > 0) {
-    saveFile(caseId + '-medicalRecords.json', { caseId, records: medicalRecords })
+  const medicalRecords = formData.value.medicalRecords || {}
+  if (formData.value.sourceRecordId || Object.keys(medicalRecords).length > 0) {
+    saveFile(caseId + '-medicalRecords.json', { caseId, sourceRecordId: formData.value.sourceRecordId || '', records: medicalRecords })
   }
 
   toast.show('草稿已保存')
@@ -1430,6 +1454,7 @@ onMounted(() => {
     { rootMargin: '-1px 0px 0px 0px', threshold: 0 }
   )
   if (sentinelRef.value) observer.observe(sentinelRef.value)
+  loadRawRecords()
 })
 
 onUnmounted(() => {
@@ -3089,5 +3114,32 @@ async function acceptGenerated() {
 
 .pv-list li {
   margin-bottom: 2px;
+}
+
+.mrkb-link-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.mrkb-link-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.mrkb-link-tip {
+  color: var(--text-tertiary);
+}
+
+.mrkb-link-tip i {
+  color: var(--primary);
+  margin-right: 4px;
 }
 </style>

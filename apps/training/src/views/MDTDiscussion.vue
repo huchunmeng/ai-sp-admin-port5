@@ -26,18 +26,15 @@
             </div>
           </div>
         </div>
-        <div class="prep-role-title">选择你的角色</div>
-        <div class="prep-roles">
-          <div v-for="r in ROLE_OPTIONS" :key="r.key"
-            :class="['prep-role', { active: studentRole === r.key }]"
-            @click="studentRole = r.key">
-            <div class="prep-role-icon">{{ ROLE_ICONS[r.key] }}</div>
-            <div class="prep-role-name">{{ r.label }}</div>
-            <div class="prep-role-duty">{{ r.duty }}</div>
-            <div class="prep-role-desc">{{ r.desc }}</div>
+        <div class="prep-role-title">你将作为</div>
+        <div class="prep-role-fixed">
+          <div class="prep-role-fixed-icon"><i class="fa-solid fa-user-tie"></i></div>
+          <div>
+            <div class="prep-role-fixed-name">{{ roleOption.label }}</div>
+            <div class="prep-role-fixed-duty">{{ roleOption.duty }}</div>
+            <div class="prep-role-fixed-desc">{{ roleOption.desc }}</div>
           </div>
         </div>
-        <div class="prep-note">你将在 AI 主持的 MDT 会议中扮演所选角色，AI 专家会根据你的角色调整互动方式。</div>
         <button class="btn btn-primary prep-start" @click="startDiscussion">开始 MDT 讨论</button>
       </div>
     </div>
@@ -46,7 +43,7 @@
     <template v-else>
       <!-- 阶段指示器 -->
       <div class="steps-bar">
-        <div v-for="(stage, i) in stages" :key="i" class="step-item">
+        <div v-for="(stage, i) in runtimeStages" :key="i" class="step-item">
           <div :class="['step-dot', { done: i < currentStage, current: i === currentStage }]">
             {{ i < currentStage ? '✓' : i + 1 }}
           </div>
@@ -57,19 +54,16 @@
         </button>
       </div>
 
-      <!-- 结束横幅 -->
-      <div v-if="phase === 'ended'" class="mdt-ended-bar">
-        <span><i class="fa-solid fa-flag-checkered"></i> 本次 MDT 讨论已结束</span>
-        <button class="btn btn-primary btn-sm" @click="showResult = true"><i class="fa-solid fa-chart-pie"></i> 查看能力画像</button>
-        <button class="btn btn-sm" @click="goRecords"><i class="fa-solid fa-folder-open"></i> 历史记录</button>
-        <button class="btn btn-sm" @click="restartDiscussion"><i class="fa-solid fa-rotate-right"></i> 重新开始</button>
-      </div>
-
       <!-- 主体：三栏布局 -->
       <div class="mdt-layout">
         <!-- 左栏：病例信息（分页） -->
         <div class="mdt-sidebar-left">
-          <div class="case-info-title"><i class="fa-solid fa-folder-open"></i> 病例信息</div>
+          <div class="case-info-title">
+            <span><i class="fa-solid fa-folder-open"></i> 病例信息</span>
+            <button v-if="hasRawRecord" class="btn btn-sm case-raw-btn" @click="openRawDrawer">
+              <i class="fa-solid fa-folder-open"></i> 原始病历
+            </button>
+          </div>
 
           <!-- Tab 导航 -->
           <div class="info-tabs">
@@ -204,16 +198,6 @@
                 <div class="chat-card-status" v-else><i class="fa-solid fa-chevron-right" style="color:#9ca3af;"></i></div>
               </div>
 
-              <!-- 主持人点名卡片 -->
-              <div v-else-if="item.type === 'callout'" class="callout-card">
-                <div class="callout-icon"><i class="fa-solid fa-bullhorn"></i></div>
-                <div class="callout-body">
-                  <div class="callout-title">主持人点名</div>
-                  <div class="callout-text">{{ item.text }}</div>
-                  <button v-if="pendingCallout" class="btn-skip-callout" @click="skipCallout">这次跳过 <i class="fa-solid fa-forward"></i></button>
-                </div>
-              </div>
-
               <!-- MDT最终决策 -->
               <div v-else-if="item.type === 'decision'" class="mdt-decision-card">
                 <div class="decision-header"><i class="fa-solid fa-gavel"></i> MDT最终决策</div>
@@ -233,6 +217,17 @@
                   <div v-for="(r, i) in caseData.referencesList" :key="i" class="ref-item">{{ i + 1 }}. {{ r }}</div>
                 </div>
               </div>
+
+              <!-- 原始病历入口 -->
+              <div v-else-if="item.type === 'case-raw'" class="case-raw-card">
+                <div class="case-raw-icon"><i class="fa-solid fa-folder-open"></i></div>
+                <div class="case-raw-body">
+                  <div class="case-raw-title">原始病历</div>
+                  <div class="case-raw-text">可查看本次 MDT 之前住院期间的原始病历（按事件线整理）。</div>
+                  <button class="btn btn-primary btn-sm" @click="openRawDrawer">查看原始病历 <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+              </div>
+
             </template>
 
             <!-- 打字指示器 -->
@@ -260,7 +255,7 @@
           <!-- 底部输入栏 -->
           <div class="mdt-input-bar">
             <button class="input-voice-btn" title="语音输入"><i class="fa-solid fa-microphone"></i></button>
-            <input v-model="chatInput" class="chat-input" :class="{ 'callout-input-active': pendingCallout }" :placeholder="inputPlaceholder" :disabled="inputDisabled" @keyup.enter="sendMessage" />
+            <input v-model="chatInput" class="chat-input" :placeholder="inputPlaceholder" :disabled="inputDisabled" @keyup.enter="sendMessage" />
             <button class="input-send-btn" @click="sendMessage" :disabled="!chatInput.trim() || inputDisabled"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
         </div>
@@ -368,33 +363,35 @@
         </div>
       </div>
 
-      <!-- 能力画像弹窗 -->
-      <div v-if="showResult" class="modal-overlay" @click.self="showResult = false">
-        <div class="modal-container">
-          <div class="modal-header">
-            <h3>MDT能力画像</h3>
-            <button class="modal-close" @click="showResult = false"><i class="fa-solid fa-xmark"></i></button>
+      <!-- 原始病历抽屉（事件线） -->
+      <div v-if="rawDrawerOpen" class="raw-drawer-overlay" @click.self="closeRawDrawer">
+        <div class="raw-drawer">
+          <div class="raw-drawer-header">
+            <div class="raw-drawer-title"><i class="fa-solid fa-folder-open"></i> 原始病历 · 事件线</div>
+            <button class="modal-close" @click="closeRawDrawer"><i class="fa-solid fa-xmark"></i></button>
           </div>
-          <div class="modal-body">
-            <table class="result-table">
-              <thead><tr><th>评估维度</th><th>得分</th><th>评价</th></tr></thead>
-              <tbody>
-                <tr v-for="row in portraitRows" :key="row.dim">
-                  <td>{{ row.dim }}</td>
-                  <td>
-                    <span v-if="row.score !== null" class="badge" :class="badgeClass(row.score)">{{ row.score }}%</span>
-                    <span v-else class="badge badge-info">待AI评估</span>
-                  </td>
-                  <td>{{ row.note }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" @click="showResult = false">确认</button>
+          <div class="raw-drawer-body">
+            <div v-if="rawLoading" class="raw-drawer-empty"><i class="fa-solid fa-spinner fa-spin"></i> 加载中...</div>
+            <div v-else-if="rawRecords && rawRecords.hasData" class="raw-timeline">
+              <div v-for="(rec, i) in rawRecords.items" :key="i" class="raw-item" :class="{ expanded: rawExpanded.has(i) }">
+                <div class="raw-item-header" @click="toggleRawExpand(i)">
+                  <span class="raw-item-date"><i class="fa-regular fa-calendar"></i> {{ rec.createDate || '—' }}</span>
+                  <span class="raw-item-type">{{ rec.ftypeLabel }}</span>
+                  <span v-if="rec.doctorCode" class="raw-item-doctor"><i class="fa-solid fa-user-doctor"></i> {{ rec.doctorCode }}</span>
+                  <button class="raw-item-toggle">{{ rawExpanded.has(i) ? '收起' : '展开' }}</button>
+                </div>
+                <div v-if="rawExpanded.has(i)" class="raw-item-body"><pre>{{ rec.content }}</pre></div>
+              </div>
+            </div>
+            <div v-else-if="rawRecords && rawRecords.fallback" class="raw-timeline">
+              <div class="raw-fallback-title">原始病历全文</div>
+              <pre class="raw-item-body-pre">{{ rawRecords.fallback }}</pre>
+            </div>
+            <div v-else class="raw-drawer-empty"><i class="fa-regular fa-folder-open"></i> 暂无原始病历数据</div>
           </div>
         </div>
       </div>
+
     </template>
   </div>
 </template>
@@ -406,8 +403,9 @@ import { toast } from '@ai-sp/shared'
 import { loadMDTCase, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { useMDTDirector } from '@/composables/useMDTDirector'
+import { loadRawRecords } from '@/composables/useRawRecords'
 import { useTrainingStore } from '@/stores/training'
-import { ROLE_OPTIONS, getRoleConfig } from '@/composables/roleConfig'
+import { getRoleConfig } from '@/composables/roleConfig'
 
 const route = useRoute()
 const router = useRouter()
@@ -424,8 +422,8 @@ const EXPERT_AVATARS = [
   AVATAR_BASE + encodeURIComponent('男医生形象 (1).png'),
 ]
 const EXPERT_AVATAR_CLASSES = ['av-host', 'av-onco', 'av-radio', 'av-path', 'av-nurse', 'av-anes']
-const ROLE_ICONS = { observer: '👁', resident: '🩺', attending: '🎯' }
-const PLACEHOLDER_BY_ROLE = { observer: '输入你的疑问...', resident: '请发表你的观点...', attending: '请组织讨论/追问...' }
+const ROLE_ICONS = { observer: '👁', attending: '🎯' }
+const PLACEHOLDER_BY_ROLE = { observer: '输入你的疑问...', attending: '请组织讨论/追问...' }
 
 // 任务图标/配色按 type 兜底（任务 JSON 可自定义 icon）
 const STYLE_BY_TYPE = {
@@ -435,29 +433,37 @@ const STYLE_BY_TYPE = {
 }
 const DEFAULT_STYLE = { bg: '#f3f4f6', color: '#6b7280', icon: 'fa-solid fa-clipboard' }
 
+// 流程版本：v2 = 新流程（病例汇报→专科意见→影像→自由讨论→拍板→反思，无初步诊断任务卡）。
+// 旧存档（v1，含 diag01 任务卡/五段 agenda）恢复时自动重播新流程。
+const MDT_FLOW_VERSION = 2
+
 // ── 状态机 ──
 const loading = ref(true)
-const phase = ref('prep')          // 'prep' | 'discussion' | 'ended'
+const phase = ref('prep')          // 'prep' | 'discussion' | 'ended'（会诊前发起在独立页面 mdtPreMeeting）
 const mdtId = ref('')
 const caseData = ref(null)
-const studentRole = ref('resident')
+const studentRole = ref('attending')
 const currentStage = ref(0)
 const agentsTyping = ref(0)      // 阶段3 多智能体并发计数（>0 即处于发言中）
 const streamingActive = ref(0)   // 流式展示中（此时隐藏"正在发言"指示器）
 const isTyping = computed(() => agentsTyping.value > 0)
 const showTypingIndicator = computed(() => agentsTyping.value > 0 && streamingActive.value === 0)
-const showResult = ref(false)
 const discussionRef = ref(null)
 const chatItems = ref([])
-const agendaIndex = ref(0)         // 下一要播的 agenda 条目索引
+const agendaIndex = ref(0)         // 下一要播的 runtimeAgenda 条目索引
 const pendingTask = ref(null)      // 当前暂停等待的任务类型
 const currentSpeakerKey = ref('host')
+const decisionRevealed = ref(false)   // MDT 决策卡是否已在拍板环节展示
 let playing = false
 let agendaRunId = 0            // 讨论运行标记：重开时自增，令旧的 playAgenda 中断，避免残留异步污染新会话
-let caseReportPlayed = false   // startDiscussion 已播完整病例汇报 → 阶段0 首条 host 文本跳过（保留 nextTask）
-
-// 阶段标签数据化：病例 JSON 可提供 stages 覆盖默认五段
-const stages = computed(() => caseData.value?.stages || ['病例汇报', '影像解读', '综合讨论', '方案决策', '总结决策'])
+// ── 新流程阶段（运行时合成，替代病例自带 stages/agenda 的旧五段）──
+const hasExhibit = computed(() => (caseData.value?.tasks || []).some(t => t.type === 'exhibit'))
+const runtimeStages = computed(() => {
+  const list = ['病例汇报', '专科意见']
+  if (hasExhibit.value) list.push('影像解读')
+  list.push('自由讨论', '拍板决策', '反思')
+  return list
+})
 
 // ── 病例信息分页 ──
 const activeInfoTab = ref('basic')
@@ -476,17 +482,45 @@ const taskValues = ref({})         // { [taskKey]: 作答（text→string / choi
 const selectedChoices = ref({})    // choice 多选暂存 { [taskKey]: string[] }
 const markers = ref([])            // 当前 exhibit 任务的标注点
 
-// 阶段2：LLM 能力画像评估缓存 + attending 确认方案 + 住院医师点名
+// 阶段2：LLM 能力评价缓存 + attending 确认方案
 const portraitAssess = ref(null)      // [{dim,score,note}]
 const portraitAssessing = ref(false)
 const confirmPlan = ref(null)         // {taskKey, text}
 const showConfirm = ref(false)
-const pendingCallout = ref(false)     // 当前是否有未回应的住院医师点名
-const pendingStageCallout = ref('')   // resident 点名延后：本阶段内容播完后再点名
-const calloutNextTask = ref('')       // 点名作答后接推的任务卡 key（本阶段首条带 nextTask 时）
-let runSeq = 0                        // 重开守卫：丢弃上一轮仍在飞的异步结果（如画像评估）
 
-// 观察者/住院医师无决策权，任务可跳过；主诊医师须全部完成
+// 会诊前发起（DESIGN_02 §4.2）：主诊·管床·主任 + 病例启用 preMeeting 时先走会诊前
+// 发起流程在独立页面 mdtPreMeeting 完成，本页仅保留状态快照（存档/归档/恢复用）
+const preMeetingApplied = ref(false)     // 是否已提交申请
+const preMeetingApproved = ref(false)    // AI 审批是否通过
+const preMeetingFeedback = ref('')       // 审批未通过时的补充意见
+const preMeetingForm = ref({ questions: '', summary: '', depts: [] })
+
+// ── 原始病历抽屉（事件线查看 mdt 之前的住院病历）──
+const rawDrawerOpen = ref(false)
+const rawRecords = ref(null)
+const rawLoading = ref(false)
+const rawExpanded = ref(new Set())
+
+const hasRawRecord = computed(() => !!caseData.value?.sourceRecordId)
+
+async function openRawDrawer() {
+  rawDrawerOpen.value = true
+  if (rawRecords.value || rawLoading.value) return
+  rawLoading.value = true
+  rawRecords.value = await loadRawRecords(caseData.value?.sourceRecordId)
+  rawLoading.value = false
+}
+function closeRawDrawer() { rawDrawerOpen.value = false }
+function toggleRawExpand(key) {
+  const s = new Set(rawExpanded.value)
+  if (s.has(key)) s.delete(key)
+  else s.add(key)
+  rawExpanded.value = s
+}
+
+let runSeq = 0                        // 重开守卫：丢弃上一轮仍在飞的异步结果（如能力评价）
+
+// 观察者无决策权，任务可跳过；主诊医师须全部完成
 const canSkip = computed(() => !getRoleConfig(studentRole.value).decision)
 
 // ── 学员输入 ──
@@ -556,7 +590,19 @@ const mdtPorts = computed(() => (caseData.value ? director.buildExpertPorts(case
 const learnerAvatar = AVATAR_BASE + encodeURIComponent('学习者.png')
 
 // ── 任务定义（通用模型：key 引用，type 驱动渲染）──
+// 拍板阶段合并原 strategy01（策略选择）+ plan01（治疗方案）为一个任务：诊断+治疗+依据
+const RUNTIME_PLAN_TASK = {
+  key: 'plan01',
+  type: 'text',
+  label: '主诊医师最终决策',
+  assess: 'plan',
+  prompt: '综合各专科意见，以主诊医师身份给出本次 MDT 的最终诊断与治疗方案（含关键决策依据与权衡）。',
+  rows: 6,
+  placeholder: '1. 最终诊断及依据\n2. 治疗/处理方案\n3. 关键权衡与下一步',
+  feedback: {},
+}
 function getTask(key) {
+  if (key === 'plan01') return RUNTIME_PLAN_TASK
   return caseData.value?.tasks?.find(t => t.key === key) || null
 }
 
@@ -647,6 +693,7 @@ function saveState(extra = {}) {
     mdtId: mdtId.value,
     caseId: caseData.value?.caseId || '',
     studentRole: studentRole.value,
+    flowVersion: MDT_FLOW_VERSION,
     currentStage: currentStage.value,
     agendaIndex: agendaIndex.value,
     currentSpeakerKey: currentSpeakerKey.value,
@@ -658,9 +705,15 @@ function saveState(extra = {}) {
     skipped: { ...skipped.value },
     markers: [...markers.value],
     portraitAssess: portraitAssess.value,
-    pendingCallout: pendingCallout.value,
-    pendingStageCallout: pendingStageCallout.value,
-    calloutNextTask: calloutNextTask.value,
+    decisionRevealed: decisionRevealed.value,
+    phase: phase.value,
+    preMeeting: {
+      applied: preMeetingApplied.value,
+      applicationText: { questions: preMeetingForm.value.questions, summary: preMeetingForm.value.summary },
+      invitedDepts: preMeetingForm.value.depts,
+      approved: preMeetingApproved.value,
+      feedback: preMeetingFeedback.value,
+    },
     ...extra,
   })
 }
@@ -780,58 +833,109 @@ async function runConvergence(opening, stageIdx) {
   nextTick(() => scrollToBottom())
 }
 
+// ── 新流程议程合成（替代病例自带 agenda 的旧五段）──
+// 病例汇报由 playOpenings 播报，此处从病例字段合成：专科意见→(影像解读)→自由讨论→拍板→反思
+function buildRuntimeAgenda(cd, stages) {
+  if (!cd) return []
+  const entries = []
+  const perspectives = cd.knowledgeBase?.disciplinePerspectives || []
+  const viewOf = d => perspectives.find(p => p.dept === d)?.view || ''
+  const disciplines = cd.disciplines && cd.disciplines.length
+    ? cd.disciplines
+    : perspectives.map(p => p.dept).filter(Boolean)
+  const idx = s => stages.indexOf(s)
+
+  // 专科意见：各专科依次轮流发言（speakAsExpert 生成 / view 兜底）
+  const pSpecialty = idx('专科意见')
+  if (pSpecialty >= 0 && disciplines.length) {
+    entries.push({ phase: pSpecialty, speaker: 'host', text: '病例汇报完毕。下面请各专科依次就本病例发表意见。' })
+    for (const d of disciplines) {
+      entries.push({ phase: pSpecialty, speaker: d, text: viewOf(d) || `${d}专家：基于本科室角度，就本病例的诊治发表意见。` })
+    }
+  }
+  // 影像解读：仅病例配置了 exhibit（影像标注）任务时出现
+  const pImaging = idx('影像解读')
+  const exhibit = (cd.tasks || []).find(t => t.type === 'exhibit')
+  if (pImaging >= 0 && exhibit) {
+    entries.push({ phase: pImaging, speaker: 'host', text: '接下来进入影像解读环节，请先观察影像资料，再完成标注任务。', nextTask: exhibit.key })
+  }
+  // 自由讨论：各科互辩 + 学员随时插话
+  const pFree = idx('自由讨论')
+  if (pFree >= 0) {
+    entries.push({ phase: pFree, speaker: 'host', text: '现在进入自由讨论环节，各科室可围绕分歧点互相交换意见，你也可以随时提问、补充或质疑。' })
+    entries.push({ phase: pFree, speaker: 'host', text: '请主诊医师权衡各方意见；若有补充可直接发言，确认可以推进时继续。' })
+  }
+  // 拍板决策：先分歧收敛（专家互辩→归纳），再学员以主诊医师身份拍板诊断+方案
+  const pPlan = idx('拍板决策')
+  if (pPlan >= 0) {
+    entries.push({
+      phase: pPlan, speaker: 'host',
+      text: '综合各位意见，我们进入决策环节。请以主诊医师身份，独立给出本次 MDT 的最终诊断与治疗方案。',
+      converge: true, disagreement: director.buildDisagreementText(cd, studentRole.value),
+      nextTask: 'plan01',
+    })
+    entries.push({ phase: pPlan, revealDecision: true })
+  }
+  // 反思收尾
+  const pReflect = idx('反思')
+  if (pReflect >= 0) {
+    entries.push({ phase: pReflect, speaker: 'host', text: '本次讨论已接近尾声，请写下你的反思总结。', nextTask: 'reflect01' })
+  }
+  return entries
+}
+
+const runtimeAgenda = computed(() => buildRuntimeAgenda(caseData.value, runtimeStages.value))
+
+// 展示 MDT 一致决策 / 随访 / 参考（拍板后对照展示，仅一次）
+function pushDecisionCards() {
+  if (decisionRevealed.value) return
+  decisionRevealed.value = true
+  pushExpert('host', '各专科意见已归纳一致。以下是 MDT 最终决策、随访计划与参考依据，请对照你的方案分析差异。')
+  chatItems.value.push({ type: 'decision' })
+  chatItems.value.push({ type: 'followup' })
+  if (caseData.value?.referencesList?.length) chatItems.value.push({ type: 'references' })
+  saveState()
+  nextTick(() => scrollToBottom())
+}
+
 async function playAgenda() {
   if (playing) return
   playing = true
   const myRun = agendaRunId
   try {
-    const agenda = caseData.value?.agenda || []
+    const agenda = runtimeAgenda.value
     while (agendaIndex.value < agenda.length) {
       if (myRun !== agendaRunId) return   // 新一轮讨论已开始 → 放弃本轮剩余播报（重开保护）
       const entry = agenda[agendaIndex.value]
       agendaIndex.value++
+      // 阶段切换：拍板前注入分歧收敛（识别→二次交锋→归纳）
       if (entry.phase !== currentStage.value) {
         currentStage.value = entry.phase
-        // 阶段开头注入分歧收敛 + 角色点名
-        const opening = director.getStageOpening(caseData.value, studentRole.value, entry.phase)
-        if (opening.disagreement) {
+        if (entry.converge) {
+          await playExpert('host', entry.text)
           if (director.hasStage3(caseData.value)) {
-            await runConvergence(opening, entry.phase)
-          } else {
-            await playExpert('host', opening.disagreement)
+            await runConvergence(entry, entry.phase)
+          } else if (entry.disagreement) {
+            await playExpert('host', entry.disagreement)
           }
-        }
-        if (opening.callout && studentRole.value === 'resident') {
-          // 住院医师点名延后到本阶段内容播完后再触发，避免内容未呈现就要学员先发言
-          // 同步记下本阶段首条任务 key，刷新恢复时若点名仍在延后可完整补触发
-          pendingStageCallout.value = opening.callout
-          calloutNextTask.value = entry.nextTask || ''
-        } else if (opening.callout) {
-          await playExpert('host', opening.callout)
+          if (entry.nextTask) {
+            pendingTask.value = entry.nextTask
+            chatItems.value.push({ type: 'task', taskKey: entry.nextTask })
+            saveState()
+            nextTick(() => scrollToBottom())
+            return
+          }
+          continue
         }
       }
+      if (entry.revealDecision) { pushDecisionCards(); continue }
       // 阶段3：非 host 专家动态生成（独立知识库发言）；否则播剧本文本
-      // 阶段0 首条 host 内容已由 startDiscussion 的完整病例汇报替代 → 跳过文本、仅保留 nextTask 驱动
-      // （仅首条 agenda 生效：若未来病例以专家发言开场则正常播报，不误跳后续 host 内容）
-      const isFirstAgendaEntry = agendaIndex.value === 1
-      if (entry.speaker === 'host' && isFirstAgendaEntry && caseReportPlayed) {
-        caseReportPlayed = false
-      } else if (entry.speaker === 'host') {
+      if (entry.speaker === 'host') {
         await playExpert('host', entry.text)
       } else if (director.hasStage3(caseData.value)) {
         await playGeneratedExpert(entry)
       } else {
         await playExpert(entry.speaker, entry.text)
-      }
-      // 本阶段首条内容播完 → 触发延后的住院医师点名（作答后接本阶段任务卡，calloutNextTask 已在阶段切换时记下）
-      if (pendingStageCallout.value) {
-        const co = pendingStageCallout.value
-        pendingStageCallout.value = ''
-        chatItems.value.push({ type: 'callout', text: co })
-        pendingCallout.value = true
-        saveState()
-        nextTick(() => scrollToBottom())
-        return
       }
       if (entry.nextTask) {
         pendingTask.value = entry.nextTask
@@ -841,7 +945,7 @@ async function playAgenda() {
         return
       }
     }
-    // 播完 → 展示决策/随访/参考并结束
+    // 播完 → 结束（决策卡已在拍板环节展示，此处仅收尾）
     pendingTask.value = null
     finishDiscussion()
   } finally {
@@ -850,14 +954,12 @@ async function playAgenda() {
 }
 
 function finishDiscussion() {
-  pushExpert('host', '本次 MDT 讨论已结束。以下是 MDT 最终决策、随访计划与参考依据，请对照你的方案分析差异。')
-  chatItems.value.push({ type: 'decision' })
-  chatItems.value.push({ type: 'followup' })
-  if (caseData.value?.referencesList?.length) chatItems.value.push({ type: 'references' })
+  if (!decisionRevealed.value) pushDecisionCards()
+  pushExpert('host', '本次 MDT 讨论已结束，谢谢参与。')
   phase.value = 'ended'
   saveState({ done: true })
   nextTick(() => scrollToBottom())
-  archiveMdtSession({ done: true })   // 立即归档完整记录（画像异步完成后同会话升级补充）
+  archiveMdtSession({ done: true })   // 立即归档完整记录（评价异步完成后同会话升级补充）
   runPortraitAssessment()
 }
 
@@ -883,7 +985,7 @@ function archiveMdtSession({ done }) {
     startedAt,
     finishedAt,
     messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 完整对话（含专家发言/学员发言/任务/决策）
-    taskLabels: Object.fromEntries((caseData.value?.tasks || []).map(t => [t.key, t.label])),
+    taskLabels: Object.fromEntries([...(caseData.value?.tasks || []), RUNTIME_PLAN_TASK].map(t => [t.key, t.label])),
     portraitAssess: portraitAssess.value,
     tasks: { ...taskValues.value },
     selectedChoices: { ...selectedChoices.value },
@@ -891,10 +993,17 @@ function archiveMdtSession({ done }) {
     skipped: { ...skipped.value },
     markers: [...markers.value],
     mdtId: mdtId.value,
+    phase: phase.value,
+    preMeeting: {
+      applied: preMeetingApplied.value,
+      applicationText: preMeetingForm.value.questions ? { questions: preMeetingForm.value.questions, summary: preMeetingForm.value.summary } : null,
+      invitedDepts: preMeetingForm.value.depts,
+      approved: preMeetingApproved.value,
+    },
   })
 }
 
-// 阶段2：LLM 能力画像评估（批判性/循证/反思三维度）
+// 阶段2：LLM 能力评价（批判性/循证/反思三维度）
 async function runPortraitAssessment() {
   if (portraitAssess.value || portraitAssessing.value) return
   const seq = runSeq
@@ -912,17 +1021,22 @@ async function runPortraitAssessment() {
     portraitAssess.value = result
     saveState()
   }
-  // 画像就绪后归档/升级完整记录（同会话按 startedAt 合并）
+  // 评价就绪后归档/升级完整记录（同会话按 startedAt 合并）
   if (phase.value === 'ended') archiveMdtSession({ done: true })
 }
 
 async function startDiscussion() {
   if (!caseData.value) return
+  const enabled = getRoleConfig(studentRole.value).preMeeting === true
+    && caseData.value.preMeeting !== false
+    && (caseData.value.inviteCandidates?.length || caseData.value.disciplines?.length || 0) >= 2
   store.saveSessionStage('mdt', {
     mdtId: mdtId.value,
     caseId: caseData.value.caseId || '',
     studentRole: studentRole.value,
+    flowVersion: MDT_FLOW_VERSION,
     startedAt: new Date().toISOString(),
+    phase: enabled ? 'premeeting' : 'discussion',
     currentStage: 0,
     agendaIndex: 0,
     currentSpeakerKey: 'host',
@@ -934,32 +1048,50 @@ async function startDiscussion() {
     skipped: {},
     markers: [],
     done: false,
+    preMeeting: { applied: false, applicationText: null, invitedDepts: [], approved: null, feedback: '' },
   })
-  phase.value = 'discussion'
+  phase.value = enabled ? 'premeeting' : 'discussion'
   chatItems.value = []
   // 重置运行态：重开时必须清掉上轮遗留的议程游标/阶段/任务/发言人，否则 playAgenda 会从旧位置续播或直接结束
   agendaIndex.value = 0
   currentStage.value = 0
   pendingTask.value = null
   currentSpeakerKey.value = 'host'
+  decisionRevealed.value = false
   agendaRunId++
+  preMeetingApplied.value = false
+  preMeetingApproved.value = false
+  preMeetingFeedback.value = ''
+  preMeetingForm.value = { questions: '', summary: '', depts: [] }
+  if (enabled) {
+    // 会诊前发起在独立页面（mdtPreMeeting）完成 → 跳转；会话已按 phase='premeeting' 保存
+    router.push({ name: 'mdtPreMeeting', params: { caseId: mdtId.value } })
+  } else {
+    await playOpenings()
+  }
+}
+
+// 会诊中开场：完整病例汇报 + 原始病历入口 + 新流程（premeeting 确认进入后复用）
+async function playOpenings() {
   // 开场引入：欢迎 + 病例概要 + 核心议题 + 参与学科 + 流程（数据驱动，避免一上来就让学员发言）
-  const intro = buildMdtIntro(caseData.value)
+  const intro = buildMdtIntro(caseData.value, runtimeStages.value)
   if (intro) await playExpert('host', intro)   // 开场引入也流式展示，营造自然开场
-  // 完整病例汇报：真实 MDT 流程先分节详细讲病例，再进入诊断任务（替代 agenda 阶段0 的单句开场）
+  // 完整病例汇报：按 MDT 病例内容分节汇报（含摘要/住院经过/初步诊断考虑）
   const report = buildCaseReport(caseData.value)
   if (report) {
-    caseReportPlayed = true
     await playExpert('host', report)
   }
-  // 不再预置角色开场白：resident/attending 的 opening 均为"请先发言"类提示，
-  // 在病例介绍前会突兀地要求学员发言，且与 agenda 首条 nextTask（diag 任务）重复，
-  // 由 intro 引入 + 病例汇报 + 任务卡自然触发学员回合
+  // 原始病历抽屉入口：绑定原始病历的病例提供「查看原始病历」卡（按事件线查看 mdt 之前全部病历）
+  if (caseData.value?.sourceRecordId) {
+    chatItems.value.push({ type: 'case-raw' })
+    saveState()
+    nextTick(() => scrollToBottom())
+  }
   playAgenda()
 }
 
-// 完整病例汇报（阶段0）：真实 MDT 流程先分节详细讲病例，再进入诊断任务
-// 内容来自 patientInfo 结构化字段（管理端编辑器维护），逐字段拼接，全病例通用
+// 完整病例汇报（阶段0）：按 MDT 病例内容分节汇报
+// patientInfo 结构化字段 + clinicalKeyPoints 摘要 + admissionContext 住院经过 + 核心议题帧（无 LLM 幻觉）
 function buildCaseReport(cd) {
   const pi = cd.patientInfo || {}
   const seg = [`好的，我先完整汇报病例。患者：${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}，主诉：${pi.chiefComplaint || '不详'}。`]
@@ -970,74 +1102,30 @@ function buildCaseReport(cd) {
   if (pi.vitals) seg.push(`【生命体征】${pi.vitals}`)
   if (pi.labTests) seg.push(`【实验室检查】${pi.labTests}`)
   if (pi.imagingText) seg.push(`【影像学】${pi.imagingText}`)
-  if (cd.objective) seg.push(`本次核心议题：${cd.objective}。`)
+  if (cd.knowledgeBase?.clinicalKeyPoints) seg.push(`【病情摘要】${cd.knowledgeBase.clinicalKeyPoints}`)
+  if (cd.admissionContext?.priorCourse) {
+    seg.push(`【住院经过】${cd.admissionContext.daysHospitalized ? `入院第 ${cd.admissionContext.daysHospitalized} 天，` : ''}${cd.admissionContext.priorCourse}`)
+  }
+  const suspect = cd.trigger?.reason || cd.objective
+  if (suspect) seg.push(`【初步诊断考虑】结合以上资料，初步诊断方向需紧扣核心议题：${cd.objective || ''}。触发本次会诊的关键原因是：${suspect}。请各位专家在随后的专科意见中围绕这一点展开。`)
   return seg.join('\n')
 }
 
-// 开场引入语：欢迎 + 病例 + 核心议题 + 参与学科 + 流程
-function buildMdtIntro(cd) {
+// 开场引入语：欢迎 + 病例 + 核心议题 + 参与学科 + 流程（流程用运行时阶段）
+function buildMdtIntro(cd, stages = []) {
   const pi = cd.patientInfo || {}
   const parts = [`欢迎参加本次 MDT 多学科讨论，今天围绕${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}（主诉：${pi.chiefComplaint || ''}）进行多学科会诊`]
   if (cd.objective) parts.push(`核心议题：${cd.objective}`)
   const disciplines = (cd.disciplines || []).join('、')
   if (disciplines) parts.push(`参与学科：${disciplines}`)
-  const flow = (cd.stages || []).join(' → ')
+  const flow = (stages && stages.length ? stages : cd.stages || []).join(' → ')
   if (flow) parts.push(`讨论流程：${flow}`)
   return parts.join('。') + '。'
-}
-
-// 结束/中途重新开始本轮 MDT：重置阶段2/3 运行态与评估缓存，重建会话并重播议程
-function restartDiscussion() {
-  pendingCallout.value = false
-  taskValues.value = {}
-  selectedChoices.value = {}
-  submitted.value = {}
-  skipped.value = {}
-  markers.value = []
-  activeCard.value = null
-  confirmPlan.value = null
-  showConfirm.value = false
-  portraitAssess.value = null
-  portraitAssessing.value = false
-  showResult.value = false
-  pendingStageCallout.value = ''
-  calloutNextTask.value = ''
-  streamingActive.value = 0
-  agentsTyping.value = 0
-  caseReportPlayed = false
-  playing = false   // 若上轮 playAgenda 仍在飞：解除阻塞，由 startDiscussion 的 agendaRunId++ 令其中断
-  runSeq++
-  startDiscussion()
-}
-
-// 打开历史训练记录（完整对话存档回放）
-function goRecords() {
-  const epoch = store.trainingSession?.mdt?.startedAt
-  router.push({ name: 'mdtRecords', query: epoch ? { focus: Date.parse(epoch) } : {} })
-}
-
-// 点名作答/跳过 → 若有延后的任务卡则推送并暂停（等效正常 nextTask 流程）
-function flushCalloutTask() {
-  if (!calloutNextTask.value) return false
-  const key = calloutNextTask.value
-  calloutNextTask.value = ''
-  pendingTask.value = key
-  chatItems.value.push({ type: 'task', taskKey: key })
-  saveState()
-  nextTick(() => scrollToBottom())
-  return true
 }
 
 function continueDiscussion() {
   if (phase.value === 'ended') return
   if (showConfirm.value) return
-  if (pendingCallout.value) {
-    pendingCallout.value = false
-    if (flushCalloutTask()) return
-    saveState()
-    playAgenda()
-    return
-  }
   if (pendingTask.value && !submitted.value[pendingTask.value]) {
     openCard(pendingTask.value)
     return
@@ -1046,25 +1134,14 @@ function continueDiscussion() {
   playAgenda()
 }
 
-// 住院医师被点名 → "这次跳过"：不发言，交回话轮继续推进
-function skipCallout() {
-  if (!pendingCallout.value) return
-  pendingCallout.value = false
-  if (flushCalloutTask()) return
-  saveState()
-  playAgenda()
-}
-
 const continueLabel = computed(() => {
   if (phase.value === 'ended') return '讨论已结束'
   if (showConfirm.value) return '请确认最终方案'
-  if (pendingCallout.value) return '这次跳过，继续讨论'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '完成任务后继续'
   return '继续讨论'
 })
 const continueHint = computed(() => {
   if (isTyping.value) return '专家正在发言…'
-  if (pendingCallout.value) return '主持人点名请你发言，可输入观点或点击跳过'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或直接输入观点'
   return '点击把话轮交回主持人继续推进'
 })
@@ -1074,7 +1151,6 @@ const inputDisabled = computed(() => isTyping.value || phase.value === 'ended')
 const inputPlaceholder = computed(() => {
   if (phase.value === 'ended') return '本次讨论已结束'
   if (isTyping.value) return '专家正在发言…'
-  if (pendingCallout.value) return '请发表你的观点…（主持人已点名）'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或输入你的观点'
   return PLACEHOLDER_BY_ROLE[studentRole.value] || '输入你的观点或疑问，专家将回应...'
 })
@@ -1225,8 +1301,6 @@ async function sendMessage() {
   if (!text || inputDisabled.value) return
   chatItems.value.push({ type: 'student', text })
   chatInput.value = ''
-  const wasCallout = pendingCallout.value
-  if (pendingCallout.value) pendingCallout.value = false
   saveState()
   nextTick(() => scrollToBottom())
 
@@ -1251,92 +1325,64 @@ async function sendMessage() {
     saveState()
     nextTick(() => scrollToBottom())
   }
-  // 住院医师被点名后作答 → 先推送延后的任务卡；否则续播议程
-  if (wasCallout) {
-    if (flushCalloutTask()) return
-    playAgenda()
-  }
-}
-
-// ── 能力画像（阶段1 规则计算）──
-const portraitRows = computed(() => {
-  const rows = []
-  const tasks = caseData.value?.tasks || []
-  const dimDefs = [
-    { assess: 'diagnosis', dim: '诊断判断力' },
-    { assess: 'imaging', dim: '影像识读能力' },
-    { assess: 'plan', dim: '方案一致性' },
-  ]
-  for (const def of dimDefs) {
-    const group = tasks.filter(t => t.assess === def.assess)
-    if (!group.length) continue
-    const done = group.filter(t => submitted.value[t.key] && !skipped.value[t.key])
-    if (!done.length) {
-      rows.push({ dim: def.dim, score: null, note: '本病例未完成相关任务' })
-      continue
-    }
-    let hit = 0, total = 0
-    for (const t of done) {
-      const fb = t.feedback || {}
-      const h = (fb.hits || []).length
-      const m = (fb.misses || []).length
-      if (h + m > 0) { hit += h; total += h + m; continue }
-      if (t.type === 'choice' && t.correct?.length) {
-        const val = taskValues.value[t.key]
-        const sel = Array.isArray(val) ? val : (val ? [val] : [])
-        const ok = sel.filter(v => t.correct.includes(v)).length
-        hit += ok; total += t.correct.length
-        continue
-      }
-      // 无标准比对的作答任务：完成但不计入规则得分
-    }
-    if (!total) {
-      rows.push({ dim: def.dim, score: null, note: '已作答，规则比对后待AI点评' })
-      continue
-    }
-    rows.push({ dim: def.dim, score: Math.round(hit / total * 100), note: `要点命中 ${hit}/${total}` })
-  }
-  // 阶段2：批判性/循证/反思由 LLM 评估（结束讨论时触发）
-  if (portraitAssessing.value) {
-    for (const dim of ['批判性思维', '循证决策能力', '反思深度']) rows.push({ dim, score: null, note: 'AI评估中…' })
-  } else if (portraitAssess.value?.length) {
-    for (const p of portraitAssess.value) rows.push({ dim: p.dim, score: p.score, note: p.note })
-  } else {
-    for (const dim of ['批判性思维', '循证决策能力', '反思深度']) rows.push({ dim, score: null, note: '待AI评估' })
-  }
-  return rows
-})
-
-function badgeClass(score) {
-  if (score >= 80) return 'badge-success'
-  if (score >= 60) return 'badge-warning'
-  return 'badge-error'
 }
 
 // ── 会话恢复 ──
+// 返回 true 表示旧流程（v1）会话，需要按新流程重播
 function restoreSession(s) {
-  studentRole.value = s.studentRole || 'resident'
-  phase.value = s.done ? 'ended' : 'discussion'
+  // 流程重构后角色固定主诊·管床·主任；旧存档身份一律映射为 attending
+  studentRole.value = 'attending'
+  phase.value = s.done ? 'ended' : (s.phase || 'discussion')
   chatItems.value = s.messages || []
   agendaIndex.value = s.agendaIndex || 0
   currentStage.value = s.currentStage || 0
   currentSpeakerKey.value = s.currentSpeakerKey || 'host'
   pendingTask.value = s.pendingTask || null
+  decisionRevealed.value = !!s.decisionRevealed
   submitted.value = { ...(s.submitted || {}) }
   skipped.value = { ...(s.skipped || {}) }
   taskValues.value = { ...(s.tasks || {}) }
   selectedChoices.value = { ...(s.selectedChoices || {}) }
   markers.value = s.markers || []
   portraitAssess.value = s.portraitAssess || null
-  pendingCallout.value = !!s.pendingCallout
-  pendingStageCallout.value = s.pendingStageCallout || ''
-  calloutNextTask.value = s.calloutNextTask || ''
-  // 阶段内容开始播放后刷新：点名仍在延后，但触发点（首条内容）已呈现 → 立即补触发点名卡片
-  if (pendingStageCallout.value) {
-    chatItems.value.push({ type: 'callout', text: pendingStageCallout.value })
-    pendingStageCallout.value = ''
-    pendingCallout.value = true
+  const pm = s.preMeeting || {}
+  preMeetingApplied.value = !!pm.applied
+  preMeetingApproved.value = !!pm.approved
+  preMeetingFeedback.value = pm.feedback || ''
+  preMeetingForm.value = {
+    questions: pm.applicationText?.questions || '',
+    summary: pm.applicationText?.summary || '',
+    depts: pm.invitedDepts || [],
+  }
+  return s.flowVersion !== MDT_FLOW_VERSION && (phase.value === 'discussion' || phase.value === 'premeeting')
+}
+
+// 旧流程会话升级：清空对话按新流程重播（保留会诊前申请已通过状态）
+async function restartFlowForNewVersion() {
+  const hadApproved = preMeetingApproved.value
+  chatItems.value = []
+  agendaIndex.value = 0
+  currentStage.value = 0
+  pendingTask.value = null
+  currentSpeakerKey.value = 'host'
+  decisionRevealed.value = false
+  submitted.value = {}
+  skipped.value = {}
+  taskValues.value = {}
+  selectedChoices.value = {}
+  markers.value = []
+  portraitAssess.value = null
+  const enabled = getRoleConfig(studentRole.value).preMeeting === true
+    && caseData.value.preMeeting !== false
+    && (caseData.value.inviteCandidates?.length || caseData.value.disciplines?.length || 0) >= 2
+  if (enabled && !hadApproved) {
+    phase.value = 'premeeting'
     saveState()
+    router.push({ name: 'mdtPreMeeting', params: { caseId: mdtId.value } })
+  } else {
+    phase.value = 'discussion'
+    saveState()
+    await playOpenings()
   }
 }
 
@@ -1352,11 +1398,24 @@ async function load() {
   }
   const saved = store.trainingSession?.mdt
   if (saved && saved.mdtId === mdtId.value) {
-    restoreSession(saved)
+    const stale = restoreSession(saved)
+    if (stale) {
+      // 旧流程会话 → 按新流程重播（清空对话重来，保留会诊前申请已通过状态）
+      restartFlowForNewVersion()
+      return
+    }
+    // 会诊前发起在独立页面完成 → 跳转（暂不进入/中断后重新进入讨论页）
+    if (phase.value === 'premeeting') {
+      router.push({ name: 'mdtPreMeeting', params: { caseId: mdtId.value } })
+      return
+    }
     if (phase.value === 'ended') {
-      // 画像未完成 → 补触发（完成后会自动归档）；画像已就绪 → 直接补归档（含改版前的旧会话回填）
+      // 评价未完成 → 补触发（完成后会自动归档）；评价已就绪 → 直接补归档（含改版前的旧会话回填）
       if (!portraitAssess.value) runPortraitAssessment()
       else archiveMdtSession({ done: true })
+    } else if (!saved.done && !(saved.messages?.length) && !saved.agendaIndex) {
+      // 新会话（会诊前确认进入后跳回 / 直接进入）→ 开场播放
+      await playOpenings()
     }
   }
 }
@@ -1416,18 +1475,19 @@ onMounted(load)
   align-items: center; justify-content: center; flex-shrink: 0;
 }
 .prep-role-title { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 12px; }
-.prep-roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-.prep-role {
-  border: 2px solid #edf0f4; border-radius: 12px; padding: 14px 12px;
-  cursor: pointer; transition: all .2s; text-align: center;
+.prep-role-fixed {
+  display: flex; align-items: center; gap: 14px;
+  border: 2px solid #409EFF; background: #ecf5ff; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 18px;
 }
-.prep-role:hover { border-color: #93c5fd; box-shadow: 0 2px 10px rgba(64,158,255,0.08); }
-.prep-role.active { border-color: #409EFF; background: #ecf5ff; box-shadow: 0 0 0 3px rgba(64,158,255,0.12); }
-.prep-role-icon { font-size: 24px; margin-bottom: 6px; }
-.prep-role-name { font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 3px; }
-.prep-role-duty { font-size: 11px; font-weight: 600; color: #409EFF; margin-bottom: 6px; }
-.prep-role-desc { font-size: 11px; color: #6b7280; line-height: 1.55; }
-.prep-note { font-size: 12px; color: #9ca3af; margin-bottom: 18px; line-height: 1.7; }
+.prep-role-fixed-icon {
+  width: 46px; height: 46px; border-radius: 23px; flex-shrink: 0;
+  background: #409EFF; color: #fff; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+.prep-role-fixed-name { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 3px; }
+.prep-role-fixed-duty { font-size: 12px; font-weight: 600; color: #409EFF; margin-bottom: 4px; }
+.prep-role-fixed-desc { font-size: 12px; color: #6b7280; line-height: 1.55; }
 .prep-start { width: 100%; padding: 12px 20px; font-size: 15px; }
 
 /* ─── 阶段指示器 ─── */
@@ -1457,13 +1517,6 @@ onMounted(load)
   display: flex; align-items: center; gap: 6px; white-space: nowrap;
 }
 .btn-end-training:hover { background: #fecaca; }
-
-/* ─── 结束横幅 ─── */
-.mdt-ended-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46;
-  border-radius: 12px; padding: 10px 20px; margin-bottom: 10px; font-size: 14px; font-weight: 600;
-}
 
 .mdt-layout { display: flex; gap: 0; flex: 1; overflow: hidden; min-height: 0; }
 
@@ -1637,37 +1690,6 @@ onMounted(load)
 .chat-card-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 3px; }
 .chat-card-meta { font-size: 12px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-card-status { font-size: 18px; flex-shrink: 0; }
-
-/* ─── 主持人点名卡片 ─── */
-.callout-card {
-  display: flex; gap: 12px; align-items: flex-start;
-  margin: 10px 4px 14px; padding: 14px 16px;
-  background: linear-gradient(135deg, #fffbeb, #fff7ed);
-  border: 1.5px solid #fcd34d; border-left: 4px solid #f59e0b;
-  border-radius: 12px;
-}
-.callout-icon {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: #fbbf24; color: #fff; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.callout-body { flex: 1; min-width: 0; }
-.callout-title { font-size: 12px; font-weight: 700; color: #b45309; letter-spacing: .3px; margin-bottom: 4px; }
-.callout-text { font-size: 13px; color: #78350f; line-height: 1.7; white-space: pre-wrap; }
-.btn-skip-callout {
-  margin-top: 8px; padding: 4px 12px; border-radius: 14px;
-  border: 1px solid #fcd34d; background: #fff; color: #b45309;
-  font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
-  display: inline-flex; align-items: center; gap: 5px; transition: all .2s;
-}
-.btn-skip-callout:hover { background: #fef3c7; border-color: #f59e0b; }
-
-/* 点名时输入框高亮 */
-.chat-input.callout-input-active {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
-  background: #fffbeb;
-}
 
 /* ─── 继续讨论栏 ─── */
 .mdt-continue-bar {
@@ -1915,4 +1937,75 @@ onMounted(load)
 .references-card-flow .flow-card-header { background: #f3f4f6; color: #374151; }
 .references-card-flow .flow-card-body { background: #fafafa; }
 .ref-item { font-size: 12px; line-height: 1.75; padding: 4px 0; color: #4b5563; }
+
+/* ─── 原始病历入口卡 ─── */
+.case-raw-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: linear-gradient(135deg, #f5f3ff, #eef2ff);
+  border: 1px solid #ddd6fe; border-radius: 12px; padding: 14px 16px;
+}
+.case-raw-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: #7c3aed; color: #fff; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.case-raw-body { flex: 1; }
+.case-raw-title { font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+.case-raw-text { font-size: 12px; color: #4b5563; line-height: 1.6; margin-bottom: 10px; }
+
+/* ─── 原始病历按钮（左栏）─── */
+.case-info-title { display: flex; align-items: center; justify-content: space-between; }
+.case-raw-btn {
+  border: 1px solid #c4b5fd; color: #6d28d9; background: #f5f3ff;
+  font-size: 12px; padding: 3px 10px; border-radius: 8px; cursor: pointer;
+}
+.case-raw-btn:hover { background: #ede9fe; }
+
+/* ─── 原始病历抽屉 ─── */
+.raw-drawer-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(17, 24, 39, 0.4);
+  display: flex; justify-content: flex-end;
+}
+.raw-drawer {
+  width: 560px; max-width: 92vw; height: 100%;
+  background: #fff; box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+  display: flex; flex-direction: column;
+}
+.raw-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid #edf0f4;
+}
+.raw-drawer-title { font-size: 15px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 8px; }
+.raw-drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.raw-drawer-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 60%; color: #9ca3af; font-size: 14px; gap: 8px;
+}
+.raw-timeline { display: flex; flex-direction: column; gap: 8px; }
+.raw-item {
+  border: 1px solid #edf0f4; border-radius: 10px; overflow: hidden;
+  background: #fff;
+}
+.raw-item-header {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; cursor: pointer; background: #f8fafc;
+}
+.raw-item-header:hover { background: #f0f4ff; }
+.raw-item-date { font-size: 12px; color: #6b7280; font-family: monospace; }
+.raw-item-date i { margin-right: 4px; color: #9ca3af; }
+.raw-item-type {
+  font-size: 11px; padding: 1px 8px; border-radius: 10px;
+  background: #eef2ff; color: #4338ca; font-weight: 600;
+}
+.raw-item-doctor { font-size: 12px; color: #6b7280; margin-left: auto; }
+.raw-item-toggle {
+  font-size: 12px; color: #409EFF; background: none; border: none; cursor: pointer;
+}
+.raw-item-body { padding: 12px 14px; border-top: 1px solid #edf0f4; }
+.raw-item-body pre, .raw-item-body-pre {
+  margin: 0; font-size: 13px; line-height: 1.8; color: #374151;
+  white-space: pre-wrap; word-break: break-all; font-family: inherit;
+}
+.raw-fallback-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 8px; }
 </style>

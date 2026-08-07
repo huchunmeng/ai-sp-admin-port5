@@ -472,6 +472,18 @@ export default defineConfig(({ mode }) => {
               fs.writeFileSync(path.join(outDir, 'data', 'mdt-cases-index.json'), JSON.stringify(mdtIndex), 'utf-8')
               console.log(`[copy-cases-build] 已复制 MDT 病例 ${mdtFiles.length} 个，索引 ${mdtIndex.length} 条`)
             }
+
+            // 原始病历一并复制，保证生产构建（preview）下 MDT 原始病历抽屉可用
+            const RAW_RECORDS_DIR = path.join(ADMIN_DATA_DIR, 'raw-records')
+            if (fs.existsSync(RAW_RECORDS_DIR)) {
+              const rawDestDir = path.join(outDir, 'data', 'raw-records')
+              fs.mkdirSync(rawDestDir, { recursive: true })
+              const rawFiles = fs.readdirSync(RAW_RECORDS_DIR).filter(f => f.endsWith('.json'))
+              for (const f of rawFiles) {
+                fs.copyFileSync(path.join(RAW_RECORDS_DIR, f), path.join(rawDestDir, f))
+              }
+              console.log(`[copy-cases-build] 已复制原始病历 ${rawFiles.length} 个`)
+            }
           }
         }
       })(),
