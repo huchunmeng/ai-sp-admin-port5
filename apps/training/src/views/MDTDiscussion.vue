@@ -760,8 +760,8 @@ function animateReveal(msg, text) {
   return new Promise(resolve => {
     const total = (text || '').length
     if (!total) { msg.revealed = 0; resolve(); return }
-    // 语速自适应：短文本约 45 字/秒，长文略快（后续接语音时改由音频时长驱动）
-    const cps = total < 60 ? 45 : total < 200 ? 60 : 75
+    // 语速自适应：短文本约 35 字/秒，长文略快（后续接语音时改由音频时长驱动）
+    const cps = total < 60 ? 35 : total < 200 ? 50 : 65
     const tick = 28
     let shown = 0
     const step = () => {
@@ -781,6 +781,7 @@ async function playExpert(speaker, text) {
   await wait(400)   // 静态文本：短暂"准备发言"感，再流式展示
   await streamExpertMessage(speaker, text)
   endTyping()
+  await wait(650)   // 发言结束停顿：营造"说完了→下一位"的自然换人节奏
   nextTick(() => scrollToBottom())
 }
 
@@ -800,7 +801,7 @@ async function playGeneratedExpert(entry) {
     currentSpeakerKey.value = entry.speaker
     await streamExpertMessage(entry.speaker, result.text)   // 生成完成 → 流式展示
     endTyping()
-    await wait(250)
+    await wait(1100)   // 动态发言结束停顿：专家切换时留出自然讨论间隙
   } else {
     endTyping()
     await playExpert(entry.speaker, entry.text)

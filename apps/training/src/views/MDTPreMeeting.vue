@@ -6,7 +6,10 @@
     <div v-else-if="caseData" class="pm-card">
       <!-- 头部 -->
       <div class="pm-header">
-        <h3 class="pm-title"><i class="fa-solid fa-file-signature"></i> 会诊前发起 · 多学科协作诊疗</h3>
+        <div class="pm-header-left">
+          <h3 class="pm-title"><i class="fa-solid fa-file-signature"></i> 会诊前发起 · 多学科协作诊疗</h3>
+          <div class="pm-subtitle">住院患者跨学科会诊申请 · 医务科审批通过后进入讨论</div>
+        </div>
         <button class="btn btn-sm btn-skip pm-exit" @click="exitFlow">
           <i class="fa-solid fa-xmark"></i> 退出
         </button>
@@ -22,15 +25,28 @@
           </span>
         </div>
         <div class="pm-objective"><i class="fa-solid fa-bullseye"></i> 核心议题：{{ caseData.objective }}</div>
+        <div class="pm-summary-footer">
+          <span class="pm-invite-hint"><i class="fa-solid fa-users"></i> 可邀请 {{ candidates.length }} 个科室参与会诊</span>
+          <span class="pm-flow-hint"><i class="fa-solid fa-route"></i> 会诊申请 → 医务科审批 → 预发资料 → 确认进入</span>
+        </div>
       </div>
 
       <!-- 步骤条 -->
       <div class="pm-steps">
         <div :class="['pm-step', { active: step === 'form', done: step === 'material' }]">
-          <span class="pm-step-num">1</span> 会诊申请
+          <span class="pm-step-dot"><i class="fa-solid fa-file-pen"></i></span>
+          <div class="pm-step-text">
+            <span class="pm-step-label">会诊申请</span>
+            <span class="pm-step-desc">填写议题与拟邀科室</span>
+          </div>
         </div>
+        <div class="pm-step-line" :class="{ active: step === 'material' }"></div>
         <div :class="['pm-step', { active: step === 'material' }]">
-          <span class="pm-step-num">2</span> 资料确认
+          <span class="pm-step-dot"><i class="fa-solid fa-folder-open"></i></span>
+          <div class="pm-step-text">
+            <span class="pm-step-label">资料确认</span>
+            <span class="pm-step-desc">核对预发资料包</span>
+          </div>
         </div>
       </div>
 
@@ -232,73 +248,88 @@ onMounted(load)
 }
 .loading-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 15px; gap: 10px; }
 .pm-card {
-  width: 720px; max-width: 94vw; background: #fff;
+  width: 900px; max-width: 94vw; background: #fff;
   border-radius: 16px; border: 1px solid #edf0f4;
   box-shadow: 0 8px 30px rgba(0,0,0,0.06); display: flex; flex-direction: column;
 }
 .pm-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 24px; border-bottom: 1px solid #edf0f4;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px 28px; border-bottom: 1px solid #edf0f4;
 }
+.pm-header-left { display: flex; flex-direction: column; gap: 5px; }
 .pm-title { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: #1f2937; }
+.pm-subtitle { font-size: 12px; color: #9ca3af; }
 .pm-exit { display: inline-flex; align-items: center; gap: 4px; }
 
 .pm-case-summary {
   background: linear-gradient(135deg, #eff6ff, #f0f5ff);
-  border-bottom: 1px solid #dbeafe; padding: 14px 24px;
+  border-bottom: 1px solid #dbeafe; padding: 18px 28px;
 }
-.pm-case-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.pm-case-name { font-size: 16px; font-weight: 700; color: #1f2937; }
+.pm-case-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.pm-case-name { font-size: 17px; font-weight: 700; color: #1f2937; }
 .pm-case-meta { font-size: 12px; color: #4b5563; }
 .pm-discipline-chip {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; padding: 2px 10px; border-radius: 12px;
   background: #fff; color: #1e40af; border: 1px solid #b3d8ff;
 }
-.pm-objective { font-size: 13px; font-weight: 600; color: #1e40af; line-height: 1.6; }
+.pm-objective { font-size: 13px; font-weight: 600; color: #1e40af; line-height: 1.7; }
+.pm-summary-footer {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin-top: 12px; padding-top: 12px; border-top: 1px dashed #bfdbfe;
+}
+.pm-invite-hint, .pm-flow-hint { font-size: 11px; color: #4b5563; display: inline-flex; align-items: center; gap: 5px; }
 
-.pm-steps { display: flex; align-items: center; padding: 16px 24px 4px; }
+.pm-steps {
+  display: flex; align-items: center; padding: 20px 28px 6px;
+}
 .pm-step {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13px; color: #9ca3af; font-weight: 600; padding-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 14px; border-radius: 12px;
+  color: #9ca3af; transition: all .25s;
 }
-.pm-step + .pm-step::before {
-  content: ''; width: 72px; height: 2px; margin: 0 14px;
-  background: #e5e7eb;
-}
-.pm-step.active { color: #1e40af; }
-.pm-step.active::before { background: #409EFF; }
-.pm-step.done { color: #10b981; }
-.pm-step.done::before { background: #10b981; }
-.pm-step-num {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: #e5e7eb; color: #6b7280; font-size: 11px;
+.pm-step.active { background: #eff6ff; }
+.pm-step.done { background: #ecfdf5; }
+.pm-step-dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #e5e7eb; color: #6b7280; font-size: 14px;
   display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .25s;
 }
-.pm-step.active .pm-step-num { background: #409EFF; color: #fff; }
-.pm-step.done .pm-step-num { background: #10b981; color: #fff; }
+.pm-step.active .pm-step-dot { background: #409EFF; color: #fff; }
+.pm-step.done .pm-step-dot { background: #10b981; color: #fff; }
+.pm-step-text { display: flex; flex-direction: column; gap: 2px; }
+.pm-step-label { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.pm-step.active .pm-step-label { color: #1e40af; }
+.pm-step.done .pm-step-label { color: #047857; }
+.pm-step-desc { font-size: 11px; color: #9ca3af; line-height: 1.3; white-space: nowrap; }
+.pm-step-line {
+  flex: 1; height: 2px; min-width: 48px; margin: 0 8px;
+  background: #e5e7eb; border-radius: 1px; transition: background .3s;
+}
+.pm-step-line.active { background: #409EFF; }
 
-.pm-body { padding: 20px 24px 8px; }
+.pm-body { padding: 22px 28px 10px; }
 
 .pm-context-box {
-  padding: 12px 14px; border-radius: 10px; margin-bottom: 18px;
+  padding: 14px 16px; border-radius: 12px; margin-bottom: 20px;
   background: #eff6ff; border: 1px solid #dbeafe;
 }
-.pm-context-title { font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; }
+.pm-context-title { font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 8px; }
 .pm-context-text { font-size: 13px; line-height: 1.8; color: #374151; }
 
 .pm-approved-msg {
-  padding: 10px 14px; border-radius: 8px; margin-bottom: 14px;
+  padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
   background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 13px;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px; line-height: 1.6;
 }
 .pm-material-title {
-  padding: 10px 14px; font-weight: 700; font-size: 14px;
+  padding: 12px 16px; font-weight: 700; font-size: 14px;
   display: flex; align-items: center; gap: 8px;
   background: #d9ecff; color: #1e40af; border-radius: 10px 10px 0 0;
 }
 .pm-material-item {
-  padding: 10px 14px; font-size: 13px; line-height: 1.7; color: #374151;
+  padding: 12px 16px; font-size: 13px; line-height: 1.7; color: #374151;
   background: #ecf5ff; border-top: 1px solid #dbeafe;
 }
 .pm-material-item:last-child { border-radius: 0 0 10px 10px; }
@@ -308,27 +339,27 @@ onMounted(load)
   padding: 2px 8px; border-radius: 12px; text-align: center;
 }
 
-.pm-form-item { margin-bottom: 18px; }
+.pm-form-item { margin-bottom: 20px; }
 .pm-form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
 .pm-form-tip { font-size: 11px; font-weight: 400; color: #9ca3af; }
 .pm-dept-options { display: flex; flex-wrap: wrap; gap: 8px; }
 .pm-dept-option {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border: 1.5px solid #edf0f4; border-radius: 20px;
+  padding: 9px 16px; border: 1.5px solid #edf0f4; border-radius: 20px;
   font-size: 13px; color: #374151; cursor: pointer; transition: all .2s;
 }
 .pm-dept-option:hover { border-color: #b3d8ff; }
 .pm-dept-option.selected { border-color: #409EFF; background: #eff6ff; color: #1e40af; font-weight: 600; }
 .pm-dept-option input { accent-color: #409EFF; }
 .pm-feedback {
-  padding: 10px 14px; border-radius: 8px; background: #fef2f2;
+  padding: 12px 16px; border-radius: 10px; background: #fef2f2;
   border: 1px solid #fecaca; color: #b91c1c; font-size: 13px; line-height: 1.6;
   display: flex; align-items: center; gap: 8px;
 }
 
 .pm-footer {
   display: flex; justify-content: flex-end; gap: 10px;
-  padding: 16px 24px; border-top: 1px solid #edf0f4;
+  padding: 18px 28px; border-top: 1px solid #edf0f4;
 }
 
 /* ── 通用 ── */
