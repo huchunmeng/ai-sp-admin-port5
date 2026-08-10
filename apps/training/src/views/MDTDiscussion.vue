@@ -245,7 +245,7 @@
 
           <!-- 继续讨论（Learner-paced） -->
           <div class="mdt-continue-bar">
-            <button class="btn-continue" @click="continueDiscussion" :disabled="isTyping || phase === 'ended'">
+            <button class="btn-continue" @click="continueDiscussion" :disabled="isTyping || streamingActive > 0 || turnPending || phase === 'ended'">
               <i class="fa-solid fa-forward"></i>
               {{ continueLabel }}
             </button>
@@ -254,7 +254,10 @@
 
           <!-- 底部输入栏 -->
           <div class="mdt-input-bar">
-            <button class="input-voice-btn" title="语音输入"><i class="fa-solid fa-microphone"></i></button>
+            <button class="input-voice-btn" :class="{ recording: isRecording }" title="语音输入"
+                    @mousedown.prevent="startVoice" @mouseup.prevent="stopVoice" @mouseleave.prevent="cancelVoice">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
             <input v-model="chatInput" class="chat-input" :placeholder="inputPlaceholder" :disabled="inputDisabled" @keyup.enter="sendMessage" />
             <button class="input-send-btn" @click="sendMessage" :disabled="!chatInput.trim() || inputDisabled"><i class="fa-solid fa-paper-plane"></i></button>
           </div>
@@ -406,6 +409,7 @@ import { useMDTDirector } from '@/composables/useMDTDirector'
 import { loadRawRecords } from '@/composables/useRawRecords'
 import { useTrainingStore } from '@/stores/training'
 import { getRoleConfig } from '@/composables/roleConfig'
+import { useASR } from '@/composables/useASR'
 
 const route = useRoute()
 const router = useRouter()
@@ -433,9 +437,9 @@ const STYLE_BY_TYPE = {
 }
 const DEFAULT_STYLE = { bg: '#f3f4f6', color: '#6b7280', icon: 'fa-solid fa-clipboard' }
 
-// 流程版本：v2 = 新流程（病例汇报→专科意见→影像→自由讨论→拍板→反思，无初步诊断任务卡）。
-// 旧存档（v1，含 diag01 任务卡/五段 agenda）恢复时自动重播新流程。
-const MDT_FLOW_VERSION = 2
+// 流程版本：v3 = 新流程（病例汇报→专科意见→主诊医师意见→自由讨论→拍板决策→反思，
+// 拍板后各专科评判循环；影像解读不再作为独立阶段）。旧存档恢复时自动重播新流程。
+const MDT_FLOW_VERSION = 3
 
 // ── 状态机 ──
 const loading = ref(true)
@@ -454,16 +458,15 @@ const agendaIndex = ref(0)         // 下一要播的 runtimeAgenda 条目索引
 const pendingTask = ref(null)      // 当前暂停等待的任务类型
 const currentSpeakerKey = ref('host')
 const decisionRevealed = ref(false)   // MDT 决策卡是否已在拍板环节展示
+// 批注4：拍板后各专科评判主诊方案（同意→通过；异议→修改方案循环，最多 judgementMaxRounds 轮）
+const judgementMaxRounds = 3
+const judgementRound = ref(0)           // 当前评判轮数
+const judgementResults = ref(null)      // 最近一轮各科评判 [{dept, verdict, reason}]
 let playing = false
 let agendaRunId = 0            // 讨论运行标记：重开时自增，令旧的 playAgenda 中断，避免残留异步污染新会话
 // ── 新流程阶段（运行时合成，替代病例自带 stages/agenda 的旧五段）──
-const hasExhibit = computed(() => (caseData.value?.tasks || []).some(t => t.type === 'exhibit'))
-const runtimeStages = computed(() => {
-  const list = ['病例汇报', '专科意见']
-  if (hasExhibit.value) list.push('影像解读')
-  list.push('自由讨论', '拍板决策', '反思')
-  return list
-})
+// 批注2：影像解读不再作为独立阶段；批注3：专科意见后插入「主诊医师意见」
+const runtimeStages = computed(() => ['病例汇报', '专科意见', '主诊医师意见', '自由讨论', '拍板决策', '反思'])
 
 // ── 病例信息分页 ──
 const activeInfoTab = ref('basic')
@@ -601,8 +604,20 @@ const RUNTIME_PLAN_TASK = {
   placeholder: '1. 最终诊断及依据\n2. 治疗/处理方案\n3. 关键权衡与下一步',
   feedback: {},
 }
+// 批注3：专科意见后主诊医师发表综合意见（Learner-paced 任务卡）
+const RUNTIME_ATTENDING_VIEW_TASK = {
+  key: 'attendingView01',
+  type: 'text',
+  label: '主诊医师意见',
+  assess: 'attendingView',
+  prompt: '结合各专科意见，以主诊医师身份发表你的综合看法（诊断方向、对专科分歧的权衡、下一步重点关注）。',
+  rows: 5,
+  placeholder: '1. 对诊断方向/方案的初步看法\n2. 对专科分歧的权衡\n3. 下一步需要重点关注的问题',
+  feedback: {},
+}
 function getTask(key) {
   if (key === 'plan01') return RUNTIME_PLAN_TASK
+  if (key === 'attendingView01') return RUNTIME_ATTENDING_VIEW_TASK
   return caseData.value?.tasks?.find(t => t.key === key) || null
 }
 
@@ -706,6 +721,8 @@ function saveState(extra = {}) {
     markers: [...markers.value],
     portraitAssess: portraitAssess.value,
     decisionRevealed: decisionRevealed.value,
+    judgementRound: judgementRound.value,
+    judgementResults: judgementResults.value,
     phase: phase.value,
     preMeeting: {
       applied: preMeetingApplied.value,
@@ -727,6 +744,25 @@ function pushExpert(speaker, text) {
 
 function wait(ms) {
   return new Promise(r => setTimeout(r, ms))
+}
+
+// 话轮暂停（Learner-paced）：专家发言后暂停，等待学员决定"发问"或"继续讨论"
+const awaitingTurn = ref(false)
+let turnResolve = null
+function awaitTurn() {
+  awaitingTurn.value = true
+  return new Promise(resolve => { turnResolve = resolve })
+}
+function resumeTurn() {
+  awaitingTurn.value = false
+  if (turnResolve) { const r = turnResolve; turnResolve = null; r() }
+}
+// 专家发言结束→交还话轮前的过渡停顿（期间按钮禁用，避免点击被吞）
+const turnPending = ref(false)
+async function turnPause() {
+  turnPending.value = true
+  await wait(3000)
+  turnPending.value = false
 }
 
 function beginTyping(speaker) {
@@ -781,7 +817,7 @@ async function playExpert(speaker, text) {
   await wait(400)   // 静态文本：短暂"准备发言"感，再流式展示
   await streamExpertMessage(speaker, text)
   endTyping()
-  await wait(650)   // 发言结束停顿：营造"说完了→下一位"的自然换人节奏
+  await turnPause()   // 发言结束停顿 3 秒：营造"说完了→下一位"的自然换人节奏
   nextTick(() => scrollToBottom())
 }
 
@@ -801,7 +837,7 @@ async function playGeneratedExpert(entry) {
     currentSpeakerKey.value = entry.speaker
     await streamExpertMessage(entry.speaker, result.text)   // 生成完成 → 流式展示
     endTyping()
-    await wait(1100)   // 动态发言结束停顿：专家切换时留出自然讨论间隙
+    await turnPause()   // 动态发言结束停顿 3 秒：专家切换时留出自然讨论间隙
   } else {
     endTyping()
     await playExpert(entry.speaker, entry.text)
@@ -835,7 +871,7 @@ async function runConvergence(opening, stageIdx) {
 }
 
 // ── 新流程议程合成（替代病例自带 agenda 的旧五段）──
-// 病例汇报由 playOpenings 播报，此处从病例字段合成：专科意见→(影像解读)→自由讨论→拍板→反思
+// 病例汇报由 playOpenings 播报，此处从病例字段合成：专科意见→主诊医师意见→自由讨论→拍板→反思
 function buildRuntimeAgenda(cd, stages) {
   if (!cd) return []
   const entries = []
@@ -853,13 +889,18 @@ function buildRuntimeAgenda(cd, stages) {
     for (const d of disciplines) {
       entries.push({ phase: pSpecialty, speaker: d, text: viewOf(d) || `${d}专家：基于本科室角度，就本病例的诊治发表意见。` })
     }
+    // 各专科发表完意见后，主诊医师发表综合意见（批注3，独立阶段「主诊医师意见」）
+    const pAttending = idx('主诊医师意见')
+    if (pAttending >= 0) {
+      entries.push({
+        phase: pAttending,
+        speaker: 'host',
+        text: '各专科意见已发表完毕。请主诊医师结合各专科意见，发表你作为主诊医师的综合看法。',
+        nextTask: 'attendingView01',
+      })
+    }
   }
-  // 影像解读：仅病例配置了 exhibit（影像标注）任务时出现
-  const pImaging = idx('影像解读')
-  const exhibit = (cd.tasks || []).find(t => t.type === 'exhibit')
-  if (pImaging >= 0 && exhibit) {
-    entries.push({ phase: pImaging, speaker: 'host', text: '接下来进入影像解读环节，请先观察影像资料，再完成标注任务。', nextTask: exhibit.key })
-  }
+  // 影像解读已移除（批注2：影像解读不需要单独一个阶段）
   // 自由讨论：各科互辩 + 学员随时插话
   const pFree = idx('自由讨论')
   if (pFree >= 0) {
@@ -903,6 +944,7 @@ async function playAgenda() {
   if (playing) return
   playing = true
   const myRun = agendaRunId
+  const pSpecialtyIdx = runtimeStages.value.indexOf('专科意见')
   try {
     const agenda = runtimeAgenda.value
     while (agendaIndex.value < agenda.length) {
@@ -938,9 +980,16 @@ async function playAgenda() {
       } else {
         await playExpert(entry.speaker, entry.text)
       }
+      // 专科意见阶段：每位专家发言后暂停，等待学员决定"发问"或"继续讨论"（Learner-paced）
+      if (entry.speaker !== 'host' && entry.phase === pSpecialtyIdx) {
+        await awaitTurn()
+      }
       if (entry.nextTask) {
         pendingTask.value = entry.nextTask
-        chatItems.value.push({ type: 'task', taskKey: entry.nextTask })
+        // 主诊医师意见走输入框直接输入，不推送任务卡（无弹窗）
+        if (entry.nextTask !== 'attendingView01') {
+          chatItems.value.push({ type: 'task', taskKey: entry.nextTask })
+        }
         saveState()
         nextTick(() => scrollToBottom())
         return
@@ -986,7 +1035,7 @@ function archiveMdtSession({ done }) {
     startedAt,
     finishedAt,
     messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 完整对话（含专家发言/学员发言/任务/决策）
-    taskLabels: Object.fromEntries([...(caseData.value?.tasks || []), RUNTIME_PLAN_TASK].map(t => [t.key, t.label])),
+    taskLabels: Object.fromEntries([...(caseData.value?.tasks || []), RUNTIME_PLAN_TASK, RUNTIME_ATTENDING_VIEW_TASK].map(t => [t.key, t.label])),
     portraitAssess: portraitAssess.value,
     tasks: { ...taskValues.value },
     selectedChoices: { ...selectedChoices.value },
@@ -1059,7 +1108,10 @@ async function startDiscussion() {
   pendingTask.value = null
   currentSpeakerKey.value = 'host'
   decisionRevealed.value = false
+  judgementRound.value = 0
+  judgementResults.value = null
   agendaRunId++
+  turnPending.value = false
   preMeetingApplied.value = false
   preMeetingApproved.value = false
   preMeetingFeedback.value = ''
@@ -1127,7 +1179,9 @@ function buildMdtIntro(cd, stages = []) {
 function continueDiscussion() {
   if (phase.value === 'ended') return
   if (showConfirm.value) return
+  if (awaitingTurn.value) { resumeTurn(); return }
   if (pendingTask.value && !submitted.value[pendingTask.value]) {
+    if (pendingTask.value === 'attendingView01') return   // 主诊医师意见直接在输入框输入，无任务卡
     openCard(pendingTask.value)
     return
   }
@@ -1138,11 +1192,15 @@ function continueDiscussion() {
 const continueLabel = computed(() => {
   if (phase.value === 'ended') return '讨论已结束'
   if (showConfirm.value) return '请确认最终方案'
+  if (awaitingTurn.value) return '继续讨论'
+  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请在输入框输入'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '完成任务后继续'
   return '继续讨论'
 })
 const continueHint = computed(() => {
   if (isTyping.value) return '专家正在发言…'
+  if (awaitingTurn.value) return '点击播放下一位专家，或直接在输入框提问'
+  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请直接在下方输入框输入你的主诊综合意见'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或直接输入观点'
   return '点击把话轮交回主持人继续推进'
 })
@@ -1152,12 +1210,14 @@ const inputDisabled = computed(() => isTyping.value || phase.value === 'ended')
 const inputPlaceholder = computed(() => {
   if (phase.value === 'ended') return '本次讨论已结束'
   if (isTyping.value) return '专家正在发言…'
+  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请以主诊医师身份，结合各专科意见发表你的综合看法'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或输入你的观点'
   return PLACEHOLDER_BY_ROLE[studentRole.value] || '输入你的观点或疑问，专家将回应...'
 })
 
 // ── 卡片操作 ──
 function openCard(key) {
+  if (key === 'attendingView01') return   // 主诊医师意见直接在输入框输入，无任务卡弹窗
   const t = getTask(key)
   if (!t) return
   // exhibit 打开时回填已标注点；多选 choice 回填已选项
@@ -1242,16 +1302,76 @@ async function doSubmitFeedback(key, value) {
   }
 }
 
-// attending 确认最终方案
+// attending 确认最终方案 → 各专科评判（批注4）
 function confirmFinalPlan() {
   const plan = confirmPlan.value
   if (!plan) return
   showConfirm.value = false
   confirmPlan.value = null
-  pushExpert('host', '已确认主诊医师最终方案。下面展示 MDT 决策，请对照分析差异。')
   closeCard()
   nextTick(() => scrollToBottom())
-  doSubmitFeedback(plan.taskKey, plan.text)
+  runExpertJudgement()
+}
+
+// 批注4：各专科专家对主诊方案逐一评判（同意→通过；异议→修改方案循环，最多 judgementMaxRounds 轮）
+// 每位专家评判后停顿 3 秒并暂停等待学员决定（发问或继续），全部评判完再汇总决定
+async function runExpertJudgement() {
+  judgementRound.value++
+  judgementResults.value = []
+  const planText = String(taskValues.value.plan01 || '')
+  await playExpert('host', '已确认主诊医师最终方案。下面请各专科专家对该方案逐一评判。')
+  const depts = caseData.value?.disciplines || []
+  for (const d of depts) {
+    const port = mdtPorts.value[d]
+    if (!port?.judgePlan) {
+      judgementResults.value.push({ dept: d, verdict: 'approve', reason: '' })
+    } else {
+      beginTyping(d)
+      const r = await port.judgePlan({
+        caseData: caseData.value, speaker: d, planText,
+        recentMessages: chatItems.value, stageIdx: currentStage.value,
+      })
+      endTyping()
+      const msg = r.verdict === 'approve'
+        ? `我同意主诊医师的方案，${r.reason || '思路与本科室意见一致，通过。'}`
+        : `我对主诊医师的方案有异议：${r.reason || '需要进一步权衡。'}`
+      await streamExpertMessage(d, msg)
+      judgementResults.value.push({ dept: d, verdict: r.verdict, reason: r.reason })
+    }
+    saveState()
+    await turnPause()   // 专家评判发言间隔 3 秒
+    await awaitTurn()  // 每位专家评判后暂停，等待学员决定
+  }
+  await finalizeJudgement()
+}
+
+// 全部专家评判完 → 汇总决定（通过 / 强制通过 / 异议修改循环）
+async function finalizeJudgement() {
+  const objections = judgementResults.value.filter(r => r.verdict === 'object')
+  if (!objections.length) {
+    await playExpert('host', '各专科专家一致同意主诊医师方案，评判通过。')
+    finishJudgementApproved()
+  } else if (judgementRound.value >= judgementMaxRounds) {
+    const objText = objections.map(r => `【${r.dept}】${r.reason || '有不同意见'}`).join('；')
+    await playExpert('host', `部分专科仍持异议：${objText}。经过多轮讨论，请主诊医师权衡各方意见后确定最终方案。`)
+    finishJudgementApproved()
+  } else {
+    const objText = objections.map(r => `【${r.dept}】${r.reason || '有不同意见'}`).join('；')
+    await playExpert('host', `部分专科专家对方案持不同意见：${objText}。`)
+    await playExpert('host', `请主诊医师根据专家意见修改方案后重新提交（第 ${judgementRound.value}/${judgementMaxRounds} 轮）。`)
+    pendingTask.value = 'plan01'
+    submitted.value['plan01'] = false      // 重新开放提交以便修改
+    saveState()
+    nextTick(() => scrollToBottom())
+    openCard('plan01')
+  }
+}
+
+// 评判通过 → 展示 MDT 决策卡，放行继续（反思）
+function finishJudgementApproved() {
+  pendingTask.value = null
+  saveState()
+  pushDecisionCards()
 }
 
 function reviseFinalPlan() {
@@ -1297,6 +1417,18 @@ function addAnnotation(e) {
 }
 
 // ── 学员插话（阶段2：意图识别 + 角色差异化回应）──
+const { isRecording, start, stop, cancel } = useASR()
+async function startVoice() {
+  try { await start() } catch (e) { toast.show(e.message || '无法访问麦克风', 'error') }
+}
+async function stopVoice() {
+  if (!isRecording.value) return
+  const text = await stop()
+  if (text) { chatInput.value = text; sendMessage() }
+  else toast.show('未识别到语音，请重试', 'error')
+}
+function cancelVoice() { cancel() }
+
 async function sendMessage() {
   const text = chatInput.value.trim()
   if (!text || inputDisabled.value) return
@@ -1304,6 +1436,20 @@ async function sendMessage() {
   chatInput.value = ''
   saveState()
   nextTick(() => scrollToBottom())
+
+  // 主诊医师意见：直接在输入框输入即提交（无任务卡弹窗）
+  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) {
+    const key = 'attendingView01'
+    taskValues.value[key] = text
+    submitted.value[key] = true
+    saveState({ tasks: { ...taskValues.value } })
+    await doSubmitFeedback(key, text)
+    pendingTask.value = null
+    saveState()
+    nextTick(() => scrollToBottom())
+    playAgenda()   // 继续自由讨论
+    return
+  }
 
   beginTyping(currentSpeakerKey.value)
   const result = await director.onStudentInterrupt({
@@ -1346,6 +1492,8 @@ function restoreSession(s) {
   selectedChoices.value = { ...(s.selectedChoices || {}) }
   markers.value = s.markers || []
   portraitAssess.value = s.portraitAssess || null
+  judgementRound.value = s.judgementRound || 0
+  judgementResults.value = s.judgementResults || null
   const pm = s.preMeeting || {}
   preMeetingApplied.value = !!pm.applied
   preMeetingApproved.value = !!pm.approved
@@ -1373,6 +1521,8 @@ async function restartFlowForNewVersion() {
   selectedChoices.value = {}
   markers.value = []
   portraitAssess.value = null
+  judgementRound.value = 0
+  judgementResults.value = null
   const enabled = getRoleConfig(studentRole.value).preMeeting === true
     && caseData.value.preMeeting !== false
     && (caseData.value.inviteCandidates?.length || caseData.value.disciplines?.length || 0) >= 2
@@ -1801,6 +1951,7 @@ onMounted(load)
   font-size: 15px; color: #6b7280; flex-shrink: 0; transition: all .2s;
 }
 .input-voice-btn:hover { border-color: #79bbff; color: #409EFF; background: #ecf5ff; }
+.input-voice-btn.recording { background: #fef0f0; border-color: #F56C6C; color: #F56C6C; }
 .chat-input {
   flex: 1; height: 40px; padding: 0 18px;
   border: 2px solid #edf0f4; border-radius: 24px;

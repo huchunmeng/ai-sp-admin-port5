@@ -252,11 +252,13 @@ function buildPortraitPrompt(ctx) {
   const studentMsgs = (ctx.studentMessages || []).map(m => m.text).join('\n').substring(0, 800)
   const reflect = ctx.taskValues?.reflect01 || ''
   const plan = ctx.taskValues?.plan01 || ''
+  const attendingView = ctx.taskValues?.attendingView01 || ''
   return [
     '你是MDT训练的评价专家。基于学员在整个MDT多学科讨论中的表现，对其能力进行画像评估。',
     `病例：${cd.patientInfo?.name || ''}，核心议题：${cd.objective || ''}`,
     `学员角色：${getRoleConfig(ctx.studentRole).label}`,
     `学员发言记录：\n${studentMsgs || '（无）'}`,
+    `学员专科意见后的主诊医师意见：\n${attendingView || '（未填写）'}`,
     `学员反思总结：\n${reflect || '（未填写）'}`,
     `学员方案：\n${plan || '（未填写）'}`,
     `请按以下三个维度评估（0-100分）并各给一句评价：

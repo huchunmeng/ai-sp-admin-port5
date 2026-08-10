@@ -20,38 +20,41 @@
           {{ f.label }}
         </button>
       </div>
-      <span class="filter-count">共 {{ filteredCases.length }} 例</span>
+      <div class="filter-right">
+        <input class="search-input" v-model.trim="keyword" placeholder="搜索病例名称 / 病历号 / 患者" />
+        <span class="filter-count">共 {{ filteredCases.length }} 例</span>
+      </div>
     </div>
 
-    <!-- 病例网格 -->
+    <!-- 病例卡片（字段对齐后管 MDT 病例编辑：名称/患者/学科/难度/来源） -->
     <div class="case-grid" v-if="!loading">
       <div class="case-card" v-for="c in filteredCases" :key="c.id" @click="viewDetail(c)">
-        <span class="corner-tag" :class="'corner-' + sourceClass(c.source)">{{ c.source }}病例</span>
         <div class="case-card-photo">
           <img v-if="patientAvatar(c)" :src="patientAvatar(c)" class="card-patient-img" />
           <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
         </div>
         <div class="case-card-body">
           <div class="cc-row cc-row-1">
-            <span class="cc-name">{{ c.patientName }}</span>
-            <span class="cc-diff" :class="'diff-' + c.teachingPhase[0]">{{ c.levelLabel }}</span>
-            <span class="cc-case-level" :class="'cl-' + getCaseLevel(c.teachingPhase)">{{ getCaseLevelLabel(c.teachingPhase) }}</span>
+            <span class="cc-name">{{ c.name || c.id }}</span>
+            <span class="cc-diff" :class="'diff-' + levelClass(c.levelLabel)">{{ c.levelLabel }}</span>
           </div>
           <div class="cc-row cc-row-2">
-            <span class="cc-id">{{ c.id }}</span>
+            <span class="cc-id">{{ c.sourceRecordId || '手动创建' }}</span>
           </div>
           <div class="cc-row cc-row-3">
-            <span>{{ c.gender }} · {{ c.age }}岁</span>
+            <span>{{ c.patientName || '—' }}<template v-if="c.gender || c.age"> · {{ c.gender }}<template v-if="c.age"> · {{ c.age }}岁</template></template></span>
           </div>
           <div class="cc-row cc-row-4">
+            <span class="cc-source" :class="'src-' + c.sourceType">{{ sourceLabel(c.sourceType) }}</span>
             <span class="cc-discipline-tag" v-for="d in c.disciplines" :key="d">
               <i :class="disciplineIcon(d)"></i> {{ d }}
             </span>
           </div>
-          <div class="cc-row cc-row-6">
-            <span class="cc-objective"><i class="fa-solid fa-bullseye"></i> {{ c.objective }}</span>
-          </div>
         </div>
+      </div>
+      <div v-if="filteredCases.length === 0" class="empty-state">
+        <i class="fa-solid fa-inbox"></i>
+        <p>暂无匹配的 MDT 病例</p>
       </div>
     </div>
 
@@ -66,11 +69,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadMDTCases, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
-import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
 
 const router = useRouter()
 const loading = ref(true)
 const activeFilter = ref('all')
+const keyword = ref('')
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -81,22 +84,39 @@ const filters = [
   { key: 'endocrine', label: '内分泌' },
 ]
 
+const SOURCE_META = {
+  ai: { label: '系统内自建', cls: 'src-ai' },
+  raw: { label: '基于原始病历', cls: 'src-raw' },
+  manual: { label: '作者手动输入', cls: 'src-manual' },
+}
+
 const mdtCases = ref([])
 
 const filteredCases = computed(() => {
-  if (activeFilter.value === 'all') return mdtCases.value
-  return mdtCases.value.filter(c => c.filterKey === activeFilter.value)
+  const kw = keyword.value.toLowerCase()
+  return mdtCases.value.filter(c => {
+    if (activeFilter.value !== 'all' && c.filterKey !== activeFilter.value) return false
+    if (kw) {
+      const hay = [c.name, c.id, c.sourceRecordId, c.patientName].filter(Boolean).join(' ').toLowerCase()
+      if (!hay.includes(kw)) return false
+    }
+    return true
+  })
 })
 
 function patientAvatar(c) {
   return matchPatientImage({ gender: c.gender, age: c.age }, 'patient')
 }
 
-function sourceClass(src) {
-  if (src === '院士精讲') return 'academician'
-  if (src === '金牌导师') return 'mentor'
-  if (src === '国家级质控中心') return 'national'
-  return ''
+function sourceLabel(t) {
+  return (SOURCE_META[t] || SOURCE_META.manual).label
+}
+
+function levelClass(level) {
+  if (level === '基础病例') return 'R'
+  if (level === '高阶病例') return 'F'
+  if (level === '疑难病例') return 'X'
+  return 'R'
 }
 
 function viewDetail(c) {
@@ -131,7 +151,7 @@ onMounted(load)
 
 /* ─── Filter ─── */
 .filter-bar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-bottom: 16px;
 }
 .filter-left { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -142,9 +162,16 @@ onMounted(load)
 }
 .filter-btn:hover { border-color: #409EFF; color: #409EFF; }
 .filter-btn.active { background: #409EFF; color: #fff; border-color: #409EFF; }
-.filter-count { font-size: 13px; color: #9ca3af; }
+.filter-right { display: flex; align-items: center; gap: 12px; }
+.search-input {
+  width: 220px; box-sizing: border-box; padding: 7px 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit;
+  color: #1f2937; outline: none;
+}
+.search-input:focus { border-color: #409EFF; box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15); }
+.filter-count { font-size: 13px; color: #9ca3af; white-space: nowrap; }
 
-/* ─── Case Grid (align with SP CaseList) ─── */
+/* ─── Case Grid（卡片形式） ─── */
 .case-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -174,49 +201,40 @@ onMounted(load)
   display: flex; flex-direction: column; gap: 4px; justify-content: center;
 }
 .cc-row { display: flex; align-items: center; }
-.cc-row-1 { gap: 6px; }
+.cc-row-1 { gap: 6px; flex-wrap: wrap; }
 .cc-name { font-size: 14px; font-weight: 600; color: #303133; }
 .cc-diff {
   display: inline-block; font-size: 9px; font-weight: 600;
-  padding: 0 5px; border-radius: 3px; line-height: 1.6;
-}
-.diff-R { background: #e3f2fd; color: #1565c0; }
-.diff-F { background: #fce4ec; color: #c62828; font-weight: 700; }
-.cc-case-level {
-  display: inline-block; font-size: 9px; font-weight: 500;
   padding: 0 5px; border-radius: 3px; line-height: 1.6; white-space: nowrap;
 }
-.cl-basic { background: #e8f5e9; color: #2e7d32; }
-.cl-advanced { background: #fff3e0; color: #e65100; }
-.cl-difficult { background: #fce4ec; color: #c62828; }
-.corner-tag {
-  position: absolute; top: 0; left: 0;
-  font-size: 9px; font-weight: 700; padding: 3px 10px 3px 8px;
-  border-radius: 0 0 8px 0; line-height: 1.4;
-  white-space: nowrap; letter-spacing: 0.04em; color: #fff; z-index: 1;
-}
-.corner-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
-.corner-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
-.corner-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.diff-R { background: #e3f2fd; color: #1565c0; }
+.diff-F { background: #e8f5e9; color: #2e7d32; }
+.diff-X { background: #fce4ec; color: #c62828; font-weight: 700; }
 .cc-row-2 {}
 .cc-id { font-size: 10px; color: #999; }
 .cc-row-3 { font-size: 11px; color: #666; }
 .cc-row-4 { gap: 4px; flex-wrap: wrap; }
+.cc-source {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+}
+.src-ai { background: #e8eaf6; color: #3949ab; }
+.src-raw { background: #e8f5e9; color: #2e7d32; }
+.src-manual { background: #fff3e0; color: #e65100; }
 .cc-discipline-tag {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 10px; padding: 1px 6px; border-radius: 4px;
   background: #ecf5ff; color: #1e40af; border: 1px solid #b3d8ff;
 }
-.cc-row-5 { margin-top: 2px; }
-.cc-complaint {
-  font-size: 11px; color: #555; line-height: 1.4;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+.cc-discipline-tag i { font-size: 10px; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 60px 0; color: #9ca3af; font-size: 13px;
 }
-.cc-row-6 { margin-top: 2px; }
-.cc-objective {
-  font-size: 10px; color: #409EFF; line-height: 1.3;
-  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
-}
+.empty-state i { font-size: 32px; }
+.empty-state p { margin: 0; }
 
 .loading-state { text-align: center; padding: 60px 0; color: #9ca3af; }
 </style>

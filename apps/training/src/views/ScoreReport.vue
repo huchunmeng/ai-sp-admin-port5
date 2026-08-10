@@ -1770,35 +1770,50 @@ async function loadExistingReport() {
     return
   }
   scoringState.value = 'loading'
+  // 全流程合并记录（"全流程版"汇总行）→ 打开完整 settle 汇总报告（全部考站 + 总分）
+  const isFullFlowRecord = record.value.trainingVersion === 'full-flow' && !record.value._expandedFrom && (record.value._stationIds?.length > 1)
+  const requestedStationId = isFullFlowRecord ? 'settled' : stationId
   try {
     const se = route.query.sessionEpoch || store.sessionEpoch
 
     // 从服务端加载该次训练的操作记录（按 sessionEpoch 精确匹配）
     await store.loadSessionDataFromServer(caseId, se)
 
-    let reportUrl = '/api/training/report?caseId=' + encodeURIComponent(caseId) + '&stationType=' + encodeURIComponent(stationId)
+    let reportUrl = '/api/training/report?caseId=' + encodeURIComponent(caseId) + '&stationType=' + encodeURIComponent(requestedStationId)
     if (se) reportUrl += '&sessionEpoch=' + encodeURIComponent(se)
     const resp = await fetch(reportUrl)
     const json = await resp.json()
     if (json.ok && json.data) {
       const reportData = json.data
-      // 构建类 settle 格式以复用现有转换逻辑
-      const primaryStationId = reportData.stationType || stationId
-      const settleLike = {
-        caseId,
-        totalScore: reportData.scoring?.total_score || 0,
-        totalMax: reportData.scoring?.total_max || 0,
-        passFail: (reportData.scoring?.total_score || 0) >= (reportData.scoring?.total_max || 0) * 0.6 ? 'pass' : 'fail',
-        stations: [{ stationId: primaryStationId, stationName: primaryStationId, score: reportData.scoring?.total_score || 0, maxScore: reportData.scoring?.total_max || 0, scored: true }],
-        stationDetails: { [primaryStationId]: { scoring: reportData.scoring, profile: reportData.profile, profiles: reportData.profiles, parsedSheet: reportData.parsedSheet || reportData.templateSheet || [] } },
-        profileReports: reportData.profileReports || {},
-        integration: reportData.integration,
-        stage: reportData.stage,
-        navigation: reportData.navigation
+      if (isFullFlowRecord && reportData.stationDetails && !reportData.scoring) {
+        // ── 全流程汇总报告：渲染全部考站 + 总分 + 综合分析 ──
+        let detail = reportData.stationDetails?.[stationId]
+        let resolvedStationId = stationId
+        if (!detail?.scoring && reportData.stationDetails) {
+          const entries = Object.entries(reportData.stationDetails)
+          const firstScored = entries.find(([, d]) => d?.scoring)
+          if (firstScored) { resolvedStationId = firstScored[0]; detail = firstScored[1] }
+        }
+        applySettleToDisplay(detail, reportData, resolvedStationId)
+      } else {
+        // 构建类 settle 格式以复用现有转换逻辑
+        const primaryStationId = reportData.stationType || stationId
+        const settleLike = {
+          caseId,
+          totalScore: reportData.scoring?.total_score || 0,
+          totalMax: reportData.scoring?.total_max || 0,
+          passFail: (reportData.scoring?.total_score || 0) >= (reportData.scoring?.total_max || 0) * 0.6 ? 'pass' : 'fail',
+          stations: [{ stationId: primaryStationId, stationName: primaryStationId, score: reportData.scoring?.total_score || 0, maxScore: reportData.scoring?.total_max || 0, scored: true }],
+          stationDetails: { [primaryStationId]: { scoring: reportData.scoring, profile: reportData.profile, profiles: reportData.profiles, parsedSheet: reportData.parsedSheet || reportData.templateSheet || [] } },
+          profileReports: reportData.profileReports || {},
+          integration: reportData.integration,
+          stage: reportData.stage,
+          navigation: reportData.navigation
+        }
+        const detail = settleLike.stationDetails[primaryStationId]
+        applySettleToDisplay(detail, settleLike, primaryStationId)
+        syncRecordScoreToLocal(reportData.scoring?.total_score || 0)
       }
-      const detail = settleLike.stationDetails[primaryStationId]
-      applySettleToDisplay(detail, settleLike, primaryStationId)
-      syncRecordScoreToLocal(reportData.scoring?.total_score || 0)
     } else {
       // 报告未生成，自动尝试重新生成
       console.log('[ScoreReport] 报告文件不存在，自动触发 regenerate')

@@ -68,13 +68,24 @@
               placeholder="请补充患者病情摘要（可编辑自动生成的内容）"></textarea>
           </div>
           <div class="pm-form-item">
-            <label class="pm-form-label">拟邀请科室 <span class="pm-form-tip">（至少选择 2 个）</span></label>
+            <label class="pm-form-label">拟邀请科室 <span class="pm-form-tip">（至少选择 2 个，可手动填写）</span></label>
             <div class="pm-dept-options">
               <label v-for="d in candidates" :key="d" class="pm-dept-option"
                 :class="{ selected: form.depts.includes(d) }">
                 <input type="checkbox" :value="d" v-model="form.depts" /> {{ d }}
               </label>
             </div>
+            <div class="pm-dept-add-row">
+              <input v-model="newDept" class="pm-dept-input" placeholder="手动填写其他科室，如：临床药学"
+                @keyup.enter="addDept" />
+              <button class="pm-dept-add-btn" @click="addDept"><i class="fa-solid fa-plus"></i> 添加</button>
+            </div>
+            <div v-if="form.depts.length" class="pm-dept-chips">
+              <span v-for="d in form.depts" :key="d" class="pm-dept-chip">{{ d }}
+                <button class="pm-dept-chip-close" @click="removeDept(d)">&times;</button>
+              </span>
+            </div>
+            <div v-else class="pm-dept-empty">尚未选择科室</div>
           </div>
           <div v-if="feedback" class="pm-feedback"><i class="fa-solid fa-triangle-exclamation"></i> {{ feedback }}</div>
         </template>
@@ -111,7 +122,7 @@ import { loadMDTCase, disciplineIcon } from '@/composables/useMDTData'
 import { useMDTDirector } from '@/composables/useMDTDirector'
 import { useTrainingStore } from '@/stores/training'
 
-const MDT_FLOW_VERSION = 2   // 与 MDTDiscussion.vue 一致：v2 新流程会话
+const MDT_FLOW_VERSION = 3   // 与 MDTDiscussion.vue 一致：v3 新流程会话
 
 const route = useRoute()
 const router = useRouter()
@@ -123,6 +134,7 @@ const mdtId = ref('')
 const caseData = ref(null)
 const step = ref('form')            // 'form'（会诊申请）| 'material'（资料确认）
 const form = ref({ questions: '', summary: '', depts: [] })
+const newDept = ref('')             // 手动填写科室输入（批注1：类似添加诊断的手动添加）
 const feedback = ref('')
 const applied = ref(false)
 const approved = ref(false)
@@ -149,6 +161,18 @@ function prefillDraft() {
     summary: draft.summary || '',
     depts: draft.candidates?.length ? draft.candidates.slice(0, 2) : [],
   }
+}
+
+// 手动添加科室（批注1：类似添加诊断——输入回车/点击添加，chips 可删除）
+function addDept() {
+  const d = newDept.value.trim()
+  if (!d) return
+  if (form.value.depts.includes(d)) { toast.show('该科室已在列表中', 'warning'); return }
+  form.value.depts.push(d)
+  newDept.value = ''
+}
+function removeDept(d) {
+  form.value.depts = form.value.depts.filter(x => x !== d)
 }
 
 // 持久化到 trainingSession.mdt（与 MDTDiscussion 共用同一会话对象）
@@ -351,6 +375,33 @@ onMounted(load)
 .pm-dept-option:hover { border-color: #b3d8ff; }
 .pm-dept-option.selected { border-color: #409EFF; background: #eff6ff; color: #1e40af; font-weight: 600; }
 .pm-dept-option input { accent-color: #409EFF; }
+.pm-dept-add-row { display: flex; gap: 8px; margin-top: 12px; }
+.pm-dept-input {
+  flex: 1; height: 38px; padding: 0 14px; border: 2px solid #edf0f4;
+  border-radius: 10px; font-size: 13px; font-family: inherit; outline: none;
+  background: #f9fafb; transition: all .2s; box-sizing: border-box;
+}
+.pm-dept-input:focus { border-color: #409EFF; background: #fff; box-shadow: 0 0 0 4px rgba(64,158,255,0.06); }
+.pm-dept-add-btn {
+  padding: 0 18px; border: 2px solid #b3d8ff; border-radius: 10px;
+  background: #eff6ff; color: #1e40af; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .2s; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.pm-dept-add-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+.pm-dept-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pm-dept-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px 5px 14px; border-radius: 18px;
+  background: #ecf5ff; border: 1px solid #b3d8ff; color: #1e40af;
+  font-size: 12px; font-weight: 600;
+}
+.pm-dept-chip-close {
+  border: none; background: transparent; color: #1e40af; cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 0; opacity: .6;
+}
+.pm-dept-chip-close:hover { opacity: 1; color: #dc2626; }
+.pm-dept-empty { font-size: 12px; color: #9ca3af; margin-top: 10px; }
 .pm-feedback {
   padding: 12px 16px; border-radius: 10px; background: #fef2f2;
   border: 1px solid #fecaca; color: #b91c1c; font-size: 13px; line-height: 1.6;

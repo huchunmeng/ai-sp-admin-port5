@@ -25,12 +25,36 @@ export function buildExpertPorts(caseData) {
       const systemPrompt = buildExpertSystemPrompt(port, ctx)
       return sendMessage([], systemPrompt, { temperature: 0.7, maxTokens: 800, timeout: 45000, ...opts })
     }
+    // 批注4：专家评判主诊医师方案（同意/异议）——首行标记便于组件解析
+    port.judgePlan = async (ctx = {}) => {
+      const { sendMessage } = useAIChat()
+      const planText = ctx.planText || ''
+      const systemPrompt = buildExpertSystemPrompt(port, {
+        ...ctx,
+        taskContext: { label: '主诊医师最终方案' },
+      }, {
+        customInstruct: [
+          '请以本学科专家身份评判主诊医师给出的最终方案：1) 结合你的学科立场与知识库，判断你是否同意；2) 同意则首行写【同意】，并简述一句认可理由；3) 不同意则首行写【异议】，明确指出你的不同意见和理由。回复150字以内，自然口语化，像真人专家在MDT会议中表态。',
+        ].join('\n'),
+      })
+      const result = await sendMessage(
+        [{ role: 'user', content: `主诊医师给出的最终方案：\n${planText}` }],
+        systemPrompt,
+        { temperature: 0.4, maxTokens: 600, timeout: 45000 },
+      )
+      if (!result.ok || !result.content) return { verdict: 'approve', reason: '' }
+      const text = result.content.trim()
+      const approved = /【同意】|同意|通过|认可|无异议|赞成/.test(text.substring(0, 30))
+      return approved
+        ? { verdict: 'approve', reason: text.replace(/^【同意】/, '').trim().replace(/。$/, '') }
+        : { verdict: 'object', reason: text.replace(/^【异议】/, '').trim() }
+    }
     ports[p.dept] = port
   }
   return ports
 }
 
-function buildExpertSystemPrompt(port, ctx) {
+function buildExpertSystemPrompt(port, ctx, opts = {}) {
   const cd = ctx.caseData || {}
   const pi = cd.patientInfo || {}
   const others = (cd.knowledgeBase?.disciplinePerspectives || []).filter(o => o.dept !== port.dept)
@@ -50,7 +74,7 @@ function buildExpertSystemPrompt(port, ctx) {
     .join('\n')
   if (recent) dataParts.push(`前面已发生的讨论：\n${recent}`)
 
-  const instruct = [
+  const instruct = opts.customInstruct || [
     `当前阶段：${stageLabel}`,
     ctx.taskContext ? `当前等待学员完成任务：${ctx.taskContext.label}` : '',
     '请从你的学科视角就当前议题发表专业意见。要点：1) 结合你的知识库给出明确立场与依据；2) 如前面已有专家发言，可针对性回应或赞同；3) 与其他学科存在分歧时，明确说明你的理由；4) 回复150-250字，自然口语化，像真实专家在MDT会议中说话，不要用列表符号。',

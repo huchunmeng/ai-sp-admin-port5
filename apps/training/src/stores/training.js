@@ -218,10 +218,12 @@ export const useTrainingStore = defineStore('training', () => {
             if (new Date(r.recordedAt) > new Date(existing.recordedAt)) existing.recordedAt = r.recordedAt
             if (!existing._stationIds) existing._stationIds = [existing.stationId]
             if (!existing._stationIds.includes(r.stationId)) existing._stationIds.push(r.stationId)
+            if (!existing._stationScoreMap) existing._stationScoreMap = { [existing.stationId]: existing.score }
+            if (r.score != null) existing._stationScoreMap[r.stationId] = r.score
           }
         } else {
           if (se) seenEpochs.add(se)
-          merged.push({ ...r })
+          merged.push({ ...r, _stationScoreMap: { [r.stationId]: r.score } })
         }
       }
       // 按时间倒序，最新记录在前
@@ -248,6 +250,7 @@ export const useTrainingStore = defineStore('training', () => {
             stationName: getStationLabel(extraId),
             stationLabel: getStationLabel(extraId),
             duration: (subData && subData.duration) || 0,
+            score: r._stationScoreMap?.[extraId] ?? r.score,
             _expandedFrom: r.id || r.key,
           })
         }

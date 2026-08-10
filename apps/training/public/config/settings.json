@@ -1,4 +1,4 @@
 {
-  "emotionEnabled": true,
+  "emotionEnabled": false,
   "llmModel": "qwen-plus"
 }

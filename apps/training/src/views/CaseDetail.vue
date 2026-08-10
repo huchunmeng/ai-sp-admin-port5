@@ -57,6 +57,17 @@
                   </div>
                 </div>
               </div>
+              <div class="section-card" v-if="hasMdtRawRecord">
+                <div class="section-title"><i class="fa-solid fa-folder-open"></i> 原始病历<span class="mdt-raw-source">（病历知识库 {{ mdtCase.sourceRecordId }}）</span></div>
+                <div class="raw-entry" @click="goRawRecord">
+                  <span class="raw-entry-icon"><i class="fa-solid fa-folder-open"></i></span>
+                  <div class="raw-entry-info">
+                    <div class="raw-entry-title">查看完整原始病历</div>
+                    <div class="raw-entry-sub">按 HIS 病历分类（入院 / 病程 / 会诊 / 手术 / 出院等）逐条查看原文</div>
+                  </div>
+                  <i class="fa-solid fa-chevron-right raw-entry-arrow"></i>
+                </div>
+              </div>
               <div class="section-card">
                 <div class="section-title"><i class="fa-solid fa-circle-question"></i> 关键讨论问题</div>
                 <div class="mdt-question-list">
@@ -392,6 +403,23 @@ const mdtReferences = computed(() => {
   return (m?.referencesList?.length ? m.referencesList : m?.knowledgeBase?.references) || []
 })
 const mdtPerspectives = computed(() => mdtCase.value?.knowledgeBase?.disciplinePerspectives || [])
+
+// 原始病历（病历知识库素材，sourceRecordId 绑定；独立单页查看，结构与后管「病例知识库」一致）
+const hasMdtRawRecord = computed(() => !!mdtCase.value?.sourceRecordId)
+function goRawRecord() {
+  const srcId = mdtCase.value?.sourceRecordId
+  if (!srcId) return
+  // 新标签页打开原始病历单页（hash 路由，href 形如 #/mdt-raw-record?...
+  const href = router.resolve({
+    name: 'mdtRawRecord',
+    query: {
+      sourceRecordId: srcId,
+      title: (mdtCase.value?.patientInfo?.name || mdtCase.value?.name || '') + ' · MDT 病例',
+    }
+  }).href
+  const base = window.location.href.split('#')[0]
+  window.open(base + href, '_blank')
+}
 function mdtStageName(ag) {
   const stages = mdtCase.value?.stages || []
   return stages[ag.phase] || ('阶段 ' + ((ag.phase ?? 0) + 1))
@@ -1004,6 +1032,24 @@ onUnmounted(() => {
 .mdt-patient-sec { padding: 12px 14px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #409EFF; }
 .mdt-patient-sec-label { font-size: 12px; font-weight: 600; color: #409EFF; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
 .mdt-patient-sec-value { margin: 0; font-size: 13px; color: #4b5563; line-height: 1.7; }
+
+/* ─── MDT 原始病历（病历知识库，独立单页入口）─── */
+.mdt-raw-source { font-size: 11px; color: #9ca3af; font-weight: 400; margin-left: 4px; font-family: monospace; }
+.raw-entry {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 10px;
+  cursor: pointer; transition: all .15s; background: #fff;
+}
+.raw-entry:hover { border-color: #409EFF; background: #f5f9ff; }
+.raw-entry-icon {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: #eef2ff; color: #4338ca; font-size: 17px;
+}
+.raw-entry-info { flex: 1; min-width: 0; }
+.raw-entry-title { font-size: 14px; font-weight: 600; color: #303133; }
+.raw-entry-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.raw-entry-arrow { color: #9ca3af; font-size: 13px; }
 
 /* ─── MDT Perspective Expert Info ─── */
 .mdt-perspective-info { flex: 1; min-width: 0; }

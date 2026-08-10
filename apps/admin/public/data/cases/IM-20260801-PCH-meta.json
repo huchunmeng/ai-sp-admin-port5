@@ -1,0 +1,413 @@
+{
+  "case_id": "IM-20260801-PCH",
+  "version": "v2.0",
+  "personality": {
+    "expressiveness": "普通型",
+    "sensitivity": "普通敏感度",
+    "resilience": "普通恢复力"
+  },
+  "pre_generation": {
+    "specialty": "内科",
+    "disease": "肝癌",
+    "difficulty": "R2",
+    "training_phase": "R2",
+    "input_mode": "参数生成模式",
+    "source_document": null
+  },
+  "generation_trace": {
+    "basic_info": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-08-10T08:08:57.160Z"
+    },
+    "encounter": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-08-10T08:08:57.160Z"
+    },
+    "case_analysis": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-08-10T08:08:57.160Z"
+    },
+    "communication": {
+      "model": "frontend",
+      "prompt_version": "v2.0",
+      "generated_at": "2026-08-10T08:08:57.160Z"
+    }
+  },
+  "ai_services": {
+    "ai_sp": {
+      "sp_play_rules": {
+        "knowledge_boundary": {
+          "knows": [
+            "主要症状：咳嗽、乏力、胸闷",
+            "主诉：发现乙肝小三阳1年，咳嗽4天",
+            "现病史详情",
+            "自己的姓名和一般资料",
+            "主动提问：医生，我这咳嗽跟肝上长东西真有关系吗？吃药能把那个‘癌栓’消掉不？",
+            "就医经历",
+            "既往病史"
+          ],
+          "does_not_know": [
+            "具体诊断名称",
+            "实验室检查结果"
+          ]
+        },
+        "emotion_progression": [
+          {
+            "trigger": "就诊开始",
+            "change": "轻度焦虑，对病情进展有担忧但表达克制"
+          },
+          {
+            "trigger": "病情叙述",
+            "change": "详细描述发病经过"
+          },
+          {
+            "trigger": "问诊过程",
+            "change": "逐渐放松，配合医生"
+          }
+        ],
+        "vague_response_templates": [
+          "具体记不太清了...",
+          "好像有这回事...",
+          "应该没什么问题吧...",
+          "时间长了有点模糊了..."
+        ],
+        "refuse_to_answer": [
+          "我不知道...",
+          "这个我不太清楚...",
+          "我得想想..."
+        ]
+      },
+      "physical_exam_result_templates": [
+        {
+          "item": "规范进行生命体征测量并记录",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "观察面容与体态（慢性病容、正力型）",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查巩膜有无黄染",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查有无肝掌、蜘蛛痣",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "腹部视诊：观察腹壁静脉、胃肠型",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "腹部触诊：全腹压痛、反跳痛、肝脾肋下触及情况",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "腹部叩诊：移动性浊音",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "听诊双肺呼吸音（重点排除湿啰音）",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "心脏听诊：心率、心律、各瓣膜区杂音",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "检查下肢有无水肿",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        },
+        {
+          "item": "查体过程体现人文关怀（保暖、解释动作）",
+          "intent": "评估考生操作规范性",
+          "keywords": [],
+          "semantic_hints": [],
+          "result": ""
+        }
+      ]
+    },
+    "ai_scoring": {
+      "ai_scoring_rules": {
+        "history_rules": [
+          {
+            "item": "准确确认患者姓名及年龄",
+            "keywords": [
+              "准确确认患者姓名及年龄"
+            ],
+            "score": 2
+          },
+          {
+            "item": "以开放式提问获取主诉",
+            "keywords": [
+              "以开放式提问获取主诉"
+            ],
+            "score": 2
+          },
+          {
+            "item": "逐项追问咳嗽起病时间、诱因、性质、伴随症状",
+            "keywords": [
+              "逐项追问咳嗽起病时间",
+              "诱因",
+              "性质",
+              "伴随症状"
+            ],
+            "score": 2
+          },
+          {
+            "item": "系统追问乏力、胸闷、腹胀等现病史核心症状细节",
+            "keywords": [
+              "系统追问乏力",
+              "胸闷",
+              "腹胀等现病史核心症状细节"
+            ],
+            "score": 2
+          },
+          {
+            "item": "确认重要阴性症状（发热、腹痛、黄疸、呕血、黑便等）",
+            "keywords": [
+              "确认重要阴性症状"
+            ],
+            "score": 2
+          },
+          {
+            "item": "详细采集乙肝病史：发现时间、治疗药物、用药依从性",
+            "keywords": [
+              "详细乙肝病史：发现时间",
+              "治疗药物",
+              "用药依从性"
+            ],
+            "score": 2
+          },
+          {
+            "item": "追问肝硬化诊断依据及随访情况",
+            "keywords": [
+              "追问肝硬化诊断依据及随访情况"
+            ],
+            "score": 2
+          },
+          {
+            "item": "评估高血压病史及控制情况",
+            "keywords": [
+              "高血压病史及控制情况"
+            ],
+            "score": 2
+          },
+          {
+            "item": "确认手术史（阑尾切除）",
+            "keywords": [
+              "确认手术史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "确认无输血、外伤、过敏史",
+            "keywords": [
+              "确认无输血",
+              "外伤",
+              "过敏史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "采集饮酒史（已戒2年）",
+            "keywords": [
+              "饮酒史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问家族肝病/肝癌史",
+            "keywords": [
+              "家族肝病/肝癌史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "完成呼吸、循环、消化、神经、泌尿、血液系统回顾",
+            "keywords": [
+              "完成呼吸",
+              "循环",
+              "消化",
+              "神经",
+              "泌尿"
+            ],
+            "score": 2
+          },
+          {
+            "item": "询问预防接种史",
+            "keywords": [
+              "预防接种史"
+            ],
+            "score": 2
+          },
+          {
+            "item": "体现人文沟通：回应患者担忧、解释检查目的、总结病情",
+            "keywords": [
+              "体现人文沟通：回应患者担忧",
+              "解释目的",
+              "总结病情"
+            ],
+            "score": 2
+          }
+        ],
+        "physical_rules": [
+          {
+            "item": "规范进行生命体征测量并记录",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "观察面容与体态（慢性病容、正力型）",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查巩膜有无黄染",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查有无肝掌、蜘蛛痣",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "腹部视诊：观察腹壁静脉、胃肠型",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "腹部触诊：全腹压痛、反跳痛、肝脾肋下触及情况",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "腹部叩诊：移动性浊音",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "听诊双肺呼吸音（重点排除湿啰音）",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "心脏听诊：心率、心律、各瓣膜区杂音",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "检查下肢有无水肿",
+            "keywords": [],
+            "score": 2
+          },
+          {
+            "item": "查体过程体现人文关怀（保暖、解释动作）",
+            "keywords": [],
+            "score": 2
+          }
+        ],
+        "communication_rules": [],
+        "deduction_rules": {
+          "leading_question": "诱导性提问扣分",
+          "medical_jargon": "过度使用医学术语扣分",
+          "poor_organization": "问诊缺乏条理扣分",
+          "miss_critical": "遗漏关键信息扣分"
+        }
+      },
+      "diagnosis_scoring_rules": {
+        "primary_diagnosis": {
+          "expected": "肝恶性肿瘤CNLC IIIa期伴门静脉癌栓",
+          "keywords": [
+            "肝恶性肿瘤CNLC IIIa期伴门静脉癌栓"
+          ],
+          "score": 10
+        },
+        "diagnosis_basis": {
+          "expected_points": [
+            {
+              "point": "影像学证据：MR/CT证实肝右叶占位+门静脉主干及右支充盈缺损",
+              "score": 4
+            },
+            {
+              "point": "肿瘤标志物：异常凝血酶原显著升高（>10000 mAu/mL）",
+              "score": 3
+            },
+            {
+              "point": "基础肝病：明确乙肝肝硬化病史，恩替卡韦长期治疗中",
+              "score": 2
+            },
+            {
+              "point": "临床表现：慢性肝病背景+新发非特异性症状（咳嗽、乏力、腹胀）",
+              "score": 2
+            },
+            {
+              "point": "实验室支持：血小板减少、胆汁淤积酶升高、D-二聚体升高",
+              "score": 2
+            }
+          ],
+          "scoring_logic": "按要点给分"
+        },
+        "differential_diagnosis": {
+          "expected": [
+            "乙型肝炎肝硬化失代偿",
+            "转移性肝癌",
+            "肝脓肿"
+          ],
+          "score": 10
+        }
+      }
+    }
+  },
+  "review": {
+    "status": "pending",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "comments": null
+  },
+  "deployment": {
+    "is_published": false,
+    "published_at": null
+  },
+  "key_timeline": [
+    {
+      "event": "AI 生成完成",
+      "timestamp": "2026-08-10T08:08:57.160Z"
+    }
+  ],
+  "atypical_dialogue": null
+}

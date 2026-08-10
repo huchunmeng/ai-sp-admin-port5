@@ -29,9 +29,9 @@ async function snap(page, name) {
   await p.waitForTimeout(1000)
   await snap(p, '05-MDT讨论列表')
 
-  // ─── MDT病例详情(陈建国) ───
+  // ─── MDT病例详情(曹帅·主动脉夹层) ───
   console.log('3/3 MDT病例详情...')
-  await p.goto(BASE + '/case-detail/EM-20260526-X8K2?from=mdt&mdtId=MDT-20260701-C4K7', { waitUntil: 'networkidle' })
+  await p.goto(BASE + '/case-detail/MDT-20260806-1PY2?from=mdt&mdtId=MDT-20260806-1PY2', { waitUntil: 'networkidle' })
   await p.addStyleTag({ content: HIDE_CSS })
   await p.waitForTimeout(2000)
   const mdtMode = await p.evaluate(() => {

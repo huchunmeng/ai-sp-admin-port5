@@ -3,7 +3,7 @@
 import { chromium } from 'playwright'
 
 const BASE = 'http://localhost:5001'
-const CASE_ID = process.argv[2] || 'MDT-20260701-C4K7'
+const CASE_ID = process.argv[2] || 'MDT-20260806-1PY2'
 const URL = `${BASE}/#/mdt-discussion/${CASE_ID}`
 
 const results = []
@@ -30,7 +30,7 @@ async function main() {
   await ctx.addInitScript(() => {
     localStorage.setItem('training-user-identity', JSON.stringify({ name: '测试学员', institution: '中大医院' }))
   })
-  await page.goto(URL, { waitUntil: 'domcontentloaded' })
+  await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 90000 })
   await page.waitForTimeout(1500)
 
   // ── 1. prep：无角色卡片，固定主诊·管床·主任 ──
@@ -41,7 +41,7 @@ async function main() {
   const bodyText = await page.evaluate(() => document.body.innerText)
   check('界面无「观察者」「住院医师」文案', !bodyText.includes('观察者') && !bodyText.includes('住院医师'))
 
-  // ── 2. 开始讨论 → 跳转独立会诊前发起页（C4K7 启用 preMeeting）──
+  // ── 2. 开始讨论 → 跳转独立会诊前发起页（1PY2 启用 preMeeting）──
   await page.click('.prep-start')
   await waitFor(page, () => page.url().includes('mdt-premeeting'), { desc: '跳转发起页' })
   check('开始后跳转到独立发起页（URL 含 mdt-premeeting）', true, page.url())

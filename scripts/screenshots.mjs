@@ -111,14 +111,14 @@ async function snap(page, name, opts = {}) {
 
   // ─── 6. MDT病例详情 ───
   console.log('6/7 MDT病例详情...')
-  await p.goto(BASE + '/case-detail/EM-20260526-X8K2?from=mdt&mdtId=MDT-20260701-C4K7', { waitUntil: 'networkidle' })
+  await p.goto(BASE + '/case-detail/MDT-20260806-1PY2?from=mdt&mdtId=MDT-20260806-1PY2', { waitUntil: 'networkidle' })
   await p.addStyleTag({ content: HIDE_CSS })
   await p.waitForTimeout(1000)
   await snap(p, '06-MDT病例详情')
 
   // ─── 7. MDT讨论页面 ───
   console.log('7/7 MDT讨论页面...')
-  await p.goto(BASE + '/mdt-discussion/MDT-20260701-C4K7', { waitUntil: 'networkidle' })
+  await p.goto(BASE + '/mdt-discussion/MDT-20260806-1PY2', { waitUntil: 'networkidle' })
   await p.addStyleTag({ content: HIDE_CSS })
   await p.waitForTimeout(1000)
   await snap(p, '07-MDT讨论页面')

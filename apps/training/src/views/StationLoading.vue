@@ -64,6 +64,7 @@ import { PROJECT_TO_STATION_TARGET, PROJECT_ROUTE_MAP, STATION_ROUTE_MAP } from 
 import { flowScoreTables, pickFlowScheme } from '@ai-sp/shared'
 import { getTemplateFlatItems, getScoreTable, stationScoreTableBindings } from '@ai-sp/shared/score-tables'
 import { parseScoreSheet } from '@ai-sp/shared/score-sheet-parser'
+import { buildExamTemplatesFromCase } from '@/composables/useExamTemplates'
 
 const route = useRoute()
 const router = useRouter()
@@ -195,7 +196,7 @@ async function doPreload() {
     preconfigureSession({
       caseId: caseId.value,
       mode: 'history-taking',
-      spPlayRules: data.meta?.sp_play_rules || null,
+      spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
       roleDescription: commTarget === 'family'
         ? `你扮演的角色：患者的${roleInfo.relation || '家属'}，${roleInfo.name}，${roleInfo.age}岁，${roleInfo.gender}。\n` +
           `患者信息：${patientInfo.name || ''}，${gender}，${patientInfo.age || ''}岁。\n` +
@@ -211,7 +212,7 @@ async function doPreload() {
     preconfigureInBackground({
       caseId: caseId.value,
       mode: 'physical-exam',
-      spPlayRules: data.meta?.sp_play_rules || null,
+      spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
     })
     try {
       const templates = buildExamTemplatesStatic(data)
@@ -226,7 +227,7 @@ async function doPreload() {
     preconfigureSession({
       caseId: caseId.value,
       mode: 'physical-exam',
-      spPlayRules: data.meta?.sp_play_rules || null,
+      spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
     }).catch(e => console.warn('[StationLoading] preconfigure failed:', e.message))
 
   } else if (target.value === 'humanisticComm' && scenarioId.value) {
@@ -241,7 +242,7 @@ async function doPreload() {
       psychologicalStages: spMaterials.psychological_stages || null,
       personality: data.meta?.personality || data.basic?.personality || null,
       emotionBaseline: spMaterials.role_info?.emotion || '',
-      spPlayRules: data.meta?.sp_play_rules || null,
+      spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
     }).catch(e => console.warn('[StationLoading] preconfigure failed:', e.message))
   } else if (target.value === 'mentalExam') {
     const patientInfo = basic?.patient_info || {}
@@ -275,7 +276,7 @@ async function doPreload() {
         (identLine ? `\n职业与学历：${identLine}。` : ''),
       symptomPool,
       personality: data.meta?.personality || data.basic?.personality || null,
-      spPlayRules: data.meta?.sp_play_rules || null,
+      spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
       atypicalConfig,
     }).catch(e => console.warn('[StationLoading] preconfigure failed:', e.message))
   }
@@ -463,35 +464,7 @@ async function parseScoreSheetForSession(data) {
 }
 
 function buildExamTemplatesStatic(data) {
-  const templates = []
-  const basic = data.basic
-  if (basic?.physical_examination) {
-    for (const [cat, items] of Object.entries(basic.physical_examination)) {
-      if (items && items.length) {
-        templates.push({ category: cat, items: items.map(i => typeof i === 'string' ? { name: i, result: '' } : i) })
-      }
-    }
-  }
-  if (data.reception?.sp_materials?.physical_exam_items?.length) {
-    templates.push({ category: '检查项目', items: data.reception.sp_materials.physical_exam_items.map(i => typeof i === 'string' ? { name: i, result: '' } : i) })
-  }
-  if (data.meta?.physical_exam_templates) {
-    for (const [cat, items] of Object.entries(data.meta.physical_exam_templates)) {
-      if (items && items.length) {
-        templates.push({ category: cat, items: items.map(i => typeof i === 'string' ? { name: i, result: '' } : i) })
-      }
-    }
-  }
-  if (templates.length === 0) {
-    return [
-      { category: '一般检查', items: [{ name: '生命体征', result: '体温 36.5°C，脉搏 72次/分，呼吸 18次/分，血压 120/80mmHg' }] },
-      { category: '头颈部', items: [{ name: '头颈部视诊', result: '未见异常' }] },
-      { category: '胸部', items: [{ name: '胸部视诊', result: '胸廓对称，无畸形' }] },
-      { category: '腹部', items: [{ name: '腹部视诊', result: '腹部平坦，未见异常' }] },
-      { category: '神经系统', items: [{ name: '神经系统检查', result: '生理反射存在，病理征未引出' }] },
-    ]
-  }
-  return templates
+  return buildExamTemplatesFromCase(data)
 }
 
 onMounted(async () => {
