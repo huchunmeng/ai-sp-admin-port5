@@ -173,6 +173,7 @@ import { useCaseLoader } from '@/composables/useCaseLoader'
 import { PROJECT_ROUTE_MAP, resolveNextInFlow, advanceToNextStation, ensureStationIndex } from '@/composables/useStationFlow'
 import { useAISP } from '@/composables/useAISP'
 import { useTTS } from '@/composables/useTTS'
+import { useASR } from '@/composables/useASR'
 import { emotionDebugger } from '@/composables/useEmotionDebugger'
 import { matchPatientImage, matchPatientVideo } from '@/composables/usePatientImage'
 import { showToast, confirmDialog, formatTimeNow, parseVitals } from '@/composables/useUtils'
@@ -208,7 +209,7 @@ const isTyping = computed(() => aisp.isTyping.value)
 const configured = computed(() => aisp.configured.value)
 const offline = computed(() => aisp.offline.value)
 const termination = computed(() => aisp.termination.value)
-const isRecording = ref(false)
+const { isRecording, start, stop, cancel } = useASR()
 const showEndConfirm = ref(false)
 const chatLevel = ref(1)
 const inputMode = ref('voice')
@@ -411,7 +412,7 @@ async function selectScenario(sc) {
     caseId: caseId.value,
     mode: 'humanistic-comm',
     communicationTarget: commTarget,
-    spPlayRules: caseData.value.meta?.sp_play_rules || null,
+    spPlayRules: caseData.value.meta?.ai_services?.ai_sp?.sp_play_rules || null,
     roleDescription: commTarget === 'family'
       ? `你扮演的角色：患者的${spInfo.relation || '家属'}，${spInfo.name}，${spInfo.gender}，${spInfo.age}岁。`
       : `患者：${spInfo.name}，${spInfo.gender}，${spInfo.age}岁。` +
@@ -519,18 +520,20 @@ function scrollToBottom() {
 
 function toggleInputMode() { inputMode.value = inputMode.value === 'voice' ? 'text' : 'voice' }
 function cycleChatLevel() { chatLevel.value = (chatLevel.value + 1) % 3; nextTick(() => scrollToBottom()) }
-function startRecording() { isRecording.value = true; showToast(lang.value === 'zh' ? '正在录音...' : 'Recording...', 'info') }
+async function startRecording() {
+  try { await start() } catch (e) { showToast(lang.value === 'zh' ? (e.message || '无法访问麦克风') : 'Voice recognition unavailable', 'error') }
+}
 
-function stopRecording() {
+async function stopRecording() {
   if (!isRecording.value) return
-  isRecording.value = false
   showToast(lang.value === 'zh' ? '语音识别中...' : 'Transcribing...', 'info')
-  inputText.value = lang.value === 'zh' ? '我理解您的担心...' : 'I understand your concern...'
-  sendMessage()
+  const text = await stop()
+  if (text) { inputText.value = text; sendMessage() }
+  else showToast(lang.value === 'zh' ? '未识别到语音，请重试' : 'No speech recognized', 'error')
 }
 
 function cancelRecording() {
-  if (isRecording.value) { isRecording.value = false; showToast(lang.value === 'zh' ? '已取消录音' : 'Recording cancelled', 'info') }
+  cancel()
 }
 
 function onStepClick(si) {

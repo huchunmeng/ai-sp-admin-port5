@@ -155,10 +155,12 @@ import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
 import { PROJECT_ROUTE_MAP, resolveNextInFlow, advanceToNextStation, ensureStationIndex } from '@/composables/useStationFlow'
 import { useAISP } from '@/composables/useAISP'
+import { useASR } from '@/composables/useASR'
 import { emotionDebugger } from '@/composables/useEmotionDebugger'
 import { matchPatientImage, matchPatientVideo } from '@/composables/usePatientImage'
 import { showToast, confirmDialog, formatTimeNow, parseVitals, truncateText } from '@/composables/useUtils'
 import { useTimer } from '@/composables/useTimer'
+import { buildExamTemplatesFromCase } from '@/composables/useExamTemplates'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import FloatInfoPanel from '@/components/FloatInfoPanel.vue'
 import NotesPanel from '@/components/NotesPanel.vue'
@@ -238,7 +240,7 @@ const notes = ref('')
 const msgRefs = reactive({})
 const bubblesOverlay = ref(null)
 const isTyping = computed(() => aisp.isTyping.value)
-const isRecording = ref(false)
+const { isRecording, start, stop, cancel } = useASR()
 const showEndConfirm = ref(false)
 const chatLevel = ref(1)
 const messages = computed(() => aisp.messages.value)
@@ -316,32 +318,26 @@ const CAT_LABELS = {
 }
 
 function buildExamTemplates(basic, reception, meta) {
-  const templates = []
-  const pe = basic?.physical_exam || {}
+  // 复用共享构建器：从病例真实查体数据生成粒度化模板，再映射为本地 fallback 的 exam/finding 结构
+  return buildExamTemplatesFromCase({ basic, reception, meta }).flatMap(g =>
+    (g.items || []).map(it => ({
+      category: g.category,
+      exam: it.name,
+      finding: it.result || '',
+      keywords: it.keywords || [],
+    }))
+  )
+}
 
-  for (const [key, value] of Object.entries(pe)) {
-    if (typeof value === 'string' && value.trim()) {
-      templates.push({
-        category: key,
-        exam: CAT_LABELS[key] || key,
-        finding: value.trim(),
-      })
-    }
+// 本地 fallback 的可用检查项目名（兼容 {category,items} 与 {category,exam} 两种模板结构）
+function availableExamNames() {
+  const names = []
+  for (const t of loadedTemplates.value) {
+    if (t.exam) names.push(t.exam)
+    if (Array.isArray(t.items)) for (const it of t.items) if (it.name) names.push(it.name)
   }
 
-  // physical_score_items from reception
-  const scoreItems = reception?.examiner_materials?.physical_score_items
-  if (Array.isArray(scoreItems)) {
-    for (const item of scoreItems) {
-      templates.push({
-        category: 'score_item',
-        exam: item.item,
-        keywords: item.keywords || [],
-      })
-    }
-  }
-
-  return templates
+  return [...new Set(names.filter(Boolean))]
 }
 
 // 前置过滤：拦截明显非体检指令的输入（寒暄/病史术语/过短）
@@ -389,12 +385,11 @@ function localKeywordMatch(command) {
 
   // 命中已知分类但无该分类独立数据 → 反馈暂无记录
   if (cat && !pe[cat]) {
-    const available = [...new Set(loadedTemplates.value.map(t => t.exam).filter(Boolean))]
     return {
       results: [],
       unmatched: [command],
       repeated: [],
-      note: (CAT_LABELS[cat] || cat) + '检查暂无记录数据。\n可做的检查包括：' + available.join('、')
+      note: (CAT_LABELS[cat] || cat) + '检查暂无记录数据。\n可做的检查包括：' + availableExamNames().join('、')
     }
   }
 
@@ -414,13 +409,11 @@ function isGenericRequest(command) {
 function buildUnmatchedResponse(command) {
   // 笼统请求 → 列出可用检查项（教学引导，非评分环节）
   if (isGenericRequest(command)) {
-    const available = loadedTemplates.value.map(t => t.exam).filter(Boolean)
-    const unique = [...new Set(available)]
     return {
       results: [],
       unmatched: [],
       repeated: [],
-      note: '可做的检查项目：' + unique.join('、') + '。\n请问你想查哪些？'
+      note: '可做的检查项目：' + availableExamNames().join('、') + '。\n请问你想查哪些？'
     }
   }
   // 未命中任何已知分类且非笼统请求 → 引导提示
@@ -428,7 +421,7 @@ function buildUnmatchedResponse(command) {
     results: [],
     unmatched: [command],
     repeated: [],
-    note: '未识别到明确的检查项目。可做的检查包括：' + [...new Set(loadedTemplates.value.map(t => t.exam).filter(Boolean))].join('、') + '。\n请明确检查部位或项目。'
+    note: '未识别到明确的检查项目。可做的检查包括：' + availableExamNames().join('、') + '。\n请明确检查部位或项目。'
   }
 }
 
@@ -620,24 +613,20 @@ function cycleChatLevel() {
   nextTick(() => scrollToBottom())
 }
 
-function startRecording() {
-  isRecording.value = true
-  showToast(lang.value === 'zh' ? '正在录音...' : 'Recording...', 'info')
+async function startRecording() {
+  try { await start() } catch (e) { showToast(lang.value === 'zh' ? (e.message || '无法访问麦克风') : 'Voice recognition unavailable', 'error') }
 }
 
-function stopRecording() {
+async function stopRecording() {
   if (!isRecording.value) return
-  isRecording.value = false
   showToast(lang.value === 'zh' ? '语音识别中...' : 'Transcribing...', 'info')
-  inputText.value = lang.value === 'zh' ? '请进行体格检查' : 'Please perform physical examination'
-  sendMessage()
+  const text = await stop()
+  if (text) { inputText.value = text; sendMessage() }
+  else showToast(lang.value === 'zh' ? '未识别到语音，请重试' : 'No speech recognized', 'error')
 }
 
 function cancelRecording() {
-  if (isRecording.value) {
-    isRecording.value = false
-    showToast(lang.value === 'zh' ? '已取消录音' : 'Recording cancelled', 'info')
-  }
+  cancel()
 }
 
 function onNextClick() {

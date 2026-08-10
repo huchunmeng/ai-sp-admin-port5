@@ -15,7 +15,7 @@ import { loadCaseData, buildRoleDescription, buildSymptomPoolRegex } from './cas
 import { initSessionStore, createSession, getSession, deleteSession, getAllSessions, cleanupSessions, saveSessionsToDisk, loadSessionsFromDisk } from './session-store.js'
 import { detectBTrigger, detectATrigger, detectClosureTrigger, detectInsultTrigger, classifyIntentByRule } from './triggers.js'
 import { selectFallbackPool, NEUTRAL_FALLBACKS, ANGRY_FALLBACKS, FURIOUS_FALLBACKS, SAD_FALLBACKS } from './fallbacks.js'
-import { detectRepeat, detectStudentRepeat } from './repeat-detector.js'
+import { detectRepeat, detectStudentRepeat, detectKickback, isShortFactAnswer, isEmotionalAvoidReply, isToneOnlyReply, isEchoOfStudent } from './repeat-detector.js'
 import { buildSystemPrompt, buildMentalExamInstruction, loadPromptFile } from './prompt-builder.js'
 import { initMentalState, updateMentalState, matchDelusionalTriggers, classifyChallenge, checkTermination, stateToEmotion, MENTAL_VA_CANDIDATES, MENTAL_VS_CANDIDATES } from './mental-engine.js'
 import { computeDerivedState } from './poc/derived-state.js'
@@ -112,6 +112,7 @@ initSessionStore({ derivePersonality, createEmotionEngine, createStateMachine })
 let serviceEnabled = true
 let forceTerminationEnabled = false
 let ttsModel = process.env.TTS_MODEL || 'cosyvoice-v3-flash'
+let asrModel = process.env.ASR_MODEL || 'paraformer-realtime-v2'
 
 // ── 定时清理过期会话 ──
 setInterval(cleanupSessions, 5 * 60 * 1000)
@@ -460,6 +461,34 @@ async function processMessage(session, studentText) {
     validated.intent = correctIntent(validated.intent, trimmed, config.mode)
   }
 
+  // ── ⑤-0 无效回复兜底 ──
+  // 学生是具体问句 + 非 B/B+/A/closure/multiQuestion 触发 + 反思脑档位非防御
+  // 而 SP 回复却是：反问踢回 / 情绪搪塞 / 纯语气词 / 复读学生问题（均无病史信息）
+  // → 单次重试强制直接回答
+  // 防御/愤怒等情绪档位除外：那时反问/情绪是合法情绪表达，不属逃避病史
+  const studentAsks = /[？?]/.test(trimmed)
+  const badReply = detectKickback(text) || isEmotionalAvoidReply(text) || isToneOnlyReply(text) || isEchoOfStudent(text, trimmed)
+  const kickbackBlocked = studentAsks && !bTrigger && !aTrigger && !closureTrigger && !multiQuestion && badReply
+  if (kickbackBlocked && reflectionState && reflectionState.derivedState.attitude !== 'defensive') {
+    let kickHistory = text
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const kickPrompt = systemPrompt + '\n\n🛑 学生问的是具体的病史细节（原话：' + trimmed + '）。你必须直接回答，绝不能反问、把问题踢回，或只用情绪话搪塞。' + (attempt > 0 ? ' 你上一条还是没有正面回答。直接给出答案：具体时间/有无/数量/部位。' : '')
+      const kr = await callLLMDirect([...llmMessages, { role: 'assistant', content: kickHistory }], kickPrompt, 0, session.model)
+      let kp
+      try { kp = JSON.parse(repairJSON(kr.content)) } catch { kp = { text: kr.content.replace(/（[^）]*）/g, '').trim() } }
+      const rv = validateV8Retry(kp, validated.video_action, validated.voice_style, validated.show_material)
+      if (rv.text) {
+        text = rv.text
+        validated.video_action = rv.video_action
+        validated.voice_style = rv.voice_style
+        validated.show_material = rv.show_material
+      }
+      const stillBad = detectKickback(text) || isEmotionalAvoidReply(text) || isToneOnlyReply(text) || isEchoOfStudent(text, trimmed)
+      kickHistory = text
+      if (!stillBad) break
+    }
+    // 两次重试后仍无效 → 保留最后一次，交由下方近重复检测兜底，不无限循环
+  }
 
   // ⑤ 近重复检测 → 重试（最多2次，最终仍重复则硬替换）
   let finalText = text
@@ -514,7 +543,13 @@ async function processMessage(session, studentText) {
     reflectionState.derivedState.attitude !== 'defensive' &&
     reflectionState.derivedState.emotion_constraint.intensity !== 'high'
 
-  if (finalText && detectRepeat(finalText, session.allTimeReplies, v8MildRepeat ? [] : recentSPReplies)) {
+  // 重复检测的上下文豁免：detectRepeat 只看文本相似度，会把"学生问新问题、SP 重申相关
+  // 事实"（真实病人行为）误判为复读 → 重试后降级成无信息兜底。
+  // ① 简短事实回答（"没有痰""四天前"）→ 放行
+  // ② 学生本轮是新的追问（非重复同一问题）→ SP 针对新问题重申事实是正常行为，放行
+  const shortFactPass = isShortFactAnswer(finalText)
+  const contextFresh = !repeatHint
+  if (finalText && !shortFactPass && !contextFresh && detectRepeat(finalText, session.allTimeReplies, v8MildRepeat ? [] : recentSPReplies)) {
     // 第一次重试
     let varyHint
     if (reflectionState) {
@@ -894,9 +929,13 @@ const server = createServer(async (req, res) => {
           ttsModel = body.ttsModel
           console.log(`[sp-api] TTS模型已切换为: ${ttsModel}`)
         }
+        if (typeof body.asrModel === 'string' && body.asrModel) {
+          asrModel = body.asrModel
+          console.log(`[sp-api] ASR模型已切换为: ${asrModel}`)
+        }
       } catch { /* ignore bad body */ }
     }
-    return json(res, 200, { ok: true, ttsModel })
+    return json(res, 200, { ok: true, ttsModel, asrModel })
   }
 
   // GET /api/sp/admin/sessions — 查看活跃会话
@@ -1001,6 +1040,7 @@ const server = createServer(async (req, res) => {
       ok: true,
       model: LLM_MODEL,
       ttsModel,
+      asrModel,
       sessions: getAllSessions().size,
       uptime: process.uptime()
     })
@@ -1032,6 +1072,17 @@ const server = createServer(async (req, res) => {
       return json(res, 500, { ok: false, error: 'Failed to read material file' })
     }
     return
+  }
+
+  // POST /api/sp/asr — 语音识别（录音→文本）
+  if (req.method === 'POST' && req.url.split('?')[0] === '/api/sp/asr') {
+    try {
+      const body = await parseBody(req)
+      const result = await handleASR(body)
+      return json(res, 200, { ok: true, text: result.text })
+    } catch (e) {
+      return json(res, 500, { ok: false, error: e.message })
+    }
   }
 
   // POST /api/sp/configure
@@ -1841,6 +1892,15 @@ const server = createServer(async (req, res) => {
       const reportDir = join(REPORTS_DIR, caseId)
       if (!existsSync(reportDir)) return json(res, 404, { ok: false, error: 'Report directory not found' })
 
+      // 全流程汇总报告：stationType=settled 时返回 settle 汇总（全部考站 + 总分）
+      if (stationType === 'settled' && sessionEpoch) {
+        const settlePath = join(reportDir, `settle_${sessionEpoch}.json`)
+        if (existsSync(settlePath)) {
+          return json(res, 200, { ok: true, data: JSON.parse(readFileSync(settlePath, 'utf-8')) })
+        }
+        return json(res, 404, { ok: false, error: 'Settle report not found for this training session' })
+      }
+
       // stationType 可能是项目ID或考站名，构建查找前缀列表
       const lookupPrefixes = getReportLookupPrefixes(stationType)
 
@@ -2305,6 +2365,118 @@ function isCosyVoice(model) {
   return model && model.startsWith('cosyvoice')
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ASR 语音识别 — 学生语音 → dashscope paraformer 实时识别 → 文本
+// 前端按住说话录制完整音频后一次上传（伪流式）：sp-api 建 dashscope
+// WebSocket 连接，发 run-task → task-started 后发完整音频二进制帧 →
+// finish-task → 收集 result-generated 文本 → 返回。与 CosyVoice TTS
+// 共用同一端点与 run-task 框架。
+// ═══════════════════════════════════════════════════════════════
+
+function parseWavSampleRate(buf) {
+  try {
+    if (buf.length < 28 || buf.toString('latin1', 0, 4) !== 'RIFF') return 0
+    const fmtIdx = buf.indexOf('fmt ', 8)
+    if (fmtIdx === -1 || fmtIdx + 16 > buf.length) return 0
+    // fmt块: 'fmt '(4) + 块长(4) + 音频格式(2) + 声道数(2) + 采样率(4)
+    return buf.readUInt32LE(fmtIdx + 12)
+  } catch { return 0 }
+}
+
+async function handleASR(body) {
+  if (!LLM_API_KEY) throw new Error('LLM API key not configured')
+  const audioBuffer = Buffer.from(body.audioBase64 || '', 'base64')
+  if (!audioBuffer.length) throw new Error('Empty audio')
+  const format = body.format || 'wav'
+  let sampleRate = Number(body.sampleRate) || 16000
+  if (format === 'wav') {
+    const sr = parseWavSampleRate(audioBuffer)
+    if (sr) sampleRate = sr
+  }
+  const model = asrModel
+
+  return new Promise((resolve, reject) => {
+    let dashWS = null
+    const taskId = uuid32()
+    const texts = []
+    let settled = false
+    const timer = setTimeout(() => {
+      fail('ASR timeout')
+    }, 30000)
+
+    function fail(msg) {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      try { dashWS && dashWS.close() } catch {}
+      reject(new Error(msg))
+    }
+    function succeed() {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      try { dashWS && dashWS.close() } catch {}
+      resolve({ text: texts.join('') })
+    }
+
+    dashWS = new WebSocket(
+      'wss://dashscope.aliyuncs.com/api-ws/v1/inference',
+      { headers: { 'Authorization': `Bearer ${LLM_API_KEY}` } }
+    )
+
+    dashWS.on('open', () => {
+      console.log(`[ASR] dashWS open, model=${model}, format=${format}, sample_rate=${sampleRate}, bytes=${audioBuffer.length}`)
+      dashWS.send(JSON.stringify({
+        header: { action: 'run-task', task_id: taskId, streaming: 'duplex' },
+        payload: {
+          task_group: 'audio',
+          task: 'asr',
+          function: 'recognition',
+          model,
+          input: {},
+          parameters: {
+            format,
+            sample_rate: sampleRate,
+            language_hints: ['zh'],
+            punctuation_prediction_enabled: true,
+            semantic_punctuation_enabled: true
+          }
+        }
+      }))
+    })
+
+    dashWS.on('message', (data, isBinary) => {
+      if (isBinary) return
+      let msg
+      try { msg = JSON.parse(data.toString()) } catch { return }
+      const action = msg.header?.action || msg.header?.event
+      if (action === 'task-started') {
+        // 音频一次发完，随后 finish
+        dashWS.send(audioBuffer)
+        dashWS.send(JSON.stringify({
+          header: { action: 'finish-task', task_id: taskId, streaming: 'duplex' },
+          payload: { input: {} }
+        }))
+      } else if (action === 'result-generated') {
+        const text = msg.payload?.output?.sentence?.text
+        if (text) texts.push(text)
+      } else if (action === 'task-finished') {
+        succeed()
+      } else if (action === 'task-failed') {
+        console.log('[ASR] task-failed FULL:', JSON.stringify(msg).slice(0, 500))
+        fail(msg.payload?.output?.message || msg.payload?.error?.message || 'ASR task failed')
+      }
+    })
+
+    dashWS.on('unexpected-response', (req, res) => {
+      fail(`DashScope ${res.statusCode}`)
+    })
+    dashWS.on('error', (e) => {
+      fail(e.message)
+    })
+  })
+}
+
 function uuid32() {
   const h = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0')
   return `${h()}${h()}${h()}${h()}${h()}${h()}${h()}${h()}`
@@ -2582,6 +2754,11 @@ wss.on('connection', (clientWS, req) => {
 })
 
 // ── 启动 ──
+// 全流程 settle 评分可达 10+ 分钟，Node 默认 requestTimeout(300s) 会主动断开长请求，
+// 需放宽以便完整结算。
+server.requestTimeout = 30 * 60 * 1000   // 30 分钟
+server.keepAliveTimeout = 5000
+server.headersTimeout = 60000
 migrateTrainingRecordsIfNeeded()
 loadSessionsFromDisk().then(count => {
   console.log(`[sp-api] 磁盘恢复 ${count} 个会话`)
@@ -2590,5 +2767,6 @@ server.listen(PORT, () => {
   console.log(`[sp-api] 启动成功 → http://localhost:${PORT}`)
   console.log(`[sp-api] LLM模型: ${LLM_MODEL}`)
   console.log(`[sp-api] TTS模型: ${ttsModel}`)
+  console.log(`[sp-api] ASR模型: ${asrModel}`)
   console.log(`[sp-api] 健康检查: http://localhost:${PORT}/api/sp/health`)
 })

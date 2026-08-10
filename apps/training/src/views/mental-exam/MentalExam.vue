@@ -159,6 +159,7 @@ import { useCaseLoader } from '@/composables/useCaseLoader'
 import { PROJECT_ROUTE_MAP, resolveNextInFlow, advanceToNextStation, ensureStationIndex } from '@/composables/useStationFlow'
 import { useAISP } from '@/composables/useAISP'
 import { useTTS } from '@/composables/useTTS'
+import { useASR } from '@/composables/useASR'
 import { emotionDebugger } from '@/composables/useEmotionDebugger'
 import { matchPatientImage, matchPatientVideo } from '@/composables/usePatientImage'
 import { showToast, confirmDialog, formatTimeNow, parseVitals, truncateText } from '@/composables/useUtils'
@@ -247,7 +248,7 @@ const isTyping = computed(() => aisp.isTyping.value)
 const configured = computed(() => aisp.configured.value)
 const offline = computed(() => aisp.offline.value)
 const termination = computed(() => aisp.termination.value)
-const isRecording = ref(false)
+const { isRecording, start, stop, cancel } = useASR()
 const showEndConfirm = ref(false)
 const chatLevel = ref(1)
 const idleVideoRef = ref(null)
@@ -416,24 +417,20 @@ function cycleChatLevel() {
   nextTick(() => scrollToBottom())
 }
 
-function startRecording() {
-  isRecording.value = true
-  showToast(lang.value === 'zh' ? '正在录音...' : 'Recording...', 'info')
+async function startRecording() {
+  try { await start() } catch (e) { showToast(lang.value === 'zh' ? (e.message || '无法访问麦克风') : 'Voice recognition unavailable', 'error') }
 }
 
-function stopRecording() {
+async function stopRecording() {
   if (!isRecording.value) return
-  isRecording.value = false
   showToast(lang.value === 'zh' ? '语音识别中...' : 'Transcribing...', 'info')
-  inputText.value = lang.value === 'zh' ? '请问您叫什么名字？' : 'What is your name?'
-  sendMessage()
+  const text = await stop()
+  if (text) { inputText.value = text; sendMessage() }
+  else showToast(lang.value === 'zh' ? '未识别到语音，请重试' : 'No speech recognized', 'error')
 }
 
 function cancelRecording() {
-  if (isRecording.value) {
-    isRecording.value = false
-    showToast(lang.value === 'zh' ? '已取消录音' : 'Recording cancelled', 'info')
-  }
+  cancel()
 }
 
 function onNextClick() {
@@ -550,7 +547,7 @@ onMounted(async () => {
         caseId: caseId.value,
         communicationTarget: 'patient',
         mode: 'mental-exam',
-        spPlayRules: data.meta?.sp_play_rules || null,
+        spPlayRules: data.meta?.ai_services?.ai_sp?.sp_play_rules || null,
         roleDescription: `患者姓名：${patientInfo.name || ''}，性别：${patientGender}，年龄：${patientAge}岁。` +
           (identLine ? `\n职业与学历：${identLine}。` : ''),
         symptomPool,
