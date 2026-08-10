@@ -65,17 +65,17 @@ async function buildSystemPrompt(data) {
   )
   prompt = prompt.replace('{{active_question}}', roleInfo.active_question || '')
 
-  const spRules = meta?.sp_play_rules
+  const spRules = meta?.ai_services?.ai_sp?.sp_play_rules
   if (spRules) {
     const kb = spRules.knowledge_boundary
     const parts = []
     if (kb?.knows?.length) parts.push('你知道的：' + kb.knows.join('、'))
     if (kb?.does_not_know?.length) parts.push('你不知道的（被问到这些就说"不清楚/不知道"）：' + kb.does_not_know.join('、'))
     if (spRules.vague_response_templates?.length) {
-      parts.push('不知道怎么回答时可以说：' + spRules.vague_response_templates.join(' / '))
+      parts.push('回答具体问题必须直接作答，禁止反问医生。只有确实记不清某个细节时，才可用模糊表达（' + spRules.vague_response_templates.join(' / ') + '），并尽量补充你记得的部分。')
     }
     if (spRules.refuse_to_answer?.length) {
-      parts.push('以下情况直接拒绝回答：' + spRules.refuse_to_answer.join(' / '))
+      parts.push('婉拒话术（' + spRules.refuse_to_answer.join(' / ') + '）仅限两种情况：① 被问到知识边界范围外、且病例里确实没有的事；② 被问到与看病无关的私事/闲聊。对你知道的病情信息，必须正常回答，不得用婉拒。')
     }
     prompt = prompt.replace('{{knowledge_boundary}}', parts.join('\n'))
   } else {
