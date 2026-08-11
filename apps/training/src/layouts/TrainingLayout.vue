@@ -140,7 +140,9 @@ const crumbs = computed(function() {
   const lang = store.lang || 'zh'
 
   if (name !== 'home') {
-    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: name === 'mdtCaseList' ? EXTERNAL_HOME_URL : { name: 'home' } })
+    // MDT 路径（病例列表/讨论室/会诊前/原始病历/训练记录/病例详情 from=mdt）首页统一跳外部站点
+    const isMdtPath = name.startsWith('mdt') || (name === 'caseDetail' && route.query.from === 'mdt')
+    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: isMdtPath ? EXTERNAL_HOME_URL : { name: 'home' } })
   }
 
   if (name === 'caseList') {
