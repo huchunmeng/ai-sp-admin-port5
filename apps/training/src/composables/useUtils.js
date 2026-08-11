@@ -66,3 +66,9 @@ export function truncateText(text, maxLen) {
   if (!text) return ''
   return text.length > maxLen ? text.substring(0, maxLen) + '...' : text
 }
+
+/** 分值显示统一保留一位小数（四舍五入，去掉多余的 .0 后缀） */
+export function fmtScore(v) {
+  if (v == null || v === '' || Number.isNaN(Number(v))) return v == null ? '' : v
+  return String(Math.round(Number(v) * 10) / 10)
+}

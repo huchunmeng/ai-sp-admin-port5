@@ -59,7 +59,7 @@
         <div v-for="dim in dimensions" :key="dim.label" class="score-bar">
           <span class="score-label">{{ dim.label }}</span>
           <div class="score-track"><div class="score-fill" :style="{ width: dim.score + '%', background: dim.color }"></div></div>
-          <span class="score-val" :style="{ color: dim.score < 65 ? '#ef4444' : '' }">{{ dim.score }}</span>
+          <span class="score-val" :style="{ color: dim.score < 65 ? '#ef4444' : '' }">{{ fmtScore(dim.score) }}</span>
         </div>
         <div class="mastery-section">
           <div class="text-sm text-secondary mb-2">已掌握 vs 待攻克：</div>
@@ -92,7 +92,7 @@
             <div class="timeline-content">
               <div class="timeline-title">{{ t.title }}</div>
               <div class="timeline-meta">
-                <span v-if="t.score" :class="['timeline-score', t.score >= 80 ? 'good' : t.score >= 65 ? 'ok' : 'low']">{{ t.score }}分</span>
+                <span v-if="t.score" :class="['timeline-score', t.score >= 80 ? 'good' : t.score >= 65 ? 'ok' : 'low']">{{ fmtScore(t.score) }}分</span>
                 <span class="timeline-date">{{ t.date }}</span>
               </div>
             </div>
@@ -111,7 +111,7 @@
           <div class="spec-bar-track">
             <div class="spec-bar-fill" :style="{ width: spec.avgScore + '%', background: spec.color }"></div>
           </div>
-          <span class="spec-bar-score" :style="{ color: spec.avgScore < 65 ? '#ef4444' : '#059669' }">{{ spec.avgScore }}分</span>
+          <span class="spec-bar-score" :style="{ color: spec.avgScore < 65 ? '#ef4444' : '#059669' }">{{ fmtScore(spec.avgScore) }}分</span>
         </div>
         <div class="peer-compare">
           <div class="peer-title">同伴对比 <span class="peer-rank">超越 68% 同级学员</span></div>
@@ -142,6 +142,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { fmtScore } from '@/composables/useUtils'
 
 const router = useRouter()
 

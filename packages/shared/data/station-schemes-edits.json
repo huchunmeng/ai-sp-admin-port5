@@ -3335,28 +3335,32 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "人文沟通评分表（标准模板）",
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "病例分析评分表（标准模板）",
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "初步诊断"
-                ]
+                ],
+                "weight": 25
               }
             ]
           },
@@ -3375,7 +3379,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -3394,7 +3399,8 @@
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }

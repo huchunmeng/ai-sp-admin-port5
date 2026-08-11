@@ -13,7 +13,7 @@
         <div class="stat-label">已完成</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num">{{ store.stats.averageScore }}</div>
+        <div class="stat-num">{{ fmtScore(store.stats.averageScore) }}</div>
         <div class="stat-label">平均分</div>
       </div>
     </div>
@@ -27,7 +27,7 @@
         <div class="training-date">{{ r.time }}</div>
       </div>
       <div class="training-score">
-        <span class="score-val">{{ r.score }}<small>分</small></span>
+        <span class="score-val">{{ fmtScore(r.score) }}<small>分</small></span>
       </div>
     </div>
 
@@ -48,6 +48,7 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppTrainingStore } from '@/stores/appTraining'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
+import { fmtScore } from '@/composables/useUtils'
 
 const router = useRouter()
 const store = useAppTrainingStore()

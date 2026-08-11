@@ -23,7 +23,7 @@
         <template v-for="(sheet, si) in store.scoreSheets" :key="si">
           <div class="sheet-tab" :class="{ active: store.activeScoreSheet === si }"
             @click="store.switchScoreSheet(si)">
-            {{ sheet.name }} <span class="sheet-tab-score">{{ sheetSubtotal(si).sum }}/{{ sheetSubtotal(si).max }}</span>
+            {{ sheet.name }} <span class="sheet-tab-score">{{ fmtScore(sheetSubtotal(si).sum) }}/{{ fmtScore(sheetSubtotal(si).max) }}</span>
           </div>
           <div v-if="si < store.scoreSheets.length - 1" class="sheet-tab-line"></div>
         </template>
@@ -55,8 +55,8 @@
         </div>
       </div>
       <div class="score-footer">
-        <span class="score-subtotal">当前：{{ store.totalScore.sum }}/{{ store.totalScore.max }}</span>
-        <span class="score-total">合计：{{ store.allSheetsTotal.sum }}/{{ store.allSheetsTotal.max }}</span>
+        <span class="score-subtotal">当前：{{ fmtScore(store.totalScore.sum) }}/{{ fmtScore(store.totalScore.max) }}</span>
+        <span class="score-total">合计：{{ fmtScore(store.allSheetsTotal.sum) }}/{{ fmtScore(store.allSheetsTotal.max) }}</span>
         <span style="flex:1;"></span>
         <button class="btn btn-primary" @click="submitScoreConfirm">提交评分</button>
       </div>
@@ -99,6 +99,11 @@ function sheetSubtotal(si) {
     })
   }
   return { sum, max }
+}
+
+function fmtScore(v) {
+  if (v == null || Number.isNaN(Number(v))) return v == null ? '' : v
+  return String(Math.round(Number(v) * 10) / 10)
 }
 
 function submitScoreConfirm() { showSubmitScoreModal() }

@@ -6,7 +6,7 @@
           <i class="fa-solid fa-file-lines"></i>
           <span>成绩报告 — {{ record.stationName || '' }}</span>
         </div>
-        <button v-if="isViewMode" class="btn btn-sm" style="margin-right:12px;" @click="regenerateReport()">
+        <button v-if="isViewMode && store.showHiddenControls" class="btn btn-sm" style="margin-right:12px;" @click="regenerateReport()">
           <i class="fa-solid fa-rotate"></i> {{ lang === 'zh' ? '重新生成' : 'Regenerate' }}
         </button>
         <button class="report-close-btn" @click="closeReport">
@@ -318,8 +318,8 @@
                     <th>考核项目</th>
                     <th>评分项</th>
                     <th>评分要点</th>
-                    <th class="col-score">分值 ({{ currentMaxTotal }})</th>
-                    <th class="col-score">得分 ({{ currentCalcTotal }})</th>
+                    <th class="col-score">分值 ({{ fmtScore(currentMaxTotal) }})</th>
+                    <th class="col-score">得分 ({{ fmtScore(currentCalcTotal) }})</th>
                     <th class="col-evidence">评分依据</th>
                     <th class="col-link">关联对话</th>
                   </tr>
@@ -330,8 +330,8 @@
                     <td v-if="item._showCategory" :rowspan="item._categorySpan">{{ item.category || '-' }}</td>
                     <td v-if="item._showSubcategory" :rowspan="item._subcategorySpan">{{ item.subcategory || '-' }}</td>
                     <td>{{ item.name || '-' }}</td>
-                    <td class="td-center">{{ item.max_score ?? '-' }}</td>
-                    <td class="td-center" :class="{ 'sc-danger': item.awarded_score < item.max_score * 0.6 && item.max_score > 0, 'sc-full': item.awarded_score === item.max_score, 'sc-mid': item.awarded_score >= item.max_score * 0.6 && item.awarded_score < item.max_score }">{{ item.awarded_score ?? '-' }}</td>
+                    <td class="td-center">{{ item.max_score == null ? '-' : fmtScore(item.max_score) }}</td>
+                    <td class="td-center" :class="{ 'sc-danger': item.awarded_score < item.max_score * 0.6 && item.max_score > 0, 'sc-full': item.awarded_score === item.max_score, 'sc-mid': item.awarded_score >= item.max_score * 0.6 && item.awarded_score < item.max_score }">{{ item.awarded_score == null ? '-' : fmtScore(item.awarded_score) }}</td>
                     <td class="td-evidence">{{ item.evidence || '-' }}</td>
                     <td class="td-center">
                       <a v-if="item.related_dialogue_ids && item.related_dialogue_ids.length" class="link" @click.stop="openDialogueDialog(item)"><i class="fa-solid fa-message"></i> 查看 ({{ item.related_dialogue_ids.length }})</a>
@@ -657,6 +657,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { PROJECT_TO_STATION_TARGET } from '@/composables/useStationFlow'
 import { buildSettlePayload } from '@/composables/useStationSettle'
+import { fmtScore } from '@/composables/useUtils'
 import { STATION_TO_SESSION_KEY, PROJECT_TAB_CONFIG, pickFlowScheme } from '@ai-sp/shared'
 import flowScoreTablesData from '../../../../packages/shared/data/flow-score-tables.json'
 const router = useRouter()
@@ -1497,7 +1498,9 @@ function buildMergedFlowDisplay(settleReport) {
     }
   }
   if (!items.length) return buildFallbackFromSettle(settleReport)
-  calcTotal = round1(calcTotal)
+  // 权威总分以结算报告 totalScore 为准（与训练记录列表同源），避免逐项加权重算产生偏差
+  // 重算的 items 仅用于明细展示，模块级 total_score 与评分项求和可能不一致（LLM 综合分）
+  calcTotal = round1(typeof settleReport.totalScore === 'number' ? settleReport.totalScore : calcTotal)
   const totalMax = 100
   const pass = calcTotal >= totalMax * 0.6
 

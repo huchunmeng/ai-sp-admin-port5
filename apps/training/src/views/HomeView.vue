@@ -56,7 +56,7 @@
           <div v-for="d in dimensions" :key="d.label" class="radar-score-item">
             <span class="radar-score-dot" :style="{ background: d.score < 65 ? '#ef4444' : d.color }"></span>
             <span class="radar-score-label">{{ d.label }}</span>
-            <span class="radar-score-val" :class="{ low: d.score < 65 }">{{ d.score }}</span>
+            <span class="radar-score-val" :class="{ low: d.score < 65 }">{{ fmtScore(d.score) }}</span>
           </div>
         </div>
         <span class="radar-link" @click="goAdaptiveLearning">完整学习画像 →</span>
@@ -220,7 +220,7 @@
               <div class="record-row-1">
                 <span class="record-name">{{ r.casePatientName || r.caseId }}</span>
                 <span v-if="r.caseSource && r.caseSource !== '平台'" class="record-source-tag" :class="'src-' + sourceClass(r.caseSource)">{{ r.caseSource }}病例</span>
-                <span v-if="r.score" class="record-score" :class="scoreClass(r.score)">{{ r.score }}分</span>
+                <span v-if="r.score" class="record-score" :class="scoreClass(r.score)">{{ fmtScore(r.score) }}分</span>
                 <span v-else class="record-score pending">未评分</span>
               </div>
               <div class="record-row-2">
@@ -268,6 +268,7 @@ import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
+import { fmtScore } from '@/composables/useUtils'
 
 const router = useRouter()
 const store = useTrainingStore()

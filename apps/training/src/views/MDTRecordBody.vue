@@ -14,7 +14,7 @@
         <div class="portrait-item" v-for="p in r.portraitAssess" :key="p.dim">
           <div class="pi-top">
             <span class="pi-dim">{{ p.dim }}</span>
-            <span class="pi-score" :class="scoreClass(p.score)">{{ p.score == null ? '—' : p.score }}</span>
+            <span class="pi-score" :class="scoreClass(p.score)">{{ p.score == null ? '—' : fmtScore(p.score) }}</span>
           </div>
           <p class="pi-note">{{ p.note }}</p>
         </div>
@@ -61,6 +61,7 @@
 </template>
 
 <script setup>
+import { fmtScore } from '@/composables/useUtils'
 const ROLE_LABELS = { observer: '观察者', attending: '主诊·管床·主任' }
 
 defineProps({

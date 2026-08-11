@@ -4,14 +4,14 @@
       <div class="header-left">
         <span class="system-name" @click="goHome" title="回到首页">医道星途临床思维教学智能体</span>
         <div class="mode-badge" @click="openAdmin" v-if="false">管理端</div>
-        <div class="version-btns" v-if="showHiddenControls">
+        <div class="version-btns" v-if="store.showHiddenControls">
           <button class="ver-btn" @click="openAdmin">管理端</button>
           <button class="ver-btn" :class="{ active: store.appVersion === '1.0' }" @click="switchVersion('1.0')">进入1.0版</button>
           <button class="ver-btn" :class="{ active: store.appVersion === '2.0' }" @click="switchVersion('2.0')">进入2.0版</button>
         </div>
       </div>
       <div class="header-right">
-        <div class="tts-status" v-if="showHiddenControls" :title="'当前TTS模型: ' + ttsModelLabel" @click="openOpsLlmConfig">
+        <div class="tts-status" v-if="store.showHiddenControls" :title="'当前TTS模型: ' + ttsModelLabel" @click="openOpsLlmConfig">
           <i class="fa-solid fa-volume-high" style="font-size:11px;"></i>
           <span>{{ ttsModelLabel }}</span>
         </div>
@@ -83,14 +83,13 @@ function handleCrumbClick(cr) {
   router.push(cr.to)
 }
 
-const showHiddenControls = ref(false)
 const showUserMenu = ref(false)
 let floatingBarEl = null
 
 function toggleHiddenControls() {
-  showHiddenControls.value = !showHiddenControls.value
+  store.showHiddenControls = !store.showHiddenControls
   if (floatingBarEl) {
-    floatingBarEl.style.display = showHiddenControls.value ? '' : 'none'
+    floatingBarEl.style.display = store.showHiddenControls ? '' : 'none'
   }
 }
 

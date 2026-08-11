@@ -3,7 +3,7 @@
     <div class="section-title">📊 训练进度</div>
     <div class="summary-bar">
       <span>已完成 {{ completedCount }} 次训练</span>
-      <span>均分 {{ averageScore }}</span>
+      <span>均分 {{ fmtScore(averageScore) }}</span>
     </div>
 
     <div class="filter-row">
@@ -22,7 +22,7 @@
       </div>
       <div class="record-right">
         <span class="tag status-done">已完成</span>
-        <div class="record-score">{{ r.score }}<small>分</small></div>
+        <div class="record-score">{{ fmtScore(r.score) }}<small>分</small></div>
       </div>
     </div>
   </div>
@@ -32,6 +32,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppTrainingStore } from '@/stores/appTraining'
+import { fmtScore } from '@/composables/useUtils'
 
 const router = useRouter()
 const store = useAppTrainingStore()

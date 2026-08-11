@@ -35,7 +35,7 @@
                 {{ lang === 'zh' ? '正在分析对话记录...' : 'Analyzing conversation...' }}
               </span>
               <span v-else :class="{'score-high': r.score >= 85, 'score-mid': r.score >= 60, 'score-low': r.score < 60}">
-                {{ r.score == null ? '—' : r.score + (lang === 'zh' ? '分' : 'pts') }}
+                {{ r.score == null ? '—' : fmtScore(r.score) + (lang === 'zh' ? '分' : 'pts') }}
               </span>
             </td>
             <td>{{ formatDuration(r.duration) }}</td>
@@ -77,6 +77,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTrainingStore } from '@/stores/training'
+import { fmtScore } from '@/composables/useUtils'
 
 const props = defineProps({
   caseId: { type: String, required: true },

@@ -81,7 +81,7 @@
               <div class="record-time">{{ r.time }}</div>
             </div>
             <div class="record-right">
-              <span class="record-score" :class="scoreClass(r.score)">{{ r.score }}分</span>
+              <span class="record-score" :class="scoreClass(r.score)">{{ fmtScore(r.score) }}分</span>
               <span class="record-duration">{{ formatDuration(r.duration) }}</span>
             </div>
           </div>
@@ -97,6 +97,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppTrainingStore } from '@/stores/appTraining'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
+import { fmtScore } from '@/composables/useUtils'
 
 const route = useRoute()
 const router = useRouter()

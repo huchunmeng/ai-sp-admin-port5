@@ -32,6 +32,9 @@ export const useTrainingStore = defineStore('training', () => {
   const sessionEpoch = ref(null)  // 每次训练的唯一标识（13位毫秒时间戳）
   const trainingVersion = ref(null)  // 当前训练会话的版本标记: '1.0' / '2.0' / 'full-flow'
 
+  // 隐藏工具面板开关（点击机构名切换）：控制 评审/需求/重新生成 等仅对维护者可见的按钮
+  const showHiddenControls = ref(false)
+
   // LLM 配置
   const llmConfig = ref({
     available: true,
@@ -608,6 +611,6 @@ export const useTrainingStore = defineStore('training', () => {
     activeFlow, saveActiveFlow, hasUnfinishedSession, clearActiveFlow, loadActiveFlow,
     clearScoringCache, resetForNewSession,
     setLlmAvailable,
-    sessionEpoch, trainingVersion,
+    sessionEpoch, trainingVersion, showHiddenControls,
   }
 })

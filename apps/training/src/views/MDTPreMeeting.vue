@@ -10,7 +10,7 @@
           <h3 class="pm-title"><i class="fa-solid fa-file-signature"></i> 会诊前发起 · 多学科协作诊疗</h3>
           <div class="pm-subtitle">住院患者跨学科会诊申请 · 医务科审批通过后进入讨论</div>
         </div>
-        <button class="btn btn-sm btn-skip pm-exit" @click="exitFlow">
+        <button class="btn btn-sm pm-exit" @click="exitFlow">
           <i class="fa-solid fa-xmark"></i> 退出
         </button>
       </div>
@@ -283,7 +283,11 @@ onMounted(load)
 .pm-header-left { display: flex; flex-direction: column; gap: 5px; }
 .pm-title { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: #1f2937; }
 .pm-subtitle { font-size: 12px; color: #9ca3af; }
-.pm-exit { display: inline-flex; align-items: center; gap: 4px; }
+.pm-exit {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #f9fafb; color: #9ca3af; border-color: #e5e7eb;
+}
+.pm-exit:hover { color: #6b7280; border-color: #d1d5db; background: #f3f4f6; }
 
 .pm-case-summary {
   background: linear-gradient(135deg, #eff6ff, #f0f5ff);
