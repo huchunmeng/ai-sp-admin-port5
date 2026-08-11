@@ -455,6 +455,7 @@ export default defineConfig(({ mode }) => {
                   mdtIndex.push({
                     id: data.id || f.replace('-mdt.json', ''),
                     caseId: data.caseId || '',
+                    sourceRecordId: data.sourceRecordId || '',
                     sourceType: data.sourceType || 'manual',
                     patientName: pi.name || '',
                     gender: pi.gender || '',
