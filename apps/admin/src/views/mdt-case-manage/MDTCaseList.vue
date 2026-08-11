@@ -84,10 +84,18 @@ const cases = ref([])
 const loading = ref(false)
 
 // 原始病历仅有入院记录的 8 份素材：绑定它们的 MDT 病例从列表中隐藏
+// 同时按病例 ID 与素材 sourceRecordId 双键匹配，兼容旧构建索引缺 sourceRecordId 的情况
 const ADMISSION_ONLY_SRC_IDS = new Set([
   'ZY010101453782', 'ZY010101478088', 'ZY010101620094', 'ZY010101602948',
   'ZY020101577826', 'ZY020101721441', 'ZY030101718668', 'ZY040101362766'
 ])
+const ADMISSION_ONLY_IDS = new Set([
+  'MDT-20260804-BRF9', 'MDT-20260804-BRFA', 'MDT-20260804-BRFC', 'MDT-20260804-BRFE',
+  'MDT-20260804-BRFF', 'MDT-20260804-BRFH', 'MDT-20260804-BRFJ', 'MDT-20260804-BRFK'
+])
+function isAdmissionOnly(c) {
+  return ADMISSION_ONLY_IDS.has(c.id) || ADMISSION_ONLY_SRC_IDS.has(c.sourceRecordId)
+}
 
 const SOURCE_META = {
   ai: { label: '系统内自建', badge: 'badge-info' },
@@ -112,7 +120,7 @@ async function loadCases() {
   try {
     const res = await fetch('/api/mdt-cases')
     const list = res.ok ? await res.json() : []
-    cases.value = list.filter(c => !ADMISSION_ONLY_SRC_IDS.has(c.sourceRecordId))
+    cases.value = list.filter(c => !isAdmissionOnly(c))
   } catch (e) {
     cases.value = []
   }
