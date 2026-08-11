@@ -119,6 +119,8 @@ export const useTrainingStore = defineStore('training', () => {
   const RECORDS_KEY = 'training_records'
 
   function addTrainingRecord(record) {
+    // 兜底训练时间：部分模块（诊断/辅助检查）漏传 time，导致全流程合并记录时间为空
+    if (!record.time) record.time = new Date().toLocaleString()
     // 内置版本统一考站名称（MDT 独立模块不受影响）
     if (record.stationId !== 'mdt') {
       if (trainingVersion.value === '1.0') {
@@ -215,7 +217,13 @@ export const useTrainingStore = defineStore('training', () => {
           if (existing) {
             existing.duration = (existing.duration || 0) + (r.duration || 0)
             if (r.score != null && (existing.score == null || r.score > existing.score)) existing.score = r.score
-            if (new Date(r.recordedAt) > new Date(existing.recordedAt)) existing.recordedAt = r.recordedAt
+            if (r._settleTotalScore != null && (existing._settleTotalScore == null || r._settleTotalScore > existing._settleTotalScore)) {
+              existing._settleTotalScore = r._settleTotalScore
+            }
+            if (new Date(r.recordedAt) > new Date(existing.recordedAt)) {
+              existing.recordedAt = r.recordedAt
+              existing.time = r.time || existing.time // 训练时间跟随最新完成模块
+            }
             if (!existing._stationIds) existing._stationIds = [existing.stationId]
             if (!existing._stationIds.includes(r.stationId)) existing._stationIds.push(r.stationId)
             if (!existing._stationScoreMap) existing._stationScoreMap = { [existing.stationId]: existing.score }
@@ -226,13 +234,20 @@ export const useTrainingStore = defineStore('training', () => {
           merged.push({ ...r, _stationScoreMap: { [r.stationId]: r.score } })
         }
       }
+      // 兜底训练时间：旧记录可能漏存 time（诊断/辅助检查模块），用 recordedAt 本地化显示
+      for (const r of merged) {
+        if (!r.time && r.recordedAt) r.time = new Date(r.recordedAt).toLocaleString()
+        // 全流程记录优先展示结算总分，而非被单模块报告覆盖的模块原始分（满分120等）
+        if (r.trainingVersion === 'full-flow' && r._settleTotalScore != null) r.score = r._settleTotalScore
+      }
       // 按时间倒序，最新记录在前
       merged.sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt))
-      // 展开 _stationIds：全流程合并记录中每个考站独立为一行
-      // 但同站多项目（如 historyTaking + mentalExam ∈ 接诊病人站）不展开
+      // 展开 _stationIds：全流程合并记录不再展开（成绩报告合并为一份，列表显示一条"全流程版"）
+      // 同站多项目（如 historyTaking + mentalExam ∈ 接诊病人站）不展开
       const expanded = []
       for (const r of merged) {
         expanded.push(r)
+        if (r.trainingVersion === 'full-flow') continue // full-flow 合并记录保持一条
         const extraIds = (r._stationIds || []).filter(id => {
           if (id === r.stationId) return false
           for (const ids of Object.values(STATION_LABEL_TO_IDS)) {
@@ -259,6 +274,33 @@ export const useTrainingStore = defineStore('training', () => {
     } catch (e) {
       return []
     }
+  }
+
+  // 按 caseId + sessionEpoch 匹配更新记录分数（全流程合并记录回写总分用，不依赖 stationId）
+  function updateRecordScoreByEpoch(caseId, sessionEpoch, score, hasReport = true) {
+    if (!caseId || sessionEpoch == null) return
+    try {
+      const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}')
+      let updated = false
+      for (const [key, r] of Object.entries(records)) {
+        // 宽松比较：sessionEpoch 可能是字符串（路由 query）或数字（store），统一转字符串避免漏匹配
+        if (r.caseId !== caseId || String(r.sessionEpoch) !== String(sessionEpoch)) continue
+        if (score != null) {
+          r.score = score
+          // 全流程专用总分字段：单模块报告回写模块分时不会被覆盖，合并记录展示总分用
+          r._settleTotalScore = score
+        }
+        if (hasReport) {
+          r.hasReport = true
+          r.reportTimestamp = new Date().toISOString()
+        }
+        updated = true
+      }
+      if (updated) {
+        localStorage.setItem(RECORDS_KEY, safeStringify(records))
+        syncRecordsToServer()
+      }
+    } catch (e) { console.warn('[store] updateRecordScoreByEpoch failed:', e) }
   }
 
   // MDT 多学科讨论训练记录：列出全部会话归档（按时间倒序）
@@ -325,6 +367,14 @@ export const useTrainingStore = defineStore('training', () => {
               records[item.key].hasReport = item.hasReport
               records[item.key].reportTimestamp = item.reportTimestamp
               if (item.stationLabel) records[item.key].stationName = item.stationLabel
+            }
+            // 全流程合并记录：将结算总分同步到该 epoch 的全部模块记录，防止列表取模块原始分（满分120）
+            if (item.trainingVersion === 'full-flow' && item.hasReport && item.score > 0 && item.sessionEpoch != null) {
+              for (const r of Object.values(records)) {
+                if (r.caseId === item.caseId && String(r.sessionEpoch) === String(item.sessionEpoch)) {
+                  r._settleTotalScore = item.score
+                }
+              }
             }
           }
           localStorage.setItem(RECORDS_KEY, JSON.stringify(records))
@@ -553,6 +603,7 @@ export const useTrainingStore = defineStore('training', () => {
     saveSessionStage, clearSession,
     saveState, saveTrainingSession,
     addTrainingRecord, getTrainingRecords, getMdtRecords, getCaseTrainingStatus,
+    updateRecordScoreByEpoch,
     loadRecordsFromServer, loadSessionDataFromServer,
     activeFlow, saveActiveFlow, hasUnfinishedSession, clearActiveFlow, loadActiveFlow,
     clearScoringCache, resetForNewSession,
