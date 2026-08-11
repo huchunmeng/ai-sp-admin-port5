@@ -35,10 +35,6 @@
             <div class="user-dropdown-item" @click="showUserMenu = false; openAdaptiveLearning()">
               <i class="fa-solid fa-chart-pie"></i> 学习画像
             </div>
-            <div class="user-dropdown-divider"></div>
-            <div class="user-dropdown-item logout" @click="handleLogout">
-              <i class="fa-solid fa-right-from-bracket"></i> 退出登录
-            </div>
           </div>
         </div>
       </div>
@@ -47,7 +43,7 @@
     <div class="breadcrumb-bar" v-if="crumbs.length && !isStationRoute">
       <span class="breadcrumb-item" v-for="(cr, i) in crumbs" :key="i">
         <span v-if="i > 0" class="breadcrumb-sep">/</span>
-        <a v-if="cr.to" @click="router.push(cr.to)">{{ cr.label }}</a>
+        <a v-if="cr.to" @click="handleCrumbClick(cr)">{{ cr.label }}</a>
         <span v-else class="breadcrumb-current">{{ cr.label }}</span>
       </span>
     </div>
@@ -75,6 +71,17 @@ const router = useRouter()
 const route = useRoute()
 const store = useTrainingStore()
 const userStore = useUserStore()
+
+// MDT 病例列表页面包屑「首页」跳转的外部地址
+const EXTERNAL_HOME_URL = 'https://ydxt.njzdyy.com:20881/training-web/index'
+
+function handleCrumbClick(cr) {
+  if (typeof cr.to === 'string') {
+    window.location.href = cr.to
+    return
+  }
+  router.push(cr.to)
+}
 
 const showHiddenControls = ref(false)
 const showUserMenu = ref(false)
@@ -105,12 +112,6 @@ function openAdaptiveLearning() {
   router.push({ name: 'adaptiveLearning' })
 }
 
-function handleLogout() {
-  showUserMenu.value = false
-  userStore.logout()
-  router.push({ name: 'login' })
-}
-
 function onClickOutside(e) {
   if (showUserMenu.value && !e.target.closest('.user-menu-wrap')) {
     showUserMenu.value = false
@@ -139,7 +140,7 @@ const crumbs = computed(function() {
   const lang = store.lang || 'zh'
 
   if (name !== 'home') {
-    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: { name: 'home' } })
+    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: name === 'mdtCaseList' ? EXTERNAL_HOME_URL : { name: 'home' } })
   }
 
   if (name === 'caseList') {

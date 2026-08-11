@@ -1,13 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import TrainingLayout from '@/layouts/TrainingLayout.vue'
-import { useUserStore } from '@/stores/user'
 
 const routes = [
-  {
-    path: '/login',
-    name: 'login',
-    component: () => import('@/views/LoginView.vue')
-  },
   {
     path: '/',
     component: TrainingLayout,
@@ -43,13 +37,6 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
-})
-
-router.beforeEach((to, from, next) => {
-  if (to.name === 'login') return next()
-  const userStore = useUserStore()
-  if (!userStore.isLoggedIn) return next({ name: 'login' })
-  next()
 })
 
 export default router
