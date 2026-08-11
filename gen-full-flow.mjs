@@ -162,7 +162,7 @@ function buildMedicalRecord() {
   return [
     '入院记录',
     '',
-    `姓名：${pi.name || '潘存慧'}    性别：男    年龄：${pi.age || '54岁'}`,
+    `姓名：${pi.name || '蒲志辉'}    性别：男    年龄：${pi.age || '54岁'}`,
     `民族：汉族      婚姻：${pi.marital || '已婚'}  职业：${pi.occupation || '工人'}`,
     `出生地：${pi.address || '安徽省天长市'}`,
     `入院时间：${adm.admission_time || ''}    入院科室：${adm.admission_department || ''}`,
