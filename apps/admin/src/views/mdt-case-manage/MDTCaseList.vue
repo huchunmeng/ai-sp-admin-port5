@@ -83,6 +83,12 @@ const router = useRouter()
 const cases = ref([])
 const loading = ref(false)
 
+// 单份入院摘要转换出记录的 8 份素材：绑定它们的 MDT 病例在列表中置后（稳定排序，仅整体后移）
+const CONVERTED_SRC_IDS = new Set([
+  'ZY010101453782', 'ZY010101478088', 'ZY010101620094', 'ZY010101602948',
+  'ZY020101577826', 'ZY020101721441', 'ZY030101718668', 'ZY040101362766'
+])
+
 const SOURCE_META = {
   ai: { label: '系统内自建', badge: 'badge-info' },
   raw: { label: '基于原始病历', badge: 'badge-success' },
@@ -105,7 +111,10 @@ async function loadCases() {
   loading.value = true
   try {
     const res = await fetch('/api/mdt-cases')
-    cases.value = res.ok ? await res.json() : []
+    const list = res.ok ? await res.json() : []
+    cases.value = [...list].sort((a, b) =>
+      (CONVERTED_SRC_IDS.has(a.sourceRecordId) ? 1 : 0) - (CONVERTED_SRC_IDS.has(b.sourceRecordId) ? 1 : 0)
+    )
   } catch (e) {
     cases.value = []
   }

@@ -226,7 +226,9 @@ watch(filteredGroups, (list) => {
     }
   }
   if (all.length && !all.some(e => e.key === selectedKey.value)) {
-    selectedKey.value = all[0].key
+    // 默认选中第一个有内容的项（记录数>0），避免落在空分组看不到内容
+    const filled = all.find(e => e.type === 'records' && e.records.length > 0)
+    selectedKey.value = (filled || all[0]).key
   }
 }, { immediate: true })
 </script>

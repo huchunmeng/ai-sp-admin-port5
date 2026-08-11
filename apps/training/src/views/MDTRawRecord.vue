@@ -92,11 +92,11 @@
                 <div class="mrkb-card-meta">
                   <span>{{ current.meta || '内容' }}</span>
                 </div>
-                <button class="mrkb-card-toggle" @click="expanded = !expanded">
-                  {{ expanded ? '收起' : '展开' }}
+                <button class="mrkb-card-toggle" @click="textExpanded = !textExpanded">
+                  {{ textExpanded ? '收起' : '展开' }}
                 </button>
               </div>
-              <div :class="['mrkb-card-body', { collapsed: !expanded }]">
+              <div :class="['mrkb-card-body', { collapsed: !textExpanded }]">
                 <pre class="mrkb-content-text">{{ current.content }}</pre>
               </div>
             </div>
@@ -129,6 +129,7 @@ const searchText = ref('')
 const selectedKey = ref('')
 const openKeys = ref(new Set())
 const expanded = ref(new Set())
+const textExpanded = ref(true)   // 原始病历全文卡片默认展开
 
 const recordCount = computed(() => {
   let n = 0
@@ -201,7 +202,9 @@ watch(filteredGroups, (list) => {
     }
   }
   if (all.length && !all.some(e => e.key === selectedKey.value)) {
-    selectedKey.value = all[0].key
+    // 默认选中第一个有内容的项（记录数>0 或全文文本），避免落在空分组导致"看不到病历内容"
+    const filled = all.find(e => (e.type === 'records' && e.records.length > 0) || e.type === 'text')
+    selectedKey.value = (filled || all[0]).key
   }
 }, { immediate: true })
 

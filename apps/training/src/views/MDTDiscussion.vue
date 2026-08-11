@@ -1,8 +1,8 @@
 <template>
   <div class="mdt-page">
-    <!-- 加载中 -->
-    <div v-if="loading" class="loading-state">
-      <i class="fa-solid fa-spinner fa-spin"></i> 加载中...
+    <!-- 加载中 / 会诊前申请过渡（避免跳转 mdtPreMeeting 前闪现讨论区） -->
+    <div v-if="loading || phase === 'premeeting'" class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin"></i> {{ phase === 'premeeting' ? '正在进入会诊前申请…' : '加载中...' }}
     </div>
 
     <!-- 准备面板（角色选择） -->
@@ -60,7 +60,7 @@
         <div class="mdt-sidebar-left">
           <div class="case-info-title">
             <span><i class="fa-solid fa-folder-open"></i> 病例信息</span>
-            <button v-if="hasRawRecord" class="btn btn-sm case-raw-btn" @click="openRawDrawer">
+            <button v-if="hasRawRecord" class="btn btn-sm case-raw-btn" @click="openRawRecordPage">
               <i class="fa-solid fa-folder-open"></i> 原始病历
             </button>
           </div>
@@ -224,7 +224,7 @@
                 <div class="case-raw-body">
                   <div class="case-raw-title">原始病历</div>
                   <div class="case-raw-text">可查看本次 MDT 之前住院期间的原始病历（按事件线整理）。</div>
-                  <button class="btn btn-primary btn-sm" @click="openRawDrawer">查看原始病历 <i class="fa-solid fa-arrow-right"></i></button>
+                  <button class="btn btn-primary btn-sm" @click="openRawRecordPage">查看原始病历 <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
               </div>
 
@@ -366,35 +366,6 @@
         </div>
       </div>
 
-      <!-- 原始病历抽屉（事件线） -->
-      <div v-if="rawDrawerOpen" class="raw-drawer-overlay" @click.self="closeRawDrawer">
-        <div class="raw-drawer">
-          <div class="raw-drawer-header">
-            <div class="raw-drawer-title"><i class="fa-solid fa-folder-open"></i> 原始病历 · 事件线</div>
-            <button class="modal-close" @click="closeRawDrawer"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-          <div class="raw-drawer-body">
-            <div v-if="rawLoading" class="raw-drawer-empty"><i class="fa-solid fa-spinner fa-spin"></i> 加载中...</div>
-            <div v-else-if="rawRecords && rawRecords.hasData" class="raw-timeline">
-              <div v-for="(rec, i) in rawRecords.items" :key="i" class="raw-item" :class="{ expanded: rawExpanded.has(i) }">
-                <div class="raw-item-header" @click="toggleRawExpand(i)">
-                  <span class="raw-item-date"><i class="fa-regular fa-calendar"></i> {{ rec.createDate || '—' }}</span>
-                  <span class="raw-item-type">{{ rec.ftypeLabel }}</span>
-                  <span v-if="rec.doctorCode" class="raw-item-doctor"><i class="fa-solid fa-user-doctor"></i> {{ rec.doctorCode }}</span>
-                  <button class="raw-item-toggle">{{ rawExpanded.has(i) ? '收起' : '展开' }}</button>
-                </div>
-                <div v-if="rawExpanded.has(i)" class="raw-item-body"><pre>{{ rec.content }}</pre></div>
-              </div>
-            </div>
-            <div v-else-if="rawRecords && rawRecords.fallback" class="raw-timeline">
-              <div class="raw-fallback-title">原始病历全文</div>
-              <pre class="raw-item-body-pre">{{ rawRecords.fallback }}</pre>
-            </div>
-            <div v-else class="raw-drawer-empty"><i class="fa-regular fa-folder-open"></i> 暂无原始病历数据</div>
-          </div>
-        </div>
-      </div>
-
     </template>
   </div>
 </template>
@@ -406,7 +377,6 @@ import { toast } from '@ai-sp/shared'
 import { loadMDTCase, disciplineIcon } from '@/composables/useMDTData'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { useMDTDirector } from '@/composables/useMDTDirector'
-import { loadRawRecords } from '@/composables/useRawRecords'
 import { useTrainingStore } from '@/stores/training'
 import { getRoleConfig } from '@/composables/roleConfig'
 import { useASR } from '@/composables/useASR'
@@ -498,27 +468,18 @@ const preMeetingApproved = ref(false)    // AI 审批是否通过
 const preMeetingFeedback = ref('')       // 审批未通过时的补充意见
 const preMeetingForm = ref({ questions: '', summary: '', depts: [] })
 
-// ── 原始病历抽屉（事件线查看 mdt 之前的住院病历）──
-const rawDrawerOpen = ref(false)
-const rawRecords = ref(null)
-const rawLoading = ref(false)
-const rawExpanded = ref(new Set())
-
+// ── 原始病历入口：跳转独立页面（与 MDT 病例详情「原始病历」同页，非侧滑弹窗）──
 const hasRawRecord = computed(() => !!caseData.value?.sourceRecordId)
 
-async function openRawDrawer() {
-  rawDrawerOpen.value = true
-  if (rawRecords.value || rawLoading.value) return
-  rawLoading.value = true
-  rawRecords.value = await loadRawRecords(caseData.value?.sourceRecordId)
-  rawLoading.value = false
-}
-function closeRawDrawer() { rawDrawerOpen.value = false }
-function toggleRawExpand(key) {
-  const s = new Set(rawExpanded.value)
-  if (s.has(key)) s.delete(key)
-  else s.add(key)
-  rawExpanded.value = s
+function openRawRecordPage() {
+  const srcId = caseData.value?.sourceRecordId
+  if (!srcId) return
+  // 新标签页打开原始病历页面，讨论页保留在当前标签（不中断进行中的讨论）
+  const url = router.resolve({
+    name: 'mdtRawRecord',
+    query: { sourceRecordId: srcId, title: caseData.value?.name || '' },
+  }).href
+  window.open(url, '_blank')
 }
 
 let runSeq = 0                        // 重开守卫：丢弃上一轮仍在飞的异步结果（如能力评价）
@@ -2112,52 +2073,4 @@ onMounted(load)
   font-size: 12px; padding: 3px 10px; border-radius: 8px; cursor: pointer;
 }
 .case-raw-btn:hover { background: #ede9fe; }
-
-/* ─── 原始病历抽屉 ─── */
-.raw-drawer-overlay {
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(17, 24, 39, 0.4);
-  display: flex; justify-content: flex-end;
-}
-.raw-drawer {
-  width: 560px; max-width: 92vw; height: 100%;
-  background: #fff; box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
-  display: flex; flex-direction: column;
-}
-.raw-drawer-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px; border-bottom: 1px solid #edf0f4;
-}
-.raw-drawer-title { font-size: 15px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 8px; }
-.raw-drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-.raw-drawer-empty {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 60%; color: #9ca3af; font-size: 14px; gap: 8px;
-}
-.raw-timeline { display: flex; flex-direction: column; gap: 8px; }
-.raw-item {
-  border: 1px solid #edf0f4; border-radius: 10px; overflow: hidden;
-  background: #fff;
-}
-.raw-item-header {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 10px 14px; cursor: pointer; background: #f8fafc;
-}
-.raw-item-header:hover { background: #f0f4ff; }
-.raw-item-date { font-size: 12px; color: #6b7280; font-family: monospace; }
-.raw-item-date i { margin-right: 4px; color: #9ca3af; }
-.raw-item-type {
-  font-size: 11px; padding: 1px 8px; border-radius: 10px;
-  background: #eef2ff; color: #4338ca; font-weight: 600;
-}
-.raw-item-doctor { font-size: 12px; color: #6b7280; margin-left: auto; }
-.raw-item-toggle {
-  font-size: 12px; color: #409EFF; background: none; border: none; cursor: pointer;
-}
-.raw-item-body { padding: 12px 14px; border-top: 1px solid #edf0f4; }
-.raw-item-body pre, .raw-item-body-pre {
-  margin: 0; font-size: 13px; line-height: 1.8; color: #374151;
-  white-space: pre-wrap; word-break: break-all; font-family: inherit;
-}
-.raw-fallback-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 8px; }
 </style>

@@ -75,6 +75,12 @@ const loading = ref(true)
 const activeFilter = ref('all')
 const keyword = ref('')
 
+// 单份入院摘要转换出记录的 8 份素材：绑定它们的 MDT 病例在列表中置后（稳定排序，仅整体后移）
+const CONVERTED_SRC_IDS = new Set([
+  'ZY010101453782', 'ZY010101478088', 'ZY010101620094', 'ZY010101602948',
+  'ZY020101577826', 'ZY020101721441', 'ZY030101718668', 'ZY040101362766'
+])
+
 const filters = [
   { key: 'all', label: '全部' },
   { key: 'cardio', label: '心血管' },
@@ -125,7 +131,10 @@ function viewDetail(c) {
 
 async function load() {
   loading.value = true
-  mdtCases.value = await loadMDTCases()
+  const list = await loadMDTCases()
+  mdtCases.value = [...list].sort((a, b) =>
+    (CONVERTED_SRC_IDS.has(a.sourceRecordId) ? 1 : 0) - (CONVERTED_SRC_IDS.has(b.sourceRecordId) ? 1 : 0)
+  )
   loading.value = false
 }
 
