@@ -17,7 +17,7 @@ function majorWithId(name, stations) {
 /** 根据模板编码创建评分表引用 */
 function tbl(code, bindProjects) {
   const tpl = scoreTemplates[code]
-  return { name: tpl ? tpl.name : code, templateCode: code, bindProjects }
+  return { name: tpl ? tpl.name : code, templateCode: code, bindProjects, weight: null }
 }
 
 /** 根据模板编码 + 专业名创建带专业命名的评分表引用（体格检查类） */
@@ -25,7 +25,29 @@ function tblExam(code, specialty, examName, bindProjects) {
   const name = getSpecialtyTableName(specialty, code)
   // 如果专业有特有命名则用，否则用 examName + 评分表
   const displayName = name !== scoreTemplates[code]?.name ? name : (examName + '评分表')
-  return { name: displayName, templateCode: code, bindProjects }
+  return { name: displayName, templateCode: code, bindProjects, weight: null }
+}
+
+/**
+ * 归一化考站内评分表权重：单站满分 100 分，多张评分表按权重占比分配。
+ * 若站内所有评分表均未配置数字权重（undefined/null），则等分 100/len（余数补到末张），
+ * 保证平台/省级默认方案自带权重；机构方案可编辑覆盖。
+ */
+function normalizeStationWeights(stations) {
+  for (const majorKey of Object.keys(stations)) {
+    for (const station of stations[majorKey] || []) {
+      const tables = station.scoreTables || []
+      if (!tables.length) continue
+      const allUnset = tables.every(t => typeof t.weight !== 'number')
+      if (!allUnset) continue
+      const base = Math.floor(100 / tables.length)
+      const remain = 100 - base * tables.length
+      tables.forEach((t, i) => {
+        t.weight = i === tables.length - 1 ? base + remain : base
+      })
+    }
+  }
+  return stations
 }
 
 // ===== 工厂函数 =====
@@ -743,6 +765,9 @@ const stations = {
     // 第一~三站 细胞形态辨认/检验技能操作/结果判读(50min) — 不在6项范围内
   ],
 }
+
+// 为全部平台/省级默认考站的评分表分配默认权重（单站满分 100）
+normalizeStationWeights(stations)
 
 // ===== 各专业按分类整理的完整列表 =====
 

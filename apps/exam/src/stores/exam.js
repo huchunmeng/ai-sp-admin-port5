@@ -69,11 +69,17 @@ export const useExamStore = defineStore('exam', () => {
   })
 
   const allSheetsTotal = computed(() => {
+    // 多评分表按权重归一化：单站总分 = Σ(表得分/表满分 × 权重)，满分 100
     let sum = 0, max = 0
+    const total = scoreSheets.value.length
     scoreSheets.value.forEach(sheet => {
+      const w = typeof sheet.weight === 'number' ? sheet.weight : (100 / total)
+      let sheetSum = 0, sheetMax = 0
       sheet.categories.forEach(cat => {
-        cat.items.forEach(item => { sum += item.score; max += item.max })
+        cat.items.forEach(item => { sheetSum += item.score; sheetMax += item.max })
       })
+      sum += sheetMax > 0 ? (sheetSum / sheetMax) * w : 0
+      max += w
     })
     return { sum, max }
   })

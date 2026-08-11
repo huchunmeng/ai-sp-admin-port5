@@ -64,6 +64,7 @@ export const analysisQuestionsData = [
 export const scoreSheetsData = [
   {
     name: '病史采集',
+    weight: 34,
     categories: [
       { category: '一般项目', items: [
         { name: '自我介绍', points: '清晰说明姓名、身份及本次问诊目的', max: 3, score: 3 },
@@ -79,6 +80,7 @@ export const scoreSheetsData = [
   },
   {
     name: '体格检查',
+    weight: 33,
     categories: [
       { category: '一般检查', items: [
         { name: '体温测量', points: '正确使用体温计，读数准确', max: 3, score: 0 },
@@ -93,6 +95,7 @@ export const scoreSheetsData = [
   },
   {
     name: '人文沟通',
+    weight: 33,
     categories: [
       { category: '沟通技巧', items: [
         { name: '共情表达', points: '对患者情绪做出恰当回应', max: 3, score: 0 },

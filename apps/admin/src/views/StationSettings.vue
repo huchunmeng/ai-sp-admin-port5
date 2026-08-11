@@ -201,7 +201,10 @@
                   <div style="padding-top: 10px; border-top: 1px solid var(--border-light);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                       <span style="font-weight: 500;">评分表绑定：</span>
-                      <button class="btn btn-sm" @click="openScoreTableModal(editingMajorTab, sindex)">+ 添加评分表</button>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <span v-if="station.scoreTables.length > 0" style="font-size: 12px; color: var(--text-secondary);">权重合计：<b :style="{ color: getStationWeightSum(station) === 100 ? '#16a34a' : 'var(--error)' }">{{ getStationWeightSum(station) }} / 100</b></span>
+                        <button class="btn btn-sm" @click="openScoreTableModal(editingMajorTab, sindex)">+ 添加评分表</button>
+                      </div>
                     </div>
                     <div v-if="station.scoreTables.length === 0" style="color: var(--text-tertiary);">暂无评分表</div>
                     <div v-for="(st, stindex) in station.scoreTables" :key="stindex" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #eff6ff; border-radius: 6px; margin-bottom: 4px;">
@@ -215,7 +218,10 @@
                         </div>
                         <span style="font-size: 12px; color: var(--text-secondary);">覆盖：{{ st.bindProjects.join(', ') }}</span>
                       </div>
-                      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                        <span style="font-size: 12px; color: var(--text-secondary);">权重</span>
+                        <input type="number" v-model.number="st.weight" min="1" max="100" style="width: 58px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center;" title="该评分表占考站总分的权重（合计须为100）">
+                        <button class="btn btn-sm" @click="autoDistributeWeights(editingMajorTab, sindex)" title="按张数自动均分">均分</button>
                         <i v-if="st.fileData" class="fas fa-download" style="cursor:pointer;color:var(--primary);font-size:12px;" title="下载文件" @click="downloadScoreTableFile(st)"></i>
                         <i class="fas fa-times" style="cursor: pointer; color: var(--error);" @click="deleteScoreTable(editingMajorTab, sindex, stindex)"></i>
                       </div>
@@ -295,6 +301,7 @@
                       <span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 6px;">{{ st.name }}</span>
                       <span v-if="st.fileName" style="font-size:11px;color:var(--text-tertiary);"><i class="fas fa-paperclip"></i> {{ st.fileName }}</span>
                       <span style="font-size: 12px; color: var(--text-secondary); display:block;margin-top:2px;">覆盖：{{ st.bindProjects.join(', ') }}</span>
+                      <span v-if="typeof st.weight === 'number'" style="font-size: 12px; color: var(--text-secondary);">权重：{{ st.weight }}%</span>
                     </div>
                   </div>
                 </div>
@@ -832,7 +839,17 @@ function openEditPanel(schemeId) {
   const scheme = schemes.value.find(s => s.id === schemeId)
   if (!scheme || scheme.type !== 'institution') return
   editingScheme.value = JSON.parse(JSON.stringify(scheme))
-  editingScheme.value.majors.forEach(major => { major.stations.forEach(st => { if (st.collapsed === undefined) st.collapsed = false }) })
+  editingScheme.value.majors.forEach(major => {
+    major.stations.forEach(st => {
+      if (st.collapsed === undefined) st.collapsed = false
+      const tables = st.scoreTables || []
+      if (tables.length && tables.every(t => typeof t.weight !== 'number')) {
+        const base = Math.floor(100 / tables.length)
+        const remain = 100 - base * tables.length
+        tables.forEach((t, i) => { t.weight = i === tables.length - 1 ? base + remain : base })
+      }
+    })
+  })
   editingMajorTab.value = 0
   majorsExpanded.value = false
   showSlidePanel.value = true
@@ -840,6 +857,19 @@ function openEditPanel(schemeId) {
 
 async function closeSlidePanel() {
   if (editingScheme.value) {
+    // 权重校验：绑定评分表的考站，权重合计必须等于 100（单站满分）
+    for (const major of editingScheme.value.majors) {
+      for (const station of major.stations) {
+        const tables = station.scoreTables || []
+        if (!tables.length) continue
+        const sum = tables.reduce((s, t) => s + (typeof t.weight === 'number' ? t.weight : 0), 0)
+        if (sum !== 100) {
+          station.collapsed = false
+          toast.show(`考站"${station.name}"的评分表权重合计为 ${sum}，必须等于 100（可点击"均分"快速分配）`, 'warning')
+          return
+        }
+      }
+    }
     const idx = schemes.value.findIndex(s => s.id === editingScheme.value.id)
     if (idx !== -1) {
       schemes.value[idx] = JSON.parse(JSON.stringify(editingScheme.value))
@@ -1054,10 +1084,12 @@ function submitScoreTable() {
   const selected = scoreTableAvailable.value.find(st => st.template_code === scoreTableSelectedCode.value)
   if (!selected) { toast.show('未找到所选评分表', 'error'); return }
 
+  const used = station.scoreTables.reduce((s, t) => s + (typeof t.weight === 'number' ? t.weight : 0), 0)
   station.scoreTables.push({
     name: selected.template_name,
     templateCode: selected.template_code,
-    bindProjects: [...scoreTableSelectedProject.value]
+    bindProjects: [...scoreTableSelectedProject.value],
+    weight: station.scoreTables.length === 0 ? 100 : Math.max(0, Math.min(100, 100 - used))
   })
   showScoreTableModal.value = false
 }
@@ -1075,5 +1107,21 @@ function deleteScoreTable(majorIndex, stationIndex, stIndex) {
   confirm('确定删除该评分表绑定吗？').then(ok => {
     if (ok) editingScheme.value.majors[majorIndex].stations[stationIndex].scoreTables.splice(stIndex, 1)
   }).catch(() => {})
+}
+
+function getStationWeightSum(station) {
+  return (station?.scoreTables || []).reduce((s, t) => s + (typeof t.weight === 'number' ? t.weight : 0), 0)
+}
+
+function autoDistributeWeights(majorIndex, stationIndex) {
+  if (!editingScheme.value) return
+  const station = editingScheme.value.majors[majorIndex]?.stations[stationIndex]
+  const tables = station?.scoreTables || []
+  if (!tables.length) return
+  const base = Math.floor(100 / tables.length)
+  const remain = 100 - base * tables.length
+  tables.forEach((t, i) => {
+    t.weight = i === tables.length - 1 ? base + remain : base
+  })
 }
 </script>

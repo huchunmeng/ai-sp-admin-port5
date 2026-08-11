@@ -1354,6 +1354,7 @@ const server = createServer(async (req, res) => {
     try {
       const body = await parseBody(req)
       const { caseId: rawCaseId, caseInfo, settleKey, sessionEpoch, trainingMode } = body
+      const stationWeights = body.stationWeights || null
       const caseId = sanitizeId(rawCaseId)
       if (!caseId) return json(res, 400, { ok: false, error: 'Missing caseId' })
       const ANALYZER_SRC = fileURLToPath(new URL('../../score-analyzer/src', import.meta.url))
@@ -1493,10 +1494,17 @@ const server = createServer(async (req, res) => {
 
       // 合并且计算总览
       // full-flow：加权汇总 totalScore = Σ(模块得分/模块满分 × 模块权重)，总分满分 100
+      // 普通模式 + stationWeights：考站内多评分表权重归一化，单站满分 100（与 full-flow 同公式）
+      const weightedStations = !isFullFlow && stationWeights
       for (const r of scoredResults) {
         stationResults.push(r)
         if (isFullFlow && flowModuleWeights) {
           const w = flowModuleWeights[r.stationId] || 0
+          const maxS = r.maxScore || 0
+          totalScore += maxS > 0 ? (r.score / maxS) * w : 0
+          totalMax += w
+        } else if (weightedStations && typeof stationWeights[r.stationId] === 'number') {
+          const w = stationWeights[r.stationId]
           const maxS = r.maxScore || 0
           totalScore += maxS > 0 ? (r.score / maxS) * w : 0
           totalMax += w
@@ -1628,7 +1636,17 @@ const server = createServer(async (req, res) => {
         profileReports,
         integration,
         stage,
-        navigation
+        navigation,
+        isFullFlow,
+        // 供训练端整卷合并表展示：各模块权重（与 totalScore 加权口径一致）
+        flowModules: isFullFlow && flowModulesByKey
+          ? Object.values(flowModulesByKey).map(m => ({
+              routeName: m.routeName || m.moduleId,
+              name: m.name,
+              weight: m.weight || 0,
+              scoreTableCode: m.scoreTableCode
+            }))
+          : undefined
       }
       try {
         writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8')
@@ -1686,12 +1704,42 @@ const server = createServer(async (req, res) => {
   // GET /api/training/enriched-records — 富化训练记录（含病例元数据 + 报告匹配）
   if (req.method === 'GET' && req.url.split('?')[0] === '/api/training/enriched-records') {
     try {
-      const recordsObj = loadTrainingRecordsFromDir()
+      const rawRecords = loadTrainingRecordsFromDir()
+      // 预聚合：同一 caseId+sessionEpoch 的 full-flow 单站记录合并为一条（服务端存单站文件无 _stationIds，此处对齐前端 getTrainingRecords 合并格式）
+      const aggMap = new Map()
+      for (const [key, val] of Object.entries(rawRecords)) {
+        if (val.trainingVersion === 'full-flow' && val.sessionEpoch) {
+          const gKey = `${val.caseId}_${val.sessionEpoch}`
+          const agg = aggMap.get(gKey)
+          if (!agg) {
+            aggMap.set(gKey, { key, ...val, _stationIds: [val.stationId], _stationScoreMap: { [val.stationId]: val.score } })
+          } else {
+            agg._stationIds.push(val.stationId)
+            agg.duration = (agg.duration || 0) + (val.duration || 0)
+            if (val.score != null) agg._stationScoreMap[val.stationId] = val.score
+            if (val.score != null && (val.score > (agg.score || 0))) agg.score = val.score
+            if (new Date(val.recordedAt || 0).getTime() > new Date(agg.recordedAt || 0).getTime()) {
+              agg.recordedAt = val.recordedAt
+              agg.time = val.time || agg.time // 训练时间跟随最新完成模块
+            }
+          }
+        } else {
+          aggMap.set(key, { key, ...val })
+        }
+      }
+      // 兜底训练时间：部分模块记录未存 time（诊断/辅助检查），用 recordedAt 本地化显示
+      for (const v of aggMap.values()) {
+        if (!v.time && v.recordedAt) v.time = new Date(v.recordedAt).toLocaleString()
+      }
+      const recordsObj = {}
+      for (const [k, v] of aggMap) recordsObj[k] = v
       // 展开 _stationIds 合并记录：每个考站独立为一条
       const expandedRecords = []
       for (const [key, val] of Object.entries(recordsObj)) {
         expandedRecords.push({ key, ...val })
-        // 全流程模式下的合并记录：_stationIds 包含多个考站时，为额外的考站创建独立条目
+        // 全流程（full-flow）合并记录不再展开为每考站一行：成绩报告合并为一份
+        if (val.trainingVersion === 'full-flow' && (val._stationIds || []).length > 1) continue
+        // 非 full-flow：_stationIds 包含多个考站时，为额外的考站创建独立条目
         // 但跳过与主 stationId 属于同一考站的项目（如 historyTaking + mentalExam 同属接诊病人站）
         const extraIds = (val._stationIds || []).filter(id => {
           if (id === val.stationId) return false
@@ -1731,28 +1779,46 @@ const server = createServer(async (req, res) => {
       // 富化每条记录 — 用记录 key 中的 epoch 精确匹配报告文件名
       const enriched = records.map(r => {
         const caseMeta = caseIndex.find(c => (c.case_id || c.id) === r.caseId)
-        const stationLabel = getStationLabel(r.stationId) || r.stationName || '未知'
+        // 全流程合并记录：整卷报告 = settle_${epoch}.json（加权总分，满分100），考站列显示"全流程版"
+        const isFullFlowRecord = r.trainingVersion === 'full-flow' && (r._stationIds || []).length > 1
+        const stationLabel = isFullFlowRecord ? '全流程版' : (getStationLabel(r.stationId) || r.stationName || '未知')
         let rep = null
-        // 从记录 sessionEpoch + 考站名匹配报告文件: {sessionEpoch}_{stationName}.json
+        // 从记录 sessionEpoch 匹配报告文件；full-flow 用 settle 汇总，其余用 {sessionEpoch}_{stationName}.json
         const epochForLookup = r.sessionEpoch
         if (epochForLookup) {
           const reportDirForCase = join(REPORTS_DIR, r.caseId)
           if (existsSync(reportDirForCase)) {
-            const prefixes = getReportLookupPrefixes(r.stationId)
-            for (const pfx of prefixes) {
-              const directPath = join(reportDirForCase, `${epochForLookup}_${pfx}.json`)
-              if (existsSync(directPath)) {
+            if (isFullFlowRecord) {
+              const settlePath = join(reportDirForCase, `settle_${epochForLookup}.json`)
+              if (existsSync(settlePath)) {
                 try {
-                  const reportData = JSON.parse(readFileSync(directPath, 'utf-8'))
+                  const reportData = JSON.parse(readFileSync(settlePath, 'utf-8'))
                   rep = {
-                    caseId: r.caseId, stationType: r.stationId,
-                    fileName: `${epochForLookup}_${pfx}.json`,
+                    caseId: r.caseId, stationType: 'settled',
+                    fileName: `settle_${epochForLookup}.json`,
                     timestamp: reportData.timestamp || '',
-                    path: directPath,
-                    score: reportData?.scoring?.total_score ?? 0
+                    path: settlePath,
+                    score: reportData.totalScore ?? 0
                   }
                 } catch (_) { /* skip */ }
-                break
+              }
+            } else {
+              const prefixes = getReportLookupPrefixes(r.stationId)
+              for (const pfx of prefixes) {
+                const directPath = join(reportDirForCase, `${epochForLookup}_${pfx}.json`)
+                if (existsSync(directPath)) {
+                  try {
+                    const reportData = JSON.parse(readFileSync(directPath, 'utf-8'))
+                    rep = {
+                      caseId: r.caseId, stationType: r.stationId,
+                      fileName: `${epochForLookup}_${pfx}.json`,
+                      timestamp: reportData.timestamp || '',
+                      path: directPath,
+                      score: reportData?.scoring?.total_score ?? 0
+                    }
+                  } catch (_) { /* skip */ }
+                  break
+                }
               }
             }
           }
@@ -1763,8 +1829,12 @@ const server = createServer(async (req, res) => {
           caseId: r.caseId,
           stationId: r.stationId,
           stationLabel,
+          trainingVersion: r.trainingVersion || null,
+          sessionEpoch: r.sessionEpoch || null,
+          _stationIds: r._stationIds || [],
           duration: r.duration || 0,
           score: (hasReport && rep?.score > 0) ? rep.score : (typeof r.score === 'number' ? r.score : (r.score || 0)),
+          time: r.time || (r.recordedAt ? new Date(r.recordedAt).toLocaleString() : ''),
           recordedAt: r.recordedAt || r.time || '',
           caseTitle: caseMeta?.title || caseMeta?.disease || '',
           specialty: caseMeta?.specialty || '',
@@ -1787,9 +1857,13 @@ const server = createServer(async (req, res) => {
       const seenEpochGroups = new Map() // `${caseId}_${sessionEpoch}` → mergedIndex
 
       for (const r of enriched) {
-        let groupKey = `${r.caseId}_${r.stationLabel}`
+        // 全流程合并记录：一次训练一条，用 epoch 作用域键，防止同病例多次全流程被合并成一行
+        const isFullFlowRecord = r.trainingVersion === 'full-flow' && (r._stationIds || []).length > 1
+        let groupKey = isFullFlowRecord
+          ? `${r.caseId}_${r.sessionEpoch || ''}_fullflow`
+          : `${r.caseId}_${r.stationLabel}`
         let existing = mergedKeys.has(groupKey)
-          ? merged.find(m => m.caseId === r.caseId && m.stationLabel === r.stationLabel)
+          ? merged.find(m => m.caseId === r.caseId && (isFullFlowRecord ? (m._fullflowEpoch || '') === (r.sessionEpoch || '') : m.stationLabel === r.stationLabel))
           : null
 
         // 同一 sessionEpoch 内，检查是否属于同一多项目考站
@@ -1827,6 +1901,7 @@ const server = createServer(async (req, res) => {
           if (r.score > existing.score) existing.score = r.score
           if (new Date(r.recordedAt).getTime() > new Date(existing.recordedAt).getTime()) {
             existing.recordedAt = r.recordedAt
+            existing.time = r.time || existing.time
           }
           if (r.hasReport) {
             existing.hasReport = true
@@ -1853,7 +1928,7 @@ const server = createServer(async (req, res) => {
               mergedKeys.add(`${r.caseId}_${stLabel}`)
             }
           }
-          merged.push({ ...r, _projectIds: [r.stationId] })
+          merged.push({ ...r, _projectIds: [r.stationId], ...(isFullFlowRecord ? { _fullflowEpoch: r.sessionEpoch || '' } : {}) })
           if (r.sessionEpoch) {
             seenEpochGroups.set(`${r.caseId}_${r.sessionEpoch}`, idx)
           }

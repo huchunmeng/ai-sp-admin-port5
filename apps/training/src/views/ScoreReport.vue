@@ -656,7 +656,9 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { PROJECT_TO_STATION_TARGET } from '@/composables/useStationFlow'
-import { STATION_TO_SESSION_KEY, PROJECT_TAB_CONFIG } from '@ai-sp/shared'
+import { buildSettlePayload } from '@/composables/useStationSettle'
+import { STATION_TO_SESSION_KEY, PROJECT_TAB_CONFIG, pickFlowScheme } from '@ai-sp/shared'
+import flowScoreTablesData from '../../../../packages/shared/data/flow-score-tables.json'
 const router = useRouter()
 const route = useRoute()
 const store = useTrainingStore()
@@ -1105,7 +1107,8 @@ function transformScoringResult(llmResult, parsedSheet, stationId, sheetName) {
         max_score: sub.max_score || 0,
         awarded_score: sub.awarded_score || 0,
         evidence: sub.evidence || '',
-        related_dialogue_ids: sub.related_turns || []
+        related_dialogue_ids: sub.related_turns || [],
+        _dialogScope: STATION_TO_SESSION_KEY[stationId] || stationId
       })
       itemIdx++
     }
@@ -1163,6 +1166,7 @@ function transformScoringResult(llmResult, parsedSheet, stationId, sheetName) {
 // 训练端和管理端读取同一份磁盘文件
 
 async function tryRealScoring() {
+  if (store.trainingVersion === 'full-flow' || record.value.stationId === 'settled') return settleOrLoadFullFlow()
   const caseId = cid.value
   if (!caseId) return false
 
@@ -1347,6 +1351,11 @@ async function tryRealScoring() {
 }
 
 async function regenerateReport() {
+  // full-flow 合并记录：整卷报告走 settle 加载/结算，不走单站 regenerate
+  const isFullFlowRecord = record.value.trainingVersion === 'full-flow'
+    && !record.value._expandedFrom
+    && (record.value._stationIds?.length > 1)
+  if (isFullFlowRecord) { await settleOrLoadFullFlow(); return }
   const caseId = cid.value
   const stationId = record.value.stationId || route.query.stationId
   const recordedAt = record.value.recordedAt || route.query.recordedAt
@@ -1437,8 +1446,93 @@ function defaultEvaluation() {
   }
 }
 
+/** 解析全流程 6 模块顺序与权重：优先 settle 报告的 flowModules，其次静态方案，最后硬编码默认 */
+function resolveFlowModules(settleReport) {
+  if (settleReport?.flowModules?.length) {
+    return settleReport.flowModules.map(m => ({ routeName: m.routeName || m.moduleId, name: m.name, weight: m.weight || 0 }))
+  }
+  const picked = pickFlowScheme(flowScoreTablesData, store.specialty)
+  if (picked?.modules?.length) {
+    return picked.modules.map(m => ({ routeName: m.routeName || m.moduleId, name: m.name, weight: m.weight || 0 }))
+  }
+  return [
+    { routeName: 'historyTaking', name: '病史采集', weight: 20 },
+    { routeName: 'physicalExam', name: '体格检查', weight: 15 },
+    { routeName: 'ancillaryTests', name: '辅助检查', weight: 15 },
+    { routeName: 'diagnosis', name: '诊断', weight: 20 },
+    { routeName: 'treatmentPlan', name: '治疗计划', weight: 15 },
+    { routeName: 'medicalRecord', name: '病历书写', weight: 15 }
+  ]
+}
+
+/** 全流程整卷合并表：按模块权重把各模块评分项折算进一张满分100的评分表（数学等价 Σ(score/max×weight)） */
+function buildMergedFlowDisplay(settleReport) {
+  const zh = lang.value === 'zh'
+  const stationDetails = settleReport.stationDetails || {}
+  const modules = resolveFlowModules(settleReport)
+  const round1 = n => Math.round(n * 10) / 10
+  const items = []
+  let calcTotal = 0
+  for (const m of modules) {
+    const detail = stationDetails[m.routeName] || stationDetails[m.name]
+    if (!detail?.scoring) continue
+    const scoring = detail.scoring
+    const max = scoring.total_max || 1
+    const k = (m.weight || 0) / max
+    for (const entry of (scoring.scored_items || [])) {
+      for (const sub of (entry.sub_items || [])) {
+        items.push({
+          item_id: items.length + 1,
+          category: m.name,
+          subcategory: entry.item || '',
+          name: sub.point || '',
+          max_score: round1((sub.max_score || 0) * k),
+          awarded_score: round1((sub.awarded_score || 0) * k),
+          evidence: sub.evidence || '',
+          related_dialogue_ids: sub.related_turns || [],
+          _dialogScope: m.routeName
+        })
+        calcTotal += (sub.awarded_score || 0) * k
+      }
+    }
+  }
+  if (!items.length) return buildFallbackFromSettle(settleReport)
+  calcTotal = round1(calcTotal)
+  const totalMax = 100
+  const pass = calcTotal >= totalMax * 0.6
+
+  const comprehensive_evaluation = buildComprehensiveEvaluation(
+    defaultEvaluation(),
+    null,
+    settleReport.integration,
+    settleReport.stage,
+    settleReport.navigation
+  )
+  comprehensive_evaluation.overall_conclusion = comprehensive_evaluation.overall_conclusion
+    || (zh ? '全流程综合评分完成（满分100，加权各模块得分）。' : 'Full-flow scoring complete (100 total, weighted across modules).')
+
+  return {
+    meta: { strictness: 'normal', ability_mode: 'normal', ability_mode_reason: '' },
+    scoring: {
+      items,
+      sheetGroups: [{ name: zh ? '全流程评分汇总' : 'Full-flow Score Summary', items, maxTotal: totalMax, calcTotal }],
+      total_score: calcTotal,
+      total_max: totalMax,
+      pass_fail: pass ? (zh ? '通过' : 'Pass') : (zh ? '未通过' : 'Fail')
+    },
+    comprehensive_evaluation,
+    _settle: settleReport
+  }
+}
+
 /** 将 settle/regenerate/load 返回的统一报告结构应用到 ScoreReport 展示状态 */
-function applySettleToDisplay(detail, settleReport, resolvedStationId) {
+function applySettleToDisplay(detail, settleReport, resolvedStationId, isFullFlow = false) {
+  if (isFullFlow && settleReport?.stationDetails) {
+    reportAssessmentData.value = buildMergedFlowDisplay(settleReport)
+    profileAnalysis.value = null
+    scoringState.value = 'scored'
+    return
+  }
   if (detail?.scoring) {
     const transformed = transformScoringResult(detail.scoring, detail.parsedSheet || [], resolvedStationId)
     const data = {
@@ -1489,61 +1583,43 @@ function switchOpSubTab(tab) {
   if (reportBodyRef.value) reportBodyRef.value.scrollTop = 0
 }
 
+// 关联对话查询表：按模块作用域分组，key=模块内序号（LLM 返回的 related_turns 为模块内 1-based 全部消息序号）
+// 每条消息都入表（问+答两侧），避免 only-提问方入表导致偶数轮次回退为「(对话记录 #N)」
 const dialogueLookup = computed(() => {
   const map = {}
   const session = store.trainingSession || {}
-
-  // 病史采集对话
-  const htMsgs = session.historyTaking?.messages || []
-  htMsgs.forEach((m, i) => {
-    if (m.role === 'user' || m.role === 'doctor') {
-      const next = htMsgs[i + 1]
-      map[m.sequence ?? i + 1] = {
-        time: m.time || '-',
-        item: m.content || '',
-        answer: (next && (next.role === 'sp' || next.role === 'patient')) ? next.content : '-'
+  for (const [scope, data] of Object.entries(session)) {
+    const msgs = data?.messages
+    if (!Array.isArray(msgs) || !msgs.length) continue
+    const scoped = map[scope] || (map[scope] = {})
+    msgs.forEach((m, i) => {
+      const isQ = m.role === 'user' || m.role === 'doctor'
+      const isA = m.role === 'sp' || m.role === 'patient' || m.role === 'system'
+      if (!isQ && !isA) return
+      const seq = m.sequence ?? i + 1
+      let answer = '-'
+      for (let j = i + 1; j < msgs.length; j++) {
+        const n = msgs[j]
+        const nIsQ = n.role === 'user' || n.role === 'doctor'
+        const nIsA = n.role === 'sp' || n.role === 'patient' || n.role === 'system'
+        if ((isQ && nIsA) || (isA && nIsQ)) { answer = n.content || ''; break }
       }
-    }
-  })
-
-  // 体格检查操作
-  const peMsgs = session.physicalExam?.messages || []
-  peMsgs.forEach((m, i) => {
-    if (m.role === 'user' || m.role === 'doctor') {
-      const next = peMsgs[i + 1]
-      map[m.sequence ?? htMsgs.length + i + 1] = {
-        time: m.time || '-',
-        item: m.content || '',
-        answer: (next && next.role === 'system') ? next.content : '-'
-      }
-    }
-  })
-
-  // 人文沟通对话 — 病人发言在前，学员回答在后
-  let hcOffset = htMsgs.length + peMsgs.length
-  const hcMsgs = session.humanisticComm?.messages || []
-  hcMsgs.forEach((m, i) => {
-    if (m.role === 'sp' || m.role === 'patient') {
-      const next = hcMsgs[i + 1]
-      map[m.sequence ?? hcOffset + i + 1] = {
-        time: m.time || '-',
-        item: m.content || '',
-        answer: (next && (next.role === 'user' || next.role === 'doctor')) ? next.content : '-'
-      }
-    }
-  })
-
+      scoped[seq] = { time: m.time || '-', item: m.content || '', answer }
+    })
+  }
   return map
 })
 
 function openDialogueDialog(item) {
   if (!item.related_dialogue_ids || !item.related_dialogue_ids.length) return
   const lookup = dialogueLookup.value
+  const scope = item._dialogScope || ''
+  const scoped = (scope && lookup[scope]) || {}
   currentDialogueEntries.value = item.related_dialogue_ids.map(function(id) {
-    return lookup[id] || { time: '-', item: `(${lang.value === 'zh' ? '对话记录 #' : 'Dialogue #'}${id})`, answer: '' }
+    return scoped[id] || { time: '-', item: `(${lang.value === 'zh' ? '对话记录 #' : 'Dialogue #'}${id})`, answer: '' }
   })
   showDialogueDialog.value = true
-  dialogueStationId.value = record.value.stationId || ''
+  dialogueStationId.value = item._dialogScope === 'humanisticComm' ? 'humanity' : (scope || record.value.stationId || '')
 }
 
 const radarLabels = computed(() => {
@@ -1760,6 +1836,52 @@ watch(reportTab, () => {
   if (reportTab.value === 'comprehensive') nextTick(() => { drawAllCanvases() })
 })
 
+/** full-flow 报告加载：优先读已有 settle 报告，无则走一次带 trainingMode 的 settle（防二次结算加权失效） */
+async function settleOrLoadFullFlow() {
+  const caseId = cid.value
+  if (!caseId) return
+  scoringState.value = 'loading'
+  scoringError.value = ''
+  const se = route.query.sessionEpoch || store.sessionEpoch
+  try {
+    await store.loadSessionDataFromServer(caseId, se)
+    const resp = await fetch('/api/training/report?caseId=' + encodeURIComponent(caseId) + '&stationType=settled' + (se ? '&sessionEpoch=' + encodeURIComponent(se) : ''))
+    const json = await resp.json()
+    if (json.ok && json.data?.stationDetails) {
+      applySettleToDisplay(null, json.data, 'settled', true)
+      // 回写报告实际展示的分值（buildMergedFlowDisplay 按 items 折算的 calcTotal），与列表保持一致
+      const displayed = reportAssessmentData.value?.scoring?.total_score
+      if (store.updateRecordScoreByEpoch && displayed != null) store.updateRecordScoreByEpoch(caseId, se, displayed, true)
+      return
+    }
+  } catch (e) {
+    console.warn('[ScoreReport] settleOrLoadFullFlow read failed:', e.message)
+  }
+  try {
+    const payload = buildSettlePayload({ store, caseObj: store.currentCase, caseId })
+    payload.sessionEpoch = se
+    const resp = await fetch('/api/training/settle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    const json = await resp.json()
+    if (json.ok && json.data) {
+      const report = json.data
+      applySettleToDisplay(null, report, 'settled', true)
+      const displayed = reportAssessmentData.value?.scoring?.total_score
+      if (store.updateRecordScoreByEpoch && displayed != null) store.updateRecordScoreByEpoch(caseId, se, displayed, true)
+      return
+    }
+    scoringError.value = json.error || (lang.value === 'zh' ? '结算失败' : 'Settlement failed')
+  } catch (e) {
+    console.warn('[ScoreReport] settleOrLoadFullFlow failed:', e.message)
+    scoringError.value = (lang.value === 'zh' ? '结算失败：' : 'Settlement failed: ') + e.message
+  }
+  scoringState.value = 'fallback'
+  reportAssessmentData.value = generateAssessmentData()
+}
+
 async function loadExistingReport() {
   const caseId = cid.value
   const stationId = record.value.stationId || route.query.stationId
@@ -1786,15 +1908,9 @@ async function loadExistingReport() {
     if (json.ok && json.data) {
       const reportData = json.data
       if (isFullFlowRecord && reportData.stationDetails && !reportData.scoring) {
-        // ── 全流程汇总报告：渲染全部考站 + 总分 + 综合分析 ──
-        let detail = reportData.stationDetails?.[stationId]
-        let resolvedStationId = stationId
-        if (!detail?.scoring && reportData.stationDetails) {
-          const entries = Object.entries(reportData.stationDetails)
-          const firstScored = entries.find(([, d]) => d?.scoring)
-          if (firstScored) { resolvedStationId = firstScored[0]; detail = firstScored[1] }
-        }
-        applySettleToDisplay(detail, reportData, resolvedStationId)
+        // ── 全流程汇总报告：渲染整卷合并表（满分100）+ 总分 + 综合分析 ──
+        applySettleToDisplay(null, reportData, 'settled', true)
+        if (store.updateRecordScoreByEpoch) store.updateRecordScoreByEpoch(caseId, se, reportData.totalScore, true)
       } else {
         // 构建类 settle 格式以复用现有转换逻辑
         const primaryStationId = reportData.stationType || stationId
@@ -1815,22 +1931,32 @@ async function loadExistingReport() {
         syncRecordScoreToLocal(reportData.scoring?.total_score || 0)
       }
     } else {
-      // 报告未生成，自动尝试重新生成
-      console.log('[ScoreReport] 报告文件不存在，自动触发 regenerate')
+      // 报告未生成：full-flow 走带 trainingMode 的 settle，普通考站维持 regenerate
+      console.log('[ScoreReport] 报告文件不存在，自动触发 ' + (isFullFlowRecord ? 'settle' : 'regenerate'))
+      if (isFullFlowRecord) { await settleOrLoadFullFlow(); return }
       await regenerateReport()
       return
     }
   } catch (e) {
     console.warn('[ScoreReport] loadExistingReport failed:', e.message)
-    // 网络错误等异常，尝试自动重新生成
+    // 网络错误等异常：full-flow 走 settle，普通考站维持 regenerate
+    if (isFullFlowRecord) { await settleOrLoadFullFlow(); return }
     await regenerateReport()
     return
   }
 }
 
 onMounted(async () => {
+  // full-flow 上下文：store 版本 / 结算汇总行 / 合并记录（展开源）
+  const isFullFlowContext = store.trainingVersion === 'full-flow'
+    || record.value.stationId === 'settled'
+    || (record.value.trainingVersion === 'full-flow' && !record.value._expandedFrom && record.value._stationIds?.length > 1)
   if (isViewMode.value) {
     await loadExistingReport()
+  } else if (isFullFlowContext) {
+    // 正常完成全流程训练，清除活跃训练流程（防止回到列表页弹出"检测到未完成的训练"）
+    store.clearActiveFlow()
+    await settleOrLoadFullFlow()
   } else {
     // 正常完成训练，清除活跃训练流程（防止回到列表页弹出"检测到未完成的训练"）
     store.clearActiveFlow()

@@ -725,7 +725,8 @@
                   "病史采集",
                   "体格检查",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -744,7 +745,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -763,7 +765,8 @@
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -787,7 +790,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -806,7 +810,8 @@
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -825,7 +830,8 @@
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -844,7 +850,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -863,7 +870,8 @@
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -896,14 +904,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -911,7 +921,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -930,7 +941,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -953,7 +965,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -981,7 +994,8 @@
                 "bindProjects": [
                   "病史采集",
                   "精神检查"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1003,14 +1017,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -1033,7 +1049,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1069,14 +1086,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "病例分析评分表",
@@ -1084,14 +1103,16 @@
                 "bindProjects": [
                   "病例分析",
                   "初步诊断"
-                ]
+                ],
+                "weight": 25
               },
               {
                 "name": "人文沟通评分表",
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 25
               }
             ]
           },
@@ -1110,7 +1131,8 @@
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1133,7 +1155,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1166,14 +1189,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1181,7 +1206,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1200,7 +1226,8 @@
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1219,7 +1246,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1252,14 +1280,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "神经系统检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "神经系统检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1267,7 +1297,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1289,14 +1320,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -1319,7 +1352,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1352,14 +1386,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1367,7 +1403,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1389,14 +1426,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -1419,7 +1458,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1452,14 +1492,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1467,7 +1509,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1486,7 +1529,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1519,14 +1563,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1534,7 +1580,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1553,7 +1600,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1576,7 +1624,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1609,14 +1658,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1624,7 +1675,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1643,7 +1695,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1666,7 +1719,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1699,14 +1753,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1714,7 +1770,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1733,7 +1790,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1756,7 +1814,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1789,14 +1848,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1804,7 +1865,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1823,7 +1885,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -1846,7 +1909,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -1879,14 +1943,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "骨科检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -1894,7 +1960,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -1916,14 +1983,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -1950,14 +2019,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "人文沟通评分表",
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -1979,14 +2050,16 @@
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病例分析评分表",
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "初步诊断"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -2005,7 +2078,8 @@
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -2024,7 +2098,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -2043,7 +2118,8 @@
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2076,14 +2152,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2091,7 +2169,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -2113,14 +2192,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -2139,7 +2220,8 @@
                 "templateCode": "TPL-008",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2169,7 +2251,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "人文沟通评分表",
@@ -2177,7 +2260,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 50
               }
             ]
           },
@@ -2199,14 +2283,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "人文沟通评分表",
                 "templateCode": "TPL-STD-6",
                 "bindProjects": [
                   "人文沟通"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -2239,14 +2325,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "眼部检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "眼部检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2254,7 +2342,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -2276,14 +2365,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -2316,14 +2407,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "专科检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "专科检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2331,7 +2424,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -2353,14 +2447,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -2393,7 +2489,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2401,14 +2498,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2441,7 +2540,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2449,14 +2549,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2489,7 +2591,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2497,14 +2600,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2537,7 +2642,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2545,14 +2651,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2585,7 +2693,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2593,14 +2702,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2633,7 +2744,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2641,14 +2753,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2681,7 +2795,8 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2689,14 +2804,16 @@
                 "bindProjects": [
                   "人文沟通",
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 34
               }
             ]
           }
@@ -2724,7 +2841,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -2743,7 +2861,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2771,7 +2890,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -2790,7 +2910,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2823,14 +2944,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2838,7 +2961,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -2860,14 +2984,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -2891,7 +3017,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2919,7 +3046,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           },
@@ -2938,7 +3066,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -2971,14 +3100,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -2986,7 +3117,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -3005,7 +3137,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
@@ -3038,14 +3171,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -3053,7 +3188,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -3075,14 +3211,16 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 50
               },
               {
                 "name": "病历书写评分表",
                 "templateCode": "TPL-STD-3",
                 "bindProjects": [
                   "病历书写"
-                ]
+                ],
+                "weight": 50
               }
             ]
           }
@@ -3115,14 +3253,16 @@
                 "templateCode": "TPL-STD",
                 "bindProjects": [
                   "病史采集"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "体格检查评分表",
                 "templateCode": "TPL-STD-2",
                 "bindProjects": [
                   "体格检查"
-                ]
+                ],
+                "weight": 33
               },
               {
                 "name": "人文沟通评分表",
@@ -3130,7 +3270,8 @@
                 "bindProjects": [
                   "人文沟通",
                   "初步诊断"
-                ]
+                ],
+                "weight": 34
               }
             ]
           },
@@ -3149,7 +3290,8 @@
                 "templateCode": "TPL-STD-7",
                 "bindProjects": [
                   "病例分析"
-                ]
+                ],
+                "weight": 100
               }
             ]
           }
