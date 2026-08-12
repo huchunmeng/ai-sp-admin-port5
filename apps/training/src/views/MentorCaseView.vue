@@ -40,7 +40,8 @@
         <div class="case-card" v-for="(c, i) in m.cases" :key="i" @click="onCaseClick(c)">
           <span class="case-anon-tag" :style="{ background: cat.gradient }">{{ cat.title }}</span>
           <div class="case-card-photo">
-            <span class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
+            <img v-if="getAvatar(c)" :src="getAvatar(c)" :alt="c.patientName" class="case-avatar" />
+            <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
           </div>
           <div class="case-card-body">
             <div class="cc-row cc-row-1">
@@ -73,7 +74,8 @@
         <div class="case-card" v-for="(c, i) in nationalCases" :key="i" @click="onCaseClick(c)">
           <span class="case-anon-tag" :style="{ background: cat.gradient }">{{ cat.title }}</span>
           <div class="case-card-photo">
-            <span class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
+            <img v-if="getAvatar(c)" :src="getAvatar(c)" :alt="c.patientName" class="case-avatar" />
+            <span v-else class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
           </div>
           <div class="case-card-body">
             <div class="cc-row cc-row-1">
@@ -102,6 +104,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
+import { matchPatientImage } from '@/composables/usePatientImage'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
 
 const route = useRoute()
@@ -128,6 +131,10 @@ const totalCount = computed(() => {
 
 function onCaseClick() {
   toast.show('SP内容建设中，敬请期待', 'info')
+}
+
+function getAvatar(c) {
+  return matchPatientImage({ gender: c.gender, age: c.age }, 'patient')
 }
 </script>
 
@@ -280,6 +287,13 @@ function onCaseClick() {
   border-radius: 50%;
   background: #f5f7fa; color: #C0C4CC;
   font-size: 36px;
+}
+.case-avatar {
+  width: 108px; height: 108px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
 }
 .case-card-body {
   flex: 1; min-width: 0;
