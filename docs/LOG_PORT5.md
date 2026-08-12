@@ -185,6 +185,8 @@
 
 **质控中心样例展示** — `mentorCategories.js` `national.cases` 置入 2 个假样例（急性STEMI / 急性缺血性脑卒中），内页恢复 SP 病例卡展示，hero 与首页角标显示「2 例」。
 
+**名医名课内页面包屑返回改外部站点** — `TrainingLayout.vue` 面包屑：`mentorCases`（院士精讲/金牌导师/质控中心三个内页）的「首页」与「名医名课研习」返回链接统一跳 `https://ydxt.njzdyy.com:20881/training-web/index`（与 MDT 路径一致，`useExternalHome` 条件扩展）。
+
 ### 待推进
 
 1. **金牌导师病例扩容** — 刘必成(肾内)/杨毅(重症)/陆玲(耳鼻喉)暂无对应病例，待补充 HIS 病例后按每位 5 例填充

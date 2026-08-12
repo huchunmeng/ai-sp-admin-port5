@@ -73,7 +73,7 @@ const route = useRoute()
 const store = useTrainingStore()
 const userStore = useUserStore()
 
-// MDT 病例列表页面包屑「首页」跳转的外部地址
+// 面包屑「首页」跳转的外部站点（MDT 路径 + 名医名课内页）
 const EXTERNAL_HOME_URL = 'https://ydxt.njzdyy.com:20881/training-web/index'
 
 function handleCrumbClick(cr) {
@@ -140,9 +140,9 @@ const crumbs = computed(function() {
   const lang = store.lang || 'zh'
 
   if (name !== 'home') {
-    // MDT 路径（病例列表/讨论室/会诊前/原始病历/训练记录/病例详情 from=mdt）首页统一跳外部站点
-    const isMdtPath = name.startsWith('mdt') || (name === 'caseDetail' && route.query.from === 'mdt')
-    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: isMdtPath ? EXTERNAL_HOME_URL : { name: 'home' } })
+    // MDT 路径 + 名医名课内页的「首页」统一跳外部站点
+    const useExternalHome = name.startsWith('mdt') || (name === 'caseDetail' && route.query.from === 'mdt') || name === 'mentorCases'
+    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: useExternalHome ? EXTERNAL_HOME_URL : { name: 'home' } })
   }
 
   if (name === 'caseList') {
@@ -174,7 +174,7 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
   } else if (name === 'mentorCases') {
     const mcat = MENTOR_CATEGORIES[route.params.category]
-    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: 'home' } })
+    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: EXTERNAL_HOME_URL })
     items.push({ label: mcat ? mcat.title : (lang === 'zh' ? '导师病例' : 'Mentor Cases'), to: null })
   } else if (stationRoutes.includes(name)) {
     items.push({ label: lang === 'zh' ? '病例详情' : 'Detail', to: { name: 'caseDetail', params: { caseId: store.currentCase ? store.currentCase.id : '' } } })
