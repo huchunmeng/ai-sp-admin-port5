@@ -63,14 +63,36 @@
       </div>
     </section>
 
-    <!-- 无导师分类（国家级质控中心）：建设中 -->
+    <!-- 无导师分类（国家级质控中心） -->
     <section class="case-section" v-if="cat.mentors.length === 0">
       <div class="section-title">
         <i class="fa-solid fa-folder-open"></i> 精选病例
+        <span class="section-count">{{ nationalCases.length }} 例</span>
       </div>
-      <div class="building-empty">
-        <i class="fa-solid fa-hammer"></i>
-        <div class="building-text">国家级质控中心病例建设中，敬请期待</div>
+      <div class="case-grid">
+        <div class="case-card" v-for="(c, i) in nationalCases" :key="i" @click="onCaseClick(c)">
+          <span class="case-anon-tag" :style="{ background: cat.gradient }">{{ cat.title }}</span>
+          <div class="case-card-photo">
+            <span class="photo-placeholder"><i class="fa-solid fa-user"></i></span>
+          </div>
+          <div class="case-card-body">
+            <div class="cc-row cc-row-1">
+              <span class="cc-name">{{ c.patientName }}</span>
+              <span class="cc-badge badge-unlearned">未学习</span>
+            </div>
+            <div class="cc-row cc-row-2">
+              <span class="cc-disease">{{ c.disease }}</span>
+              <span class="cc-diff" v-if="c.difficulty" :class="'diff-' + c.difficulty[0]">{{ getDifficultyLabel(c.difficulty) }}</span>
+              <span class="cc-case-level" v-if="c.difficulty" :class="'cl-' + getCaseLevel(c.difficulty)">{{ c.caseLevel || getCaseLevelLabel(c.difficulty) }}</span>
+            </div>
+            <div class="cc-row cc-row-3" v-if="c.gender || c.age || c.specialty">
+              <span>{{ [c.gender, c.age ? c.age + '岁' : '', c.specialty].filter(Boolean).join(' · ') }}</span>
+            </div>
+            <div class="cc-row cc-row-4" v-if="c.symptoms && c.symptoms.length">
+              <span class="cc-symptom-tag" v-for="s in c.symptoms" :key="s">{{ s }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -90,6 +112,11 @@ const cat = computed(() => MENTOR_CATEGORIES[route.params.category] || null)
 if (!cat.value) {
   router.replace({ name: 'home' })
 }
+
+const nationalCases = computed(() => {
+  if (!cat.value || cat.value.mentors.length) return []
+  return cat.value.cases || []
+})
 
 const totalCount = computed(() => {
   if (!cat.value) return 0
@@ -151,17 +178,6 @@ function onCaseClick() {
 }
 .section-title i { color: #8b5cf6; }
 .section-count { font-size: 12px; color: #9ca3af; font-weight: 500; }
-
-/* 建设中占位 */
-.building-empty {
-  background: #fff; border-radius: 12px;
-  border: 1px dashed #d1d5db;
-  padding: 56px 20px;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  color: #9ca3af;
-}
-.building-empty i { font-size: 34px; color: #d1d5db; }
-.building-text { font-size: 14px; letter-spacing: 0.02em; }
 
 /* 导师卡 */
 .mentor-card {

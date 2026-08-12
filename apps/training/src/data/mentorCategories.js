@@ -100,7 +100,10 @@ export const MENTOR_CATEGORIES = {
     gradient: 'linear-gradient(135deg,#991b1b,#dc2626)',
     source: '国家级质控中心',
     mentors: [],
-    cases: []
+    cases: [
+      { patientName: '示例一', gender: '男', age: 62, disease: '急性ST段抬高型心肌梗死', specialty: '心血管内科', difficulty: 'R1', caseLevel: '疑难病例', symptoms: ['持续性胸痛', '大汗'], level: '危重病' },
+      { patientName: '示例二', gender: '女', age: 70, disease: '急性缺血性脑卒中（大血管闭塞）', specialty: '神经内科', difficulty: 'R2', caseLevel: '疑难病例', symptoms: ['肢体偏瘫', '言语不清'], level: '危重病' }
+    ]
   }
 }
 
