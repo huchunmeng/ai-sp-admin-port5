@@ -64,7 +64,7 @@
       </div>
     </section>
 
-    <!-- 质控中心分组：中心 + 名下病例 -->
+    <!-- 质控中心分组：中心 + 名下病例（默认各展示一行 3 例，可展开全部） -->
     <section class="center-group" v-for="(ct, gi) in cat.centers" :key="gi">
       <div class="center-card">
         <div class="center-icon" :style="{ background: cat.gradient }"><i class="fa-solid fa-shield-halved"></i></div>
@@ -72,10 +72,15 @@
           <div class="center-name">{{ ct.name }}</div>
           <div class="center-intro" v-if="ct.intro">{{ ct.intro }}</div>
         </div>
-        <span class="center-case-count">{{ ct.cases.length }} 例</span>
+        <div class="center-more" v-if="ct.cases.length > 3">
+          <button class="center-more-btn" @click="toggleCenter(gi)">
+            <i class="fa-solid" :class="expandedCenters[gi] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            {{ expandedCenters[gi] ? '收起' : '查看全部 ' + ct.cases.length + ' 例' }}
+          </button>
+        </div>
       </div>
       <div class="case-grid">
-        <div class="case-card" v-for="(c, i) in ct.cases" :key="i" @click="onCaseClick(c)">
+        <div class="case-card" v-for="(c, i) in ct.cases.slice(0, expandedCenters[gi] ? ct.cases.length : 3)" :key="i" @click="onCaseClick(c)">
           <span class="case-anon-tag" :style="{ background: cat.gradient }">{{ cat.title }}</span>
           <div class="case-card-photo">
             <img v-if="getAvatar(c)" :src="getAvatar(c)" :alt="c.patientName" class="case-avatar" />
@@ -105,7 +110,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
@@ -130,6 +135,11 @@ const totalCount = computed(() => {
   }
   return 0
 })
+
+const expandedCenters = ref({})
+function toggleCenter(gi) {
+  expandedCenters.value[gi] = !expandedCenters.value[gi]
+}
 
 function onCaseClick() {
   toast.show('SP内容建设中，敬请期待', 'info')
@@ -194,13 +204,8 @@ function getAvatar(c) {
   font-size: 20px;
 }
 .center-info { flex: 1; min-width: 0; }
-.center-name { font-size: 15px; font-weight: 700; color: #111827; }
-.center-intro { font-size: 12px; line-height: 1.7; color: #6b7280; margin-top: 6px; text-align: justify; }
-.center-case-count {
-  position: absolute; top: 16px; right: 16px;
-  font-size: 12px; font-weight: 700; color: #6b7280;
-  background: #f3f4f6; padding: 4px 12px; border-radius: 10px;
-}
+.center-name { font-size: 20px; font-weight: 700; color: #111827; }
+.center-intro { font-size: 14px; line-height: 1.7; color: #6b7280; margin-top: 6px; text-align: justify; }
 .section-title {
   display: flex; align-items: center; gap: 8px;
   font-size: 16px; font-weight: 700; color: #1f2937;
@@ -279,6 +284,16 @@ function getAvatar(c) {
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 14px;
 }
+/* 查看全部 / 收起 */
+.center-more { flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+.center-more-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: #4f46e5;
+  background: #eef2ff; border: 1px solid #e0e7ff;
+  padding: 7px 22px; border-radius: 20px; cursor: pointer;
+  transition: all .15s;
+}
+.center-more-btn:hover { background: #e0e7ff; }
 .case-card {
   position: relative;
   display: flex;

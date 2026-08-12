@@ -116,7 +116,7 @@ function scoreClass(s) { if (s >= 85) return 'great'; if (s >= 70) return 'good'
 function sourceClass(src) {
   if (src === '院士精讲') return 'academician'
   if (src === '金牌导师') return 'mentor'
-  if (src === '国家级质控中心') return 'national'
+  if (src === '国家级质控中心' || src === '国家综合介入技术质控中心' || src === '国家重症医学质控中心') return 'national'
   return ''
 }
 function formatDuration(sec) { const m = Math.floor(sec / 60); const s = sec % 60; return m + '分' + s + '秒' }

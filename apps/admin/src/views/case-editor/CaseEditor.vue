@@ -72,7 +72,8 @@
               <option value="">普通病例</option>
               <option value="院士精讲">院士精讲</option>
               <option value="金牌导师">金牌导师</option>
-              <option value="国家级质控中心">国家级质控中心</option>
+              <option value="国家综合介入技术质控中心">国家综合介入技术质控中心</option>
+              <option value="国家重症医学质控中心">国家重症医学质控中心</option>
             </select>
           </div>
           <div class="filter-item">

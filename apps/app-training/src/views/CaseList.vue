@@ -56,7 +56,8 @@
               <span class="filter-chip" :class="{ active: sourceFilter === '' }" @click="sourceFilter = ''">全部</span>
               <span class="filter-chip" :class="{ active: sourceFilter === '院士精讲' }" @click="sourceFilter = sourceFilter === '院士精讲' ? '' : '院士精讲'">院士精讲病例</span>
               <span class="filter-chip" :class="{ active: sourceFilter === '金牌导师' }" @click="sourceFilter = sourceFilter === '金牌导师' ? '' : '金牌导师'">金牌导师病例</span>
-              <span class="filter-chip" :class="{ active: sourceFilter === '国家级质控中心' }" @click="sourceFilter = sourceFilter === '国家级质控中心' ? '' : '国家级质控中心'">国家级质控中心病例</span>
+              <span class="filter-chip" :class="{ active: sourceFilter === '国家综合介入技术质控中心' }" @click="sourceFilter = sourceFilter === '国家综合介入技术质控中心' ? '' : '国家综合介入技术质控中心'">国家综合介入技术质控中心病例</span>
+              <span class="filter-chip" :class="{ active: sourceFilter === '国家重症医学质控中心' }" @click="sourceFilter = sourceFilter === '国家重症医学质控中心' ? '' : '国家重症医学质控中心'">国家重症医学质控中心病例</span>
             </div>
           </div>
         </div>
@@ -203,7 +204,7 @@ function doReset() {
 function sourceClass(src) {
   if (src === '院士精讲') return 'academician'
   if (src === '金牌导师') return 'mentor'
-  if (src === '国家级质控中心') return 'national'
+  if (src === '国家级质控中心' || src === '国家综合介入技术质控中心' || src === '国家重症医学质控中心') return 'national'
   return ''
 }
 

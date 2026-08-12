@@ -27,7 +27,8 @@
           <option value="">{{ lang === 'zh' ? '全部来源' : 'All Sources' }}</option>
           <option value="院士精讲">{{ lang === 'zh' ? '院士精讲病例' : 'Academician' }}</option>
           <option value="金牌导师">{{ lang === 'zh' ? '金牌导师病例' : 'Gold Mentor' }}</option>
-          <option value="国家级质控中心">{{ lang === 'zh' ? '国家级质控中心病例' : 'National QC Center' }}</option>
+          <option value="国家综合介入技术质控中心">{{ lang === 'zh' ? '国家综合介入技术质控中心病例' : 'National Interventional QC Center' }}</option>
+          <option value="国家重症医学质控中心">{{ lang === 'zh' ? '国家重症医学质控中心病例' : 'National Critical Care QC Center' }}</option>
         </select>
         <button class="btn btn-sm" @click="doReset" data-reviewable="重置" :style="{background: hasActiveFilters ? '#fef2f2' : '#fff', color: hasActiveFilters ? '#ef4444' : '#6b7280', border: '1px solid ' + (hasActiveFilters ? '#fecaca' : '#d1d5db'), padding:'4px 12px', borderRadius:'6px', cursor:'pointer', fontSize:'13px'}">
           <i class="fa-solid fa-rotate-left"></i> {{ lang === 'zh' ? '重置' : 'Reset' }}
@@ -314,7 +315,7 @@ function phaseLabel(p) {
 function sourceClass(src) {
   if (src === '院士精讲') return 'academician'
   if (src === '金牌导师') return 'mentor'
-  if (src === '国家级质控中心') return 'national'
+  if (src === '国家级质控中心' || src === '国家综合介入技术质控中心' || src === '国家重症医学质控中心') return 'national'
   return ''
 }
 

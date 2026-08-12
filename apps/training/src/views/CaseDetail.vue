@@ -518,9 +518,9 @@ const c = computed(() => {
       vitals: parseVitals(basic.physical_exam?.vital_signs),
     }
   }
-  const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家级质控中心']
+  const ELITE_SOURCES = ['院士精讲', '金牌导师', '国家综合介入技术质控中心', '国家重症医学质控中心']
   const caseIdForHash = basic.case_id || caseData.value.caseId || ''
-  const srcIdx = caseIdForHash.split('').reduce((s, ch) => s + ch.charCodeAt(0), 0) % 3
+  const srcIdx = caseIdForHash.split('').reduce((s, ch) => s + ch.charCodeAt(0), 0) % ELITE_SOURCES.length
   return {
     id: basic.case_id || caseData.value.caseId || '',
     title: basic.title || '',
@@ -562,7 +562,7 @@ function diffLabel(d) {
 function sourceClass(src) {
   if (src === '院士精讲') return 'academician'
   if (src === '金牌导师') return 'mentor'
-  if (src === '国家级质控中心') return 'national'
+  if (src === '国家级质控中心' || src === '国家综合介入技术质控中心' || src === '国家重症医学质控中心') return 'national'
   return ''
 }
 
