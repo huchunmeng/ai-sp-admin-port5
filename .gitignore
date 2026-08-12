@@ -40,6 +40,7 @@ data/
 !apps/admin/public/data/
 !apps/ops/src/data/
 !packages/shared/data/
+!apps/training/src/data/
 
 
 # Claude Code 内部文件

@@ -30,6 +30,7 @@ const routes = [
       { path: 'mdt-records', name: 'mdtRecords', component: () => import('@/views/MDTRecordView.vue') },
       { path: 'adaptive-learning', name: 'adaptiveLearning', component: () => import('@/views/AdaptiveLearning.vue') },
       { path: 'vr-lab', name: 'vrLab', component: () => import('@/views/VRLab.vue') },
+      { path: 'mentor/:category', name: 'mentorCases', component: () => import('@/views/MentorCaseView.vue') },
     ]
   }
 ]

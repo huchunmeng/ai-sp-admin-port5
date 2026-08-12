@@ -66,6 +66,7 @@ import { useUserStore } from '@/stores/user'
 import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls } from '@ai-sp/shared'
 import { getCurrentTtsModel } from '@/composables/useTTS.js'
 import AICompanionDrawer from '@/components/AICompanionDrawer.vue'
+import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
 
 const router = useRouter()
 const route = useRoute()
@@ -171,6 +172,10 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '学习画像' : 'Learning Profile', to: null })
   } else if (name === 'vrLab') {
     items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
+  } else if (name === 'mentorCases') {
+    const mcat = MENTOR_CATEGORIES[route.params.category]
+    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: 'home' } })
+    items.push({ label: mcat ? mcat.title : (lang === 'zh' ? '导师病例' : 'Mentor Cases'), to: null })
   } else if (stationRoutes.includes(name)) {
     items.push({ label: lang === 'zh' ? '病例详情' : 'Detail', to: { name: 'caseDetail', params: { caseId: store.currentCase ? store.currentCase.id : '' } } })
     const stationLabels = { historyTaking: '病史采集', physicalExam: '体格检查', ancillaryTests: '辅助检查', diagnosis: '诊断', preliminaryDiag: '初步诊断', treatmentPlan: '治疗计划', medicalRecord: '病历书写', caseAnalysis: '病例分析', humanisticComm: '人文沟通' }

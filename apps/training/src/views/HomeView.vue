@@ -147,7 +147,7 @@
                 <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
                   <i class="fa-solid fa-building-columns"></i>
                 </div>
-                <span class="elite-count">{{ nationalCenterCount }} 例</span>
+                <span class="elite-count">{{ nationalCenterCount ? nationalCenterCount + ' 例' : '建设中' }}</span>
               </div>
               <div class="elite-card-body">
                 <div class="elite-title">国家级质控中心病例</div>
@@ -269,6 +269,7 @@ import { useTrainingStore } from '@/stores/training'
 import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
+import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
 
 const router = useRouter()
 const store = useTrainingStore()
@@ -430,20 +431,24 @@ function goExam() {
   toast.show('在线考试功能即将开放，敬请期待', 'info')
 }
 
-const academicianCount = ref(12)
-const mentorCount = ref(28)
-const nationalCenterCount = ref(45)
+// 角标 = 各分类下导师病例示例总数
+function sumMentorCases(cat) {
+  return cat.mentors.reduce((s, m) => s + (m.cases || []).length, 0)
+}
+const academicianCount = ref(sumMentorCases(MENTOR_CATEGORIES.academician))
+const mentorCount = ref(sumMentorCases(MENTOR_CATEGORIES.mentor))
+const nationalCenterCount = ref((MENTOR_CATEGORIES.national.cases || []).length)
 
 function goAcademicianCases() {
-  router.push({ name: 'caseList', query: { filter: 'academician' } })
+  router.push({ name: 'mentorCases', params: { category: 'academician' } })
 }
 
 function goMentorCases() {
-  router.push({ name: 'caseList', query: { filter: 'mentor' } })
+  router.push({ name: 'mentorCases', params: { category: 'mentor' } })
 }
 
 function goNationalCenterCases() {
-  router.push({ name: 'caseList', query: { filter: 'national_center' } })
+  router.push({ name: 'mentorCases', params: { category: 'national' } })
 }
 
 function goAdaptiveLearning() {
