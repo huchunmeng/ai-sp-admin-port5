@@ -64,14 +64,18 @@
       </div>
     </section>
 
-    <!-- 无导师分类（国家级质控中心） -->
-    <section class="case-section" v-if="cat.mentors.length === 0">
-      <div class="section-title">
-        <i class="fa-solid fa-folder-open"></i> 精选病例
-        <span class="section-count">{{ nationalCases.length }} 例</span>
+    <!-- 质控中心分组：中心 + 名下病例 -->
+    <section class="center-group" v-for="(ct, gi) in cat.centers" :key="gi">
+      <div class="center-card">
+        <div class="center-icon" :style="{ background: cat.gradient }"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="center-info">
+          <div class="center-name">{{ ct.name }}</div>
+          <div class="center-intro" v-if="ct.intro">{{ ct.intro }}</div>
+        </div>
+        <span class="center-case-count">{{ ct.cases.length }} 例</span>
       </div>
       <div class="case-grid">
-        <div class="case-card" v-for="(c, i) in nationalCases" :key="i" @click="onCaseClick(c)">
+        <div class="case-card" v-for="(c, i) in ct.cases" :key="i" @click="onCaseClick(c)">
           <span class="case-anon-tag" :style="{ background: cat.gradient }">{{ cat.title }}</span>
           <div class="case-card-photo">
             <img v-if="getAvatar(c)" :src="getAvatar(c)" :alt="c.patientName" class="case-avatar" />
@@ -116,17 +120,15 @@ if (!cat.value) {
   router.replace({ name: 'home' })
 }
 
-const nationalCases = computed(() => {
-  if (!cat.value || cat.value.mentors.length) return []
-  return cat.value.cases || []
-})
-
 const totalCount = computed(() => {
   if (!cat.value) return 0
   if (cat.value.mentors.length) {
     return cat.value.mentors.reduce((s, m) => s + (m.cases || []).length, 0)
   }
-  return (cat.value.cases || []).length
+  if (cat.value.centers && cat.value.centers.length) {
+    return cat.value.centers.reduce((s, ct) => s + (ct.cases || []).length, 0)
+  }
+  return 0
 })
 
 function onCaseClick() {
@@ -177,7 +179,28 @@ function getAvatar(c) {
 
 /* 导师 + 病例分组 */
 .mentor-group { margin-top: 24px; }
-.case-section { margin-top: 24px; }
+.center-group { margin-top: 24px; }
+.center-card {
+  position: relative;
+  display: flex; gap: 16px; align-items: center;
+  background: #fff; border-radius: 12px; border: 1px solid #f0f2f5;
+  padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  margin-bottom: 14px;
+}
+.center-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  border-radius: 14px; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.center-info { flex: 1; min-width: 0; }
+.center-name { font-size: 15px; font-weight: 700; color: #111827; }
+.center-intro { font-size: 12px; line-height: 1.7; color: #6b7280; margin-top: 6px; text-align: justify; }
+.center-case-count {
+  position: absolute; top: 16px; right: 16px;
+  font-size: 12px; font-weight: 700; color: #6b7280;
+  background: #f3f4f6; padding: 4px 12px; border-radius: 10px;
+}
 .section-title {
   display: flex; align-items: center; gap: 8px;
   font-size: 16px; font-weight: 700; color: #1f2937;

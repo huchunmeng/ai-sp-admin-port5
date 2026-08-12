@@ -151,7 +151,7 @@
               </div>
               <div class="elite-card-body">
                 <div class="elite-title">国家级质控中心病例</div>
-                <div class="elite-desc">国家级质控标准规范化病例库，对标行业最高水准</div>
+                <div class="elite-desc">依据国家医疗质控指标，汇集急危重症与重点病种典型案例，推动诊疗规范化</div>
               </div>
               <i class="fa-solid fa-chevron-right elite-arrow"></i>
             </div>
