@@ -704,7 +704,7 @@ onBeforeRouteLeave((to, from, next) => {
 
 onMounted(async () => {
   ensureStationIndex(store, route.name)
-  document.title = lang.value === 'zh' ? '辅助检查 - AI-SP' : 'Ancillary Tests - AI-SP'
+  document.title = lang.value === 'zh' ? '辅助检查 - 医路慧影' : 'Ancillary Tests - WiseImag'
 
   if (caseId.value) {
     const data = await loadCase(caseId.value)

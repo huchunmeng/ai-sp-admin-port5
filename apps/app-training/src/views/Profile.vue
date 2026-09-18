@@ -12,7 +12,7 @@
       <div class="menu-item"><span>⚙️ 通用设置</span><span class="arrow">→</span></div>
       <div class="menu-item"><span>❓ 帮助与反馈</span><span class="arrow">→</span></div>
     </div>
-    <div class="version">AI-SP App训练端 v2.0 · 待开发</div>
+    <div class="version">医路慧影 App训练端 v2.0 · 待开发</div>
   </div>
 </template>
 

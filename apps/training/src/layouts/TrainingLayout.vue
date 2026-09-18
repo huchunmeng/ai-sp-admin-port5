@@ -2,7 +2,7 @@
   <div class="training-container" style="position:relative;min-height:100vh;">
     <header class="app-header" v-if="!isStationRoute">
       <div class="header-left">
-        <span class="system-name" @click="goHome" title="回到首页">医道星途临床思维教学智能体</span>
+        <span class="system-name" @click="goHome" title="回到首页">医路慧影（WiseImag）影像智思体</span>
         <div class="mode-badge" @click="openAdmin" v-if="false">管理端</div>
         <div class="version-btns" v-if="store.showHiddenControls">
           <button class="ver-btn" @click="openAdmin">管理端</button>

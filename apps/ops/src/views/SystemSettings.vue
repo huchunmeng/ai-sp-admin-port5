@@ -121,7 +121,7 @@ import { ref, reactive } from 'vue'
 import { toast } from '@ai-sp/shared'
 
 const defaults = {
-  platformName: 'AI标准化病人教学与考核系统',
+  platformName: '医路慧影（WiseImag）影像智思体',
   version: 'v2.0.0',
   adminEmail: 'admin@ai-sp.com',
   servicePhone: '400-888-0000',

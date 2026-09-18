@@ -5,7 +5,7 @@
         {{ store.sidebarCollapsed ? '▶' : '◀' }}
       </button>
       <div class="sidebar-logo">
-        <div class="sys-name">AI-SP 考试端 v2.0</div>
+        <div class="sys-name">医路慧影</div>
         <div class="sys-ver">考核项目执考工具 · 原型</div>
       </div>
       <div class="sidebar-group">
@@ -35,7 +35,7 @@
 
     <div class="main">
       <header class="topbar">
-        <span class="topbar-title">AI标准化病人考试系统 v2.0 · {{ store.pageTitles[store.currentPage] || '原型预览' }}</span>
+        <span class="topbar-title">医路慧影 · {{ store.pageTitles[store.currentPage] || '原型预览' }}</span>
         <div class="topbar-right">
           <span class="device-info" @click="store.toggleOrientation()" style="cursor:pointer;">🔄 {{ store.portraitMode ? '竖屏' : '横屏' }} {{ store.portraitMode ? '560×860' : '1024×700' }}</span>
           <span>{{ clock }}</span>
@@ -47,7 +47,7 @@
             <div class="tablet-screen">
               <div class="tablet-statusbar">
                 <span>💻 SP平板-01</span>
-                <span>AI标准化病人考试系统 v2.0</span>
+                <span>医路慧影 · 考试端 v2.0</span>
                 <span>{{ clock }}</span>
               </div>
               <div class="tablet-content">

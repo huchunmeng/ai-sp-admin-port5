@@ -5,7 +5,7 @@
       <div class="header-left">
         <span class="header-title">统一运营平台</span>
         <span class="header-sep">/</span>
-        <span class="header-sub">AI标准化病人</span>
+        <span class="header-sub">医路慧影</span>
       </div>
       <div class="header-right">
         <span class="header-notify"><i class="fa-solid fa-bell"></i> 通知</span>
@@ -19,7 +19,7 @@
     <div class="ops-body">
       <!-- 左侧菜单 -->
       <aside class="ops-sidebar">
-        <div class="sidebar-label">AI标准化病人</div>
+        <div class="sidebar-label">医路慧影</div>
         <nav class="sidebar-nav">
           <div v-for="mod in menu" :key="mod.key" class="menu-module">
             <div class="menu-module-header" :class="{ expanded: mod.expanded }" @click="toggleModule(mod)">

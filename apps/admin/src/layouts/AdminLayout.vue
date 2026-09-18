@@ -10,7 +10,7 @@
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </button>
-        <span class="system-name">AI标准化病人 · 机构端</span>
+        <span class="system-name">医路慧影（WiseImag）影像智思体 · 机构端</span>
         <div class="mode-badge" @click="openTraining">训练端</div>
       </div>
       <div class="header-right">

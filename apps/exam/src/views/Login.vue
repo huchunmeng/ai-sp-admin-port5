@@ -2,7 +2,7 @@
   <div class="page" :class="{ portrait: store.portraitMode }" style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px;">
     <div style="width:360px;text-align:center;">
       <div style="font-size:32px;margin-bottom:8px;">🏥</div>
-      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">AI标准化病人考试系统</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">医路慧影 · 考试系统</div>
       <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:32px;">Medical Examination Terminal</div>
       <div style="text-align:left;margin-bottom:16px;">
         <label class="input-label">用户名</label>

@@ -77,7 +77,7 @@
                 <i class="fa-solid fa-stethoscope entry-icon" style="color: #2563eb;"></i>
               </div>
               <div class="entry-info">
-                <div class="entry-title">SP训练</div>
+                <div class="entry-title">AI问诊</div>
                 <div class="entry-desc">标准化病人对话实战</div>
               </div>
               <div class="entry-badge" style="background: #dbeafe; color: #1d4ed8;">{{ trainedCount }} 例已完成</div>
@@ -102,7 +102,7 @@
                 <div class="entry-title">在线考试</div>
                 <div class="entry-desc">正式考核评估认证</div>
               </div>
-              <div class="entry-badge" style="background: #fef9c3; color: #a16207;">即将开放</div>
+              <div class="entry-badge" style="background: #eff6ff; color: #1d4ed8;">外部系统</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
           </div>
@@ -169,6 +169,14 @@
               <i class="fa-solid fa-arrow-up-right-from-square elite-arrow"></i>
             </div>
           </div>
+          <a class="elite-mooc" href="https://www.icourse163.org/" target="_blank" rel="noopener noreferrer">
+            <div class="elite-mooc-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="elite-mooc-body">
+              <div class="elite-mooc-text">放射诊断学MOOC</div>
+              <div class="elite-mooc-sub">中国大学MOOC 平台 · 名校名师系统课程</div>
+            </div>
+            <span class="elite-mooc-btn">去学习 <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+          </a>
         </div>
       </section>
 
@@ -179,8 +187,12 @@
           <span class="zone-link" @click="goSPTraining">全部病例 →</span>
         </div>
         <div class="zone-body">
+          <div class="spec-filter">
+            <span v-for="s in specialtyOptions" :key="s" class="spec-chip"
+              :class="{ active: activeSpecialty === s }" @click="activeSpecialty = s">{{ s }}</span>
+          </div>
           <div class="recommend-grid">
-            <div v-for="(rec, i) in recommendations" :key="rec.caseId" class="recommend-card" @click="goSPTraining">
+            <div v-for="(rec, i) in filteredRecommendations" :key="rec.caseId" class="recommend-card" @click="goSPTraining">
               <div class="rec-photo">
                 <img v-if="recAvatars[i]" :src="recAvatars[i]" class="rec-patient-img" />
                 <span v-else class="rec-photo-placeholder"><i class="fa-solid fa-user"></i></span>
@@ -266,7 +278,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
-import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel, toast } from '@ai-sp/shared'
+import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
@@ -428,7 +440,7 @@ function goMDT() {
 }
 
 function goExam() {
-  toast.show('在线考试功能即将开放，敬请期待', 'info')
+  window.open('https://examon.mvwchina.com/', '_blank', 'noopener,noreferrer')
 }
 
 // 角标 = 各分类下导师病例示例总数
@@ -509,13 +521,41 @@ const radarDots = computed(() => {
 })
 
 const recommendations = ref([
-  { patientName: '周伯通', disease: '心衰合并肾功能不全', caseId: 'CARD-20260715-M2N7', difficulty: 'R2', gender: '男', age: '68', specialty: '心血管内科', symptoms: ['呼吸困难', '下肢水肿', '少尿'], chiefComplaint: '反复胸闷气喘2月，加重伴夜间不能平卧1周', reason: '鉴别诊断维度得分偏低，推荐强化心血管鉴别能力', source: '院士精讲' },
-  { patientName: '孙晓芳', disease: '间质性肺病鉴别诊断', caseId: 'RESP-20260710-K9P3', difficulty: 'R3', gender: '女', age: '55', specialty: '呼吸内科', symptoms: ['干咳', '活动后气促', 'Velcro啰音'], chiefComplaint: '进行性呼吸困难伴干咳3月', reason: '肺部听诊遗漏率偏高，推荐加强胸部影像判读', source: '金牌导师' },
-  { patientName: '赵秀兰', disease: '社区获得性肺炎', caseId: 'RESP-20260602-B5Y1', difficulty: 'U2', gender: '女', age: '45', specialty: '呼吸内科', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天', reason: '基础病例巩固，抗生素选择思路校准', source: '国家级质控中心' },
+  { patientName: '周伯通', disease: '心衰合并肾功能不全', caseId: 'CARD-20260715-M2N7', difficulty: 'R2', gender: '男', age: '68', specialtyGroup: '内科', specialty: '心血管内科', symptoms: ['呼吸困难', '下肢水肿', '少尿'], chiefComplaint: '反复胸闷气喘2月，加重伴夜间不能平卧1周', reason: '鉴别诊断维度得分偏低，推荐强化心血管鉴别能力', source: '院士精讲' },
+  { patientName: '孙晓芳', disease: '间质性肺病鉴别诊断', caseId: 'RESP-20260710-K9P3', difficulty: 'R3', gender: '女', age: '55', specialtyGroup: '内科', specialty: '呼吸内科', symptoms: ['干咳', '活动后气促', 'Velcro啰音'], chiefComplaint: '进行性呼吸困难伴干咳3月', reason: '肺部听诊遗漏率偏高，推荐加强胸部影像判读', source: '金牌导师' },
+  { patientName: '赵秀兰', disease: '社区获得性肺炎', caseId: 'RESP-20260602-B5Y1', difficulty: 'U2', gender: '女', age: '45', specialtyGroup: '内科', specialty: '呼吸内科', symptoms: ['发热', '咳嗽', '咳痰', '胸痛'], chiefComplaint: '发热、咳嗽、咳痰5天，加重伴胸痛1天', reason: '基础病例巩固，抗生素选择思路校准', source: '国家级质控中心' },
+  { patientName: '钱志强', disease: '肝硬化失代偿期', caseId: 'GAST-20260620-D4L8', difficulty: 'R2', gender: '男', age: '58', specialtyGroup: '内科', specialty: '消化内科', symptoms: ['腹胀', '黄疸', '腹水'], chiefComplaint: '腹胀纳差3月，加重伴皮肤黄染2周', reason: '肝功能分级判读不熟，推荐强化肝硬化并发症处理', source: '金牌导师' },
+  { patientName: '陈国强', disease: '急性阑尾炎', caseId: 'GS-20260605-Q7W2', difficulty: 'U1', gender: '男', age: '32', specialtyGroup: '外科', specialty: '普通外科', symptoms: ['转移性右下腹痛', '发热', '反跳痛'], chiefComplaint: '转移性右下腹痛12小时', reason: '急腹症鉴别思路建立，外科基础病例入门', source: '国家级质控中心' },
+  { patientName: '林建华', disease: '胆囊结石伴急性胆囊炎', caseId: 'GS-20260612-T3H9', difficulty: 'R1', gender: '男', age: '56', specialtyGroup: '外科', specialty: '普通外科', symptoms: ['右上腹痛', '墨菲征阳性', '恶心'], chiefComplaint: '进食油腻后右上腹绞痛6小时', reason: '手术指征把握不稳，推荐强化胆道急症决策', source: '院士精讲' },
+  { patientName: '吴淑芬', disease: '异位妊娠破裂', caseId: 'OBGY-20260701-V8R4', difficulty: 'R2', gender: '女', age: '28', specialtyGroup: '妇产科', specialty: '妇科', symptoms: ['突发下腹痛', '停经', '阴道流血'], chiefComplaint: '停经45天，突发下腹剧痛伴头晕2小时', reason: '育龄女性急腹症漏诊风险高，推荐优先强化', source: '国家级质控中心' },
+  { patientName: '王小宝', disease: '支气管肺炎', caseId: 'PED-20260609-F2N6', difficulty: 'U1', gender: '男', age: '4', specialtyGroup: '儿科', specialty: '儿科', symptoms: ['发热', '咳嗽', '气促'], chiefComplaint: '发热咳嗽3天，气促1天', reason: '儿科问诊与家属沟通待加强，推荐基础病例', source: '金牌导师' },
+  { patientName: '郑海涛', disease: '急性有机磷中毒', caseId: 'EM-20260618-Y5K1', difficulty: 'R2', gender: '男', age: '45', specialtyGroup: '急诊科', specialty: '急诊医学科', symptoms: ['瞳孔缩小', '大汗', '肌颤'], chiefComplaint: '喷洒农药后恶心呕吐伴大汗3小时', reason: '解毒剂剂量计算易错，推荐强化急危重症处置', source: '院士精讲' },
+  { patientName: '张明辉', disease: '抑郁障碍伴自杀意念', caseId: 'PSY-20260625-C9M3', difficulty: 'R2', gender: '男', age: '34', specialtyGroup: '精神科', specialty: '临床心理科', symptoms: ['情绪低落', '兴趣减退', '失眠'], chiefComplaint: '情绪低落伴兴趣减退半年，加重2周', reason: '自杀风险评估欠缺，推荐强化精神科危机干预', source: '国家级质控中心' },
+  { patientName: '何秀英', disease: '寻常型银屑病', caseId: 'DERM-20260615-X4B7', difficulty: 'U2', gender: '女', age: '41', specialtyGroup: '皮肤科', specialty: '皮肤科', symptoms: ['红斑', '鳞屑', 'Auspitz征阳性'], chiefComplaint: '四肢反复红斑鳞屑5年，冬季加重', reason: '皮损描述不完整，推荐强化皮肤科查体规范', source: '金牌导师' },
+  { patientName: '马俊杰', disease: '腰椎间盘突出症', caseId: 'ORT-20260608-G6P2', difficulty: 'R1', gender: '男', age: '47', specialtyGroup: '骨科', specialty: '脊柱外科', symptoms: ['腰痛', '下肢放射痛', '直腿抬高试验阳性'], chiefComplaint: '腰痛伴右下肢放射痛3月，加重1周', reason: '神经定位体征判读待加强，推荐骨科专科查体训练', source: '国家级质控中心' },
+  { patientName: '沈玉琴', disease: '急性脑梗死静脉溶栓', caseId: 'NEURO-20260628-N1Z5', difficulty: 'R3', gender: '女', age: '67', specialtyGroup: '神经内科', specialty: '神经内科', symptoms: ['偏瘫', '言语含糊', '口角歪斜'], chiefComplaint: '突发右侧肢体无力伴言语不清2小时', reason: '溶栓时间窗把握不足，推荐强化卒中绿色通道决策', source: '院士精讲' },
+  { patientName: '罗文博', disease: '肺结节良恶性鉴别', caseId: 'RAD-20260705-J3S8', difficulty: 'R2', gender: '男', age: '52', specialtyGroup: '影像科', specialty: '放射科', symptoms: ['体检发现肺结节', '无咳嗽', '无咯血'], chiefComplaint: '体检胸部CT发现右肺结节1周', reason: '影像征象判读经验不足，推荐强化肺结节分级评估', source: '院士精讲' },
+  { patientName: '潘晓峰', disease: '肝脏占位性病变鉴别', caseId: 'RAD-20260712-A7E4', difficulty: 'R3', gender: '男', age: '60', specialtyGroup: '影像科', specialty: '超声科', symptoms: ['右上腹隐痛', '肝区叩击痛', 'AFP升高'], chiefComplaint: '体检超声发现肝占位3天', reason: '多模态影像综合判读待提升，推荐影像科进阶病例', source: '金牌导师' },
 ])
 
+// 科室筛选项：全部 + mock 中出现的科室大类（按首次出现顺序去重）
+const specialtyOptions = computed(() => {
+  const seen = []
+  recommendations.value.forEach(r => {
+    if (r.specialtyGroup && !seen.includes(r.specialtyGroup)) seen.push(r.specialtyGroup)
+  })
+  return ['全部', ...seen]
+})
+
+const activeSpecialty = ref('全部')
+
+const filteredRecommendations = computed(() => {
+  if (activeSpecialty.value === '全部') return recommendations.value
+  return recommendations.value.filter(r => r.specialtyGroup === activeSpecialty.value)
+})
+
 const recAvatars = computed(() => {
-  return recommendations.value.map(rec => {
+  return filteredRecommendations.value.map(rec => {
     const gender = rec.gender
     const age = parseInt(rec.age) || 30
     return matchPatientImage({ gender, age }, 'patient')
@@ -545,7 +585,7 @@ const recentRecords = computed(() => {
 
 // ─── 系统通知 ───
 const notifications = ref([
-  { id: 1, title: '系统升级通知', desc: 'AI-SP平台v2.0已上线，新增MDT多学科讨论模块，点击体验', time: '07-20', unread: true },
+  { id: 1, title: '系统升级通知', desc: '医路慧影平台v2.0已上线，新增MDT多学科讨论模块，点击体验', time: '07-20', unread: true },
   { id: 2, title: '新病例上线', desc: '心血管内科新增3例F1级疑难病例，涵盖心衰、心梗等急重症场景', time: '07-18', unread: true },
   { id: 3, title: '考核提醒', desc: '本月住培考核将于7月28日进行，请提前完成模拟训练', time: '07-15', unread: false },
 ])
@@ -814,7 +854,38 @@ onMounted(() => {
 
 .elite-vr:hover { border-color: #0d9488; }
 
+.elite-mooc {
+  display: flex; align-items: center; gap: 14px; margin-top: 12px;
+  padding: 16px 20px; border-radius: 12px; text-decoration: none;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, .25);
+  transition: all .2s;
+}
+.elite-mooc:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, .35); }
+.elite-mooc-icon {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .18); color: #fff; font-size: 19px;
+  display: flex; align-items: center; justify-content: center;
+}
+.elite-mooc-text { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: .2px; }
+.elite-mooc-sub { font-size: 12px; color: rgba(255, 255, 255, .75); margin-top: 3px; }
+.elite-mooc-btn {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 13px; font-weight: 600; color: #fff;
+  background: rgba(255, 255, 255, .18); padding: 8px 16px; border-radius: 8px;
+  transition: background .2s;
+}
+.elite-mooc:hover .elite-mooc-btn { background: rgba(255, 255, 255, .32); }
+
 /* ─── 推荐病例 ─── */
+.spec-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.spec-chip {
+  font-size: 11px; padding: 3px 10px; border-radius: 12px; line-height: 1.6;
+  background: #f3f4f6; color: #6b7280; cursor: pointer;
+  transition: all .15s; user-select: none;
+}
+.spec-chip:hover { background: #e5e7eb; color: #374151; }
+.spec-chip.active { background: #2563eb; color: #fff; font-weight: 600; }
 .recommend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .recommend-card {
   display: flex; align-items: flex-start; gap: 10px;
