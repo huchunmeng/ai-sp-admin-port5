@@ -13,7 +13,7 @@
     <h3>主诊·管床·主任（attending）</h3>
     <div class="filter-item" style="width:100%">
       <label>开场白（请主诊汇报）</label>
-      <textarea class="input" rows="2" v-model="f.roleScripts.attending.opening" placeholder="如：您作为主诊医师，请先汇报病例并组织本次讨论。"></textarea>
+      <textarea class="input" rows="2" v-model="f.roleScripts.attending.opening" placeholder="如：下面请主诊医师汇报病例要点并组织本次讨论。"></textarea>
     </div>
     <label class="ref-label">引导语（promptTemplates）</label>
     <div v-for="(p, i) in f.roleScripts.attending.promptTemplates" :key="i" class="list-item">

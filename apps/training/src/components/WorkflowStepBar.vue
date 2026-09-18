@@ -39,8 +39,8 @@ const store = useTrainingStore()
 
 const stations = computed(() => (store.stationFlow?.stations || []).map((s, i) => {
   const labelMap = {
-    '病史采集': '病史采集', '体格检查': '体格检查', '辅助检查': '辅助检查',
-    '诊断': '诊断', '治疗计划': '治疗', '病历书写': '书写病历'
+    '病史采集': '病史采集', '精神检查': '精神检查', '体格检查': '体格检查',
+    '辅助检查': '辅助检查', '诊断': '诊断', '治疗计划': '治疗', '病历书写': '病历书写'
   }
   return { ...s, label: labelMap[s.name] || s.name, index: i }
 }))
@@ -81,6 +81,12 @@ function goToModule(idx, st) {
   border-radius: 24px;
   padding: 6px 18px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.progress-bar-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .progress-steps {
@@ -161,8 +167,9 @@ function goToModule(idx, st) {
 
 .progress-line {
   height: 2px;
-  flex: 1;
-  min-width: 22px;
+  flex: 0 0 auto;
+  width: 26px;
+  min-width: 26px;
   background: #e0e3e8;
   margin: 0 2px;
   align-self: center;

@@ -9,6 +9,7 @@
         <i class="fa-solid fa-language"></i> {{ langLabel }}
       </button>
     </div>
+    <div class="topbar-mid">
     <div v-if="flowSteps && flowSteps.length > 0" class="progress-bar-wrap flow-nav">
       <div class="progress-steps">
         <template v-for="(step, si) in flowSteps" :key="si">
@@ -17,7 +18,7 @@
             :class="{ active: flowStepIndex === si, clickable: flowStepIndex !== si, 'no-dot': true }"
             @click="$emit('flow-step-click', si, step)"
           >
-            <span class="step-label">{{ step.label }}</span>
+            <span class="step-label">{{ displayLabel(step) }}</span>
           </div>
           <div
             v-if="si < flowSteps.length - 1"
@@ -38,7 +39,7 @@
               <i v-if="stepIndex > si" class="fa-solid fa-check"></i>
               <span v-else>{{ si + 1 }}</span>
             </span>
-            <span class="step-label">{{ step.label }}</span>
+            <span class="step-label">{{ displayLabel(step) }}</span>
           </div>
           <div
             v-if="si < steps.length - 1"
@@ -51,6 +52,7 @@
     <div v-else class="topbar-center">
       <slot name="center"></slot>
     </div>
+    </div>
     <div class="topbar-right">
       <span class="timer" :class="timerClass">{{ formattedTime }}</span>
       <button class="end-btn" :class="{ 'next-btn': endIcon === 'fa-arrow-right' }" @click="$emit('end')">
@@ -61,6 +63,10 @@
 </template>
 
 <script setup>
+function displayLabel(step) {
+  return step.label
+}
+
 const props = defineProps({
   stationName: { type: String, required: true },
   steps: { type: Array, default: () => [] },
@@ -92,24 +98,30 @@ function canClickStep(si) {
 <style scoped>
 .training-topbar {
   position: absolute;
-  top: env(safe-area-inset-top, 0px);
+  top: 0;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 10px 24px;
   background: rgba(220, 227, 234, 0.94);
   backdrop-filter: blur(8px);
   z-index: 10;
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
+.topbar-mid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 12px;
+}
 .station-left {
-  position: absolute;
-  left: 24px;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 .home-link {
   width: 32px; height: 32px; border-radius: 8px;
@@ -147,12 +159,21 @@ function canClickStep(si) {
 .progress-bar-wrap {
   background: rgba(255,255,255,0.55);
   border-radius: 24px;
-  padding: 6px 18px;
+  padding: 6px 14px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  flex: none;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.progress-bar-wrap::-webkit-scrollbar {
+  display: none;
 }
 .progress-steps {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 .progress-step {
   display: flex;
@@ -168,7 +189,8 @@ function canClickStep(si) {
 }
 .progress-step.no-dot {
   padding-bottom: 0;
-  flex: 1;
+  flex: none;
+  min-width: 0;
 }
 .progress-step.no-dot .step-label {
   text-align: center;
@@ -220,8 +242,9 @@ function canClickStep(si) {
 }
 .progress-line {
   height: 2px;
-  flex: 1;
-  min-width: 22px;
+  flex: 0 0 auto;
+  width: 26px;
+  min-width: 26px;
   background: #e0e3e8;
   margin: 0 2px;
   align-self: center;
@@ -233,19 +256,20 @@ function canClickStep(si) {
 /* flow-nav: compact, two-state (active/inactive only, no done) */
 .flow-nav .progress-step {
   min-width: 0;
+  flex: 0;
   padding: 0 6px;
 }
 .flow-nav .step-label {
   font-size: 13px;
 }
 .flow-nav .progress-line {
-  min-width: 14px;
+  width: 16px;
+  min-width: 16px;
+  margin: 0 1px;
 }
 
 .topbar-center {}
 .topbar-right {
-  position: absolute;
-  right: 24px;
   display: flex;
   align-items: center;
   gap: 14px;

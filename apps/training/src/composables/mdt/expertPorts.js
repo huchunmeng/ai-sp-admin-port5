@@ -34,7 +34,7 @@ export function buildExpertPorts(caseData) {
         taskContext: { label: '主诊医师最终方案' },
       }, {
         customInstruct: [
-          '请以本学科专家身份评判主诊医师给出的最终方案：1) 结合你的学科立场与知识库，判断你是否同意；2) 同意则首行写【同意】，并简述一句认可理由；3) 不同意则首行写【异议】，明确指出你的不同意见和理由。回复150字以内，自然口语化，像真人专家在MDT会议中表态。',
+          '请从你的专业视角评判主诊医师给出的最终方案：1) 结合你的学科立场与知识库，判断你是否同意；2) 同意则首行写【同意】，并简述一句认可理由；3) 不同意则首行写【异议】，明确指出你的不同意见和理由。直接表态，不要用"作为XX科"这类句式开头。回复150字以内，自然口语化，像真人专家在MDT会议中表态。',
         ].join('\n'),
       })
       const result = await sendMessage(
@@ -60,11 +60,13 @@ function buildExpertSystemPrompt(port, ctx, opts = {}) {
   const others = (cd.knowledgeBase?.disciplinePerspectives || []).filter(o => o.dept !== port.dept)
   const stageLabel = cd.stages?.[ctx.stageIdx] ?? `第${(ctx.stageIdx ?? 0) + 1}阶段`
 
-  const roleSeg = `你是${port.expertName}（${port.expertTitle}）。${port.persona ? '性格特点：' + port.persona + '。' : ''}你在MDT会议中代表${port.dept}发言，以第一人称"我"自称。`
+  const roleSeg = `你是${port.expertName}（${port.expertTitle}，${port.dept}）。${port.persona ? '性格特点：' + port.persona + '。' : ''}你正在参加这场MDT会议，以第一人称"我"自称，直接从专业视角发言。`
 
   const dataParts = []
   dataParts.push(`当前病例：${pi.name || '患者'}${pi.gender ? '，' + pi.gender : ''}${pi.age ? '，' + pi.age + '岁' : ''}。主诉：${pi.chiefComplaint || ''}`)
   if (cd.objective) dataParts.push(`核心议题：${cd.objective}`)
+  // 主诊医师（学员）的病例汇报：注入供专家结合发言（recent 仅含 expert 消息，需单独注入）
+  if (ctx.studentReport) dataParts.push(`主诊医师的病例汇报（供你参考）：\n${ctx.studentReport}`)
   if (port.view) dataParts.push(`你的学科立场：${port.view}`)
   if (port.expertKB) dataParts.push(`你的独立知识库（发言依据）：\n${port.expertKB}`)
   if (others.length) dataParts.push(`其他学科观点（供你回应）：${others.map(o => `【${o.dept}】${o.view}`).join('；')}`)
@@ -77,7 +79,7 @@ function buildExpertSystemPrompt(port, ctx, opts = {}) {
   const instruct = opts.customInstruct || [
     `当前阶段：${stageLabel}`,
     ctx.taskContext ? `当前等待学员完成任务：${ctx.taskContext.label}` : '',
-    '请从你的学科视角就当前议题发表专业意见。要点：1) 结合你的知识库给出明确立场与依据；2) 如前面已有专家发言，可针对性回应或赞同；3) 与其他学科存在分歧时，明确说明你的理由；4) 回复150-250字，自然口语化，像真实专家在MDT会议中说话，不要用列表符号。',
+    '请从你的学科视角就当前议题发表专业意见。要点：1) 结合你的知识库给出明确立场与依据；2) 如前面已有专家发言，可针对性回应或赞同；3) 与其他学科存在分歧时，明确说明你的理由；4) 直接陈述观点，不要用"作为XX科"这类句式开头；5) 回复150-250字，自然口语化，像真实专家在MDT会议中说话，不要用列表符号。',
   ].filter(Boolean).join('\n')
 
   return [roleSeg, dataParts.filter(Boolean).join('\n\n'), instruct].join('\n\n')

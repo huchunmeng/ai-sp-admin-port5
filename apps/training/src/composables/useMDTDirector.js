@@ -100,7 +100,7 @@ function getStageOpening(caseData, studentRole, stageIdx) {
   const stageLabel = (caseData.stages || [])[stageIdx] || `第${stageIdx + 1}阶段`
   let callout = ''
   if (studentRole === 'attending') {
-    callout = rs?.promptTemplates?.[stageIdx] || `作为主诊医师，请组织本环节讨论并发表你的观点。`
+    callout = rs?.promptTemplates?.[stageIdx] || `主诊医师，请组织本环节讨论并发表你的观点。`
   }
   return { disagreement, callout }
 }
@@ -175,8 +175,8 @@ function buildInterruptSystemPrompt(ctx, msg, intent) {
   const role = getRoleConfig(ctx.studentRole)
 
   const roleSeg = speaker === '主持人'
-    ? '你是MDT会议主持人（主任医师），负责调度各学科意见、推动讨论达成共识，维护会议节奏。以第一人称"我"自称。'
-    : `你是MDT会议中的${speaker}主任医师，代表${speaker}在MDT会议中发言。以第一人称"我"自称。`
+    ? '你是MDT会议主持人（主任医师），负责调度各学科意见、推动讨论达成共识，维护会议节奏。点名发言时直接称呼学科或角色（如「请影像科发表意见」「影像科有什么看法」），以第一人称"我"自称。'
+    : `你是${speaker}的主任医师，正在参加这场MDT会议。以第一人称"我"自称，直接从专业视角发言。`
 
   const dataParts = []
   const pi = cd.patientInfo || {}
@@ -258,6 +258,7 @@ function buildPortraitPrompt(ctx) {
     `病例：${cd.patientInfo?.name || ''}，核心议题：${cd.objective || ''}`,
     `学员角色：${getRoleConfig(ctx.studentRole).label}`,
     `学员发言记录：\n${studentMsgs || '（无）'}`,
+    `学员病例汇报：\n${ctx.taskValues?.attendReport01 || '（未填写）'}`,
     `学员专科意见后的主诊医师意见：\n${attendingView || '（未填写）'}`,
     `学员反思总结：\n${reflect || '（未填写）'}`,
     `学员方案：\n${plan || '（未填写）'}`,

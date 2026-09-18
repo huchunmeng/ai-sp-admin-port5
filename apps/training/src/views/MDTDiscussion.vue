@@ -49,7 +49,7 @@
           </div>
           <span class="step-label">{{ stage }}</span>
         </div>
-        <button class="btn-end-training" @click="$router.push({ name: 'mdtCaseList' })">
+        <button class="btn-end-training" @click="endTraining">
           <i class="fa-solid fa-stop"></i> 结束训练
         </button>
       </div>
@@ -218,6 +218,12 @@
                 </div>
               </div>
 
+              <!-- 病例资料卡：开场供主诊医师汇报参考 -->
+              <div v-else-if="item.type === 'case-brief'" class="case-brief-card">
+                <div class="case-brief-header"><i class="fa-solid fa-clipboard-list"></i> 病例资料（供主诊医师汇报参考）</div>
+                <pre class="case-brief-text">{{ caseBriefText }}</pre>
+              </div>
+
               <!-- 原始病历入口 -->
               <div v-else-if="item.type === 'case-raw'" class="case-raw-card">
                 <div class="case-raw-icon"><i class="fa-solid fa-folder-open"></i></div>
@@ -245,11 +251,23 @@
 
           <!-- 继续讨论（Learner-paced） -->
           <div class="mdt-continue-bar">
-            <button class="btn-continue" @click="continueDiscussion" :disabled="isTyping || streamingActive > 0 || turnPending || phase === 'ended'">
-              <i class="fa-solid fa-forward"></i>
-              {{ continueLabel }}
-            </button>
-            <span class="continue-hint">{{ continueHint }}</span>
+            <div v-if="turnGuideText" class="turn-guide">
+              <i class="fa-solid fa-comment-dots"></i>
+              <div class="turn-guide-text">
+                <span class="turn-guide-title">可向当前专家提问（AI 实时回应）</span>
+                <span class="turn-guide-desc">{{ turnGuideText }}</span>
+              </div>
+              <button class="btn-continue" @click="continueDiscussion" :disabled="isTyping || streamingActive > 0 || turnPending || phase === 'ended'">
+                <i class="fa-solid fa-forward"></i> 继续讨论
+              </button>
+            </div>
+            <template v-else>
+              <button class="btn-continue" @click="continueDiscussion" :disabled="isTyping || streamingActive > 0 || turnPending || phase === 'ended'">
+                <i class="fa-solid fa-forward"></i>
+                {{ continueLabel }}
+              </button>
+              <span class="continue-hint">{{ continueHint }}</span>
+            </template>
           </div>
 
           <!-- 底部输入栏 -->
@@ -356,12 +374,43 @@
             <button class="modal-close" @click="reviseFinalPlan"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <div class="modal-body">
-            <p class="confirm-plan-label">你作为主诊医师，请确认本次 MDT 的最终方案：</p>
+            <p class="confirm-plan-label">主诊医师，请确认本次 MDT 的最终方案：</p>
             <div class="confirm-plan-text">{{ confirmPlan.text }}</div>
           </div>
           <div class="modal-footer confirm-plan-footer">
             <button class="btn btn-skip" @click="reviseFinalPlan">返回修改</button>
             <button class="btn btn-primary" @click="confirmFinalPlan"><i class="fa-solid fa-check"></i> 确认方案</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 结束训练：未完成时确认离开方式（X = 关闭弹窗继续训练） -->
+      <div v-if="showEndTraining" class="modal-overlay" @click.self="showEndTraining = false">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h3><i class="fa-solid fa-stop"></i> 结束训练</h3>
+            <button class="modal-close" @click="showEndTraining = false" aria-label="继续训练"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="modal-body">
+            <p class="end-training-desc">当前讨论尚未完成，请选择离开方式：</p>
+            <div class="end-training-option">
+              <i class="fa-solid fa-bookmark end-option-icon"></i>
+              <div>
+                <div class="end-option-title">保留进度并退出</div>
+                <div class="end-option-desc">进度自动保留，下次进入该病例可继续训练</div>
+              </div>
+            </div>
+            <div class="end-training-option">
+              <i class="fa-solid fa-trash end-option-icon"></i>
+              <div>
+                <div class="end-option-title">不保存并离开</div>
+                <div class="end-option-desc">放弃当前进度，下次进入将重新开始本次讨论</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-danger" @click="leaveWithoutSave"><i class="fa-solid fa-right-from-bracket"></i> 不保存并离开</button>
+            <button class="btn btn-primary" @click="saveAndLeave"><i class="fa-solid fa-check"></i> 保留进度并退出</button>
           </div>
         </div>
       </div>
@@ -407,9 +456,10 @@ const STYLE_BY_TYPE = {
 }
 const DEFAULT_STYLE = { bg: '#f3f4f6', color: '#6b7280', icon: 'fa-solid fa-clipboard' }
 
-// 流程版本：v3 = 新流程（病例汇报→专科意见→主诊医师意见→自由讨论→拍板决策→反思，
-// 拍板后各专科评判循环；影像解读不再作为独立阶段）。旧存档恢复时自动重播新流程。
-const MDT_FLOW_VERSION = 3
+// 流程版本：v4 = 真实 MDT 角色流程（学员主诊医师先汇报病例，替代 AI 主持人自动播报完整病例；
+// 病例汇报→专科意见→主诊医师意见→自由讨论→拍板决策→反思，拍板后各专科评判循环）。
+// 旧存档恢复时自动重播新流程。
+const MDT_FLOW_VERSION = 4
 
 // ── 状态机 ──
 const loading = ref(true)
@@ -426,6 +476,7 @@ const discussionRef = ref(null)
 const chatItems = ref([])
 const agendaIndex = ref(0)         // 下一要播的 runtimeAgenda 条目索引
 const pendingTask = ref(null)      // 当前暂停等待的任务类型
+const studentReport = ref('')      // 学员（主诊医师）的病例汇报，注入专家上下文
 const currentSpeakerKey = ref('host')
 const decisionRevealed = ref(false)   // MDT 决策卡是否已在拍板环节展示
 // 批注4：拍板后各专科评判主诊方案（同意→通过；异议→修改方案循环，最多 judgementMaxRounds 轮）
@@ -576,11 +627,25 @@ const RUNTIME_ATTENDING_VIEW_TASK = {
   placeholder: '1. 对诊断方向/方案的初步看法\n2. 对专科分歧的权衡\n3. 下一步需要重点关注的问题',
   feedback: {},
 }
+// 病例汇报：开场由学员（主诊医师）汇报病例，替代 AI 主持人自动播报（真实 MDT 场景）
+const RUNTIME_REPORT_TASK = {
+  key: 'attendReport01',
+  type: 'text',
+  label: '病例汇报',
+  assess: 'report',
+  prompt: '请以主诊医师身份，参考上方「病例资料卡」汇报本病例要点（基本信息与主诉、现病史/既往史、查体与辅助检查、初步诊断考虑），并组织本次讨论。',
+  rows: 5,
+  placeholder: '1. 患者基本信息与主诉\n2. 现病史/既往史\n3. 查体与辅助检查要点\n4. 初步诊断考虑',
+  feedback: {},
+}
 function getTask(key) {
   if (key === 'plan01') return RUNTIME_PLAN_TASK
   if (key === 'attendingView01') return RUNTIME_ATTENDING_VIEW_TASK
+  if (key === 'attendReport01') return RUNTIME_REPORT_TASK
   return caseData.value?.tasks?.find(t => t.key === key) || null
 }
+// 输入框直接提交的任务（无任务卡弹窗）：病例汇报 + 主诊医师意见
+const INPUT_TASK_KEYS = ['attendingView01', 'attendReport01']
 
 const activeTask = computed(() => getTask(activeCard.value) || null)
 const activeTaskIcon = computed(() => {
@@ -674,6 +739,7 @@ function saveState(extra = {}) {
     agendaIndex: agendaIndex.value,
     currentSpeakerKey: currentSpeakerKey.value,
     pendingTask: pendingTask.value,
+    studentReport: studentReport.value,
     messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 剥离流式进度，恢复时全文显示
     tasks: { ...taskValues.value },
     selectedChoices: { ...selectedChoices.value },
@@ -793,6 +859,7 @@ async function playGeneratedExpert(entry) {
     stageIdx: currentStage.value,
     recentMessages: chatItems.value,
     studentRole: studentRole.value,
+    studentReport: studentReport.value,
   })
   if (result?.ok && result.text) {
     currentSpeakerKey.value = entry.speaker
@@ -832,7 +899,16 @@ async function runConvergence(opening, stageIdx) {
 }
 
 // ── 新流程议程合成（替代病例自带 agenda 的旧五段）──
-// 病例汇报由 playOpenings 播报，此处从病例字段合成：专科意见→主诊医师意见→自由讨论→拍板→反思
+// 病例汇报由学员（主诊医师）在 playOpenings 后输入框完成，此处从病例字段合成：
+// 专科意见→主诊医师意见→自由讨论→拍板→反思
+// 主持人点名各专科发言的真人句式（轮换使用，避免连续重复）
+const CALL_DISCIPLINES = [
+  d => `请${d}发表意见。`,
+  d => `${d}有什么看法？`,
+  d => `下面有请${d}。`,
+  d => `${d}，请谈谈你们的看法。`,
+]
+
 function buildRuntimeAgenda(cd, stages) {
   if (!cd) return []
   const entries = []
@@ -846,17 +922,19 @@ function buildRuntimeAgenda(cd, stages) {
   // 专科意见：各专科依次轮流发言（speakAsExpert 生成 / view 兜底）
   const pSpecialty = idx('专科意见')
   if (pSpecialty >= 0 && disciplines.length) {
-    entries.push({ phase: pSpecialty, speaker: 'host', text: '病例汇报完毕。下面请各专科依次就本病例发表意见。' })
-    for (const d of disciplines) {
+    entries.push({ phase: pSpecialty, speaker: 'host', text: '主诊医师已完成病例汇报。下面逐科听取各专科意见。' })
+    disciplines.forEach((d, i) => {
+      // 主持人逐一点名各专科发言（真人主持习惯，句式轮换）
+      entries.push({ phase: pSpecialty, speaker: 'host', text: CALL_DISCIPLINES[i % CALL_DISCIPLINES.length](d) })
       entries.push({ phase: pSpecialty, speaker: d, text: viewOf(d) || `${d}专家：基于本科室角度，就本病例的诊治发表意见。` })
-    }
+    })
     // 各专科发表完意见后，主诊医师发表综合意见（批注3，独立阶段「主诊医师意见」）
     const pAttending = idx('主诊医师意见')
     if (pAttending >= 0) {
       entries.push({
         phase: pAttending,
         speaker: 'host',
-        text: '各专科意见已发表完毕。请主诊医师结合各专科意见，发表你作为主诊医师的综合看法。',
+        text: '各专科意见已发表完毕。主诊医师，请结合各专科意见发表你的综合看法。',
         nextTask: 'attendingView01',
       })
     }
@@ -873,7 +951,7 @@ function buildRuntimeAgenda(cd, stages) {
   if (pPlan >= 0) {
     entries.push({
       phase: pPlan, speaker: 'host',
-      text: '综合各位意见，我们进入决策环节。请以主诊医师身份，独立给出本次 MDT 的最终诊断与治疗方案。',
+      text: '综合各位意见，我们进入决策环节。主诊医师，请独立给出本次 MDT 的最终诊断与治疗方案。',
       converge: true, disagreement: director.buildDisagreementText(cd, studentRole.value),
       nextTask: 'plan01',
     })
@@ -996,7 +1074,7 @@ function archiveMdtSession({ done }) {
     startedAt,
     finishedAt,
     messages: chatItems.value.map(({ revealed, ...rest }) => rest),   // 完整对话（含专家发言/学员发言/任务/决策）
-    taskLabels: Object.fromEntries([...(caseData.value?.tasks || []), RUNTIME_PLAN_TASK, RUNTIME_ATTENDING_VIEW_TASK].map(t => [t.key, t.label])),
+    taskLabels: Object.fromEntries([...(caseData.value?.tasks || []), RUNTIME_PLAN_TASK, RUNTIME_ATTENDING_VIEW_TASK, RUNTIME_REPORT_TASK].map(t => [t.key, t.label])),
     portraitAssess: portraitAssess.value,
     tasks: { ...taskValues.value },
     selectedChoices: { ...selectedChoices.value },
@@ -1067,6 +1145,7 @@ async function startDiscussion() {
   agendaIndex.value = 0
   currentStage.value = 0
   pendingTask.value = null
+  studentReport.value = ''
   currentSpeakerKey.value = 'host'
   decisionRevealed.value = false
   judgementRound.value = 0
@@ -1085,15 +1164,20 @@ async function startDiscussion() {
   }
 }
 
-// 会诊中开场：完整病例汇报 + 原始病历入口 + 新流程（premeeting 确认进入后复用）
+// 会诊中开场：引导学员（主诊医师）汇报病例 + 病例资料卡 + 原始病历入口（premeeting 确认进入后复用）
 async function playOpenings() {
-  // 开场引入：欢迎 + 病例概要 + 核心议题 + 参与学科 + 流程（数据驱动，避免一上来就让学员发言）
+  // 开场引入：欢迎 + 核心议题 + 参与学科 + 流程（数据驱动）
   const intro = buildMdtIntro(caseData.value, runtimeStages.value)
   if (intro) await playExpert('host', intro)   // 开场引入也流式展示，营造自然开场
-  // 完整病例汇报：按 MDT 病例内容分节汇报（含摘要/住院经过/初步诊断考虑）
-  const report = buildCaseReport(caseData.value)
-  if (report) {
-    await playExpert('host', report)
+  // 引导学员（主诊医师）汇报病例：复用角色开场语（42 例数据一致），不再由 AI 主持人播报完整病例
+  const opening = caseData.value?.roleScripts?.attending?.opening
+    || '下面请主诊医师汇报病例要点并组织本次讨论。'
+  await playExpert('host', opening)
+  // 病例资料卡：完整病例文本供主诊医师汇报参考（替代主持人播报）
+  if (buildCaseReport(caseData.value)) {
+    chatItems.value.push({ type: 'case-brief' })
+    saveState()
+    nextTick(() => scrollToBottom())
   }
   // 原始病历抽屉入口：绑定原始病历的病例提供「查看原始病历」卡（按事件线查看 mdt 之前全部病历）
   if (caseData.value?.sourceRecordId) {
@@ -1101,14 +1185,17 @@ async function playOpenings() {
     saveState()
     nextTick(() => scrollToBottom())
   }
-  playAgenda()
+  // 等待学员在输入框完成病例汇报（输入框直接提交，无任务卡弹窗），提交后再进入专科意见
+  pendingTask.value = 'attendReport01'
+  saveState()
+  nextTick(() => scrollToBottom())
 }
 
 // 完整病例汇报（阶段0）：按 MDT 病例内容分节汇报
 // patientInfo 结构化字段 + clinicalKeyPoints 摘要 + admissionContext 住院经过 + 核心议题帧（无 LLM 幻觉）
 function buildCaseReport(cd) {
   const pi = cd.patientInfo || {}
-  const seg = [`好的，我先完整汇报病例。患者：${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}，主诉：${pi.chiefComplaint || '不详'}。`]
+  const seg = [`患者：${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}，主诉：${pi.chiefComplaint || '不详'}。`]
   if (pi.presentIllness) seg.push(`【现病史】${pi.presentIllness}`)
   if (pi.pastHistory) seg.push(`【既往史】${pi.pastHistory}`)
   if (pi.familyHistory) seg.push(`【家族史】${pi.familyHistory}`)
@@ -1120,15 +1207,16 @@ function buildCaseReport(cd) {
   if (cd.admissionContext?.priorCourse) {
     seg.push(`【住院经过】${cd.admissionContext.daysHospitalized ? `入院第 ${cd.admissionContext.daysHospitalized} 天，` : ''}${cd.admissionContext.priorCourse}`)
   }
-  const suspect = cd.trigger?.reason || cd.objective
-  if (suspect) seg.push(`【初步诊断考虑】结合以上资料，初步诊断方向需紧扣核心议题：${cd.objective || ''}。触发本次会诊的关键原因是：${suspect}。请各位专家在随后的专科意见中围绕这一点展开。`)
+  const suspect = (cd.trigger?.reason || cd.objective || '').replace(/。$/, '').trim()
+  if (suspect) seg.push(`【初步诊断考虑】结合以上资料，初步诊断方向需紧扣核心议题：${cd.objective || ''}。触发本次会诊的关键原因是：${suspect}。`)
   return seg.join('\n')
 }
+// 病例资料卡文本：完整病例结构化内容（纯资料，供主诊医师汇报参考）
+const caseBriefText = computed(() => buildCaseReport(caseData.value))
 
-// 开场引入语：欢迎 + 病例 + 核心议题 + 参与学科 + 流程（流程用运行时阶段）
+// 开场引入语：欢迎 + 核心议题 + 参与学科 + 流程（患者信息由随后的病例汇报介绍，避免重复）
 function buildMdtIntro(cd, stages = []) {
-  const pi = cd.patientInfo || {}
-  const parts = [`欢迎参加本次 MDT 多学科讨论，今天围绕${pi.gender || ''}${pi.age || ''}岁${pi.name || '患者'}（主诉：${pi.chiefComplaint || ''}）进行多学科会诊`]
+  const parts = ['欢迎参加本次 MDT 多学科讨论']
   if (cd.objective) parts.push(`核心议题：${cd.objective}`)
   const disciplines = (cd.disciplines || []).join('、')
   if (disciplines) parts.push(`参与学科：${disciplines}`)
@@ -1137,12 +1225,35 @@ function buildMdtIntro(cd, stages = []) {
   return parts.join('。') + '。'
 }
 
+// 结束训练：未走到最后一步（讨论未结束）时弹窗选择离开方式；X / 点空白关闭 = 继续训练
+const showEndTraining = ref(false)
+let leavingWithoutSave = false   // 标记「不保存并离开」，阻止中途退出的中断归档
+function endTraining() {
+  if (phase.value !== 'ended') {
+    showEndTraining.value = true
+    return
+  }
+  router.push({ name: 'mdtCaseList' })
+}
+// 保留进度并退出：进度已随 saveState 自动保存，直接离开，下次恢复
+function saveAndLeave() {
+  showEndTraining.value = false
+  router.push({ name: 'mdtCaseList' })
+}
+// 不保存并离开：清除 MDT 会话进度（置 null 并持久化），下次进入全新开始
+function leaveWithoutSave() {
+  showEndTraining.value = false
+  leavingWithoutSave = true
+  store.saveSessionStage('mdt', null)
+  router.push({ name: 'mdtCaseList' })
+}
+
 function continueDiscussion() {
   if (phase.value === 'ended') return
   if (showConfirm.value) return
   if (awaitingTurn.value) { resumeTurn(); return }
   if (pendingTask.value && !submitted.value[pendingTask.value]) {
-    if (pendingTask.value === 'attendingView01') return   // 主诊医师意见直接在输入框输入，无任务卡
+    if (INPUT_TASK_KEYS.includes(pendingTask.value)) return   // 输入框直接提交的任务无任务卡弹窗
     openCard(pendingTask.value)
     return
   }
@@ -1154,14 +1265,21 @@ const continueLabel = computed(() => {
   if (phase.value === 'ended') return '讨论已结束'
   if (showConfirm.value) return '请确认最终方案'
   if (awaitingTurn.value) return '继续讨论'
-  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请在输入框输入'
+  if (INPUT_TASK_KEYS.includes(pendingTask.value) && !submitted.value[pendingTask.value]) return '请在输入框输入'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '完成任务后继续'
   return '继续讨论'
+})
+// 暂停时的插话引导（Learner-paced 强化）：每位专家发言后醒目提示可对 TA 提问
+const turnGuideText = computed(() => {
+  if (!awaitingTurn.value) return ''
+  const sp = currentSpeakerKey.value
+  const name = sp && sp !== 'host' ? `「${sp}」` : '当前专家'
+  return `${name}发言完毕。在下方输入框输入你的问题或观点（AI 实时回应），或点「继续讨论」跳过提问、播放下一位专家。`
 })
 const continueHint = computed(() => {
   if (isTyping.value) return '专家正在发言…'
   if (awaitingTurn.value) return '点击播放下一位专家，或直接在输入框提问'
-  if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请直接在下方输入框输入你的主诊综合意见'
+  if (INPUT_TASK_KEYS.includes(pendingTask.value) && !submitted.value[pendingTask.value]) return '请直接在下方输入框输入'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或直接输入观点'
   return '点击把话轮交回主持人继续推进'
 })
@@ -1171,6 +1289,12 @@ const inputDisabled = computed(() => isTyping.value || phase.value === 'ended')
 const inputPlaceholder = computed(() => {
   if (phase.value === 'ended') return '本次讨论已结束'
   if (isTyping.value) return '专家正在发言…'
+  if (awaitingTurn.value) {
+    const sp = currentSpeakerKey.value
+    const name = sp && sp !== 'host' ? `「${sp}」` : '当前专家'
+    return `可向${name}提问，或直接输入你的观点`
+  }
+  if (pendingTask.value === 'attendReport01' && !submitted.value['attendReport01']) return '请以主诊医师身份，参考上方「病例资料卡」汇报病例要点'
   if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) return '请以主诊医师身份，结合各专科意见发表你的综合看法'
   if (pendingTask.value && !submitted.value[pendingTask.value]) return '请先完成任务卡片，或输入你的观点'
   return PLACEHOLDER_BY_ROLE[studentRole.value] || '输入你的观点或疑问，专家将回应...'
@@ -1178,7 +1302,7 @@ const inputPlaceholder = computed(() => {
 
 // ── 卡片操作 ──
 function openCard(key) {
-  if (key === 'attendingView01') return   // 主诊医师意见直接在输入框输入，无任务卡弹窗
+  if (INPUT_TASK_KEYS.includes(key)) return   // 输入框直接提交的任务无任务卡弹窗
   const t = getTask(key)
   if (!t) return
   // exhibit 打开时回填已标注点；多选 choice 回填已选项
@@ -1282,7 +1406,10 @@ async function runExpertJudgement() {
   const planText = String(taskValues.value.plan01 || '')
   await playExpert('host', '已确认主诊医师最终方案。下面请各专科专家对该方案逐一评判。')
   const depts = caseData.value?.disciplines || []
-  for (const d of depts) {
+  for (let i = 0; i < depts.length; i++) {
+    const d = depts[i]
+    // 主持人逐一点名各专科评判（与专科意见阶段同套句式轮换）
+    await playExpert('host', CALL_DISCIPLINES[i % CALL_DISCIPLINES.length](d))
     const port = mdtPorts.value[d]
     if (!port?.judgePlan) {
       judgementResults.value.push({ dept: d, verdict: 'approve', reason: '' })
@@ -1398,6 +1525,24 @@ async function sendMessage() {
   saveState()
   nextTick(() => scrollToBottom())
 
+  // 病例汇报：主诊医师在输入框汇报病例即提交（无任务卡弹窗，替代 AI 主持人自动播报）
+  if (pendingTask.value === 'attendReport01' && !submitted.value['attendReport01']) {
+    const key = 'attendReport01'
+    taskValues.value[key] = text
+    submitted.value[key] = true
+    studentReport.value = text
+    saveState({ tasks: { ...taskValues.value }, submitted: { ...submitted.value } })
+    pendingTask.value = null
+    // 跳过 phase0（主持人「请先由主诊医师进行病例汇报」），由学员汇报替代，直接进专科意见；
+    // runtimeAgenda 不含 phase0，findIndex(phase>0)=0，playAgenda 从专科意见引导语开始
+    const agenda = runtimeAgenda.value
+    const beyond = agenda.findIndex(e => e.phase > 0)
+    agendaIndex.value = beyond >= 0 ? beyond : agenda.length
+    saveState()
+    playAgenda()
+    return
+  }
+
   // 主诊医师意见：直接在输入框输入即提交（无任务卡弹窗）
   if (pendingTask.value === 'attendingView01' && !submitted.value['attendingView01']) {
     const key = 'attendingView01'
@@ -1446,6 +1591,7 @@ function restoreSession(s) {
   currentStage.value = s.currentStage || 0
   currentSpeakerKey.value = s.currentSpeakerKey || 'host'
   pendingTask.value = s.pendingTask || null
+  studentReport.value = s.studentReport || ''
   decisionRevealed.value = !!s.decisionRevealed
   submitted.value = { ...(s.submitted || {}) }
   skipped.value = { ...(s.skipped || {}) }
@@ -1474,6 +1620,7 @@ async function restartFlowForNewVersion() {
   agendaIndex.value = 0
   currentStage.value = 0
   pendingTask.value = null
+  studentReport.value = ''
   currentSpeakerKey.value = 'host'
   decisionRevealed.value = false
   submitted.value = {}
@@ -1539,8 +1686,9 @@ function scrollToBottom() {
 }
 
 // 中途离开讨论页 → 存档中断会话（供分析流程/专家异常；完成后同会话会升级为完整记录）
+// 「不保存并离开」已主动清除进度，不生成中断记录
 onBeforeUnmount(() => {
-  if (phase.value === 'discussion' && chatItems.value.length > 0) {
+  if (!leavingWithoutSave && phase.value === 'discussion' && chatItems.value.length > 0) {
     archiveMdtSession({ done: false })
   }
 })
@@ -1808,6 +1956,19 @@ onMounted(load)
   display: flex; align-items: center; gap: 12px;
   padding: 8px 20px; background: #fff; border-top: 1px solid #edf0f4;
 }
+/* 暂停时醒目插话引导（Learner-paced 强化）：专家发言后明确提示可对 TA 提问 */
+.turn-guide {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 16px; border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff, #f5f9ff);
+  border: 1px solid #b3d8ff;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.08);
+}
+.turn-guide > i { color: #409EFF; font-size: 17px; flex-shrink: 0; }
+.turn-guide-text { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.turn-guide-title { font-size: 13px; font-weight: 700; color: #1e40af; }
+.turn-guide-desc { font-size: 11px; color: #4b5563; line-height: 1.5; }
+.turn-guide .btn-continue { flex-shrink: 0; }
 .btn-continue {
   padding: 7px 18px; border-radius: 20px; border: 1px solid #b3d8ff;
   background: #eff6ff; color: #1e40af; font-size: 12px; font-weight: 600;
@@ -1980,6 +2141,18 @@ onMounted(load)
 }
 .confirm-plan-footer { justify-content: space-between; }
 
+/* ─── 结束训练弹窗 ─── */
+.end-training-desc { font-size: 13px; color: #6b7280; margin-bottom: 16px; line-height: 1.7; }
+.end-training-option {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+}
+.end-option-icon { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.end-training-option:first-child .end-option-icon { background: #eef2ff; color: #4f46e5; }
+.end-training-option:last-child .end-option-icon { background: #fef2f2; color: #dc2626; }
+.end-option-title { font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 3px; }
+.end-option-desc { font-size: 12px; color: #6b7280; line-height: 1.6; }
+
 /* ─── 通用 ─── */
 .badge-error { background: #fee2e2; color: #991b1b; padding: 3px 12px; border-radius: 14px; font-size: 12px; font-weight: 600; }
 .badge-purple { background: #f0f0ff; color: #409EFF; padding: 3px 12px; border-radius: 14px; font-size: 12px; font-weight: 600; }
@@ -1996,6 +2169,8 @@ onMounted(load)
 .btn-sm { font-size: 12px; padding: 7px 16px; }
 .btn-skip { margin-right: auto; background: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
 .btn-skip:hover { color: #6b7280; border-color: #d1d5db; background: #f3f4f6; }
+.btn-danger { background: #ef4444; color: #fff; border-color: #ef4444; }
+.btn-danger:hover { background: #dc2626; border-color: #dc2626; }
 
 .mt-3 { margin-top: 16px; }
 
@@ -2050,6 +2225,23 @@ onMounted(load)
 .references-card-flow .flow-card-header { background: #f3f4f6; color: #374151; }
 .references-card-flow .flow-card-body { background: #fafafa; }
 .ref-item { font-size: 12px; line-height: 1.75; padding: 4px 0; color: #4b5563; }
+
+/* ─── 病例资料卡 ─── */
+.case-brief-card {
+  background: #fff;
+  border: 1px solid #e5e7eb; border-left: 4px solid #4f46e5;
+  border-radius: 12px; padding: 12px 16px;
+}
+.case-brief-header {
+  font-size: 13px; font-weight: 700; color: #4338ca;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.case-brief-text {
+  font-family: inherit; font-size: 13px; color: #374151; line-height: 1.8;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 300px; overflow: auto;
+  margin: 0; padding: 10px 12px; border-radius: 8px; background: #fafbff;
+}
 
 /* ─── 原始病历入口卡 ─── */
 .case-raw-card {

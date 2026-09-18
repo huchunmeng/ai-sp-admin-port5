@@ -190,7 +190,7 @@ function rebuildV3Flow(caseData) {
     })),
     {
       phase: 2, speaker: 'host',
-      text: '各专科意见已发表完毕。请主诊医师结合各专科意见，发表你作为主诊医师的综合看法。',
+      text: '各专科意见已发表完毕。主诊医师，请结合各专科意见发表你的综合看法。',
       nextTask: 'attendingView01',
     },
     {

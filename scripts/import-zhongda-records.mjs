@@ -232,7 +232,7 @@ function buildMdtCase(rec, fields) {
     roleScripts: {
       observer: { opening: '各位专家，今天讨论「' + rec.disease + '」病例。请学员旁听全程讨论，可随时提问。', interruptHint: '输入你的疑问...' },
       resident: { opening: '请住院医师先说说你对这个病例的初步印象和诊疗思路。', callOut: ['请住院医师说说你的看法', '住院医师，你的初步诊断是什么？依据是什么？'] },
-      attending: { opening: '您作为主诊医师，请先汇报病例要点并组织本次讨论。', promptTemplates: ['你如何权衡各学科意见？', '请你梳理一下目前的共识与分歧'] }
+      attending: { opening: '下面请主诊医师汇报病例要点并组织本次讨论。', promptTemplates: ['你如何权衡各学科意见？', '请你梳理一下目前的共识与分歧'] }
     }
   }
 }
