@@ -72,7 +72,7 @@
         </div>
         <div class="zone-body">
           <div class="quick-entries">
-            <div class="entry-card entry-sp" @click="goSPTraining">
+            <div class="entry-card entry-sp" @click="goCaseList">
               <div class="entry-icon-wrapper" style="background: #eff6ff;">
                 <i class="fa-solid fa-stethoscope entry-icon" style="color: #2563eb;"></i>
               </div>
@@ -184,32 +184,19 @@
       <section class="zone-section zone-recommend">
         <div class="zone-header">
           <span class="zone-title"><i class="fa-solid fa-lightbulb"></i> 为你推荐</span>
-          <span class="zone-link" @click="goSPTraining">全部病例 →</span>
+          <span class="zone-link" @click="goCaseList">全部病例 →</span>
         </div>
         <div class="zone-body">
-          <div class="spec-filter">
-            <span v-for="s in specialtyOptions" :key="s" class="spec-chip"
-              :class="{ active: activeSpecialty === s }" @click="activeSpecialty = s">{{ s }}</span>
-          </div>
-          <div class="recommend-grid">
-            <div v-for="(rec, i) in filteredRecommendations" :key="rec.caseId" class="recommend-card" @click="goSPTraining">
-              <div class="rec-photo">
-                <img v-if="recAvatars[i]" :src="recAvatars[i]" class="rec-patient-img" />
-                <span v-else class="rec-photo-placeholder"><i class="fa-solid fa-user"></i></span>
+          <div class="spec-grid">
+            <div v-for="s in specialtyEntries" :key="s.name" class="spec-card" @click="goCaseList">
+              <div class="spec-card-icon" :style="{ background: s.bg, color: s.color }">
+                <i class="fa-solid" :class="s.icon"></i>
               </div>
-              <div class="rec-info">
-                <div class="rec-row-1">
-                  <span class="rec-name">{{ rec.patientName }}</span>
-                  <span v-if="rec.source" class="rec-source-tag" :class="'src-' + sourceClass(rec.source)">{{ rec.source }}病例</span>
-                  <span class="rec-diff" :class="'diff-' + (rec.difficulty[0] || 'R')">{{ rec.difficulty }}</span>
-                  <span class="rec-case-level" :class="'cl-' + getCaseLevel(rec.difficulty)">{{ rec.caseLevel || getCaseLevelLabel(rec.difficulty) }}</span>
-                </div>
-                <div class="rec-row-2">{{ rec.gender }} · {{ rec.age }}岁 · {{ rec.specialty }}</div>
-                <div class="rec-row-3">
-                  <span class="rec-symptom-tag" v-for="s in rec.symptoms" :key="s">{{ s }}</span>
-                </div>
-                <div class="rec-reason">{{ rec.reason }}</div>
+              <div class="spec-card-body">
+                <div class="spec-card-title">{{ s.name }}病例学习</div>
+                <div class="spec-card-count">{{ s.count }} 例可用</div>
               </div>
+              <i class="fa-solid fa-chevron-right spec-card-arrow"></i>
             </div>
           </div>
         </div>
@@ -278,7 +265,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
-import { resolveAppUrls, getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
+import { resolveAppUrls } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
@@ -431,7 +418,7 @@ function resetAndNew() {
   router.push({ name: 'caseList' })
 }
 
-function goSPTraining() {
+function goCaseList() {
   router.push({ name: 'caseList' })
 }
 
@@ -538,28 +525,32 @@ const recommendations = ref([
   { patientName: '潘晓峰', disease: '肝脏占位性病变鉴别', caseId: 'RAD-20260712-A7E4', difficulty: 'R3', gender: '男', age: '60', specialtyGroup: '影像科', specialty: '超声科', symptoms: ['右上腹隐痛', '肝区叩击痛', 'AFP升高'], chiefComplaint: '体检超声发现肝占位3天', reason: '多模态影像综合判读待提升，推荐影像科进阶病例', source: '金牌导师' },
 ])
 
-// 科室筛选项：全部 + mock 中出现的科室大类（按首次出现顺序去重）
-const specialtyOptions = computed(() => {
-  const seen = []
+// 科室入口：影像科置顶，其余按下列顺序排列
+const SPECIALTY_ORDER = ['影像科', '内科', '外科', '妇产科', '儿科', '急诊科', '精神科', '皮肤科', '骨科', '神经内科']
+const SPECIALTY_META = {
+  '影像科': { icon: 'fa-x-ray', color: '#4f46e5', bg: '#eef2ff' },
+  '内科': { icon: 'fa-stethoscope', color: '#2563eb', bg: '#eff6ff' },
+  '外科': { icon: 'fa-syringe', color: '#dc2626', bg: '#fef2f2' },
+  '妇产科': { icon: 'fa-baby', color: '#db2777', bg: '#fdf2f8' },
+  '儿科': { icon: 'fa-child', color: '#16a34a', bg: '#f0fdf4' },
+  '急诊科': { icon: 'fa-truck-medical', color: '#ea580c', bg: '#fff7ed' },
+  '精神科': { icon: 'fa-brain', color: '#7c3aed', bg: '#f5f3ff' },
+  '皮肤科': { icon: 'fa-disease', color: '#ca8a04', bg: '#fefce8' },
+  '骨科': { icon: 'fa-bone', color: '#0d9488', bg: '#f0fdfa' },
+  '神经内科': { icon: 'fa-wave-square', color: '#0891b2', bg: '#ecfeff' },
+}
+
+const specialtyEntries = computed(() => {
+  const counts = {}
   recommendations.value.forEach(r => {
-    if (r.specialtyGroup && !seen.includes(r.specialtyGroup)) seen.push(r.specialtyGroup)
+    if (!r.specialtyGroup) return
+    counts[r.specialtyGroup] = (counts[r.specialtyGroup] || 0) + 1
   })
-  return ['全部', ...seen]
-})
-
-const activeSpecialty = ref('全部')
-
-const filteredRecommendations = computed(() => {
-  if (activeSpecialty.value === '全部') return recommendations.value
-  return recommendations.value.filter(r => r.specialtyGroup === activeSpecialty.value)
-})
-
-const recAvatars = computed(() => {
-  return filteredRecommendations.value.map(rec => {
-    const gender = rec.gender
-    const age = parseInt(rec.age) || 30
-    return matchPatientImage({ gender, age }, 'patient')
-  })
+  return SPECIALTY_ORDER.filter(name => counts[name]).map(name => ({
+    name,
+    count: counts[name],
+    ...(SPECIALTY_META[name] || { icon: 'fa-folder-open', color: '#64748b', bg: '#f8fafc' }),
+  }))
 })
 
 const recentRecords = computed(() => {
@@ -877,59 +868,27 @@ onMounted(() => {
 }
 .elite-mooc:hover .elite-mooc-btn { background: rgba(255, 255, 255, .32); }
 
-/* ─── 推荐病例 ─── */
-.spec-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.spec-chip {
-  font-size: 11px; padding: 3px 10px; border-radius: 12px; line-height: 1.6;
-  background: #f3f4f6; color: #6b7280; cursor: pointer;
-  transition: all .15s; user-select: none;
-}
-.spec-chip:hover { background: #e5e7eb; color: #374151; }
-.spec-chip.active { background: #2563eb; color: #fff; font-weight: 600; }
-.recommend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.recommend-card {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 12px; border-radius: 10px; cursor: pointer;
+/* ─── 科室入口 ─── */
+.spec-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.spec-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 12px; border-radius: 10px; cursor: pointer;
   transition: all .15s; background: #fafbfc; border: 1px solid #f0f2f5;
 }
-.recommend-card:hover { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-
-.rec-photo {
-  width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
-  background: #f3f4f6; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
+.spec-card:hover { background: #fff; border-color: #dbe3ef; box-shadow: 0 3px 10px rgba(0,0,0,0.07); transform: translateY(-1px); }
+.spec-card-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
 }
-.rec-patient-img { width: 100%; height: 100%; object-fit: cover; }
-.rec-photo-placeholder { font-size: 16px; color: #c0c4cc; }
+.spec-card-body { flex: 1; min-width: 0; }
+.spec-card-title { font-size: 13px; font-weight: 600; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spec-card-count { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.spec-card-arrow { font-size: 11px; color: #d1d5db; transition: all .2s; }
+.spec-card:hover .spec-card-arrow { color: #6b7280; transform: translateX(2px); }
 
-.rec-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.rec-row-1 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rec-name { font-size: 13px; font-weight: 600; color: #1f2937; }
-.rec-diff { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
-.rec-case-level { font-size: 9px; padding: 1px 4px; border-radius: 3px; font-weight: 500; flex-shrink: 0; }
 .diff-U { background: #dbeafe; color: #1d4ed8; }
 .diff-R { background: #fef3c7; color: #d97706; }
 .diff-F { background: #fee2e2; color: #dc2626; }
-.cl-basic { background: #e8f5e9; color: #2e7d32; }
-.cl-advanced { background: #fff3e0; color: #e65100; }
-.cl-difficult { background: #fce4ec; color: #c62828; }
-.rec-row-2 { font-size: 11px; color: #6b7280; }
-.rec-row-3 { display: flex; gap: 3px; flex-wrap: wrap; }
-.rec-symptom-tag {
-  font-size: 9px; padding: 1px 5px; background: #f3f4f6;
-  border-radius: 3px; color: #6b7280;
-}
-.rec-source-tag {
-  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
-  color: #fff; white-space: nowrap; letter-spacing: 0.03em;
-}
-.rec-source-tag.src-academician { background: linear-gradient(135deg, #3730a3, #4f46e5); }
-.rec-source-tag.src-mentor { background: linear-gradient(135deg, #b45309, #f59e0b); }
-.rec-source-tag.src-national { background: linear-gradient(135deg, #991b1b, #dc2626); }
-.rec-reason {
-  font-size: 10px; color: #9ca3af; margin-top: 3px; padding-top: 3px;
-  border-top: 1px dashed #f3f4f6; line-height: 1.4;
-}
 
 /* ─── 底部双栏 ─── */
 .bottom-row { display: flex; gap: 14px; }
