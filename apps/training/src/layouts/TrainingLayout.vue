@@ -67,6 +67,7 @@ import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls } 
 import { getCurrentTtsModel } from '@/composables/useTTS.js'
 import AICompanionDrawer from '@/components/AICompanionDrawer.vue'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
+import { MOOC_MODULES } from '@/data/moocModules'
 
 const router = useRouter()
 const route = useRoute()
@@ -172,6 +173,18 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '学习画像' : 'Learning Profile', to: null })
   } else if (name === 'vrLab') {
     items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
+  } else if (name === 'reportWriting') {
+    const rwExam = route.params.mode === 'exam'
+    items.push({
+      label: rwExam
+        ? (lang === 'zh' ? '影像报告书写考核' : 'Report Exam')
+        : (lang === 'zh' ? '影像报告书写训练' : 'Report Writing'),
+      to: null
+    })
+  } else if (name === 'moocModule') {
+    const mmod = MOOC_MODULES.find(m => m.key === route.params.module)
+    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: 'home' } })
+    items.push({ label: mmod ? mmod.title : (lang === 'zh' ? '慕课' : 'MOOC'), to: null })
   } else if (name === 'mentorCases') {
     const mcat = MENTOR_CATEGORIES[route.params.category]
     items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: EXTERNAL_HOME_URL })

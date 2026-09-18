@@ -31,6 +31,8 @@ const routes = [
       { path: 'adaptive-learning', name: 'adaptiveLearning', component: () => import('@/views/AdaptiveLearning.vue') },
       { path: 'vr-lab', name: 'vrLab', component: () => import('@/views/VRLab.vue') },
       { path: 'mentor/:category', name: 'mentorCases', component: () => import('@/views/MentorCaseView.vue') },
+      { path: 'report-writing/:mode?', name: 'reportWriting', component: () => import('@/views/ReportWriting.vue') },
+      { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },
     ]
   }
 ]
