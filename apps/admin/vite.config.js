@@ -338,6 +338,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@ai-sp/shared/score-tables': fileURLToPath(new URL('../../packages/shared/data/score-tables/index.js', import.meta.url)),
+        '@ai-sp/shared/imaging': fileURLToPath(new URL('../../packages/shared/data/imaging/index.js', import.meta.url)),
         '@ai-sp/shared': fileURLToPath(new URL('../../packages/shared', import.meta.url))
       }
     },

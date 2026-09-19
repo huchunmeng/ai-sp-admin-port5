@@ -158,7 +158,8 @@ const ICON_PATHS = {
   clinical: '<path d="M3 12h4l2.5-6 3.5 12 2.5-6H21"/>',
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10.5" r="2"/><path d="M5.8 16a3.6 3.6 0 0 1 6.4 0"/><path d="M14.5 10h4M14.5 14h2.5"/>',
   internship: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0"/><path d="M18 8v6M15 11h6"/>',
-  examRoom: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'
+  examRoom: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  imaging: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16"/><path d="M3 9h4M3 15h4M17 9h4M17 15h4"/>'
 }
 
 function iconSvg(name) {
@@ -174,7 +175,8 @@ const MENU_CONFIG = [
         { id: 'score-settings', label: '评分表管理', route: '/score-settings', icon: 'score' },
         { id: 'case-level-list', label: 'AI伴学病例库', route: '/case-level-list', icon: 'ai' },
         { id: 'raw-records', label: '原始病历素材库', route: '/raw-records', icon: 'file' },
-        { id: 'mdt-cases', label: 'MDT病例管理', route: '/mdt-cases', icon: 'users' }
+        { id: 'mdt-cases', label: 'MDT病例管理', route: '/mdt-cases', icon: 'users' },
+        { id: 'imaging-samples', label: '影像报告题库', route: '/imaging-samples', icon: 'imaging' }
     ]},
     { module: '培训管理', icon: 'training', pages: [
         { id: 'training-records', label: '训练记录', route: '/training-records', icon: 'trend' }

@@ -1,0 +1,128 @@
+// 影像题库的**会话内**数据源（管理端）
+//
+// 为什么用模块级 reactive 而不是各页面各持一份：题库列表 → 病例编辑器 → 返回列表 是同一个
+// 数据集的两种视图，各持一份会导致"编辑完返回还看到旧值"。共用一份最省事，也最不容易出漂移。
+//
+// ⚠️ 本期**无服务端**：改动只活在内存里，刷新浏览器即回到静态样本初始态。这是刻意的——
+// 真实落库要等院方样本（Q2）与后端接口。接 API 时只换本文件的 loadSamples / upsertSample 实现，
+// 页面不动。
+
+import { reactive } from 'vue'
+import {
+  IMAGING_SAMPLE_ROWS,
+  emptyCapabilities,
+  hasGoldStandard,
+  scoreableOf
+} from '@ai-sp/shared/imaging'
+
+/** 静态帧数 → 占位帧数组（本期无真实图片，仅承载"共 N 帧 / 可拖拽排序"的交互） */
+function placeholderFrames(view, count) {
+  return Array.from({ length: count || 0 }, (_, i) => ({
+    name: `${view}_${String(i + 1).padStart(3, '0')}.jpg`,
+    size: 0, url: '', order: i + 1, builtin: true
+  }))
+}
+
+function normalize(row) {
+  const caps = { ...emptyCapabilities(), ...(row.capabilities || {}) }
+  return {
+    ...row,
+    capabilities: caps,
+    goldStandard: row.goldStandard ? { ...row.goldStandard } : null,
+    seriesFrames: {
+      axial: placeholderFrames('axial', row.series && row.series.axial),
+      coronal: placeholderFrames('coronal', row.series && row.series.coronal),
+      sagittal: placeholderFrames('sagittal', row.series && row.series.sagittal)
+    }
+  }
+}
+
+export const sampleStore = reactive({ rows: [], loaded: false })
+
+/** 重算派生量——可评分与落空条目**必须现算**，不得写死（PRD §5.5.1 / data-specs §14.2） */
+export function recompute(row) {
+  const { max, lost } = scoreableOf(row.id, row.capabilities)
+  row.scoreableMax = max
+  row.lost = lost
+  row.goldStandardRecorded = hasGoldStandard(row)
+  row.series = {
+    axial: row.seriesFrames.axial.length,
+    coronal: row.seriesFrames.coronal.length,
+    sagittal: row.seriesFrames.sagittal.length
+  }
+  return row
+}
+
+/** TODO(接口): 服务端就绪后换为 GET /api/imaging/samples */
+export function loadSamples(force = false) {
+  if (sampleStore.loaded && !force) return sampleStore.rows
+  sampleStore.rows = IMAGING_SAMPLE_ROWS.map(r => normalize({ ...r }))
+  sampleStore.rows.forEach(recompute)
+  sampleStore.loaded = true
+  return sampleStore.rows
+}
+
+export function getSample(id) {
+  loadSamples()
+  return sampleStore.rows.find(r => r.id === id) || null
+}
+
+/** 新建空白样本——三段金标准为空、状态草稿、版本 1 */
+export function blankSample() {
+  return {
+    id: '',
+    title: '',
+    modality: 'CT',
+    bodyPart: '胸部',
+    level: 'R1',
+    icon: 'fa-image',
+    clinicalBrief: '',
+    series: { axial: 0, coronal: 0, sagittal: 0 },
+    deidentify: {
+      name: '', ageRange: '', sex: '', dept: '',
+      examNo: '', imageNo: '', inpatientNo: '****', cardNo: '****', examTime: ''
+    },
+    capabilities: emptyCapabilities(),
+    goldStandard: null,
+    version: 1,
+    status: 'draft',
+    createdAt: now(), createdBy: '管理端',
+    publishedAt: null, updatedAt: now(), updatedBy: '管理端',
+    scoreableMax: 100, lost: [], goldStandardRecorded: false,
+    seriesFrames: { axial: [], coronal: [], sagittal: [] }
+  }
+}
+
+/** 新增或原地更新；返回落库后的行 */
+export function upsertSample(row) {
+  loadSamples()
+  recompute(row)
+  const i = sampleStore.rows.findIndex(r => r.id === row.id)
+  if (i >= 0) sampleStore.rows.splice(i, 1, row)
+  else sampleStore.rows.unshift(row)
+  return row
+}
+
+/** 生成一个不冲突的副本 id（RC-001 → RC-001-C2） */
+export function nextCopyId(baseId) {
+  loadSamples()
+  let n = 1
+  let id = `${baseId}-C${n}`
+  while (sampleStore.rows.some(r => r.id === id)) { n += 1; id = `${baseId}-C${n}` }
+  return id
+}
+
+/** 生成新样本 id：IMG-YYYYMMDD-NNN */
+export function nextSampleId() {
+  loadSamples()
+  const d = new Date()
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
+  let n = 1
+  let id = `IMG-${stamp}-${String(n).padStart(3, '0')}`
+  while (sampleStore.rows.some(r => r.id === id)) { n += 1; id = `IMG-${stamp}-${String(n).padStart(3, '0')}` }
+  return id
+}
+
+export function now() {
+  return new Date().toISOString().slice(0, 16).replace('T', ' ')
+}

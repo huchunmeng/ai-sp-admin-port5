@@ -174,13 +174,17 @@ const crumbs = computed(function() {
   } else if (name === 'vrLab') {
     items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
   } else if (name === 'reportWriting') {
-    const rwExam = route.params.mode === 'exam'
-    items.push({
-      label: rwExam
-        ? (lang === 'zh' ? '影像报告书写考核' : 'Report Exam')
-        : (lang === 'zh' ? '影像报告书写训练' : 'Report Writing'),
-      to: null
-    })
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
+  } else if (name === 'reportWritingTrain') {
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
+    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: null })
+  } else if (name === 'reportWritingWorkbench') {
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
+    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'reportWritingTrain' } })
+    items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
+  } else if (name === 'reportWritingExam') {
+    items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
+    items.push({ label: lang === 'zh' ? '影像报告书写考核' : 'Report Exam', to: null })
   } else if (name === 'examCenter') {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: null })
   } else if (name === 'moocModule') {

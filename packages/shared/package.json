@@ -7,6 +7,7 @@
     ".": "./src/index.js",
     "./emotion-engine": "./src/emotion-engine.js",
     "./score-tables": "./data/score-tables/index.js",
+    "./imaging": "./data/imaging/index.js",
     "./score-sheet-parser": "./src/score-sheet-parser.js",
     "./workflow-constants": "./src/workflow-constants.js",
     "./physical-exam-engine": "./src/physical-exam-engine.js",

@@ -31,7 +31,12 @@ const routes = [
       { path: 'adaptive-learning', name: 'adaptiveLearning', component: () => import('@/views/AdaptiveLearning.vue') },
       { path: 'vr-lab', name: 'vrLab', component: () => import('@/views/VRLab.vue') },
       { path: 'mentor/:category', name: 'mentorCases', component: () => import('@/views/MentorCaseView.vue') },
-      { path: 'report-writing/:mode?', name: 'reportWriting', component: () => import('@/views/ReportWriting.vue') },
+      // 影像报告书写训练（E2）—— 遵 PRD §6.1 学生侧页面清单拆为独立路由
+      { path: 'report-writing', name: 'reportWriting', component: () => import('@/views/report-writing/ReportWritingHome.vue') },
+      { path: 'report-writing/train', name: 'reportWritingTrain', component: () => import('@/views/report-writing/ReportWritingTrainList.vue') },
+      { path: 'report-writing/train/:caseId', name: 'reportWritingWorkbench', component: () => import('@/views/report-writing/ReportWritingWorkbench.vue') },
+      // 考核侧本期未实现，保留可达的占位骨架（避免首页与在线考试页的入口 404）
+      { path: 'report-writing/exam', name: 'reportWritingExam', component: () => import('@/views/report-writing/ReportWritingExam.vue') },
       { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },
       { path: 'exam-center', name: 'examCenter', component: () => import('@/views/ExamCenter.vue') },
     ]

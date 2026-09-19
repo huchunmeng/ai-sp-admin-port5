@@ -76,7 +76,7 @@ function open(item) {
     window.open(item.url, '_blank', 'noopener,noreferrer')
     return
   }
-  router.push({ name: 'reportWriting', params: { mode: item.mode } })
+  router.push({ name: 'reportWritingExam' })
 }
 </script>
 

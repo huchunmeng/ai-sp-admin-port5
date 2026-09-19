@@ -28,6 +28,9 @@ const routes = [
       { path: 'mdt-cases', name: 'mdtCases', component: () => import('@/views/mdt-case-manage/MDTCaseList.vue') },
       { path: 'mdt-case-view/:mdtId', name: 'mdtCaseView', props: true, component: () => import('@/views/mdt-case-manage/MDTCaseView.vue') },
       { path: 'mdt-case-editor/:mdtId?', name: 'mdtCaseEditor', props: true, component: () => import('@/views/mdt-case-manage/MDTEditor.vue') },
+      // 影像报告题库（影像报告书写训练 · 管理端承接侧；考核管理本期不做）
+      { path: 'imaging-samples', name: 'imagingSamples', component: () => import('@/views/imaging-samples/ImagingSampleList.vue') },
+      { path: 'imaging-samples/:id', name: 'imagingSampleEditor', props: true, component: () => import('@/views/imaging-samples/ImagingSampleEditor.vue') },
 
     ]
   }

@@ -512,6 +512,7 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@ai-sp/shared/score-sheet-parser': fileURLToPath(new URL('../../packages/shared/src/score-sheet-parser.js', import.meta.url)),
         '@ai-sp/shared/score-tables': fileURLToPath(new URL('../../packages/shared/data/score-tables/index.js', import.meta.url)),
+        '@ai-sp/shared/imaging': fileURLToPath(new URL('../../packages/shared/data/imaging/index.js', import.meta.url)),
         '@ai-sp/shared/physical-exam-engine': fileURLToPath(new URL('../../packages/shared/src/physical-exam-engine.js', import.meta.url)),
         '@ai-sp/shared/test-selection-engine': fileURLToPath(new URL('../../packages/shared/src/test-selection-engine.js', import.meta.url)),
         '@ai-sp/shared/diagnosis-engine': fileURLToPath(new URL('../../packages/shared/src/diagnosis-engine.js', import.meta.url)),

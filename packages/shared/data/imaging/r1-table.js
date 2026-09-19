@@ -1,0 +1,103 @@
+// R1 表 —— 《放射科-诊断报告书写质量评价表》100 分 / 5 维度 / 23 条目
+//
+// 来源：PRD_影像报告书写训练.md 附录 E（条目编码表）。
+// 所有分数只在此处定义一次；结果页与自评页均由此归并（data-specs.md §三）。
+// 注意：本表与 apps/admin 既有的「评分表管理」（score_sheets：{id, category, item, score}
+// 扁平数组）**不是同一套结构**——后者没有条目编码、没有维度满分、没有判定档位、也没有
+// 「不可评/归一」概念，R1 表的两条核心口径无处安放，故本模块自带此表，不改动既有评分表。
+
+/** 5 维度 / 23 条目 / 合计 100 分 */
+export const R1_TABLE = [
+  {
+    dim: '一、一般信息及报告及时性', full: 14,
+    items: [
+      { code: 'GEN-01', name: '患者信息（姓名、年龄、性别、科别）', score: 2 },
+      { code: 'GEN-02', name: '住院/门诊号、检查号、就诊卡号、影像号正确', score: 1 },
+      { code: 'GEN-03', name: '检查时间正确，按规定时间完成报告', score: 1 },
+      { code: 'GEN-04', name: '临床主要信息及检查目的', score: 10 }
+    ]
+  },
+  {
+    dim: '二、检查技术', full: 9,
+    items: [
+      { code: 'TECH-01', name: '检查部位准确', score: 3 },
+      { code: 'TECH-02', name: '检查类型准确', score: 3 },
+      { code: 'TECH-03', name: '检查技术填写规范', score: 3 }
+    ]
+  },
+  {
+    dim: '三、影像描述', full: 34,
+    items: [
+      { code: 'FIND-01', name: '描述全面，条理清楚', score: 10 },
+      { code: 'FIND-02', name: '描述疾病或器官顺序适当', score: 4 },
+      { code: 'FIND-03', name: '病灶部位及累及范围描述准确', score: 4 },
+      { code: 'FIND-04', name: '病灶数目、大小准确测量并规范描述', score: 4 },
+      { code: 'FIND-05', name: '病灶形态、边界及特殊征象描述准确', score: 4 },
+      { code: 'FIND-06', name: '病灶密度/信号/强化程度准确分度', score: 4 },
+      { code: 'FIND-07', name: '重要阴性征象描述', score: 4 }
+    ]
+  },
+  {
+    dim: '四、影像诊断', full: 38,
+    items: [
+      { code: 'IMP-01', name: '回答临床问题', score: 10 },
+      { code: 'IMP-02', name: '定位诊断准确', score: 4 },
+      { code: 'IMP-03', name: '典型病变明确诊断', score: 4 },
+      { code: 'IMP-04', name: '不典型病变给出的可能诊断符合规范', score: 4 },
+      { code: 'IMP-05', name: '肿瘤分期正确', score: 4 },
+      { code: 'IMP-06', name: '疾病诊断遵循规范或指南', score: 4 },
+      { code: 'IMP-07', name: '给临床的建议明确', score: 4 },
+      { code: 'IMP-08', name: '与以前检查比较符合规范、准确', score: 4 }
+    ]
+  },
+  {
+    dim: '五、文字描述', full: 5,
+    items: [{ code: 'LANG-01', name: '无错别字，数据单位及标点符号使用正确', score: 5 }]
+  }
+]
+
+/** 23 条扁平索引（code → { code, name, score, dim }），供逐条自评 / 结果页按 code 关联 */
+export const R1_ITEMS = R1_TABLE.flatMap(d =>
+  d.items.map(it => ({ ...it, dim: d.dim, dimFull: d.full }))
+)
+
+/** 报告三段字段规则（PRD §5.4.1，两侧同值同规则） */
+export const SEGMENTS = [
+  { key: 'technique', name: '检查技术', limit: 500, trainingRequired: true, examRequired: false },
+  { key: 'findings', name: '影像所见', limit: 3000, trainingRequired: true, examRequired: false },
+  { key: 'impression', name: '诊断意见', limit: 3000, trainingRequired: true, examRequired: false }
+]
+
+/**
+ * 影像描述段的五类要素（PRD §6.2 提示栏的覆盖清单口径）。
+ * 训练侧据此给出「●已覆盖 / ○缺失 / ?存疑」，考核侧不下发（§5.8）。
+ */
+export const COVERAGE_ELEMENTS = [
+  { key: 'location', name: '部位与范围' },
+  { key: 'size', name: '数目与大小' },
+  { key: 'margin', name: '形态与边界' },
+  { key: 'density', name: '密度/信号/强化程度' },
+  { key: 'negative', name: '重要阴性征象' }
+]
+
+/**
+ * 一般信息条的字段顺序与脱敏展示规则（PRD §5.2.2 / §5.12.4）。
+ * `masked: true` 为全掩字段——不提供复制、本期不纳入评分（GEN-02 甲类）。
+ */
+export const DEIDENTIFY_ROWS = [
+  { k: '患者姓名', key: 'name', copy: true, note: '仅露首字' },
+  { k: '年龄', key: 'ageRange', copy: true, note: '年龄段' },
+  { k: '性别', key: 'sex', copy: true },
+  { k: '科别', key: 'dept', copy: true },
+  { k: '检查号', key: 'examNo', copy: true, note: '保留后 4 位' },
+  { k: '影像号', key: 'imageNo', copy: true, note: '保留后 4 位' },
+  { k: '住院/门诊号', key: 'inpatientNo', masked: true },
+  { k: '就诊卡号', key: 'cardNo', masked: true },
+  { k: '检查时间', key: 'examTime', copy: true }
+]
+
+/** 三段合集字数上限（PRD §5.4.1 单例合计 ≤ 5000 字） */
+export const REPORT_TOTAL_LIMIT = 5000
+
+/** R1 表版本号——随评分表改动递增，评分记录须留痕以解释历史成绩（PRD §5.9） */
+export const R1_TABLE_VERSION = 'R1-2026.09'

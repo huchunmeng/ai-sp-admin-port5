@@ -1,74 +1,66 @@
-// 影像报告书写训练 —— 内置影像样本（mock）
+// 影像报告书写训练 —— 训练端数据入口（再导出）
 //
-// 本期为界面骨架用假数据：影像本体、金标准报告、提示条目均为示例文本，
-// 待院方提供真实影像样本与配套金标准报告后替换（需求确认单 Q2 待答复）。
-// 对应需求：医路慧影学生端改动需求确认单 E2「影像报告书写训练」模块。
+// **真相源**：`packages/shared/data/imaging/`（经 `@ai-sp/shared/imaging` 暴露）。
+// 本文件只是训练端的统一入口，不含任何数据 —— 病例题库、R1 表、能力位、提示库都在 shared 里，
+// 因为管理端（题库维护）与训练端（挑病例练）必须读同一份，否则两边会漂移。
+//
+// 【本期数据边界，别误读】
+//   · 影像本体：占位。全仓无 DICOM / 序列浏览 / 调窗 / 测量组件，待院方样本（Q2）与影像
+//     教学底座到位后按 PRD §9.4 黑盒接入。界面明写「影像待接入」。
+//   · 金标准报告：只有 RC-001 / RC-002 / RC-003 三例（取自仓库既有原文，已拆成 PRD §5.12.7
+//     的三段式）；其余 5 例为草稿、金标准待教研录入。故训练端**当前可练 3 例**。
+//   · 提示内容：静态示例，取自三级提示库（L1 体裁 / L2 指向 / L3 要点）。接服务端后改为
+//     「模型输出 + 出站红线校验」（PRD §5.7 / §9.5），库只保留降级文案。
+//
+// 历史说明：本文件原自带 3 例 `{id,title,modality,bodyPart,icon,goldStandard,hints}` 的 mock
+// 数据与 `REPORT_CASES` 导出。移植进 port5 时数据上移到 shared，旧导出已无调用方，故移除；
+// 需要「卡片形状」请用 `trainingCardOf(sample, stat)`。
 
-export const REPORT_CASES = [
-  {
-    id: 'RC-001',
-    title: '胸部CT · 右肺上叶结节',
-    modality: 'CT',
-    bodyPart: '胸部',
-    icon: 'fa-lungs',
-    goldStandard:
-      '影像所见：\n'
-      + '右肺上叶尖段见一枚实性结节，大小约 12mm×10mm，边缘可见分叶及短毛刺，'
-      + '周围见局限性胸膜牵拉。双肺其余肺野纹理清晰，未见明确结节及实变影。'
-      + '纵隔居中，气管及主支气管通畅，纵隔及肺门未见明显肿大淋巴结。'
-      + '双侧胸腔未见积液，心影及大血管形态未见异常。\n'
-      + '影像诊断：\n'
-      + '右肺上叶尖段实性结节，边缘分叶伴短毛刺、胸膜牵拉，考虑周围型肺癌可能性大，建议增强CT及多学科评估。',
-    hints: [
-      '先按「检查技术 → 影像所见 → 影像诊断」三段式搭骨架，不要一上来就写结论。',
-      '描述结节要落齐四要素：部位（右肺上叶尖段）、大小（三维测量）、密度（实性/磨玻璃）、边缘征象。',
-      '边缘征象是这例的关键——分叶、毛刺、胸膜牵拉，三者提示恶性倾向，别漏。',
-      '阴性描述也要写：纵隔淋巴结、胸腔积液、其余肺野，缺了会显得报告不完整。',
-      '诊断段给出倾向性意见并写清下一步建议（增强CT / MDT），不要只写"结节待排"。'
-    ]
-  },
-  {
-    id: 'RC-002',
-    title: '颅脑MR · 急性脑梗死',
-    modality: 'MR',
-    bodyPart: '颅脑',
-    icon: 'fa-brain',
-    goldStandard:
-      '影像所见：\n'
-      + 'DWI 序列示左侧基底节区及放射冠区片状高信号，相应 ADC 图呈低信号，范围约 28mm×19mm，'
-      + '边界欠清。T2WI/FLAIR 示该区稍高信号。脑室系统大小形态正常，中线结构居中，'
-      + '脑沟脑裂未见增宽。颅内未见明确异常流空影。\n'
-      + '影像诊断：\n'
-      + '左侧基底节区及放射冠区急性期脑梗死。',
-    hints: [
-      'MR 报告要先声明序列——这例的定性全靠 DWI 与 ADC 的弥散受限组合。',
-      '「DWI 高信号 + ADC 低信号」才是急性期，只写 DWI 高信号会与 T2 透过效应混淆。',
-      '解剖定位要具体到基底节区、放射冠区，别只写"左侧大脑"。',
-      '记得写中线结构与脑室系统，这是颅脑报告的常规阴性项。',
-      '诊断段写分期（急性期/亚急性期），这直接决定临床是否启动溶栓评估。'
-    ]
-  },
-  {
-    id: 'RC-003',
-    title: '腹部CT · 肝细胞癌（TACE术后）',
-    modality: 'CT',
-    bodyPart: '腹部',
-    icon: 'fa-x-ray',
-    goldStandard:
-      '影像所见：\n'
-      + '肝右叶见一不规则肿块，大小约 56mm×48mm，增强扫描动脉期明显强化，'
-      + '门脉期及延迟期强化减退，呈"快进快出"表现。病灶内见片状高密度碘油沉积影，'
-      + '沉积较致密，未见明确新增活性灶。门静脉主干及左右支通畅，未见充盈缺损。'
-      + '肝内外胆管未见扩张，胆囊壁不厚。脾脏不大，腹腔未见积液，'
-      + '腹膜后未见肿大淋巴结。\n'
-      + '影像诊断：\n'
-      + '肝右叶肝细胞癌 TACE 术后，碘油沉积致密，未见明确存活灶；建议结合 AFP 及 MR 复查随访。',
-    hints: [
-      '术后复查报告的重点是「疗效评估」——碘油沉积是否致密、有无存活灶，这两句必须有。',
-      '描述原发灶要写清增强三期表现，动脉期强化 + 门脉/延迟期减退即"快进快出"。',
-      '门静脉是否通畅是肝癌报告的关键阴性项，涉及后续治疗选择。',
-      '别漏疗效对照组：脾脏、腹腔积液、腹膜后淋巴结，用于判断有无进展。',
-      '诊断段要把"术后"和"疗效"写进去，并给出随访建议，而不是重复原诊断。'
-    ]
-  }
-]
+export {
+  // 题库与派生
+  IMAGING_SAMPLES,
+  IMAGING_SAMPLE_ROWS,
+  IMAGING_SAMPLE_BY_ID,
+  TRAINING_CASES,
+  // R1 表与报告契约
+  R1_TABLE,
+  R1_ITEMS,
+  SEGMENTS,
+  COVERAGE_ELEMENTS,
+  DEIDENTIFY_ROWS,
+  R1_TABLE_VERSION,
+  REPORT_TOTAL_LIMIT,
+  // 能力位与不可评
+  CAPABILITIES,
+  CAPABILITY_ITEMS,
+  CAPABILITY_FIELDS,
+  DEIDENTIFY_ITEMS,
+  emptyCapabilities,
+  scoreableOf,
+  weightedScoreable,
+  SCOREABLE_PUBLISH_FLOOR,
+  // 提示库
+  hintFor,
+  hintBody,
+  HINT_ELEMENTS,
+  HINT_LEVELS,
+  DEFAULT_QUOTA,
+  HINT_COOLDOWN_MS,
+  // 枚举与视图
+  MODALITIES,
+  BODY_PARTS,
+  SAMPLE_STATUS,
+  VIEW_KEYS,
+  // 便捷函数
+  getImagingSample,
+  hasGoldStandard,
+  infoRowsOf,
+  goldStandardText,
+  draftText,
+  seriesTotal,
+  trainingCardOf,
+  unassessableOf
+} from '@ai-sp/shared/imaging'
+
+/** 三视图（PRD §9.4：静态浏览 + 基础切换，互不联动） */
+export { VIEW_KEYS as VIEWS } from '@ai-sp/shared/imaging'
