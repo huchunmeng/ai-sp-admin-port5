@@ -72,75 +72,56 @@
         </div>
         <div class="zone-body">
           <div class="quick-entries">
-            <div class="entry-group-label">技能训练</div>
-
             <div class="entry-card entry-sp" @click="goCaseList">
-              <div class="entry-icon-wrapper" style="background: #eff6ff;">
-                <i class="fa-solid fa-stethoscope entry-icon" style="color: #2563eb;"></i>
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #eff6ff;">
+                  <i class="fa-solid fa-stethoscope entry-icon" style="color: #2563eb;"></i>
+                </div>
+                <div class="entry-badge" style="background: #dbeafe; color: #1d4ed8;">{{ trainedCount }} 例已完成</div>
               </div>
               <div class="entry-info">
                 <div class="entry-title">AI问诊训练</div>
                 <div class="entry-desc">标准化病人对话实战</div>
               </div>
-              <div class="entry-badge" style="background: #dbeafe; color: #1d4ed8;">{{ trainedCount }} 例已完成</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
             <div class="entry-card entry-report" @click="goReportWriting">
-              <div class="entry-icon-wrapper" style="background: #eef2ff;">
-                <i class="fa-solid fa-file-pen entry-icon" style="color: #4f46e5;"></i>
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #eef2ff;">
+                  <i class="fa-solid fa-file-pen entry-icon" style="color: #4f46e5;"></i>
+                </div>
+                <div class="entry-badge" style="background: #e0e7ff; color: #4338ca;">训练模式</div>
               </div>
               <div class="entry-info">
                 <div class="entry-title">影像报告书写训练</div>
                 <div class="entry-desc">边写边提示 · 金标准对照</div>
               </div>
-              <div class="entry-badge" style="background: #e0e7ff; color: #4338ca;">训练模式</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
             <div class="entry-card entry-mdt" @click="goMDT">
-              <div class="entry-icon-wrapper" style="background: #f0fdf4;">
-                <i class="fa-solid fa-users entry-icon" style="color: #059669;"></i>
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #f0fdf4;">
+                  <i class="fa-solid fa-users entry-icon" style="color: #059669;"></i>
+                </div>
+                <div class="entry-badge" style="background: #fef9c3; color: #a16207;">即将开放</div>
               </div>
               <div class="entry-info">
                 <div class="entry-title">MDT多学科讨论</div>
                 <div class="entry-desc">团队协作病例思辨</div>
               </div>
-              <div class="entry-badge" style="background: #fef9c3; color: #a16207;">即将开放</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
-
-            <div class="entry-group-label">考核评价</div>
-
-            <div class="entry-card entry-interview" @click="goInterviewExam">
-              <div class="entry-icon-wrapper" style="background: #eff6ff;">
-                <i class="fa-solid fa-stethoscope entry-icon" style="color: #2563eb;"></i>
+            <div class="entry-card entry-exam" @click="goExamCenter">
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #fef3c7;">
+                  <i class="fa-solid fa-file-circle-check entry-icon" style="color: #d97706;"></i>
+                </div>
+                <div class="entry-badge" style="background: #f1f5f9; color: #475569;">考核模式</div>
               </div>
               <div class="entry-info">
-                <div class="entry-title">AI问诊考核</div>
-                <div class="entry-desc">AI标准化病人考核端</div>
+                <div class="entry-title">在线考试</div>
+                <div class="entry-desc">考核评价 · 三项考核</div>
               </div>
-              <div class="entry-badge" style="background: #f1f5f9; color: #475569;">考核模式</div>
-              <i class="fa-solid fa-arrow-up-right-from-square entry-arrow"></i>
-            </div>
-            <div class="entry-card entry-exam" @click="goExam">
-              <div class="entry-icon-wrapper" style="background: #fef3c7;">
-                <i class="fa-solid fa-file-circle-check entry-icon" style="color: #d97706;"></i>
-              </div>
-              <div class="entry-info">
-                <div class="entry-title">理论考试</div>
-                <div class="entry-desc">正式考核评估认证</div>
-              </div>
-              <div class="entry-badge" style="background: #f1f5f9; color: #475569;">考核模式</div>
-              <i class="fa-solid fa-arrow-up-right-from-square entry-arrow"></i>
-            </div>
-            <div class="entry-card entry-report-exam" @click="goReportExam">
-              <div class="entry-icon-wrapper" style="background: #eef2ff;">
-                <i class="fa-solid fa-clipboard-check entry-icon" style="color: #4f46e5;"></i>
-              </div>
-              <div class="entry-info">
-                <div class="entry-title">影像报告书写考核</div>
-                <div class="entry-desc">不给提示 · 按金标准评分</div>
-              </div>
-              <div class="entry-badge" style="background: #f1f5f9; color: #475569;">考核模式</div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
           </div>
@@ -210,13 +191,14 @@
           <div class="mooc-grid">
             <div class="mooc-card" v-for="m in MOOC_MODULES" :key="m.key" @click="goMoocModule(m.key)">
               <span class="mooc-bar" :style="{ background: m.color }"></span>
-              <span class="mooc-icon" :style="{ background: m.tint, color: m.color }">
-                <i class="fa-solid" :class="m.icon"></i>
-              </span>
-              <span class="mooc-body">
-                <span class="mooc-title">{{ m.title }}</span>
-                <span class="mooc-course">共 {{ m.courses.length }} 门课程 · 点击查看</span>
-              </span>
+              <div class="mooc-card-top">
+                <span class="mooc-icon" :style="{ background: m.tint, color: m.color }">
+                  <i class="fa-solid" :class="m.icon"></i>
+                </span>
+                <span class="mooc-tag">MOOC</span>
+              </div>
+              <div class="mooc-title">{{ m.title }}</div>
+              <div class="mooc-course">{{ platformText(m) }}</div>
               <i class="fa-solid fa-chevron-right mooc-arrow"></i>
             </div>
           </div>
@@ -470,21 +452,12 @@ function goMDT() {
   router.push({ name: 'mdtCaseList' })
 }
 
-function goExam() {
-  window.open('https://examon.mvwchina.com/', '_blank', 'noopener,noreferrer')
-}
-
-// 考核评价的三个子项：AI问诊考核与理论考试跳外部考核端，影像报告书写考核跳本模块考核模式
-function goInterviewExam() {
-  window.open('https://aisp.mvwchina.com/training-pad/', '_blank', 'noopener,noreferrer')
+function goExamCenter() {
+  router.push({ name: 'examCenter' })
 }
 
 function goReportWriting() {
   router.push({ name: 'reportWriting', params: { mode: 'train' } })
-}
-
-function goReportExam() {
-  router.push({ name: 'reportWriting', params: { mode: 'exam' } })
 }
 
 // 角标 = 各分类下导师病例示例总数
@@ -519,6 +492,12 @@ function openVRLab() {
 
 function goMoocModule(key) {
   router.push({ name: 'moocModule', params: { module: key } })
+}
+
+// 模块卡副标题：课程平台（去重、去掉 SPOC 后缀）+ 课程门数
+function platformText(m) {
+  const names = [...new Set(m.courses.map(c => c.platform.split(' · ')[0]))]
+  return `${names.join(' / ')} · ${m.courses.length} 门课程`
 }
 
 function goRecords() {
@@ -856,40 +835,28 @@ onMounted(() => {
 .zone-body { padding: 14px 18px; }
 
 /* ─── 快速入口 ─── */
-.quick-entries { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 12px; }
+.quick-entries { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .entry-card {
-  background: #fafbfc; border-radius: 10px; padding: 11px 13px;
-  border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s;
-  display: flex; align-items: center; gap: 10px;
+  background: #fafbfc; border-radius: 12px; padding: 16px;
+  border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s; position: relative;
+  display: flex; flex-direction: column; gap: 12px;
 }
-.entry-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff; }
+.entry-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); background: #fff; }
+.entry-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .entry-icon-wrapper {
-  width: 32px; height: 32px; border-radius: 9px;
+  width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.entry-icon { font-size: 15px; }
-.entry-info { flex: 1; min-width: 0; }
-.entry-title { font-size: 13px; font-weight: 600; color: #1f2937; line-height: 1.4; }
-.entry-desc {
-  font-size: 11px; color: #6b7280; margin-top: 2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.entry-icon { font-size: 20px; }
+.entry-info { flex: 1; min-width: 0; padding-right: 14px; }
+.entry-title { font-size: 15px; font-weight: 700; color: #1f2937; line-height: 1.4; margin-bottom: 4px; }
+.entry-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
 .entry-badge {
-  font-size: 10px; padding: 2px 8px; border-radius: 8px;
-  font-weight: 500; flex-shrink: 0; white-space: nowrap;
+  font-size: 11px; padding: 3px 9px; border-radius: 8px;
+  font-weight: 600; flex-shrink: 0; white-space: nowrap;
 }
-.entry-arrow { flex-shrink: 0; color: #d1d5db; font-size: 10px; transition: color .2s; }
+.entry-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: color .2s; }
 .entry-card:hover .entry-arrow { color: #6b7280; }
-/* 「技能训练」/「考核评价」分组小标题，横跨整个网格 */
-.entry-group-label {
-  grid-column: 1 / -1;
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; font-weight: 600; color: #9ca3af;
-}
-.entry-group-label:not(:first-child) { margin-top: 4px; }
-.entry-group-label::before {
-  content: ''; width: 3px; height: 12px; border-radius: 2px; background: #d1d5db;
-}
 
 /* ─── 名医名课研习 ─── */
 .elite-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -920,31 +887,32 @@ onMounted(() => {
 .elite-vr:hover { border-color: #0d9488; }
 
 /* ─── 慕课四个模块 ─── */
-.mooc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 12px; margin-top: 12px; }
+.mooc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
 .mooc-card {
-  position: relative; display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px 10px 15px; border-radius: 10px; cursor: pointer;
+  position: relative; display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 14px 14px 16px; border-radius: 12px; cursor: pointer;
   background: #fff; border: 1px solid #f0f2f5; overflow: hidden;
   transition: all .2s;
 }
 .mooc-card:hover { border-color: #dbe3ef; box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); }
 .mooc-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.mooc-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mooc-icon {
-  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; font-size: 14px;
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; font-size: 20px;
   display: flex; align-items: center; justify-content: center;
 }
-.mooc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mooc-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: .6px; font-family: 'Inter', sans-serif;
+  color: #fff; background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
+}
 /* 模块名——院方要求用黑体，需覆盖全局 Inter 字体 */
 .mooc-title {
   font-family: 'SimHei', 'Heiti SC', 'Microsoft YaHei', sans-serif;
-  font-size: 13.5px; font-weight: 700; color: #1f2937; letter-spacing: .3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 14px; font-weight: 700; color: #1f2937; letter-spacing: .3px;
 }
-.mooc-course {
-  font-size: 11px; color: #9ca3af;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.mooc-arrow { flex-shrink: 0; color: #d1d5db; font-size: 10px; transition: color .2s; }
+.mooc-course { font-size: 11px; color: #9ca3af; line-height: 1.5; padding-right: 14px; }
+.mooc-arrow { position: absolute; right: 14px; bottom: 14px; color: #d1d5db; font-size: 11px; transition: color .2s; }
 .mooc-card:hover .mooc-arrow { color: #6b7280; }
 
 /* ─── 科室入口 ─── */

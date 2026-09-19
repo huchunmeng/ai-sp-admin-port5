@@ -181,6 +181,8 @@ const crumbs = computed(function() {
         : (lang === 'zh' ? '影像报告书写训练' : 'Report Writing'),
       to: null
     })
+  } else if (name === 'examCenter') {
+    items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: null })
   } else if (name === 'moocModule') {
     const mmod = MOOC_MODULES.find(m => m.key === route.params.module)
     items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: 'home' } })

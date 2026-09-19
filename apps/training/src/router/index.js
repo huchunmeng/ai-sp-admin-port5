@@ -33,6 +33,7 @@ const routes = [
       { path: 'mentor/:category', name: 'mentorCases', component: () => import('@/views/MentorCaseView.vue') },
       { path: 'report-writing/:mode?', name: 'reportWriting', component: () => import('@/views/ReportWriting.vue') },
       { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },
+      { path: 'exam-center', name: 'examCenter', component: () => import('@/views/ExamCenter.vue') },
     ]
   }
 ]
