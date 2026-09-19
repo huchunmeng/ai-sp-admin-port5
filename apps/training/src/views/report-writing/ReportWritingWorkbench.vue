@@ -26,35 +26,33 @@
         <NotesPanel :notes="state.viewNotes" @update:notes="v => state.viewNotes = v" />
       </div>
 
-      <!-- 右侧：AI伴学 -->
-      <CompanionPanel :hints="state.hints" :used-hint-count="usedHintCount" :loading="state.hintLoading"
+      <!-- 右侧：AI伴学（对话式） -->
+      <CompanionPanel :messages="state.chat" :loading="state.chatLoading"
                       :segments="segments" :active-segment="state.activeSegment"
-                      :quota-left="quotaLeft" :cooling-left="coolingLeft"
-                      @update:activeSegment="setActiveSegment" @hint="onHint" />
+                      @update:activeSegment="setActiveSegment" @ask="onAsk" />
     </div>
 
     <!-- 底部操作区 -->
     <div class="rww-foot">
       <div class="rww-foot-left">
-        <span class="rww-stage-hint">{{ phaseHint }}</span>
         <span v-if="!inReview && !canSubmit" class="text-error">{{ submitBlockReason }}</span>
-        <span v-if="totalOver" class="text-error">单例三段合计超过 {{ TOTAL_LIMIT }} 字上限，请精简后再提交</span>
+        <span v-if="totalOver" class="text-error">超出字数上限</span>
       </div>
       <div class="rww-foot-right">
         <template v-if="!inReview">
           <button class="btn btn-primary" :disabled="!canSubmit" @click="onSubmit">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> 提交报告，开始 AI 评阅
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 提交报告
           </button>
         </template>
         <template v-else>
           <button class="btn" @click="onRewrite">
-            <i class="fa-solid fa-rotate-left"></i> 返回修改报告
+            <i class="fa-solid fa-rotate-left"></i> 返回修改
           </button>
           <button class="btn" @click="onRestartRound">
-            <i class="fa-solid fa-forward"></i> 重练（新回合）
+            <i class="fa-solid fa-forward"></i> 重练
           </button>
           <button class="btn btn-primary" @click="backToList">
-            完成，返回列表 <i class="fa-solid fa-check"></i>
+            完成 <i class="fa-solid fa-check"></i>
           </button>
         </template>
       </div>
@@ -95,18 +93,12 @@ const {
   state, inReview, phases, segments,
   totalChars, totalOver, TOTAL_LIMIT,
   canSubmit, submitBlockReason,
-  usedHintCount, quotaLeft, coolingLeft, requestHint, setActiveSegment,
+  askCompanion, setActiveSegment,
   toReview, backToWrite, restartRound,
   scoring, scoringRunning, runScoring, fileAppeal
 } = session
 
-const PHASE_HINT = {
-  write: '三段报告同时可写，不必按顺序推进；卡住了用右侧「AI伴学」要点提示',
-  review: 'AI 按评分要点集逐条判定你的报告内容；下方可与参考报告逐段对照'
-}
-
 const phaseIndex = computed(() => (inReview.value ? 1 : 0))
-const phaseHint = computed(() => PHASE_HINT[inReview.value ? 'review' : 'write'])
 
 onMounted(() => {
   if (!raw) { toast.show('未找到该病例', 'error'); router.replace({ name: 'reportWritingTrain' }); return }
@@ -118,34 +110,28 @@ function onSegmentInput(key, val) {
 }
 
 function onCopy(text, segment) {
-  // 复制进指定段（一般信息条默认进「一般信息」段）；复制只是省打字，照抄不得满分（GEN-04）
+  // 复制进指定段（一般信息条默认进「一般信息」段）
   const key = segment || state.activeSegment || 'general'
   const cur = state.draft[key] || ''
   state.draft[key] = cur ? `${cur}\n${text}` : text
   setActiveSegment(key)
 }
 
-/** 提交报告 → 进入评分与对照（评分由 session 自动发起，此处只做确认与滚动） */
+/** 提交报告 → 进入评分与对照（评分由 session 自动发起） */
 function onSubmit() {
   if (!canSubmit.value) { toast.show(submitBlockReason.value, 'warning'); return }
-  confirm('提交报告并开始 AI 评阅？模型会按本题评分要点集逐条判定，约需 10–40 秒；提交后仍可返回修改。')
-    .then(ok => {
-      if (!ok) return
-      const r = toReview()
-      if (!r.ok) { toast.show(r.reason || '无法提交', 'warning'); return }
-      setTimeout(() => document.querySelector('#score-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
-    })
-    .catch(() => {})
+  const r = toReview()
+  if (!r.ok) { toast.show(r.reason || '无法提交', 'warning'); return }
+  setTimeout(() => document.querySelector('#score-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
 }
 
 function onGoPhase(i) {
   if (i === 0 && inReview.value) backToWrite()
 }
 
-async function onHint(level) {
-  const r = await requestHint(level)
-  if (r.ok) { toast.show(`AI伴学已给出 ${level} 提示`, 'success'); return }
-  toast.show(r.degraded ? `${r.reason}（配额已退还）` : r.reason, r.degraded ? 'warning' : 'warning')
+async function onAsk(question) {
+  const r = await askCompanion(question)
+  if (r && r.ok === false && r.reason === 'llm') toast.show('模型没连上，稍后再问', 'warning')
 }
 
 function onRewrite() { backToWrite() }
@@ -153,8 +139,8 @@ function onRewrite() { backToWrite() }
 async function onScore() {
   if (scoringRunning.value) return
   const r = await runScoring()
-  if (r.ok) toast.show(`AI 评阅完成：${r.result.rawTotal} / ${r.result.scoreableMax}`, 'success')
-  else toast.show('评分失败：' + (r.reason || '未知原因') + '（可重试）', 'warning')
+  if (r.ok) toast.show('评阅完成', 'success')
+  else toast.show('评分失败，可重试', 'warning')
 }
 
 function onAppeal(reason) {
@@ -163,10 +149,10 @@ function onAppeal(reason) {
 }
 
 function onRestartRound() {
-  confirm('开始新一轮（重练）？本回合记录会保留可回看，AI伴学配额将重置。').then(ok => {
+  confirm('开始新一轮？本轮报告与对话记录将清空。').then(ok => {
     if (!ok) return
     restartRound()
-    toast.show('新回合已开始', 'success')
+    toast.show('已开始新一轮', 'success')
   }).catch(() => {})
 }
 
@@ -186,8 +172,7 @@ function backToList() {
   background: rgba(255,255,255,.96); backdrop-filter: blur(6px);
   border: 1px solid #f0f2f5; box-shadow: 0 -2px 12px rgba(0,0,0,.05);
 }
-.rww-foot-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
-.rww-stage-hint { font-size: 12.5px; color: #6b7280; }
+.rww-foot-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; font-size: 12.5px; }
 .rww-foot-right { display: flex; gap: 8px; margin-left: auto; }
 @media (max-width: 1100px) {
   .rww-body { flex-direction: column; }

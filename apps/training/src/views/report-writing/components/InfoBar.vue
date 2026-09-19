@@ -27,10 +27,6 @@
         </button>
       </div>
     </div>
-
-    <div v-if="open" class="rwb-note">
-      复制只是省打字，<b>照抄不得满分</b>——GEN-04（10 分）要求规范转述临床主要信息与检查目的。
-    </div>
   </section>
 </template>
 

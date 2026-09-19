@@ -27,9 +27,9 @@ export {
 } from './scoring.js'
 export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, DEFAULT_VIEWS, VIEW_CANDIDATES, viewMeta } from './samples.js'
 export {
-  HINT_LEVELS, DEFAULT_QUOTA, HINT_COOLDOWN_MS,
-  L1_HINTS, DEGRADED_HINT, MAX_COMMON_SUBSTRING,
-  extractFactWords, longestCommonSubstring, checkRedline, buildCompanionPrompt
+  MAX_COMMON_SUBSTRING, GUIDE_FALLBACK, SEGMENT_GUIDE,
+  extractFactWords, longestCommonSubstring, checkRedline,
+  buildCompanionPrompt, goldFullTextOf
 } from './companion.js'
 
 import { IMAGING_SAMPLES, viewMeta } from './samples.js'

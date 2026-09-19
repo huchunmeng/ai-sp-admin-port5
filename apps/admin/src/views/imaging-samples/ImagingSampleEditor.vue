@@ -1,6 +1,6 @@
 <template>
   <div class="case-editor is-editor">
-    <!-- 头部：动作按钮放这里（顶部固定头），避开全局评审批注浮条常驻的右下角 -->
+    <!-- 头部：动作按钮在顶部固定头（避开全局评审批注浮条常驻的右下角） -->
     <div class="editor-header">
       <div class="header-left">
         <h2 class="editor-title">{{ isNew ? '新建病例' : '编辑病例' }}</h2>
@@ -11,14 +11,25 @@
       <div class="header-right">
         <button class="btn btn-outline" @click="router.push({ name: 'imagingSamples' })">返回</button>
         <button class="btn" @click="save('draft')">保存草稿</button>
-        <button class="btn btn-primary" @click="save('published')">发布</button>
+        <button class="btn btn-primary" :disabled="!canPublish" @click="save('published')">发布</button>
+      </div>
+    </div>
+
+    <!-- 步骤条 -->
+    <div class="is-steps">
+      <div v-for="(s, i) in STEPS" :key="s.key" class="is-step"
+           :class="{ active: i === step, done: i < step }" @click="go(i)">
+        <span class="is-step-no">
+          <i v-if="i < step" class="fa-solid fa-check"></i>
+          <span v-else>{{ i + 1 }}</span>
+        </span>
+        <span class="is-step-label">{{ s.label }}</span>
       </div>
     </div>
 
     <div class="is-body">
-      <!-- 基本信息 -->
-      <div class="card mb-4" data-reviewable="基本信息">
-        <div class="section-head"><span class="section-head-title">基本信息</span></div>
+      <!-- ① 基本信息 -->
+      <div v-show="step === 0" class="card" data-reviewable="基本信息">
         <div class="is-meta">
           <div class="filter-item" style="grid-column:span 2">
             <label>病例标题<span>*</span></label>
@@ -41,80 +52,46 @@
         </div>
       </div>
 
-      <!-- ① 影像序列入库 -->
-      <div class="card mb-4" data-reviewable="影像序列入库">
-        <div class="section-head">
-          <span class="section-head-title">① 影像序列入库</span>
-          <span class="text-secondary" style="font-size:12px">
-            序列数量与名称自定义（1 个不嫌少、5 个不嫌多）· 前端解包 · 单视图 ≤ 300 张 / 单张 ≤ 5 MB / 仅 jpg·png
-          </span>
-        </div>
+      <!-- ② 影像序列 -->
+      <div v-show="step === 1" class="card" data-reviewable="影像序列">
         <SeriesUploader v-model="form.seriesFrames" v-model:views="form.views" />
       </div>
 
-      <!-- ② 脱敏信息 -->
-      <div class="card mb-4" data-reviewable="脱敏信息">
-        <div class="section-head">
-          <span class="section-head-title">② 脱敏信息</span>
-          <span class="text-secondary" style="font-size:12px">录入脱敏后的展示值，系统硬校验格式</span>
-        </div>
+      <!-- ③ 脱敏信息 -->
+      <div v-show="step === 2" class="card" data-reviewable="脱敏信息">
         <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:clinicalBrief="form.clinicalBrief" />
       </div>
 
-      <!-- ③ 能力位声明 -->
-      <div class="card mb-4" data-reviewable="能力位声明">
-        <div class="section-head">
-          <span class="section-head-title">③ 能力位声明</span>
-          <span class="text-secondary" style="font-size:12px">决定哪些评分要点可评 —— 后果当场可见</span>
-        </div>
+      <!-- ④ 能力位 -->
+      <div v-show="step === 3" class="card" data-reviewable="能力位">
         <CapabilityPanel v-model="form.capabilities" />
       </div>
 
-      <!-- ④ 金标准报告 -->
-      <div class="card mb-4" data-reviewable="金标准报告">
-        <div class="section-head">
-          <span class="section-head-title">④ 金标准报告</span>
-          <span class="text-secondary" style="font-size:12px">三段式 · 字段规则与训练端同值同规则 · 三段皆非空方可发布</span>
-        </div>
+      <!-- ⑤ 金标准报告 -->
+      <div v-show="step === 4" class="card" data-reviewable="金标准报告">
         <GoldStandardForm v-model="form.goldStandard" />
       </div>
 
-      <!-- ⑤ 评分要点集 -->
-      <div class="card mb-4" data-reviewable="评分要点集">
-        <div class="section-head">
-          <span class="section-head-title">⑤ 评分要点集</span>
-          <span class="text-secondary" style="font-size:12px">
-            LLM 评分的判据 —— 按要点命中判分，而不是拿学员报告跟范文比相似度
-          </span>
-        </div>
+      <!-- ⑥ 评分要点集 -->
+      <div v-show="step === 5" class="card" data-reviewable="评分要点集">
         <RubricPanel v-model="form.rubric" :sample="rubricSample" />
-      </div>
-
-      <!-- 版本与审计 -->
-      <div class="card mb-4" data-reviewable="版本与审计">
-        <div class="section-head"><span class="section-head-title">版本与审计</span></div>
-        <div class="is-audit">
-          <div>创建：{{ form.createdAt || '—' }} · {{ form.createdBy || '—' }}</div>
-          <div>最近改动：{{ form.updatedAt || '—' }} · {{ form.updatedBy || '—' }}</div>
-          <div>发布：{{ form.publishedAt || '（未发布）' }}</div>
-          <div class="text-secondary" style="line-height:1.9;margin-top:6px">
-            改<b>草稿</b>样本原地修改、版本不变；改<b>已发布 / 已停用</b>样本强制新建版本（版本 +1），
-            原版本保留可回查 —— 已发布的考核任务锁在派发时刻的样本版本上，不随改动变化。
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- 页脚：实时派生量读出（动作按钮在顶部固定头，此处只读） -->
+    <!-- 页脚：步骤导航 + 实时可评分 -->
     <div class="is-foot">
       <div class="is-foot-left">
-        <span>本样本可评分</span>
+        <button class="btn" :disabled="step === 0" @click="go(step - 1)">
+          <i class="fa-solid fa-chevron-left"></i> 上一步
+        </button>
+        <button class="btn" :disabled="step === STEPS.length - 1" @click="go(step + 1)">
+          下一步 <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+      <div class="is-foot-right">
+        <span>可评分</span>
         <b :class="liveScoreable >= 85 ? 'text-primary' : 'text-warning'">{{ liveScoreable }}</b>
         <span class="text-secondary"> / 100</span>
-        <span v-if="liveScoreable < 85" class="badge badge-warning" style="margin-left:8px">低于发布下限 85</span>
-        <span class="text-secondary" style="margin-left:10px">
-          不可评 {{ liveUnassessable.length }} 条 · 其分值自分母剔除、不按 0 分计
-        </span>
       </div>
     </div>
   </div>
@@ -135,17 +112,34 @@ import { blankSample, getSample, upsertSample, nextSampleId, now, loadSamples } 
 const props = defineProps({ id: { type: String, default: '' } })
 const router = useRouter()
 
+const STEPS = [
+  { key: 'basic', label: '基本信息' },
+  { key: 'series', label: '影像序列' },
+  { key: 'deidentify', label: '脱敏信息' },
+  { key: 'capability', label: '能力位' },
+  { key: 'gold', label: '金标准报告' },
+  { key: 'rubric', label: '评分要点集' }
+]
+
+const step = ref(0)
 const isNew = computed(() => !props.id)
 const form = ref(loadForm())
 const deidentifyRef = ref(null)
 
-/** 要点集面板需要完整样本（金标准 + 能力位）才能解析与抽取 */
 const rubricSample = computed(() => ({ ...form.value, capabilities: form.value.capabilities }))
-
-/** 页脚可评分随能力位与要点集**实时现算**（PRD §5.12.5「后果当场可见」） */
 const liveResolved = computed(() => resolveRubric(form.value.id || '__new__', form.value.capabilities))
 const liveScoreable = computed(() => liveResolved.value.scoreableMax)
-const liveUnassessable = computed(() => liveResolved.value.unassessable)
+
+const goldFilled = computed(() => {
+  const g = form.value.goldStandard || {}
+  return ['technique', 'findings', 'impression'].every(k => String(g[k] || '').trim().length > 0)
+})
+const rubricFilled = computed(() => Object.keys(form.value.rubric?.items || {}).length > 0)
+const canPublish = computed(() => goldFilled.value && rubricFilled.value)
+
+function go(i) {
+  step.value = Math.min(STEPS.length - 1, Math.max(0, i))
+}
 
 function loadForm() {
   loadSamples()
@@ -157,25 +151,14 @@ function loadForm() {
   return blankSample()
 }
 
-/**
- * 保存。`draft` 只校验脱敏格式与标题；`published` 额外要求三段金标准皆非空。
- * 改已发布/已停用样本走**新建版本**（PRD §5.12.8）。
- */
 function save(target) {
   const problems = deidentifyRef.value ? deidentifyRef.value.validate() : []
-  if (problems.length) { toast.show(`脱敏信息不合规：${problems[0]}`, 'error'); return }
-  if (!String(form.value.title || '').trim()) { toast.show('请先填写病例标题', 'warning'); return }
-
-  const gold = form.value.goldStandard || {}
-  const goldFilled = ['technique', 'findings', 'impression'].every(k => String(gold[k] || '').trim().length > 0)
-  if (target === 'published' && !goldFilled) { toast.show('三段金标准皆非空方可发布', 'warning'); return }
-  if (target === 'published' && !Object.keys(form.value.rubric?.items || {}).length) {
-    toast.show('发布前请先维护评分要点集（可用「AI 从金标准抽取」生成一版）', 'warning')
-    return
-  }
+  if (problems.length) { toast.show(problems[0], 'error'); step.value = 2; return }
+  if (!String(form.value.title || '').trim()) { toast.show('请填写病例标题', 'warning'); step.value = 0; return }
+  if (target === 'published' && !goldFilled.value) { toast.show('三段金标准皆非空方可发布', 'warning'); step.value = 4; return }
+  if (target === 'published' && !rubricFilled.value) { toast.show('请先维护评分要点集', 'warning'); step.value = 5; return }
 
   const row = { ...form.value, capabilities: { ...form.value.capabilities } }
-
   const existing = props.id ? getSample(props.id) : null
   const wasLive = existing && existing.status !== 'draft'
 
@@ -184,12 +167,11 @@ function save(target) {
     row.createdAt = now()
     row.createdBy = '管理端'
   } else if (wasLive) {
-    confirm(`「${row.title}」当前为${SAMPLE_STATUS[existing.status].label}状态，保存将新建版本 v${existing.version + 1}（原版本保留可回查）。当前有 0 个未结束任务引用该病例的旧版本，它们不会随本次改动变化。是否继续？`)
+    confirm(`「${row.title}」当前为${SAMPLE_STATUS[existing.status].label}状态，保存将新建版本 v${existing.version + 1}（原版本保留可回查）。是否继续？`)
       .then(ok => { if (ok) commit(row, target, true) })
       .catch(() => {})
     return
   }
-
   commit(row, target, false)
 }
 
@@ -202,24 +184,42 @@ function commit(row, target, isRev) {
 
   const saved = upsertSample(row)
   form.value = saved
-
   if (props.id !== saved.id) router.replace({ name: 'imagingSampleEditor', params: { id: saved.id } })
-  toast.show(target === 'published' ? '病例已发布' : '草稿已保存', 'success')
+  toast.show(target === 'published' ? '已发布' : '草稿已保存', 'success')
 }
 </script>
 
 <style scoped>
-/* 仅供本页的少量形态；外壳（.case-editor / .editor-header / .section-head）与按钮、表单、徽章、
-   表格一律走 global.css 既有类 */
 .is-body { padding: 16px 24px 0; }
 .is-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; align-items: end; }
-.is-audit { font-size: 12.5px; line-height: 2; color: var(--text-main); }
+
+.is-steps {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 12px 24px; background: var(--card-bg); border-bottom: 1px solid var(--border);
+}
+.is-step {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  font-size: 12.5px; color: var(--text-secondary);
+  padding: 5px 12px 5px 7px; border-radius: 999px; transition: all .15s;
+}
+.is-step:hover { background: #F0F7FF; }
+.is-step.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.is-step.done { color: var(--success); }
+.is-step-no {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: #E4E7ED; color: #909399; font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.is-step.active .is-step-no { background: var(--primary); color: #fff; }
+.is-step.done .is-step-no { background: var(--success); color: #fff; }
+
 .is-foot {
   position: sticky; bottom: 0; z-index: 15;
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 24px; background: var(--card-bg); border-top: 1px solid var(--border);
   box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.04);
 }
-.is-foot-left { display: flex; align-items: baseline; gap: 6px; font-size: 13px; }
-.is-foot-left b { font-size: 20px; }
+.is-foot-left { display: flex; gap: 8px; }
+.is-foot-right { display: flex; align-items: baseline; gap: 6px; font-size: 13px; }
+.is-foot-right b { font-size: 18px; }
 </style>

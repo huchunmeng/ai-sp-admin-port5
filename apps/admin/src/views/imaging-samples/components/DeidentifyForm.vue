@@ -18,10 +18,6 @@
       </div>
     </div>
 
-    <div class="is-tip">
-      <b>GEN-02 强制全掩的理由</b>：它是<b>甲类不可评</b>——对所有样本一致，故锁死为常量、界面不提供开关。
-      若给开关，一旦误开该条即变为可评，评分分母随之漂移、跨卷不可比。
-    </div>
     <div v-if="missing.length || Object.keys(errors).length" class="is-invalid">
       <div v-for="(p, i) in missing" :key="'m' + i"><i class="fa-solid fa-circle-exclamation"></i> {{ p }}</div>
       <div v-for="(p, k) in errors" :key="'e' + k"><i class="fa-solid fa-circle-exclamation"></i> {{ FIELDS.find(f => f.key === k).label }}：{{ p }}</div>

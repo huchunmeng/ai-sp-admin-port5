@@ -48,19 +48,20 @@
           </template>
           <template v-else>
             <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:#c0c4cc"></i>
-            <div style="font-size:13px;margin:6px 0">拖入「{{ view.name }}」压缩包，或</div>
+            <div style="font-size:13px;margin:6px 0">拖入「{{ view.name }}」图片或压缩包</div>
             <div class="flex gap-2">
-              <button class="btn btn-sm" @click="pick(view.key)">选择 zip 文件</button>
-              <button class="btn btn-sm" @click="useBuiltin(view.key)">使用内置样例序列</button>
+              <button class="btn btn-sm" @click="pick(view.key)">选择图片</button>
+              <button class="btn btn-sm" @click="pickZip(view.key)">选择 zip</button>
+              <button class="btn btn-sm" @click="useBuiltin(view.key)">样例序列</button>
             </div>
-            <div class="text-secondary" style="font-size:11px;margin-top:8px;text-align:center">
-              仅收 JPG / PNG 图片序列（老师先从 PACS 导出为图片再打包），本期不解析 DICOM
-            </div>
+            <div class="text-secondary" style="font-size:11px;margin-top:8px;text-align:center">jpg / png，单视图 ≤ 300 张、单张 ≤ 5 MB</div>
           </template>
         </div>
 
-        <input :ref="el => setInputRef(view.key, el)" type="file" accept=".zip,application/zip" style="display:none"
-               @change="onPick($event, view.key)">
+        <input :ref="el => setInputRef(view.key, el)" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple style="display:none"
+               @change="onPickImages($event, view.key)">
+        <input :ref="el => setZipRef(view.key, el)" type="file" accept=".zip,application/zip" style="display:none"
+               @change="onPickZip($event, view.key)">
       </div>
 
       <!-- 添加视图 -->
@@ -69,13 +70,12 @@
           <i class="fa-solid fa-plus"></i> 添加视图
         </button>
         <span class="text-secondary" style="font-size:11.5px;display:block;margin-top:8px;line-height:1.8">
-          本病例有几个序列/方位就建几个，名称也可自己改——<b>没有"必须三视图"的要求</b>。
-          多序列 MR 按 DWI/ADC/T2WI… 分，增强 CT 按期相分，DR 平片按正/侧位分（每体位通常 1 帧）。
+          有几个序列/方位就建几个，名称可改
         </span>
 
         <div v-if="addOpen" class="is-add-panel">
           <div class="is-add-row">
-            <input class="input" v-model.trim="customName" placeholder="自定义视图名称，如 T2WI 脂肪抑制"
+            <input class="input" v-model.trim="customName" placeholder="自定义视图名称"
                    style="flex:1" @keyup.enter="addCustom">
             <button class="btn btn-sm btn-primary" :disabled="!customName" @click="addCustom">添加</button>
           </div>
@@ -120,8 +120,10 @@ const dragFrom = ref(null)
 const addOpen = ref(false)
 const customName = ref('')
 const inputEls = {}
+const zipEls = {}
 
 const setInputRef = (key, el) => { if (el) inputEls[key] = el }
+const setZipRef = (key, el) => { if (el) zipEls[key] = el }
 const framesOf = key => props.modelValue[key] || []
 
 const availableCandidates = computed(() =>
@@ -209,15 +211,60 @@ function pick(key) {
   if (input) { input.value = ''; input.click() }
 }
 
-function onPick(e, key) {
+function pickZip(key) {
+  const input = zipEls[key]
+  if (input) { input.value = ''; input.click() }
+}
+
+function onPickImages(e, key) {
+  const files = [...(e.target.files || [])]
+  if (files.length) ingestFiles(files, key)
+}
+
+function onPickZip(e, key) {
   const file = e.target.files && e.target.files[0]
   if (file) ingest(file, key)
 }
 
 function onDrop(e, key) {
   dragOver.value = ''
-  const file = e.dataTransfer.files && e.dataTransfer.files[0]
-  if (file) ingest(file, key)
+  const files = [...(e.dataTransfer.files || [])]
+  if (!files.length) return
+  // 拖入单个 zip 走解包；拖入多张图片直接进序列
+  if (files.length === 1 && /\.zip$/i.test(files[0].name)) ingest(files[0], key)
+  else ingestFiles(files, key)
+}
+
+/** 校验一组图片并落成序列（不打包也能用） */
+function ingestFiles(files, key) {
+  errors.value = []
+  const name = (props.views.find(v => v.key === key) || {}).name || key
+  const images = files.filter(f => OK_EXT.test(f.name))
+  const skipped = files.filter(f => !OK_EXT.test(f.name))
+  if (!images.length) {
+    errors.value.push(`「${name}」没有可用的 jpg / png 图片；本序列未改动`)
+    return
+  }
+  if (images.length > MAX_FRAMES) {
+    errors.value.push(`选了 ${images.length} 张，超出单视图上限 ${MAX_FRAMES} 张；本序列未改动`)
+    return
+  }
+  const oversized = []
+  const frames = []
+  images.forEach(f => {
+    if (f.size > MAX_BYTES) { oversized.push(f.name); return }
+    frames.push({ name: f.name, size: f.size, url: URL.createObjectURL(f), order: null })
+  })
+  if (oversized.length) errors.value.push(`超过单张 5 MB 已跳过：${oversized.slice(0, 3).join('、')}${oversized.length > 3 ? ` 等 ${oversized.length} 张` : ''}`)
+  if (skipped.length) errors.value.push(`非 jpg / png 已忽略：${skipped.slice(0, 3).map(f => f.name).join('、')}`)
+  if (!frames.length) { errors.value.push('没有可用的图片；本序列未改动'); return }
+  setList(key, sortFrames(frames))
+}
+
+/** 文件名自然序：1.jpg < 2.jpg < 10.jpg */
+function sortFrames(frames) {
+  const byName = Object.fromEntries(frames.map(f => [f.name, f]))
+  return naturalSort(frames.map(f => f.name)).map((n, i) => ({ ...byName[n], order: i + 1 }))
 }
 
 /**
@@ -263,10 +310,7 @@ async function ingest(file, key) {
     errors.value.push(`以下图片超过单张 5 MB 上限，已跳过：${oversized.slice(0, 3).join('、')}${oversized.length > 3 ? ` 等 ${oversized.length} 张` : ''}`)
   }
   if (!frames.length) { errors.value.push('没有可用的图片；本序列未改动'); return }
-
-  const byName = Object.fromEntries(frames.map(f => [f.name, f]))
-  const sorted = naturalSort(frames.map(f => f.name)).map((n, i) => ({ ...byName[n], order: i + 1 }))
-  setList(key, sorted)
+  setList(key, sortFrames(frames))
 }
 
 /** Q2 未答复时的兜底：绑定系统内置样例序列（PRD §5.12.3「兜底」） */

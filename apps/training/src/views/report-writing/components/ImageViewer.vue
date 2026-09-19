@@ -3,7 +3,7 @@
     <div class="rwb-block-head">
       <i class="fa-solid fa-image"></i> 影像显示控件
       <span class="rwb-tag">{{ sample.modality }} · {{ views.length }} 个序列 / 共 {{ totalFrames }} 帧</span>
-      <span class="rwb-cap">滚轮 / ↑↓ 键 / 上一张·下一张 翻层面 · 调窗 ✗ · 测量 ✗ · 序列互不联动</span>
+      <span class="rwb-cap">滚轮 / ↑↓ 翻层面</span>
     </div>
 
     <!-- 序列切换：数量随病例变（DR 只有正/侧位，MR 可能有五个序列） -->
@@ -56,11 +56,7 @@
       </div>
     </div>
 
-    <div class="rwb-note">
-      本期为界面骨架：影像本体待院方提供真实样本后接入（系统内置数据，非实时调阅 PACS）。
-      上方为<b>演示占位图</b>，会随层面号变化以便验证翻页交互；接入真实序列后同一套控件直接渲染真实像素。
-      调窗 / 测量 / MPR 等进阶能力归影像教学底座（§9.4 本期不做）。
-    </div>
+    <div class="rwb-note">影像待接入</div>
   </section>
 </template>
 

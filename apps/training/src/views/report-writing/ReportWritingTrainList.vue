@@ -4,19 +4,18 @@
     <div class="rwt-hero">
       <div class="rwt-hero-left">
         <h2><i class="fa-solid fa-graduation-cap"></i> 影像报告书写训练</h2>
-        <p>自由挑病例，按 T0–T4 分阶段推进；卡住了可要三级提示，写完先自评再看参考报告</p>
+        <p>挑一个病例开始写报告</p>
       </div>
       <div class="rwt-hero-stats">
         <div class="rwt-stat"><strong>{{ cards.length }}</strong><span>可练病例</span></div>
         <div class="rwt-stat"><strong>{{ trainedCount }}</strong><span>已练过</span></div>
-        <div class="rwt-stat"><strong>23</strong><span>评分条目</span></div>
       </div>
     </div>
 
     <!-- 继续上次 -->
     <div v-if="unfinished" class="rwt-resume">
       <i class="fa-solid fa-clock-rotate-left"></i>
-      <span>继续上次：<b>{{ unfinished.title }}</b>（停在 {{ unfinished.stageName }}）</span>
+      <span>继续上次：<b>{{ unfinished.title }}</b></span>
       <button class="btn btn-primary btn-sm" @click="open(unfinished.sample)">继续</button>
     </div>
 
@@ -141,23 +140,18 @@ const grouped = computed(() => {
 
 const trainedCount = computed(() => cards.value.filter(c => c.trainedRounds > 0).length)
 
-/** 未完成草稿的断点（PRD §5.3 顶部条）——本地会话里 stageIndex 未到 T4 即算未完成 */
+/** 未完成草稿的断点（本地会话里 phase 还是 write 且有内容） */
 const unfinished = computed(() => {
   const raw = localStorage.getItem('report_writing_session_v1')
   if (!raw) return null
   let store
   try { store = JSON.parse(raw) } catch (e) { return null }
-  const stageNames = ['T0 阅片', 'T1 检查技术', 'T2 影像所见', 'T3 诊断意见', 'T4 对照自评']
   for (const s of TRAINING_CASES) {
     const sess = store[s.id]
-    if (!sess || sess.selfSubmitted) continue
+    if (!sess || sess.phase === 'review') continue
     const touched = Object.values(sess.draft || {}).some(v => String(v).trim())
     if (!touched && !sess.viewNotes) continue
-    return {
-      sample: s,
-      title: s.title,
-      stageName: stageNames[sess.stageIndex] || 'T0 阅片'
-    }
+    return { sample: s, title: s.title }
   }
   return null
 })

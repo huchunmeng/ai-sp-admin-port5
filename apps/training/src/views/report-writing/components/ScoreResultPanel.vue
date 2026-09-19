@@ -2,18 +2,15 @@
   <section id="score-result" class="card rwb-block">
     <div class="rwb-block-head">
       <i class="fa-solid fa-clipboard-check"></i> AI 评阅结果
-      <span class="rwb-tag">按 R1 表 {{ result ? result.items.length : 23 }} 条逐条判定</span>
-      <span class="rwb-cap">内容评分由大模型完成 · 训练模式结果仅供自检</span>
+      <span class="rwb-cap">仅供自检</span>
     </div>
 
     <!-- 评阅中 -->
     <div v-if="scoring.status === 'running'" class="rwb-score-loading">
       <span class="rwb-spinner"></span>
       <div>
-        <div class="rwb-score-loading-title">正在逐条评阅你的报告…</div>
-        <div class="rwb-score-loading-desc">
-          模型会对照本题评分要点集，逐条判断你有没有写到该写的内容，约需 10–40 秒，可以先看下方的参考报告对照。
-        </div>
+        <div class="rwb-score-loading-title">正在逐条评阅…</div>
+        <div class="rwb-score-loading-desc">约 10–40 秒，可以先看下方对照</div>
       </div>
     </div>
 
@@ -21,20 +18,14 @@
     <div v-else-if="scoring.status === 'failed'" class="rwb-score-failed">
       <i class="fa-solid fa-triangle-exclamation"></i>
       <div class="rwb-score-failed-body">
-        <div class="rwb-score-failed-title">这次没评出来：{{ scoring.error || '未知原因' }}</div>
-        <div class="rwb-score-failed-desc">
-          评分失败不影响训练 —— 下方仍可对照参考报告。已尝试 {{ scoring.attempts }} 次。
-        </div>
+        <div class="rwb-score-failed-title">评分失败</div>
       </div>
-      <button class="btn btn-sm btn-primary" :disabled="scoring.status === 'running'" @click="$emit('retry')">重试评分</button>
+      <button class="btn btn-sm btn-primary" @click="$emit('retry')">重试</button>
     </div>
 
     <!-- 未评分 -->
     <div v-else-if="!result" class="rwb-score-loading">
-      <div>
-        <div class="rwb-score-loading-title">尚未评分</div>
-        <div class="rwb-score-loading-desc">点右侧「立即评分」开始逐条评阅。</div>
-      </div>
+      <div><div class="rwb-score-loading-title">尚未评分</div></div>
       <button class="btn btn-sm btn-primary" @click="$emit('score')">立即评分</button>
     </div>
 
@@ -46,10 +37,6 @@
           <div class="rwb-hero-score">
             <b>{{ result.rawTotal }}</b>
             <span>/ {{ result.scoreableMax }}</span>
-          </div>
-          <div class="rwb-hero-label">
-            本卷可评分 <b>{{ result.scoreableMax }}</b> / 100
-            <span class="text-secondary">（{{ result.unassessableItems.length }} 条落在能力边界之外，其分值不计入分母）</span>
           </div>
         </div>
         <div class="rwb-hero-dims">
@@ -66,7 +53,7 @@
         <div v-for="dim in grouped" :key="dim.dim" class="rwb-dim-block">
           <div class="rwb-dim-head">
             <span class="rwb-dim-title">{{ dim.dim }}</span>
-            <span class="rwb-dim-total">{{ dim.got }} / {{ dim.full }} 分</span>
+            <span class="rwb-dim-total">{{ dim.got }} / {{ dim.full }}</span>
           </div>
           <div v-for="it in dim.items" :key="it.code" class="rwb-item" :class="markClass(it)">
             <div class="rwb-item-head" @click="toggle(it.code)">
@@ -84,7 +71,7 @@
               <div v-for="p in it.nAPoints" :key="'na-' + p.text" class="rwb-point is-na">
                 <span class="rwb-point-dot">–</span>
                 <span class="rwb-point-text">{{ p.text }}</span>
-                <span class="rwb-point-comment">{{ p.why }}</span>
+                <span class="rwb-point-comment">不评</span>
               </div>
             </div>
           </div>
@@ -93,7 +80,7 @@
 
       <!-- 缺失项汇总 -->
       <div v-if="result.missingItems.length" class="rwb-missing">
-        <div class="rwb-missing-title"><i class="fa-solid fa-lightbulb"></i> 最该补的 {{ result.missingItems.length }} 处</div>
+        <div class="rwb-missing-title">缺失 {{ result.missingItems.length }} 处</div>
         <div v-for="m in result.missingItems" :key="m.code" class="rwb-missing-row">
           <code>{{ m.code }}</code>
           <span class="rwb-missing-name">{{ m.name }}</span>
@@ -101,39 +88,17 @@
         </div>
       </div>
 
-      <!-- 不可评条目 -->
-      <div v-if="result.unassessableItems.length" class="rwb-na">
-        <div class="rwb-na-title">
-          {{ result.unassessableItems.length }} 条落在能力边界之外，其分值<b>不扣你的分</b>
-        </div>
-        <div v-for="u in result.unassessableItems" :key="u.code" class="rwb-na-item">
-          <code>{{ u.code }}</code> {{ u.name }}（可评 {{ u.scoreableFull }} / {{ u.full }} 分）—— {{ u.why }}
-        </div>
-      </div>
-
-      <!-- 申诉与留痕 -->
+      <!-- 底栏 -->
       <div class="rwb-foot">
         <div class="rwb-trace">
-          <span v-if="result.scoreTrace">
-            评分留痕：要点集 v{{ result.scoreTrace.rubricVersion }} ·
-            {{ result.scoreTrace.gradedAt.slice(0, 16).replace('T', ' ') }}
-            <template v-if="result.scoreTrace.commentsBlocked">
-              · {{ result.scoreTrace.commentsBlocked }} 条点评因触及红线被隐去
-            </template>
-          </span>
           <span v-if="scoring.appeal" class="rwb-appeal-done">
-            <i class="fa-solid fa-flag"></i> 已于 {{ scoring.appeal.filedAt }} 提交复核申请
+            <i class="fa-solid fa-flag"></i> 已申请复核
           </span>
         </div>
         <div class="flex gap-2">
           <button class="btn btn-sm" @click="$emit('score')">重新评分</button>
           <button v-if="!scoring.appeal" class="btn btn-sm" @click="appealOpen = true">申请复核</button>
         </div>
-      </div>
-
-      <div class="rwb-note">
-        评分由大模型按要点集逐条判定，<b>不承诺两次完全同分</b>；结果仅供训练自检，成绩以考核侧为准。
-        模型点评只说明"哪一类没写到"，不会透露参考报告的具体内容。
       </div>
     </template>
 
@@ -145,9 +110,9 @@
           <button class="modal-close" @click="appealOpen = false">✕</button>
         </div>
         <div class="form-item" style="display:block">
-          <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:6px">申诉原因（必填，≤200 字）</label>
+          <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:6px">申诉原因</label>
           <textarea class="input" v-model="appealReason" rows="4" maxlength="200"
-                    placeholder="说明你认为哪一条判得不合理，以及理由…" style="width:100%"></textarea>
+                    placeholder="哪一条判得不合理，理由…" style="width:100%"></textarea>
           <div class="text-secondary" style="font-size:11.5px;margin-top:4px;text-align:right">{{ appealReason.length }} / 200</div>
         </div>
         <div class="modal-footer">

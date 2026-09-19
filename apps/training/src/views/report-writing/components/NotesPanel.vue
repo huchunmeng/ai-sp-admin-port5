@@ -2,21 +2,16 @@
   <section class="card rwb-block">
     <div class="rwb-block-head">
       <i class="fa-solid fa-pen-field"></i> 阅片笔记
-      <span class="rwb-tag">可选 · 不进入报告、不参与评分</span>
-      <span class="rwb-count">{{ notes.length }} / 500 字</span>
+      <span class="rwb-tag">不评分</span>
+      <span class="rwb-count">{{ notes.length }} / 500</span>
       <button class="rwb-collapse" @click="open = !open">
         {{ open ? '收起' : '展开' }} <i class="fa-solid" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
       </button>
     </div>
 
     <div v-show="open">
-      <div class="rwb-purpose">
-        看片子时随手记的地方：<b>哪一层看得最清楚、有哪些征象、哪几处拿不准</b>。
-        它不会进报告、也不评分，写报告卡住时可以回来看自己当时的观察；
-        提交后在自评对照页仍可回看。
-      </div>
       <textarea class="rwb-notes" :value="notes" maxlength="500" rows="4"
-                placeholder="例：结节在轴位第 38 层显示最清楚，分叶明显，外侧胸膜有牵拉；本机无调窗，看不清内部密度细节。"
+                placeholder="边看边记：哪一层最清楚、有哪些征象、哪里不确定"
                 @input="$emit('update:notes', $event.target.value)"></textarea>
     </div>
   </section>

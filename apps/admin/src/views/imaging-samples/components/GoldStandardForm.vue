@@ -14,13 +14,8 @@
 
     <div class="is-gate" :class="allFilled ? 'is-gate-ok' : ''">
       <i class="fa-solid" :class="allFilled ? 'fa-circle-check' : 'fa-circle-exclamation'"></i>
-      <template v-if="allFilled">三段金标准皆已录入 —— 可将本样本置为「已发布」</template>
-      <template v-else>三段金标准皆非空方可发布（PRD §5.12.6）；未发布的样本不会出现在组卷选样列表里</template>
-    </div>
-
-    <div class="is-note">
-      金标准<b>学员侧永不可见</b>：训练侧仅在 T4 自评提交后下发，考核侧默认不发（由任务开关
-      <code class="is-code">revealGoldStandardAfterSubmit</code> 决定，默认关）。题库侧不提供任何「预览学员视角」入口。
+      <template v-if="allFilled">三段已录入，可发布</template>
+      <template v-else>三段皆非空方可发布</template>
     </div>
   </div>
 </template>

@@ -8,7 +8,7 @@
           <span v-if="f.readonly" class="badge badge-info" style="margin-left:6px">🔒 只读</span>
         </label>
         <div class="text-secondary" style="font-size:11.5px;line-height:1.7">
-          影响 <code class="is-code">{{ f.hitCode }}</code>{{ f.key === 'hasMeasurement' ? '（本期影像控件无测量工具，恒不可评）' : '' }}
+          影响 <code class="is-code">{{ f.hitCode }}</code>
         </div>
       </div>
     </div>
@@ -31,10 +31,9 @@
           </tr>
         </tbody>
       </table>
-      <div v-else class="text-secondary" style="font-size:12.5px">本样本 23 条全部可评，可评分 100。</div>
+      <div v-else class="text-secondary" style="font-size:12.5px">本样本全部条目可评</div>
       <div class="text-secondary" style="font-size:11.5px;margin-top:8px;line-height:1.8">
-        落空条目的分值从分母中<b>剔除、不按 0 分计</b>，满分仍为 100 —— 但这等于考一张更短的卷，
-        分布右移、区分度下降、<b>跨卷不可比</b>。组卷侧可评分低于 85 时发布需走覆盖确认。
+        落空条目分值自分母剔除，不按 0 分计
       </div>
     </div>
   </div>

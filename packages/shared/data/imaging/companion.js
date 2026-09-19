@@ -1,54 +1,26 @@
-// 「AI伴学」提示源 —— 大模型读**题目答案（金标准报告）**后给出少量提示 + 出站红线校验
+// 「AI伴学」—— 对话式伴学助手 + 出站红线校验
 //
-// 依据：PRD §5.7（提示引擎）· §9.5（红线的工程可校验定义）· §5.2.3（三级阶梯与配额）。
-// 评审批注（2026-09-19）：「改为AI伴学，这里其实是大模型根据题目答案（真实判读结果）给出少量提示信息」。
+// 学员自由提问，模型依据**本题金标准（题目答案）+ 训练要求**作答。
+// 硬约束：**只引导，不直接给答案**——不给诊断结论、不给病灶事实、不复述金标准原句。
 //
-// 三级阶梯的责任划分（本文件只做 L1 与 prompt；L2/L3 由模型产出）：
-//   L1 体裁提示 —— 这一段**规范上**应包含哪些要素，完全不涉及本病例
-//                  → **静态库**（确定性、零成本、零泄漏风险），不需要模型，也不需要金标准
-//   L2 指向提示 —— 指出学员这一段在**哪一类**上还欠缺（只说类别名，不落到本病例内容）→ 模型
-//   L3 要点提示 —— 给出该类**可关注**的要点词（不给金标准原句）→ 模型
+// 两级保障：
+//   ① prompt 层：角色 + 引导原则 + 明确的禁止项
+//   ② 出站层：`checkRedline()` 对每次回复做红线校验（与金标准最长公共子串 ≤ 8、不得命中金标准事实词）；
+//      不过关则**丢弃回复**，改回固定引导话术。
 //
-// ⚠️ 与服务端正式实现的差别（本期无服务端出站层，故把校验放在前端兜底）：
-//   · 正式版由**服务端**在模型出站 → 序列化之前校验，并把 `redlineCheck` 写 `hintAudit`（PRD §9.5）
-//   · 正式版的 B1 结论词表 / B2 事实词表由服务端**在样本入库时自动抽取**（不依赖人工维护）
-//   · 本期实现了**红线 A（最长公共子串 ≤ 8）**与 **B2 的两类高危害事实（测量值、具体征象词）**；
-//     **B1 结论短语的自动抽取未实现**，靠红线 A 兜底（复述结论必然触发 ≥8 字连续片段）。
-//     已知缺口：**改写措辞复述结论**可绕过，需按 PRD §12 场景 16 构造对抗样本回归后补。
-//   · 泛化体裁词（"部位与范围""重要阴性征象""密度/信号/强化程度"）**不进词表**（PRD §9.5 明确），
-//     否则 L1 体裁提示会被全部误拦。
+// 与评分引擎**共用同一套判据与红线**（同一份金标准）——否则会出现"伴学说你缺这个、评分说你没缺"的自相矛盾。
+//
+// ⚠️ 本期红线校验放在前端兜底（正式版在服务端出站层，PRD §9.5）。已实现红线 A（LCS）+ B2（测量值/征象词）；
+//   B1 结论短语自动抽取未实现，靠红线 A 兜底，**改写措辞复述结论仍可绕过**（已知缺口）。
 
-import { SEGMENTS, GOLD_SEGMENTS } from './r1-table.js'
+import { GOLD_SEGMENTS, SEGMENTS } from './r1-table.js'
 
 const SEGMENT_NAME = Object.fromEntries(SEGMENTS.map(s => [s.key, s.name]))
-
-/** 三级提示的定义（UI 展示与配额口径共用） */
-export const HINT_LEVELS = [
-  { value: 'L1', label: 'L1 体裁提示', desc: '这一段规范上应包含哪些要素（不涉及本病例）' },
-  { value: 'L2', label: 'L2 指向提示', desc: '指出你这一段还缺哪一类（只说类别，不给内容）' },
-  { value: 'L3', label: 'L3 要点提示', desc: '给该类可关注的要点词，不给金标准原句' }
-]
-
-/** 配额默认值（PRD §5.2.3）—— 按「段 × 回合」发放，用完不补 */
-export const DEFAULT_QUOTA = { l2: 3, l3: 1 }
-export const HINT_COOLDOWN_MS = 10 * 1000
-
-/** 校验失败 / 模型不可用时的固定降级文案（PRD §5.7「失败降级」） */
-export const DEGRADED_HINT = '这条提示没生成好，换个说法再试试'
 
 /** 红线 A 阈值：与金标准全文的**最长公共子串（连续字符）长度**上限（PRD §9.5，初值 8） */
 export const MAX_COMMON_SUBSTRING = 8
 
-/** L1 体裁提示（静态库；case-agnostic，不含任何本病例信息） */
-export const L1_HINTS = {
-  general: '一般信息段建议覆盖：患者信息（姓名 / 年龄段 / 性别 / 科别）、检查号与影像号、检查时间，以及临床主要信息及检查目的——后者需规范转述，整段照抄申请单不得满分。',
-  technique: '检查技术段建议覆盖：检查部位 / 检查类型 / 检查技术（扫描方式、层厚、是否增强）。',
-  findings: '影像所见建议覆盖：部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象。',
-  impression: '诊断意见段建议覆盖：是否回答临床问题 / 定位与定性诊断 / 诊断依据或鉴别 / 对临床的下一步建议。'
-}
-
-// ── 红线 B2：具体事实词（只在金标准中确实出现时才纳入词表） ──
-// 只收**具体征象**，不收泛化体裁词
+/** 事实词（B2）：只在金标准中确实出现时才纳入词表——只收具体征象，不收泛化体裁词 */
 const SIGN_WORDS = [
   '分叶', '毛刺', '棘状突起', '胸膜牵拉', '快进快出', '充盈缺损', '流空影', '碘油沉积',
   '磨玻璃', '低信号', '高信号', '等信号', '稍高信号', '稍低信号', '实性',
@@ -56,13 +28,16 @@ const SIGN_WORDS = [
 ]
 const MEASURE_RE = /\d+(?:\.\d+)?\s*(?:mm|cm|毫米|厘米)/gi
 
-/**
- * 从金标准抽取事实词（B2）。正式版由服务端在入库时抽取，此处为可解释的近似实现。
- * @returns {{measures: string[], signs: string[]}}
- */
+/** 金标准全文（红线比对基准） */
+export function goldFullTextOf(goldStandard) {
+  if (!goldStandard) return ''
+  return GOLD_SEGMENTS.map(s => goldStandard[s.key] || '').filter(Boolean).join('\n')
+}
+
+/** 从金标准抽取事实词（B2）。正式版由服务端在入库时抽取，此处为可解释的近似实现 */
 export function extractFactWords(goldStandard) {
   if (!goldStandard) return { measures: [], signs: [] }
-  const full = GOLD_SEGMENTS.map(s => goldStandard[s.key] || '').join('\n')
+  const full = goldFullTextOf(goldStandard)
   const measures = [...new Set((full.match(MEASURE_RE) || []).map(s => s.replace(/\s+/g, '')))]
   const signs = SIGN_WORDS.filter(w => full.includes(w))
   return { measures, signs }
@@ -90,9 +65,6 @@ export function longestCommonSubstring(a, b) {
 
 /**
  * 出站红线校验（PRD §9.5）。
- * @param {string} text 模型产出的提示文本
- * @param {string} goldText 金标准报告全文
- * @param {object} facts extractFactWords 的结果
  * @returns {{passed:boolean, maxCommonSubstring:number, conclusionHit:boolean, factHit:boolean, hits:string[]}}
  */
 export function checkRedline(text, goldText, facts) {
@@ -103,53 +75,82 @@ export function checkRedline(text, goldText, facts) {
     facts.measures.forEach(m => { if (t.replace(/\s+/g, '').includes(m)) hits.push(m) })
     facts.signs.forEach(w => { if (t.includes(w)) hits.push(w) })
   }
-  const overLcs = maxCommonSubstring > MAX_COMMON_SUBSTRING
   return {
-    passed: !overLcs && hits.length === 0,
+    passed: maxCommonSubstring <= MAX_COMMON_SUBSTRING && hits.length === 0,
     maxCommonSubstring,
-    conclusionHit: false,          // B1 自动抽取本期未实现，靠红线 A 兜底
+    conclusionHit: false,   // B1 未实现，靠红线 A 兜底
     factHit: hits.length > 0,
     hits
   }
 }
 
+/** 红线不过关时的固定引导话术（不透露任何内容，但把学生往"自己看"上引） */
+export const GUIDE_FALLBACK = '这个方向我不方便直接说。你先按「该写哪几类内容」自己过一遍片子，把观察到的东西写下来，我再帮你看哪里还不够。'
+
+/** 对话开场白（按段给，不带任何病例信息） */
+export const SEGMENT_GUIDE = {
+  general: '一般信息段按申请单与上方信息条写就行。想问哪一类可以问我。',
+  technique: '检查技术段要交代检查部位、检查类型与扫描方式。有拿不准的可以问我。',
+  findings: '影像所见建议按「部位与范围 / 数目与大小 / 形态与边界 / 密度或信号或强化程度 / 重要阴性征象」逐类过一遍。哪一类不确定就问我。',
+  impression: '诊断意见要正面回应临床所问，并给出建议。想不清楚怎么收口可以问我。'
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Prompt
+   ══════════════════════════════════════════════════════════════ */
+
 /**
- * 组装伴学提示的模型请求。L1 不需要模型，返回 null。
- * 关键：金标准作为「题目答案」放入 prompt 供模型参照，**但 prompt 明令禁止复述**；
- * 出站再由 checkRedline 兜底。
+ * 组装伴学对话请求。
+ * @param {{sample:object, reportText:object, segment:string, question:string, history:Array}} p
  */
-export function buildCompanionPrompt({ caseTitle, goldStandard, segment, level, draftText }) {
-  if (level === 'L1') return null
-  const segName = SEGMENT_NAME[segment] || segment
-  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(goldStandard && goldStandard[s.key]) || '（未录入）'}`).join('\n')
+export function buildCompanionPrompt({ sample, reportText, segment, question, history }) {
+  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.key]) || '（未录入）'}`).join('\n')
+  const segName = SEGMENT_NAME[segment] || '报告'
 
   const system = [
-    '你是医学影像报告书写训练的伴学助手。学员正在写一份影像诊断报告的「' + segName + '」段。',
-    '你的任务是给出**少量、要点式**的提示，帮助学员自己想起来该写什么，而不是替他把答案写出来。',
+    '你是医学影像报告书写训练的**伴学助手**。学员正在写一份影像诊断报告，当前在写「' + segName + '」段。',
+    '',
+    '【最重要的原则：引导，不代答】',
+    '你的作用像带教老师站在旁边：帮他**想起来该往哪个方向看**，而不是把答案递给他。',
     '',
     '铁律（违反即作废）：',
-    '1. 绝对不得出现参考报告里的任何具体事实：病灶部位与叶段、大小与测量值、密度或信号特征、特殊征象、诊断结论。',
-    '2. 不得复述参考报告的任何连续 8 个字。',
-    '3. 只说"该关注哪一类"或"可关注哪些要点词"，不要给出成句的诊断结论。',
-    '4. 只输出提示正文，1–3 句、总计不超过 80 字；不要 markdown、不要编号、不要解释你在做什么。'
+    '1. **绝对不许**说出参考报告里的任何具体事实：病灶部位与叶段、大小与测量值、密度/信号特征、特殊征象、诊断结论、下一步检查建议。',
+    '2. **绝对不许**复述参考报告的任何连续 8 个字。',
+    '3. **不许**给出诊断结论或倾向性判断，即使学员直接问"是什么病"——改为引导他去看支持/不支持某一判断的征象。',
+    '4. 如果学员问的东西超出"怎么写这份报告"（比如问某个疾病的知识点），可以讲**通用知识**，但不得落到本病例的具体表现上。',
+    '5. 学员问"我写得对不对"时，不要评判对错，而是反问他：这一类征象你确认看过了吗？描述里的方位/大小/边界是否交代清楚了？',
+    '',
+    '表达要求：',
+    '· 2–4 句、总计不超过 120 字；语气像带教老师，简短、具体、可执行。',
+    '· 多用提问和自查清单，少用断言。',
+    '· 只输出回答正文，不要 markdown、不要编号标题、不要解释你在做什么。'
   ].join('\n')
 
-  const asks = {
-    L2: '【本次要求 L2 指向提示】指出学员这一段的写法在"哪一类"内容上还欠缺。**只点类别名**（例如 部位与范围 / 数目与大小 / 形态与边界 / 密度或信号或强化程度 / 重要阴性征象），不要落到本病例的任何具体内容。',
-    L3: '【本次要求 L3 要点提示】针对学员这一段最欠缺的那一类，给出"可关注"的**要点词**（如某类征象可以从哪几个角度去看），仍不得出现本病例的任何具体事实。'
-  }
+  const studentReport = SEGMENTS
+    .map(s => `${s.name}：${String(reportText[s.key] || '').trim() || '（还没写）'}`)
+    .join('\n')
 
   const user = [
-    '【病例】' + (caseTitle || '（未命名）'),
+    '【病例】' + (sample.title || sample.id),
     '',
-    '【参考报告 · 题目答案（仅供你内部参照，绝不能复述其中任何具体内容）】',
+    '【参考报告 · 题目答案（仅供你内部参照，绝不能透露任何具体内容）】',
     gold,
     '',
-    '【学员已写的「' + segName + '」段】',
-    String(draftText || '').trim() || '（还没写）',
+    '【学员当前报告】',
+    studentReport,
+    '（学员当前正在写「' + segName + '」段）',
     '',
-    asks[level] || asks.L2
+    '【学员的问题】',
+    String(question || '').trim() || '这一段我该怎么写？'
   ].join('\n')
 
-  return { system, messages: [{ role: 'user', content: user }] }
+  const msgs = []
+  // 只带最近几轮，控制 token
+  ;(history || []).slice(-6).forEach(h => {
+    if (h.role === 'user') msgs.push({ role: 'user', content: h.text })
+    else if (h.role === 'ai') msgs.push({ role: 'assistant', content: h.text })
+  })
+  msgs.push({ role: 'user', content: user })
+
+  return { system, messages: msgs }
 }

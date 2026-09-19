@@ -4,11 +4,10 @@
       <div class="rwh-hero-icon"><i class="fa-solid fa-file-pen"></i></div>
       <div class="rwh-hero-text">
         <h2>影像报告书写训练</h2>
-        <p>按规范三段式书写影像诊断报告 —— 分阶段推进，卡住可要提示，写完先自评再看参考</p>
+        <p>写一份规范的影像诊断报告，AI 按评分要点逐条评阅</p>
       </div>
       <div class="rwh-hero-stats">
         <div class="rwh-stat"><strong>{{ cases.length }}</strong><span>可练病例</span></div>
-        <div class="rwh-stat"><strong>5</strong><span>训练阶段</span></div>
         <div class="rwh-stat"><strong>23</strong><span>评分条目</span></div>
       </div>
     </div>
@@ -17,12 +16,12 @@
       <div class="rwh-entry" @click="goTrain">
         <div class="rwh-entry-top">
           <span class="rwh-entry-icon is-train"><i class="fa-solid fa-graduation-cap"></i></span>
-          <span class="badge badge-info">训练模式</span>
+          <span class="badge badge-info">训练</span>
         </div>
         <div class="rwh-entry-name">影像报告书写训练</div>
-        <div class="rwh-entry-desc">自由挑病例，边写边提示，提交后逐条自评并对照参考报告</div>
+        <div class="rwh-entry-desc">自由挑病例，边写边问 AI伴学，提交后 AI 评阅</div>
         <div class="rwh-entry-foot">
-          <span>{{ cases.length }} 例可练</span>
+          <span>{{ cases.length }} 例</span>
           <i class="fa-solid fa-chevron-right"></i>
         </div>
       </div>
@@ -30,23 +29,15 @@
       <div class="rwh-entry" @click="goExam">
         <div class="rwh-entry-top">
           <span class="rwh-entry-icon is-exam"><i class="fa-solid fa-file-circle-check"></i></span>
-          <span class="badge badge-warning">考核模式</span>
+          <span class="badge badge-warning">考核</span>
         </div>
         <div class="rwh-entry-name">影像报告书写考核</div>
-        <div class="rwh-entry-desc">由管理端组卷后发布到本人，整卷计时、不提供任何提示</div>
+        <div class="rwh-entry-desc">管理端组卷后发布到本人，整卷计时、不提供 AI伴学</div>
         <div class="rwh-entry-foot">
           <span>等待派发</span>
           <i class="fa-solid fa-chevron-right"></i>
         </div>
       </div>
-    </div>
-
-    <div class="rwh-note">
-      <i class="fa-solid fa-circle-info"></i>
-      <span>
-        影像本体与真实样本待院方提供后接入，本期为界面骨架；评分与提示由服务端就绪后接管。
-        <template v-if="draftCount">题库另有 {{ draftCount }} 例为草稿态（金标准报告待教研录入），暂不可练。</template>
-      </span>
     </div>
   </div>
 </template>

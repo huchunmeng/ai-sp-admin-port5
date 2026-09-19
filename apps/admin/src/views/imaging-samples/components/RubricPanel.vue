@@ -1,30 +1,23 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px">
-      <div>
-        <span class="text-secondary" style="font-size:12.5px">
-          共 {{ resolved.items.length }} 条 · <b class="text-primary">本样本可评分 {{ resolved.scoreableMax }} / 100</b>
-          · 内容条目 {{ editableCount }} 条可编辑，通用条目按样单元数据自动生成
-        </span>
-      </div>
+      <span class="text-secondary" style="font-size:12.5px">
+        共 {{ resolved.items.length }} 条 · <b class="text-primary">可评分 {{ resolved.scoreableMax }} / 100</b>
+      </span>
       <div class="flex gap-2">
         <button class="btn" :disabled="extracting || !goldReady" @click="extract">
           <i class="fa-solid" :class="extracting ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
           {{ extracting ? '抽取中...' : 'AI 从金标准抽取' }}
         </button>
-        <button class="btn" :disabled="extracting" @click="resetAll">恢复内置要点集</button>
+        <button class="btn" :disabled="extracting" @click="resetAll">恢复内置</button>
       </div>
     </div>
 
-    <div v-if="!goldReady" class="is-hint is-hint-warn">
-      本样本尚未录入三段金标准，无法抽取要点集，也无法发布。请先在「④ 金标准报告」里补全。
+    <div v-if="!goldReady" class="is-empty">
+      先在「金标准报告」填完三段，再来抽取要点集
     </div>
-    <div v-else-if="!hasRubric" class="is-hint is-hint-warn">
-      当前用的是<b>占位要点</b>（每条只有条目名、无法逐点判定）。建议点「AI 从金标准抽取」生成一版要点集后再手工校正。
-    </div>
-    <div v-else class="is-hint">
-      要点集是 LLM 评分的<b>判据</b>：模型按要点命中判分，而不是拿学员报告跟范文比相似度。
-      <b>可接受表述域</b>用于避免误伤"写对了但说法不同"的学员。
+    <div v-else-if="!hasRubric" class="is-empty">
+      还没有要点集 —— 点右上「AI 从金标准抽取」生成一版，再逐条校正
     </div>
 
     <div v-for="dim in dims" :key="dim.dim" class="is-dim">
@@ -48,7 +41,7 @@
         </div>
 
         <div v-show="open[item.code]" class="is-item-body">
-          <div v-if="item.rules" class="is-rules">判定说明：{{ item.rules }}</div>
+          <div v-if="item.rules" class="is-rules">{{ item.rules }}</div>
 
           <div v-for="(p, pi) in item.points" :key="p.id" class="is-point" :class="{ 'is-point-na': !p.assessable }">
             <div class="is-point-row">
@@ -224,11 +217,10 @@ async function extract() {
 </script>
 
 <style scoped>
-.is-hint {
-  font-size: 12.5px; line-height: 1.85; color: #6b7280;
-  background: #F5F7FA; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;
+.is-empty {
+  font-size: 13px; color: #909399; text-align: center;
+  background: #FAFAFA; border-radius: 8px; padding: 32px 20px; margin-bottom: 16px;
 }
-.is-hint-warn { background: #FFF7E6; color: #D46B08; }
 .is-dim { margin-bottom: 18px; }
 .is-item { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
 .is-item-head {
