@@ -1,17 +1,14 @@
 <template>
   <div class="rww-page">
     <TrainingTopBar
-      :station-name="sample.title || '影像报告书写训练'"
+      station-name="影像报告书写训练"
       formatted-time=""
       end-label="提交报告"
       end-icon="fa-paper-plane"
       :hide-step-number="true"
+      :hide-timer="true"
       @end="onSubmit"
-    >
-      <template #center>
-        <span class="rww-crumb">{{ sample.bodyPart }} · {{ sample.modality }}</span>
-      </template>
-    </TrainingTopBar>
+    />
 
     <div class="rww-body">
       <div class="rww-main">
@@ -147,7 +144,6 @@ function timestamp() {
 
 <style scoped>
 .rww-page { position: relative; min-height: 100vh; padding: 60px 24px 24px; background: var(--background); }
-.rww-crumb { font-size: 14px; color: #606266; }
 .rww-body {
   max-width: 1400px; margin: 0 auto;
   display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start;

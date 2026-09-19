@@ -54,7 +54,7 @@
     </div>
     </div>
     <div class="topbar-right">
-      <span class="timer" :class="timerClass">{{ formattedTime }}</span>
+      <span v-if="!hideTimer" class="timer" :class="timerClass">{{ formattedTime }}</span>
       <button class="end-btn" :class="{ 'next-btn': endIcon === 'fa-arrow-right' }" @click="$emit('end')">
         <i :class="'fa-solid ' + endIcon"></i> {{ endLabel }}
       </button>
@@ -79,6 +79,7 @@ const props = defineProps({
   showLangToggle: { type: Boolean, default: false },
   langLabel: { type: String, default: 'EN' },
   hideStepNumber: { type: Boolean, default: false },
+  hideTimer: { type: Boolean, default: false },
   allowAdvance: { type: Boolean, default: true },
   flowSteps: { type: Array, default: null },
   flowStepIndex: { type: Number, default: 0 },
