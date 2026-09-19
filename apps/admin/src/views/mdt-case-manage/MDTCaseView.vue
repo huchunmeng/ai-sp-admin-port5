@@ -271,7 +271,7 @@ onMounted(async () => {
 .editor-title { margin: 0; font-size: 16px; color: var(--text-main); }
 .patient-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
-  background: #eef2ff; color: #4338ca;
+  background: #E6F7FF; color: #096DD9;
 }
 .case-id-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
@@ -279,7 +279,7 @@ onMounted(async () => {
 }
 .version-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
-  background: #f0fdf4; color: #16a34a; font-family: monospace;
+  background: #F6FFED; color: #52C41A; font-family: monospace;
 }
 .header-right { display: flex; gap: 8px; }
 
@@ -377,12 +377,12 @@ onMounted(async () => {
   padding: 12px 14px; margin-bottom: 10px;
 }
 .task-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-.task-key { font-size: 11px; background: #f3f4f6; padding: 1px 6px; border-radius: 4px; color: var(--text-secondary); }
+.task-key { font-size: 11px; background: #F5F7FA; padding: 1px 6px; border-radius: 4px; color: var(--text-secondary); }
 .task-label { font-size: 13px; font-weight: 600; color: var(--text-main); }
 .task-prompt { font-size: 13px; line-height: 1.7; color: var(--text-main); }
 .task-placeholder {
   margin-top: 6px; font-size: 12px; color: var(--text-tertiary);
-  background: #fafbfc; border-radius: 6px; padding: 6px 10px; white-space: pre-wrap;
+  background: #FAFAFA; border-radius: 6px; padding: 6px 10px; white-space: pre-wrap;
 }
 
 /* 关键问题 */

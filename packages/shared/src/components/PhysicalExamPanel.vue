@@ -102,5 +102,5 @@ defineExpose({ getData })
   width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
   font-size: 13px; line-height: 1.5; resize: vertical; box-sizing: border-box; font-family: inherit;
 }
-.observation-section textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+.observation-section textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
 </style>

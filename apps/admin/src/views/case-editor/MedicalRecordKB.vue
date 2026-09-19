@@ -247,7 +247,7 @@ watch(filteredGroups, (list) => {
   width: 230px;
   min-width: 230px;
   border-right: 1px solid var(--border);
-  background: #fafbfc;
+  background: #FAFAFA;
   display: flex;
   flex-direction: column;
 }
@@ -281,7 +281,7 @@ watch(filteredGroups, (list) => {
   text-align: left;
   transition: background 0.15s;
 }
-.mrkb-nav-item:hover { background: #eef2ff; }
+.mrkb-nav-item:hover { background: #E6F7FF; }
 .mrkb-nav-item.active {
   background: var(--primary-light);
   color: var(--primary);
@@ -313,9 +313,9 @@ watch(filteredGroups, (list) => {
   color: var(--text-secondary);
   border-left: 3px solid transparent;
 }
-.mrkb-nav-l2:hover { background: #eef2ff; }
+.mrkb-nav-l2:hover { background: #E6F7FF; }
 .mrkb-nav-l2.active {
-  background: #f0f4ff;
+  background: #E6F7FF;
   color: var(--primary);
   font-weight: 600;
   border-left-color: var(--primary);
@@ -333,7 +333,7 @@ watch(filteredGroups, (list) => {
   min-width: 20px;
   padding: 1px 6px;
   border-radius: 10px;
-  background: #eef2ff;
+  background: #E6F7FF;
   color: var(--primary);
   font-size: 11px;
   font-weight: 600;
@@ -359,13 +359,13 @@ watch(filteredGroups, (list) => {
   margin-bottom: 16px;
   padding: 10px 14px;
   border-radius: 6px;
-  background: #eef2ff;
+  background: #E6F7FF;
   color: var(--primary);
   font-size: 13px;
 }
 .mrkb-raw-notice.error {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #FFF1F0;
+  color: #F5222D;
 }
 .mrkb-content-header {
   display: flex;
@@ -394,7 +394,7 @@ watch(filteredGroups, (list) => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #f8fafc;
+  background: #F0F2F5;
   border-bottom: 1px solid var(--border);
 }
 .mrkb-card-meta {

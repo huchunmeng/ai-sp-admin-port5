@@ -50,7 +50,7 @@
             <tr v-for="item in paginatedData" :key="item.id">
               <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
               <td class="sticky-left" style="left:40px" v-if="visibleColumns.includes('title')"><a href="#" @click.prevent="openDetail(item)" style="color:var(--primary);text-decoration:none">{{ item.title }}</a></td>
-              <td v-if="visibleColumns.includes('case_id')"><code style="background:#f3f4f6;padding:2px 6px;border-radius:4px">{{ item.case_id }}</code></td>
+              <td v-if="visibleColumns.includes('case_id')"><code style="background:#F5F7FA;padding:2px 6px;border-radius:4px">{{ item.case_id }}</code></td>
               <td v-if="visibleColumns.includes('patient_info')">{{ getPatientInfo(item) }}</td>
               <td v-if="visibleColumns.includes('teaching_phase')">{{ item.teaching_phase }}</td>
               <td v-if="visibleColumns.includes('specialty')">{{ item.specialty }}</td>

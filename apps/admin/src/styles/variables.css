@@ -1,29 +1,74 @@
 :root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #eff6ff;
-  --primary-lightest: #dbeafe;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --text-main: #1f2937;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
-  --border: #e5e7eb;
-  --border-light: #f3f4f6;
-  --background: #f8fafc;
-  --card-bg: #ffffff;
+  /* 品牌主色 */
+  --primary: #1890FF;
+  --primary-dark: #096DD9;
+  --primary-hover: #40A9FF;
+  --primary-light: #E6F7FF;
+  --primary-lightest: #BAE7FF;
+
+  /* 骨架 */
+  --header-bg: #1A5F9E;
+  --sidebar-bg: #2B3A4A;
+  --sidebar-text: #B8C2CC;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-active-bg: #1890FF;
+
+  /* 语义色 */
+  --success: #52C41A;
+  --success-light: #F6FFED;
+  --success-border: #B7EB8F;
+  --success-dark: #389E0D;
+  --warning: #FA8C16;
+  --warning-light: #FFF7E6;
+  --warning-border: #FFD591;
+  --warning-dark: #D46B08;
+  --error: #F5222D;
+  --error-light: #FFF1F0;
+  --error-border: #FFA39E;
+  --error-dark: #CF1322;
+  --info-light: #E6F7FF;
+
+  /* 模块标识色 */
+  --purple: #7C3AED;
+  --purple-light: #EDE9FE;
+  --purple-border: #D3ADF7;
+
+  /* 文字 */
+  --text-main: #303133;
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-tertiary: #909399;
+  --text-muted: #909399;
+  --text-placeholder: #C0C4CC;
+
+  /* 表面 / 边框 */
+  --background: #F0F2F5;
+  --page-bg: #F0F2F5;
+  --bg-secondary: #F5F7FA;
+  --card-bg: #FFFFFF;
+  --border: #EBEEF5;
+  --border-light: #F5F7FA;
+  --border-control: #D9D9D9;
+  --zebra: #FAFAFA;
+
   --card-radius: 12px;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.05);
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --base-size: 14px;
+  --line-height: 1.5;
+  --spacing-unit: 4px;
   --header-height: 60px;
   --sidebar-width: 200px;
   --sidebar-collapsed-width: 56px;
   --tabbar-height: 44px;
   --content-padding: 24px;
+  --content-max-width: 1400px;
   --btn-radius: 8px;
   --btn-height: 36px;
   --input-radius: 8px;
-  --input-border: #e2e8f0;
+  --input-border: #D9D9D9;
+  --input-focus-border: #1890FF;
+  --input-focus-shadow: 0 0 0 3px rgba(24,144,255,0.1);
+  --radius-sm: 4px;
 }

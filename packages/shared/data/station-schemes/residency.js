@@ -857,7 +857,7 @@ const residencySchemes = [
     id: 'res-inst-1',
     name: '本院内科考核方案',
     type: 'institution',
-    source: '仁爱医院 (总部)',
+    source: '东南大学医学院',
     phase: '住院医师',
     status: false,
     majors: [majorWithId('内科', stations['内科'])]
@@ -866,16 +866,16 @@ const residencySchemes = [
     id: 'res-inst-2',
     name: '本院外科考核方案',
     type: 'institution',
-    source: '仁爱医院 (总部)',
+    source: '东南大学医学院',
     phase: '住院医师',
     status: false,
     majors: [majorWithId('普通外科', stations['外科'])]
   },
   {
     id: 'res-inst-3',
-    name: '仁爱医院住院医师考核方案',
+    name: '东南大学医学院住院医师考核方案',
     type: 'institution',
-    source: '仁爱医院 (总部)',
+    source: '东南大学医学院',
     phase: '住院医师',
     status: false,
     majors: ['内科', '外科', '妇产科', '儿科', '急诊科', '精神科', '口腔全科'].map(name =>

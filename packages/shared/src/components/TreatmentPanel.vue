@@ -106,12 +106,12 @@ defineExpose({ getData })
 .med-drug { flex: 1.5; min-width: 120px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; }
 .med-small { flex: 1; min-width: 70px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; }
 .med-route { flex: 1; min-width: 90px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: #fff; }
-.btn-remove-med { background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; }
+.btn-remove-med { background: none; border: none; color: #F5222D; cursor: pointer; padding: 4px; }
 .btn-add {
   background: none; border: 1px dashed var(--border); color: var(--primary); cursor: pointer;
   padding: 8px 16px; border-radius: 6px; font-size: 13px; width: 100%;
 }
-.btn-add:hover { background: #eff6ff; border-color: var(--primary); }
+.btn-add:hover { background: #E6F7FF; border-color: var(--primary); }
 .textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; resize: vertical; box-sizing: border-box; min-height: 80px; }
 .textarea:focus, .custom-input:focus, .med-drug:focus, .med-small:focus, .med-route:focus { outline: none; border-color: var(--primary); }
 </style>

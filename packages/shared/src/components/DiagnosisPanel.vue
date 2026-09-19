@@ -109,20 +109,20 @@ defineExpose({ getData })
 .entry-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
 .entry-row.secondary { padding-left: 0; }
 .primary-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
-.primary-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+.primary-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
 .small-input { width: 160px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; }
 .small-select { width: 100px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: #fff; }
 .btn-remove { background: none; border: none; color: var(--error); cursor: pointer; padding: 4px 8px; font-size: 14px; }
-.btn-remove:hover { color: #dc2626; }
+.btn-remove:hover { color: #F5222D; }
 .btn-add { background: none; border: 1px dashed var(--border); color: var(--primary); cursor: pointer; padding: 8px 16px; border-radius: 6px; font-size: 13px; width: 100%; }
-.btn-add:hover { background: #eff6ff; border-color: var(--primary); }
+.btn-add:hover { background: #E6F7FF; border-color: var(--primary); }
 
 .evidence-item {
   display: flex; align-items: center; gap: 8px; padding: 8px 12px;
   font-size: 13px; cursor: pointer; border-radius: 4px;
 }
-.evidence-item:hover { background: #f9fafb; }
-.evidence-item.checked { background: #eff6ff; }
-.evidence-source { font-size: 11px; padding: 1px 6px; border-radius: 8px; background: #e5e7eb; color: #4b5563; white-space: nowrap; }
+.evidence-item:hover { background: #FAFAFA; }
+.evidence-item.checked { background: #E6F7FF; }
+.evidence-source { font-size: 11px; padding: 1px 6px; border-radius: 8px; background: #EBEEF5; color: #606266; white-space: nowrap; }
 .evidence-text { color: var(--text-main); }
 </style>

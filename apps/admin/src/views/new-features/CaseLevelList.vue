@@ -84,7 +84,7 @@
               <td class="sticky-left" style="left:40px">
                 <a href="#" @click.prevent="openAICompanion(item)" style="color:var(--primary);text-decoration:none">{{ item.title }}</a>
               </td>
-              <td><code style="background:#f3f4f6;padding:2px 6px;border-radius:4px">{{ item.caseId }}</code></td>
+              <td><code style="background:#F5F7FA;padding:2px 6px;border-radius:4px">{{ item.caseId }}</code></td>
               <td>{{ item.patientName }} / {{ item.gender }} / {{ item.age }}岁</td>
               <td><span class="badge badge-info">{{ item.teachingPhase }}</span></td>
               <td>{{ item.dept }}</td>
@@ -259,13 +259,13 @@ function editCase(item) {
 .table-wrapper { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-.table th { background: #fafcff; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; }
-.table tbody tr:hover td { background: #fafafa; }
+.table th { background: #FAFAFA; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; }
+.table tbody tr:hover td { background: #FAFAFA; }
 
 .sticky-left { position: sticky; z-index: 1; background: inherit; }
 .sticky-right { position: sticky; z-index: 1; background: inherit; }
 .table tbody tr:hover .sticky-left,
-.table tbody tr:hover .sticky-right { background: #fafafa; }
+.table tbody tr:hover .sticky-right { background: #FAFAFA; }
 
 .flex { display: flex; }
 .gap-2 { gap: 8px; }

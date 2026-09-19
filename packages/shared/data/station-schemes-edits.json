@@ -1,9 +1,9 @@
 {
   "res-inst-3": {
     "id": "res-inst-3",
-    "name": "仁爱医院住院医师考核方案",
+    "name": "东南大学医学院住院医师考核方案",
     "type": "institution",
-    "source": "仁爱医院 (总部)",
+    "source": "东南大学医学院",
     "phase": "住院医师",
     "status": false,
     "majors": [
@@ -695,7 +695,7 @@
     "id": "res-inst-1781375654191",
     "name": "2026年全国住培结业考核标准方案 (副本)",
     "type": "institution",
-    "source": "仁爱医院 (总部)",
+    "source": "东南大学医学院",
     "phase": "住院医师",
     "status": true,
     "majors": [
@@ -3303,7 +3303,7 @@
     "id": "res-inst-1",
     "name": "本院内科考核方案",
     "type": "institution",
-    "source": "仁爱医院 (总部)",
+    "source": "东南大学医学院",
     "phase": "住院医师",
     "status": false,
     "majors": [

@@ -39,59 +39,59 @@ function injectSpCoreStyles() {
     '.sp-req-mask.show{display:block;}' +
     '.sp-req-drawer{position:fixed;top:0;right:-540px;width:520px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.1);z-index:1100;transition:right .3s;display:flex;flex-direction:column;}' +
     '.sp-req-drawer.open{right:0;}' +
-    '.sp-req-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:14px;flex-shrink:0;}' +
-    '.sp-req-tabs{display:flex;border-bottom:1px solid #e5e7eb;flex-shrink:0;}' +
-    '.sp-req-tab{padding:8px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none;}' +
-    '.sp-req-tab:hover{color:#2563eb;}' +
-    '.sp-req-tab.active{color:#2563eb;border-bottom-color:#2563eb;font-weight:600;}' +
+    '.sp-req-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #EBEEF5;font-weight:600;font-size:14px;flex-shrink:0;}' +
+    '.sp-req-tabs{display:flex;border-bottom:1px solid #EBEEF5;flex-shrink:0;}' +
+    '.sp-req-tab{padding:8px 16px;font-size:13px;color:#606266;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none;}' +
+    '.sp-req-tab:hover{color:#1890FF;}' +
+    '.sp-req-tab.active{color:#1890FF;border-bottom-color:#1890FF;font-weight:600;}' +
     '.sp-req-tab-content{flex:1;overflow-y:auto;display:none;}' +
     '.sp-req-tab-content.active{display:block;}' +
-    '.sp-req-tab-body{padding:20px;font-size:13px;color:#374151;line-height:1.8;}' +
-    '.sp-req-tab-body h1{font-size:18px;color:#111827;margin:0 0 16px;padding-bottom:8px;border-bottom:2px solid #e5e7eb;text-align:center;}' +
-    '.sp-req-tab-body h2{font-size:15px;color:#1f2937;margin:20px 0 10px;padding:6px 10px;background:#f3f4f6;border-radius:6px;}' +
-    '.sp-req-tab-body h3{font-size:14px;color:#2563eb;margin:14px 0 8px;padding-bottom:5px;border-bottom:2px solid #eff6ff;}' +
+    '.sp-req-tab-body{padding:20px;font-size:13px;color:#303133;line-height:1.8;}' +
+    '.sp-req-tab-body h1{font-size:18px;color:#303133;margin:0 0 16px;padding-bottom:8px;border-bottom:2px solid #EBEEF5;text-align:center;}' +
+    '.sp-req-tab-body h2{font-size:15px;color:#303133;margin:20px 0 10px;padding:6px 10px;background:#F5F7FA;border-radius:6px;}' +
+    '.sp-req-tab-body h3{font-size:14px;color:#1890FF;margin:14px 0 8px;padding-bottom:5px;border-bottom:2px solid #E6F7FF;}' +
     '.sp-req-tab-body h3:first-child{margin-top:0;}' +
-    '.sp-req-tab-body h4{font-size:13px;color:#374151;margin:10px 0 6px;font-weight:600;}' +
+    '.sp-req-tab-body h4{font-size:13px;color:#303133;margin:10px 0 6px;font-weight:600;}' +
     '.sp-req-tab-body p{margin:4px 0 8px;}' +
     '.sp-req-tab-body ul,.sp-req-tab-body ol{margin:4px 0 8px;padding-left:20px;}' +
     '.sp-req-tab-body li{margin:2px 0;}' +
     '.sp-req-tab-body table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}' +
-    '.sp-req-tab-body th{background:#f3f4f6;color:#374151;font-weight:600;padding:6px 8px;border:1px solid #e5e7eb;text-align:left;font-size:11px;}' +
-    '.sp-req-tab-body td{padding:5px 8px;border:1px solid #e5e7eb;font-size:12px;}' +
-    '.sp-req-tab-body code{background:#f0f5ff;color:#2563eb;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;}' +
-    '.sp-req-tab-body pre{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:11px;line-height:1.6;font-family:monospace;margin:6px 0 10px;}' +
-    '.sp-req-tab-body hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0;}' +
-    '.sp-req-tab-body strong{color:#111827;}' +
+    '.sp-req-tab-body th{background:#F5F7FA;color:#303133;font-weight:600;padding:6px 8px;border:1px solid #EBEEF5;text-align:left;font-size:11px;}' +
+    '.sp-req-tab-body td{padding:5px 8px;border:1px solid #EBEEF5;font-size:12px;}' +
+    '.sp-req-tab-body code{background:#E6F7FF;color:#1890FF;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;}' +
+    '.sp-req-tab-body pre{background:#FAFAFA;border:1px solid #EBEEF5;border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:11px;line-height:1.6;font-family:monospace;margin:6px 0 10px;}' +
+    '.sp-req-tab-body hr{border:none;border-top:1px solid #EBEEF5;margin:16px 0;}' +
+    '.sp-req-tab-body strong{color:#303133;}' +
     '.sp-req-tab-body .req-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;}' +
-    '.sp-req-tab-body .req-badge.platform{background:#dbeafe;color:#1e40af;}' +
-    '.sp-req-tab-body .req-badge.province{background:#fef3c7;color:#92400e;}' +
-    '.sp-req-tab-body .req-badge.inst{background:#d1fae5;color:#065f46;}' +
-    '.sp-req-tab-body .req-item{margin-bottom:8px;padding-left:12px;border-left:2px solid #e5e7eb;}' +
-    '.sp-req-tab-body .req-id{font-weight:700;color:#2563eb;font-size:11px;}' +
+    '.sp-req-tab-body .req-badge.platform{background:#BAE7FF;color:#096DD9;}' +
+    '.sp-req-tab-body .req-badge.province{background:#FFF7E6;color:#D46B08;}' +
+    '.sp-req-tab-body .req-badge.inst{background:#F6FFED;color:#389E0D;}' +
+    '.sp-req-tab-body .req-item{margin-bottom:8px;padding-left:12px;border-left:2px solid #EBEEF5;}' +
+    '.sp-req-tab-body .req-id{font-weight:700;color:#1890FF;font-size:11px;}' +
     '.sp-req-tab-body .req-desc{margin-top:2px;font-size:12px;}' +
     '.sp-req-tab-body .req-status{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;}' +
-    '.sp-req-tab-body .req-status.done{background:#d1fae5;color:#065f46;}' +
-    '.sp-req-tab-body .req-status.flow{background:#dbeafe;color:#1e40af;}' +
-    '.sp-req-tab-body .req-status.error{background:#fee2e2;color:#991b1b;}' +
-    '.sp-ap-item{margin:8px 12px;padding:12px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;font-size:13px;transition:all .2s;}' +
-    '.sp-ap-item:hover{border-color:#c7d2fe;box-shadow:0 2px 8px rgba(37,99,235,0.06);}' +
-    '.sp-ap-item .sp-ap-elem{font-weight:600;color:#1f2937;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}' +
+    '.sp-req-tab-body .req-status.done{background:#F6FFED;color:#389E0D;}' +
+    '.sp-req-tab-body .req-status.flow{background:#BAE7FF;color:#096DD9;}' +
+    '.sp-req-tab-body .req-status.error{background:#FFF1F0;color:#CF1322;}' +
+    '.sp-ap-item{margin:8px 12px;padding:12px 14px;background:#fff;border:1px solid #EBEEF5;border-radius:10px;font-size:13px;transition:all .2s;}' +
+    '.sp-ap-item:hover{border-color:#D3ADF7;box-shadow:0 2px 8px rgba(24,144,255,0.06);}' +
+    '.sp-ap-item .sp-ap-elem{font-weight:600;color:#303133;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}' +
     '.sp-ap-item .sp-ap-elem .sp-ap-status{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;flex-shrink:0;}' +
-    '.sp-ap-item .sp-ap-elem .sp-ap-status.pending{background:#fef3c7;color:#b45309;}' +
-    '.sp-ap-item .sp-ap-elem .sp-ap-status.fixed{background:#dbeafe;color:#1e40af;}' +
-    '.sp-ap-item .sp-ap-comment{margin-top:6px;color:#374151;line-height:1.6;padding:8px 10px;background:#f9fafb;border-radius:6px;border-left:3px solid #2563eb;}' +
-    '.sp-ap-item .sp-ap-time{font-size:11px;color:#9ca3af;margin-top:8px;display:flex;align-items:center;gap:4px;}' +
-    '.sp-ap-item .sp-ap-actions{display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #f3f4f6;}' +
-    '.sp-ap-item .sp-ap-actions button{font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .15s;}' +
-    '.sp-ap-item .sp-ap-actions button:hover{background:#f3f4f6;}' +
-    '.sp-ap-item .sp-ap-actions button.mark-unfixed{color:#f59e0b;border-color:#fcd34d;background:#fffbeb;}' +
-    '.sp-ap-item .sp-ap-actions button.edit{color:#2563eb;border-color:#bfdbfe;background:#eff6ff;}' +
-    '.sp-ap-item .sp-ap-actions button.del{color:#ef4444;border-color:#fecaca;background:#fef2f2;}' +
-    '.sp-ap-export{display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0;background:#fafafa;}' +
-    '.sp-ap-export button{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;color:#6b7280;transition:all .15s;}' +
-    '.sp-ap-export button:hover{background:#f3f4f6;}' +
-    '#sp-anno-clear-all{color:#ef4444;border-color:#fca5a5;background:#fef2f2;}' +
-    '#sp-anno-clear-all:hover{background:#fee2e2;}' +
+    '.sp-ap-item .sp-ap-elem .sp-ap-status.pending{background:#FFF7E6;color:#D46B08;}' +
+    '.sp-ap-item .sp-ap-elem .sp-ap-status.fixed{background:#BAE7FF;color:#096DD9;}' +
+    '.sp-ap-item .sp-ap-comment{margin-top:6px;color:#303133;line-height:1.6;padding:8px 10px;background:#FAFAFA;border-radius:6px;border-left:3px solid #1890FF;}' +
+    '.sp-ap-item .sp-ap-time{font-size:11px;color:#909399;margin-top:8px;display:flex;align-items:center;gap:4px;}' +
+    '.sp-ap-item .sp-ap-actions{display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #F5F7FA;}' +
+    '.sp-ap-item .sp-ap-actions button{font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #EBEEF5;background:#fff;cursor:pointer;transition:all .15s;}' +
+    '.sp-ap-item .sp-ap-actions button:hover{background:#F5F7FA;}' +
+    '.sp-ap-item .sp-ap-actions button.mark-unfixed{color:#FA8C16;border-color:#FFD591;background:#FFF7E6;}' +
+    '.sp-ap-item .sp-ap-actions button.edit{color:#1890FF;border-color:#BAE7FF;background:#E6F7FF;}' +
+    '.sp-ap-item .sp-ap-actions button.del{color:#F5222D;border-color:#FFA39E;background:#FFF1F0;}' +
+    '.sp-ap-export{display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid #EBEEF5;flex-shrink:0;background:#fafafa;}' +
+    '.sp-ap-export button{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #EBEEF5;background:#fff;cursor:pointer;color:#606266;transition:all .15s;}' +
+    '.sp-ap-export button:hover{background:#F5F7FA;}' +
+    '#sp-anno-clear-all{color:#F5222D;border-color:#FFA39E;background:#FFF1F0;}' +
+    '#sp-anno-clear-all:hover{background:#FFF1F0;}' +
     '.review-disabled{opacity:0.6;}' +
     '.review-mode-active *{cursor:crosshair;}' +
     '.sp-marker-badge{font-family:system-ui,sans-serif;}'
@@ -535,7 +535,7 @@ export const review = {
         let badge = document.createElement('div')
         badge.className = 'sp-marker-badge'
         badge.setAttribute('data-review-exempt', '')
-        let color = needFix > 0 ? '#f59e0b' : '#3b82f6'
+        let color = needFix > 0 ? '#FA8C16' : '#1890FF'
         let count = annos.length
         badge.style.cssText = 'position:fixed;top:' + Math.max(0, rect.top - 8) + 'px;left:' + Math.min(window.innerWidth - 24, rect.right - 8) + 'px;' +
           'width:' + (count > 9 ? 'auto' : '20px') + ';min-width:20px;height:20px;padding:' + (count > 9 ? '0 5px' : '0') + ';' +
@@ -594,38 +594,38 @@ export const review = {
     let h = '<div class="modal-box" style="background:#fff;border-radius:14px;padding:20px 24px;max-width:520px;width:92%;max-height:75vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.15);">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">' +
       '<span style="font-size:16px;font-weight:600;">📋 批注详情（' + annos.length + ' 条）</span>' +
-      '<button id="sp-marker-close" style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:14px;color:#909399;display:flex;align-items:center;justify-content:center;">✕</button>' +
+      '<button id="sp-marker-close" style="width:28px;height:28px;border-radius:50%;border:1px solid #EBEEF5;background:#fff;cursor:pointer;font-size:14px;color:#909399;display:flex;align-items:center;justify-content:center;">✕</button>' +
       '</div>'
     for (let i = 0; i < annos.length; i++) {
       let a = annos[i]
       let isFixed = a.fixStatus === 'fixed'
       let fixBadge = isFixed
-        ? '<span style="display:inline-block;font-size:10px;padding:1px 8px;border-radius:10px;background:#dbeafe;color:#1e40af;font-weight:500;">已修改</span>'
-        : '<span style="display:inline-block;font-size:10px;padding:1px 8px;border-radius:10px;background:#fef3c7;color:#b45309;font-weight:500;">待修改</span>'
+        ? '<span style="display:inline-block;font-size:10px;padding:1px 8px;border-radius:10px;background:#BAE7FF;color:#096DD9;font-weight:500;">已修改</span>'
+        : '<span style="display:inline-block;font-size:10px;padding:1px 8px;border-radius:10px;background:#FFF7E6;color:#D46B08;font-weight:500;">待修改</span>'
       let replies = a.replies || []
       let repliesHtml = ''
       if (replies.length > 0) {
-        repliesHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;">'
+        repliesHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #EBEEF5;">'
         for (let ri = 0; ri < replies.length; ri++) {
-          repliesHtml += '<div style="font-size:11px;color:#6b7280;padding:4px 8px;margin-bottom:3px;background:#f0fdf4;border-radius:6px;line-height:1.5;">' +
-            '<span style="font-size:10px;color:#9ca3af;">↳ ' + escapeHtml(replies[ri].time) + '</span><br>' +
+          repliesHtml += '<div style="font-size:11px;color:#606266;padding:4px 8px;margin-bottom:3px;background:#F6FFED;border-radius:6px;line-height:1.5;">' +
+            '<span style="font-size:10px;color:#909399;">↳ ' + escapeHtml(replies[ri].time) + '</span><br>' +
             escapeHtml(replies[ri].text) + '</div>'
         }
         repliesHtml += '</div>'
       }
-      h += '<div class="sp-marker-item" data-anno-id="' + a.id + '" style="padding:12px 0;border-bottom:1px solid #f3f4f6;">' +
+      h += '<div class="sp-marker-item" data-anno-id="' + a.id + '" style="padding:12px 0;border-bottom:1px solid #F5F7FA;">' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
         fixBadge +
-        '<span style="font-size:13px;font-weight:600;color:#1f2937;">' + escapeHtml(a.elem) + '</span>' +
+        '<span style="font-size:13px;font-weight:600;color:#303133;">' + escapeHtml(a.elem) + '</span>' +
         '</div>' +
-        '<div style="font-size:13px;color:#374151;line-height:1.6;padding:8px 10px;background:#f9fafb;border-radius:6px;border-left:3px solid #2563eb;">' + escapeHtml(a.comment) + '</div>' +
+        '<div style="font-size:13px;color:#303133;line-height:1.6;padding:8px 10px;background:#FAFAFA;border-radius:6px;border-left:3px solid #1890FF;">' + escapeHtml(a.comment) + '</div>' +
         repliesHtml +
-        '<div style="font-size:11px;color:#9ca3af;margin-top:6px;">📅 ' + escapeHtml(a.time) + ' · 📄 ' + escapeHtml(a.page) + '</div>' +
+        '<div style="font-size:11px;color:#909399;margin-top:6px;">📅 ' + escapeHtml(a.time) + ' · 📄 ' + escapeHtml(a.page) + '</div>' +
         '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
-        '<input class="sp-marker-reply-input" data-anno-id="' + a.id + '" placeholder="输入反馈回复…" style="flex:1;min-width:140px;font-size:11px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;outline:none;">' +
-        '<button class="sp-marker-reply-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;cursor:pointer;white-space:nowrap;font-weight:500;">↩ 回复</button>' +
-        (isFixed ? '<button class="sp-marker-unfixed-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #fcd34d;background:#fffbeb;color:#f59e0b;cursor:pointer;white-space:nowrap;">↩ 未修改</button>' : '') +
-        '<button class="sp-marker-del-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #fecaca;background:#fef2f2;color:#ef4444;cursor:pointer;white-space:nowrap;">🗑 删除</button>' +
+        '<input class="sp-marker-reply-input" data-anno-id="' + a.id + '" placeholder="输入反馈回复…" style="flex:1;min-width:140px;font-size:11px;padding:6px 10px;border:1px solid #EBEEF5;border-radius:6px;outline:none;">' +
+        '<button class="sp-marker-reply-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #D3ADF7;background:#E6F7FF;color:#096DD9;cursor:pointer;white-space:nowrap;font-weight:500;">↩ 回复</button>' +
+        (isFixed ? '<button class="sp-marker-unfixed-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #FFD591;background:#FFF7E6;color:#FA8C16;cursor:pointer;white-space:nowrap;">↩ 未修改</button>' : '') +
+        '<button class="sp-marker-del-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #FFA39E;background:#FFF1F0;color:#F5222D;cursor:pointer;white-space:nowrap;">🗑 删除</button>' +
         '</div></div>'
     }
     h += '</div>'
@@ -745,13 +745,13 @@ export const review = {
     overlay.innerHTML =
       '<div class="modal-box" style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.15);">' +
       '<div class="modal-title" style="font-size:18px;font-weight:600;margin-bottom:12px;">✏️ 添加批注</div>' +
-      '<div class="modal-body" style="font-size:14px;color:#6b7280;margin-bottom:20px;line-height:1.6;">' +
-      '<div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">元件：<strong>' + escapeHtml(desc) + '</strong></div>' +
-      '<textarea class="input" id="sp-anno-comment" rows="6" placeholder="请输入评审意见…" style="resize:vertical;padding:10px 14px;border-radius:8px;font-size:14px;border:1px solid #e5e7eb;width:100%;outline:none;"></textarea>' +
+      '<div class="modal-body" style="font-size:14px;color:#606266;margin-bottom:20px;line-height:1.6;">' +
+      '<div style="font-size:12px;color:#909399;margin-bottom:8px;">元件：<strong>' + escapeHtml(desc) + '</strong></div>' +
+      '<textarea class="input" id="sp-anno-comment" rows="6" placeholder="请输入评审意见…" style="resize:vertical;padding:10px 14px;border-radius:8px;font-size:14px;border:1px solid #EBEEF5;width:100%;outline:none;"></textarea>' +
       '</div>' +
       '<div class="modal-actions" style="display:flex;gap:12px;justify-content:flex-end;">' +
-      '<button class="btn btn-default" id="sp-anno-cancel" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;">取消</button>' +
-      '<button class="btn btn-primary" id="sp-anno-submit" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#2563eb;color:#fff;">确认添加</button>' +
+      '<button class="btn btn-default" id="sp-anno-cancel" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #EBEEF5;background:#fff;color:#606266;">取消</button>' +
+      '<button class="btn btn-primary" id="sp-anno-submit" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#1890FF;color:#fff;">确认添加</button>' +
       '</div></div>'
     document.body.appendChild(overlay)
     overlay.querySelector('#sp-anno-cancel').onclick = function() { overlay.remove() }
@@ -780,18 +780,18 @@ export const review = {
     let toolbarHtml = ''
     if (this._annotations.length > 0) {
       let allActive = !activeFilter ? 'font-weight:700;' : ''
-      let needFixActive = activeFilter === 'needFix' ? 'box-shadow:0 0 0 2px #b45309;' : ''
-      let fixedActive = activeFilter === 'fixed' ? 'box-shadow:0 0 0 2px #1e40af;' : ''
-      toolbarHtml = '<div class="sp-ap-toolbar" style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0;background:#fafafa;">' +
-        '<span style="font-size:13px;color:#374151;flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<strong class="sp-filter-all" style="color:#1f2937;cursor:pointer;' + allActive + '">共 ' + this._annotations.length + ' 条</strong>' +
-        (needFixCount > 0 ? '<span class="sp-filter-needfix" style="display:inline-flex;align-items:center;gap:3px;font-size:12px;background:#fef3c7;color:#b45309;padding:2px 10px;border-radius:10px;cursor:pointer;' + needFixActive + '">' + needFixCount + ' 待修改</span>' : '') +
-        (fixedCount > 0 ? '<span class="sp-filter-fixed" style="display:inline-flex;align-items:center;gap:3px;font-size:12px;background:#dbeafe;color:#1e40af;padding:2px 10px;border-radius:10px;cursor:pointer;' + fixedActive + '">' + fixedCount + ' 已修改</span>' : '') +
+      let needFixActive = activeFilter === 'needFix' ? 'box-shadow:0 0 0 2px #D46B08;' : ''
+      let fixedActive = activeFilter === 'fixed' ? 'box-shadow:0 0 0 2px #096DD9;' : ''
+      toolbarHtml = '<div class="sp-ap-toolbar" style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #EBEEF5;flex-shrink:0;background:#fafafa;">' +
+        '<span style="font-size:13px;color:#303133;flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<strong class="sp-filter-all" style="color:#303133;cursor:pointer;' + allActive + '">共 ' + this._annotations.length + ' 条</strong>' +
+        (needFixCount > 0 ? '<span class="sp-filter-needfix" style="display:inline-flex;align-items:center;gap:3px;font-size:12px;background:#FFF7E6;color:#D46B08;padding:2px 10px;border-radius:10px;cursor:pointer;' + needFixActive + '">' + needFixCount + ' 待修改</span>' : '') +
+        (fixedCount > 0 ? '<span class="sp-filter-fixed" style="display:inline-flex;align-items:center;gap:3px;font-size:12px;background:#BAE7FF;color:#096DD9;padding:2px 10px;border-radius:10px;cursor:pointer;' + fixedActive + '">' + fixedCount + ' 已修改</span>' : '') +
         '</span>' +
         '</div>'
     }
     if (this._annotations.length === 0) {
-      list.innerHTML = toolbarHtml + '<div style="padding:40px 16px;font-size:13px;color:#9ca3af;text-align:center;">📝 暂无批注<br><span style="font-size:11px;color:#d1d5db;">点击左下角「评审」后点击页面元素添加</span></div>'
+      list.innerHTML = toolbarHtml + '<div style="padding:40px 16px;font-size:13px;color:#909399;text-align:center;">📝 暂无批注<br><span style="font-size:11px;color:#C0C4CC;">点击左下角「评审」后点击页面元素添加</span></div>'
       return
     }
     let h = ''
@@ -804,15 +804,15 @@ export const review = {
       let isFixed = a.fixStatus === 'fixed'
       let fixLabel = isFixed ? '已修改' : '待修改'
       let fixCls = isFixed ? 'fixed' : 'pending'
-      let fixColor = isFixed ? 'background:#dbeafe;color:#1e40af;' : 'background:#fef3c7;color:#b45309;'
+      let fixColor = isFixed ? 'background:#BAE7FF;color:#096DD9;' : 'background:#FFF7E6;color:#D46B08;'
       let replies = a.replies || []
       let repliesHtml = ''
       if (replies.length > 0) {
-        repliesHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;">'
+        repliesHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #EBEEF5;">'
         for (let ri = 0; ri < replies.length; ri++) {
-          repliesHtml += '<div style="font-size:12px;color:#6b7280;padding:6px 8px;margin-bottom:4px;background:#f0fdf4;border-radius:6px;line-height:1.5;">' +
-            '<span style="font-size:10px;color:#9ca3af;">↳ ' + escapeHtml(replies[ri].time) + '</span><br>' +
-            '<span style="color:#374151;">' + escapeHtml(replies[ri].text) + '</span></div>'
+          repliesHtml += '<div style="font-size:12px;color:#606266;padding:6px 8px;margin-bottom:4px;background:#F6FFED;border-radius:6px;line-height:1.5;">' +
+            '<span style="font-size:10px;color:#909399;">↳ ' + escapeHtml(replies[ri].time) + '</span><br>' +
+            '<span style="color:#303133;">' + escapeHtml(replies[ri].text) + '</span></div>'
         }
         repliesHtml += '</div>'
       }
@@ -824,8 +824,8 @@ export const review = {
         repliesHtml +
         '<div class="sp-ap-time">📅 ' + escapeHtml(a.time) + ' · 📄 ' + escapeHtml(a.page) + '</div>' +
         '<div style="margin-top:8px;display:flex;gap:6px;">' +
-        '<input class="sp-ap-reply-input" data-anno-id="' + a.id + '" placeholder="输入反馈回复…" style="flex:1;font-size:12px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;outline:none;transition:border-color .2s;">' +
-        '<button class="reply-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid #a5b4fc;background:#eef2ff;color:#4338ca;cursor:pointer;white-space:nowrap;font-weight:500;">↩ 回复</button>' +
+        '<input class="sp-ap-reply-input" data-anno-id="' + a.id + '" placeholder="输入反馈回复…" style="flex:1;font-size:12px;padding:6px 10px;border:1px solid #EBEEF5;border-radius:6px;outline:none;transition:border-color .2s;">' +
+        '<button class="reply-btn" data-anno-id="' + a.id + '" style="font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid #D3ADF7;background:#E6F7FF;color:#096DD9;cursor:pointer;white-space:nowrap;font-weight:500;">↩ 回复</button>' +
         '</div>' +
         '<div class="sp-ap-actions">' +
         (isFixed ? '<button class="mark-unfixed" data-anno-id="' + a.id + '">↩ 未修改</button>' : '') +
@@ -835,7 +835,7 @@ export const review = {
     }
     list.innerHTML = toolbarHtml + h
     if (activeFilter && filteredCount === 0) {
-      list.innerHTML = toolbarHtml + '<div style="padding:24px 16px;font-size:13px;color:#9ca3af;text-align:center;">没有匹配的批注</div>'
+      list.innerHTML = toolbarHtml + '<div style="padding:24px 16px;font-size:13px;color:#909399;text-align:center;">没有匹配的批注</div>'
     }
     let allBtn = list.querySelector('.sp-filter-all')
     if (allBtn) allBtn.addEventListener('click', function() { self._filterStatus = null; self._refreshPanel() })
@@ -892,13 +892,13 @@ export const review = {
     overlay.innerHTML =
       '<div class="modal-box" style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.15);">' +
       '<div class="modal-title" style="font-size:18px;font-weight:600;margin-bottom:12px;">✏️ 编辑批注</div>' +
-      '<div class="modal-body" style="font-size:14px;color:#6b7280;margin-bottom:20px;line-height:1.6;">' +
-      '<div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">元件：<strong>' + escapeHtml(anno.elem) + '</strong></div>' +
-      '<textarea class="input" id="sp-anno-comment" rows="6" style="resize:vertical;padding:10px 14px;border-radius:8px;font-size:14px;border:1px solid #e5e7eb;width:100%;outline:none;">' + escapeHtml(anno.comment) + '</textarea>' +
+      '<div class="modal-body" style="font-size:14px;color:#606266;margin-bottom:20px;line-height:1.6;">' +
+      '<div style="font-size:12px;color:#909399;margin-bottom:8px;">元件：<strong>' + escapeHtml(anno.elem) + '</strong></div>' +
+      '<textarea class="input" id="sp-anno-comment" rows="6" style="resize:vertical;padding:10px 14px;border-radius:8px;font-size:14px;border:1px solid #EBEEF5;width:100%;outline:none;">' + escapeHtml(anno.comment) + '</textarea>' +
       '</div>' +
       '<div class="modal-actions" style="display:flex;gap:12px;justify-content:flex-end;">' +
-      '<button class="btn btn-default" id="sp-anno-cancel" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;">取消</button>' +
-      '<button class="btn btn-primary" id="sp-anno-submit" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#2563eb;color:#fff;">保存修改</button>' +
+      '<button class="btn btn-default" id="sp-anno-cancel" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #EBEEF5;background:#fff;color:#606266;">取消</button>' +
+      '<button class="btn btn-primary" id="sp-anno-submit" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#1890FF;color:#fff;">保存修改</button>' +
       '</div></div>'
     document.body.appendChild(overlay)
     let textarea = overlay.querySelector('#sp-anno-comment')
@@ -1109,7 +1109,7 @@ export const requirement = {
     drawer.setAttribute('data-review-exempt', '')
     drawer.innerHTML =
       '<div class="sp-req-drawer-header"><span>📋 页面说明</span>' +
-      '<button class="btn btn-sm" id="sp-req-close" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;">✕</button>' +
+      '<button class="btn btn-sm" id="sp-req-close" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid #EBEEF5;background:#fff;color:#606266;">✕</button>' +
       '</div>' +
       '<div class="sp-req-tabs">' +
       '<div class="sp-req-tab active" data-tab="req">📄 需求说明</div>' +
@@ -1154,8 +1154,8 @@ export const requirement = {
       let btn = this
       const orig = btn.textContent
       btn.textContent = '✓ 已复制'
-      btn.style.color = '#059669'
-      btn.style.borderColor = '#059669'
+      btn.style.color = '#52C41A'
+      btn.style.borderColor = '#52C41A'
       setTimeout(function() { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = '' }, 1500)
     }
   },
@@ -1197,7 +1197,7 @@ export const toast = {
       this._container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;'
       document.body.appendChild(this._container)
     }
-    const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' }
+    const colors = { success: '#52C41A', error: '#F5222D', warning: '#FA8C16', info: '#1890FF' }
     const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }
     const toast = document.createElement('div')
     toast.setAttribute('data-review-exempt', '')
@@ -1239,13 +1239,13 @@ export function confirm(message, options) {
     overlay.innerHTML =
       '<div class="modal-box" style="background:#fff;border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.15);">' +
       '<div class="modal-title" style="font-size:18px;font-weight:600;margin-bottom:12px;">' + escapeHtml(options.title || '确认操作') + '</div>' +
-      '<div class="modal-body" style="font-size:14px;color:#6b7280;margin-bottom:20px;line-height:1.6;">' +
+      '<div class="modal-body" style="font-size:14px;color:#606266;margin-bottom:20px;line-height:1.6;">' +
       '<p>' + escapeHtml(message) + '</p>' +
       (options.extraHtml ? escapeHtml(String(options.extraHtml)) : '') +
       '</div>' +
       '<div class="modal-actions" style="display:flex;gap:12px;justify-content:flex-end;">' +
-      '<button class="btn btn-default" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;">' + escapeHtml(options.cancelText || '取消') + '</button>' +
-      '<button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#2563eb;color:#fff;">' + escapeHtml(options.okText || '确认') + '</button>' +
+      '<button class="btn btn-default" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid #EBEEF5;background:#fff;color:#606266;">' + escapeHtml(options.cancelText || '取消') + '</button>' +
+      '<button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:#1890FF;color:#fff;">' + escapeHtml(options.okText || '确认') + '</button>' +
       '</div></div>'
     document.body.appendChild(overlay)
     overlay.querySelector('.btn-default').onclick = function() { overlay.remove(); resolve(false) }
@@ -1297,11 +1297,11 @@ export function createDefaultActions(route, extra) {
   const reviewAction = extra.reviewAction || function() {}
   const requirementAction = extra.requirementAction || function() {}
   const btns = extra.btns || [
-    { label: '管理端', url: 'http://localhost:5002', name: 'ai-sp-admin', style: { background: '#4A90E2', color: '#fff' } },
+    { label: '管理端', url: 'http://localhost:5002', name: 'ai-sp-admin', style: { background: '#1890FF', color: '#fff' } },
     { label: '训练端', url: 'http://localhost:5001', name: 'ai-sp-training', style: { background: '#7c3aed', color: '#fff' } },
-    { label: '考试端', url: 'http://localhost:5003', name: 'ai-sp-exam', style: { background: '#059669', color: '#fff' } },
+    { label: '考试端', url: 'http://localhost:5003', name: 'ai-sp-exam', style: { background: '#52C41A', color: '#fff' } },
     { label: '运营平台', url: 'http://localhost:5005', name: 'ai-sp-ops', style: { background: '#7c3aed', color: '#fff' } },
-    { label: '电子书包', url: 'http://localhost:5004', name: 'ai-sp-app-training', style: { background: '#059669', color: '#fff' } },
+    { label: '电子书包', url: 'http://localhost:5004', name: 'ai-sp-app-training', style: { background: '#52C41A', color: '#fff' } },
   ]
 
   const actions = [
@@ -1343,17 +1343,17 @@ export const bottomBar = {
     style.id = 'sp-bottom-bar-styles'
     style.textContent = [
       '.sp-floating-bar{position:fixed;z-index:9999;user-select:none;}',
-      '.sp-floating-bar .sp-bar-top{display:flex;align-items:center;gap:4px;background:#fff;border-radius:32px;padding:4px 4px 4px 8px;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,.08);}',
-      '.sp-floating-bar .sp-bar-drag{cursor:grab;color:#9ca3af;font-size:12px;letter-spacing:2px;padding:0 4px;line-height:1;}',
+      '.sp-floating-bar .sp-bar-top{display:flex;align-items:center;gap:4px;background:#fff;border-radius:32px;padding:4px 4px 4px 8px;border:1px solid #EBEEF5;box-shadow:0 2px 8px rgba(0,0,0,.08);}',
+      '.sp-floating-bar .sp-bar-drag{cursor:grab;color:#909399;font-size:12px;letter-spacing:2px;padding:0 4px;line-height:1;}',
       '.sp-floating-bar .sp-bar-drag:active{cursor:grabbing;}',
-      '.sp-floating-bar .sp-bar-toggle{width:30px;height:30px;border-radius:50%;border:1px solid #d1d5db;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}',
-      '.sp-floating-bar .sp-bar-toggle:hover{background:#f3f4f6;}',
+      '.sp-floating-bar .sp-bar-toggle{width:30px;height:30px;border-radius:50%;border:1px solid #C0C4CC;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}',
+      '.sp-floating-bar .sp-bar-toggle:hover{background:#F5F7FA;}',
       '.sp-floating-bar .sp-bar-actions{position:absolute;bottom:calc(100% + 8px);right:0;display:flex;flex-direction:column;gap:6px;opacity:0;visibility:hidden;transition:all .2s;pointer-events:none;}',
       '.sp-floating-bar.expanded .sp-bar-actions{opacity:1;visibility:visible;pointer-events:auto;}',
-      '.sp-floating-bar .sp-bar-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:32px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:13px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .2s;white-space:nowrap;min-width:72px;}',
-      '.sp-floating-bar .sp-bar-btn:hover{background:#f3f4f6;border-color:#9ca3af;}',
-      '.sp-floating-bar .sp-bar-btn.active{background:#2563eb;color:#fff;border-color:#2563eb;}',
-      '.sp-floating-bar .sp-bar-btn.review-active{background:#f59e0b;color:#fff;border-color:#f59e0b;}',
+      '.sp-floating-bar .sp-bar-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:32px;border:1px solid #C0C4CC;background:#fff;cursor:pointer;font-size:13px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .2s;white-space:nowrap;min-width:72px;}',
+      '.sp-floating-bar .sp-bar-btn:hover{background:#F5F7FA;border-color:#909399;}',
+      '.sp-floating-bar .sp-bar-btn.active{background:#1890FF;color:#fff;border-color:#1890FF;}',
+      '.sp-floating-bar .sp-bar-btn.review-active{background:#FA8C16;color:#fff;border-color:#FA8C16;}',
     ].join('\n')
     document.head.appendChild(style)
   },

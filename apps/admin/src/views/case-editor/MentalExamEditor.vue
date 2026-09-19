@@ -230,8 +230,8 @@ watch(localData, () => {
 .param-item { display: flex; flex-direction: column; gap: 6px; }
 .param-header { display: flex; justify-content: space-between; align-items: center; }
 .param-header label { font-size: 13px; font-weight: 500; }
-.param-value { font-size: 12px; color: #409EFF; font-weight: 600; font-family: monospace; }
-.param-slider { width: 100%; accent-color: #409EFF; }
+.param-value { font-size: 12px; color: #1890FF; font-weight: 600; font-family: monospace; }
+.param-slider { width: 100%; accent-color: #1890FF; }
 .param-range { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-tertiary); }
 .mb-3 { margin-bottom: 12px; }
 </style>

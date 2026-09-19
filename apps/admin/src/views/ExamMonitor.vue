@@ -36,7 +36,7 @@
             </div></div>
             <div class="card" style="padding:0"><div class="table-wrapper"><table class="table">
               <thead><tr><th>考站名称</th><th>考站类型</th><th>考题</th><th style="text-align:center">考试中</th><th style="text-align:center">暂停</th><th style="text-align:center">已考</th><th style="text-align:center">待考</th><th style="text-align:center">中止</th><th style="text-align:center">考生端</th><th style="text-align:center">考官端</th><th>开始时间</th><th>结束时间</th></tr></thead>
-              <tbody><tr v-for="st in stationCards" :key="st.name"><td style="font-weight:600">{{ st.name }}</td><td>{{ st.stationType }}</td><td>{{ st.caseInfo }}</td><td style="text-align:center"><span class="badge badge-info" style="cursor:pointer" @click="openNameList(st.name, 'in_progress')">{{ st.inProgress }}</span></td><td style="text-align:center"><span class="badge badge-warning" style="cursor:pointer" @click="openNameList(st.name, 'paused')">{{ st.paused }}</span></td><td style="text-align:center"><span class="badge badge-success" style="cursor:pointer" @click="openNameList(st.name, 'completed')">{{ st.completed }}</span></td><td style="text-align:center"><span class="badge badge-warning" style="cursor:pointer" @click="openNameList(st.name, 'pending')">{{ st.pending }}</span></td><td style="text-align:center"><span class="badge badge-error" style="cursor:pointer" @click="openNameList(st.name, 'abnormal')">{{ st.abnormal }}</span></td><td style="text-align:center"><span class="text-primary" style="cursor:pointer;font-weight:600" @click="openDeviceList(st.name, 'SP')">{{ st.spDeviceCount }}</span></td><td style="text-align:center"><span style="cursor:pointer;font-weight:600;color:#7c3aed" @click="openDeviceList(st.name, 'examiner')">{{ st.exDeviceCount }}</span></td><td>{{ st.startTime }}</td><td>{{ st.endTime }}</td></tr></tbody>
+              <tbody><tr v-for="st in stationCards" :key="st.name"><td style="font-weight:600">{{ st.name }}</td><td>{{ st.stationType }}</td><td>{{ st.caseInfo }}</td><td style="text-align:center"><span class="badge badge-info" style="cursor:pointer" @click="openNameList(st.name, 'in_progress')">{{ st.inProgress }}</span></td><td style="text-align:center"><span class="badge badge-warning" style="cursor:pointer" @click="openNameList(st.name, 'paused')">{{ st.paused }}</span></td><td style="text-align:center"><span class="badge badge-success" style="cursor:pointer" @click="openNameList(st.name, 'completed')">{{ st.completed }}</span></td><td style="text-align:center"><span class="badge badge-warning" style="cursor:pointer" @click="openNameList(st.name, 'pending')">{{ st.pending }}</span></td><td style="text-align:center"><span class="badge badge-error" style="cursor:pointer" @click="openNameList(st.name, 'abnormal')">{{ st.abnormal }}</span></td><td style="text-align:center"><span class="text-primary" style="cursor:pointer;font-weight:600" @click="openDeviceList(st.name, 'SP')">{{ st.spDeviceCount }}</span></td><td style="text-align:center"><span style="cursor:pointer;font-weight:600;color:#7C3AED" @click="openDeviceList(st.name, 'examiner')">{{ st.exDeviceCount }}</span></td><td>{{ st.startTime }}</td><td>{{ st.endTime }}</td></tr></tbody>
             </table></div></div>
           </template>
 
@@ -49,7 +49,7 @@
             </div></div>
             <div class="card" style="padding:0"><div class="table-wrapper"><table class="table">
               <thead><tr><th style="width:50px">序号</th><th>考官姓名</th><th>手机号</th><th>登录状态</th><th>登录设备</th><th>所在考站</th><th>当前评分对象</th><th style="text-align:center">已评分</th></tr></thead>
-              <tbody><tr v-for="(ex, ei) in filteredExaminers" :key="ex.id"><td>{{ ei + 1 }}</td><td style="font-weight:500">{{ ex.name }}</td><td>{{ ex.phone }}</td><td><span :style="{display:'inline-flex',alignItems:'center',gap:'4px',color:ex.logged_in?'var(--success)':'var(--text-tertiary)'}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%" :style="{background:ex.logged_in?'var(--success)':'#ccc'}"></span>{{ ex.logged_in ? '已登录' : '未登录' }}</span></td><td>{{ ex.device || '-' }}</td><td>{{ ex.station || '-' }}</td><td>{{ ex.scoring_target || '-' }}</td><td style="text-align:center"><span class="badge badge-info" style="cursor:pointer" @click="openExaminerScoreList(ex)">{{ ex.scored_count }}</span></td></tr></tbody>
+              <tbody><tr v-for="(ex, ei) in filteredExaminers" :key="ex.id"><td>{{ ei + 1 }}</td><td style="font-weight:500">{{ ex.name }}</td><td>{{ ex.phone }}</td><td><span :style="{display:'inline-flex',alignItems:'center',gap:'4px',color:ex.logged_in?'var(--success)':'var(--text-tertiary)'}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%" :style="{background:ex.logged_in?'var(--success)':'#C0C4CC'}"></span>{{ ex.logged_in ? '已登录' : '未登录' }}</span></td><td>{{ ex.device || '-' }}</td><td>{{ ex.station || '-' }}</td><td>{{ ex.scoring_target || '-' }}</td><td style="text-align:center"><span class="badge badge-info" style="cursor:pointer" @click="openExaminerScoreList(ex)">{{ ex.scored_count }}</span></td></tr></tbody>
             </table></div></div>
           </template>
 
@@ -79,10 +79,10 @@
         </div>
         <div class="monitor-main">
           <div class="stat-cards-row mb-4" style="grid-template-columns:repeat(4,1fr)" v-if="scoreActiveMajor">
-            <div class="stat-card" style="position:relative"><div class="stat-card-icon" style="background:#d1fae5;color:var(--success)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--success)">{{ currentScoreStats.passRate }}</div><div class="stat-card-label">通过率</div></div><button class="btn btn-sm" style="position:absolute;top:8px;right:8px" @click="openScoreSettings()">⚙</button></div>
-            <div class="stat-card"><div class="stat-card-icon" style="background:#eff6ff;color:var(--primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--primary)">{{ currentScoreStats.avg }}</div><div class="stat-card-label">平均分</div></div></div>
-            <div class="stat-card"><div class="stat-card-icon" style="background:#fef3c7;color:#f59e0b"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:#f59e0b">{{ currentScoreStats.max }}</div><div class="stat-card-label">最高分</div></div></div>
-            <div class="stat-card"><div class="stat-card-icon" style="background:#fee2e2;color:var(--error)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 18 13.5 8.5 8.5 13.5 1 6"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--error)">{{ currentScoreStats.min }}</div><div class="stat-card-label">最低分</div></div></div>
+            <div class="stat-card" style="position:relative"><div class="stat-card-icon" style="background:#F6FFED;color:var(--success)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--success)">{{ currentScoreStats.passRate }}</div><div class="stat-card-label">通过率</div></div><button class="btn btn-sm" style="position:absolute;top:8px;right:8px" @click="openScoreSettings()">⚙</button></div>
+            <div class="stat-card"><div class="stat-card-icon" style="background:#E6F7FF;color:var(--primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--primary)">{{ currentScoreStats.avg }}</div><div class="stat-card-label">平均分</div></div></div>
+            <div class="stat-card"><div class="stat-card-icon" style="background:#FFF7E6;color:#FA8C16"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:#FA8C16">{{ currentScoreStats.max }}</div><div class="stat-card-label">最高分</div></div></div>
+            <div class="stat-card"><div class="stat-card-icon" style="background:#FFF1F0;color:var(--error)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 18 13.5 8.5 8.5 13.5 1 6"/></svg></div><div class="stat-card-body"><div class="stat-card-value" style="color:var(--error)">{{ currentScoreStats.min }}</div><div class="stat-card-label">最低分</div></div></div>
           </div>
           <div class="card mb-4" style="padding:12px 20px" v-if="scoreActiveMajor"><div class="flex items-center gap-4">
             <div class="filter-item"><input class="input" placeholder="搜索考生姓名/手机号" v-model="scoreKeyword" style="min-width:200px"></div>
@@ -111,7 +111,7 @@
       <div class="drawer-container" style="width:auto;max-width:900px;min-width:560px">
         <div class="drawer-header"><span style="font-weight:600">{{ nameListTitle }} — {{ nameListStatusLabel }}</span><button class="btn-default btn-sm" @click="nameListVisible = false">✕</button></div>
         <div class="drawer-body">
-          <div class="name-list-legend mb-3" style="font-size:12px;color:var(--text-tertiary);padding:8px 12px;background:#f9fafb;border-radius:6px">
+          <div class="name-list-legend mb-3" style="font-size:12px;color:var(--text-tertiary);padding:8px 12px;background:#FAFAFA;border-radius:6px">
             <span><strong>暂停：</strong>暂停考生当前考站的计时，考试状态保持不变，后续可恢复</span>
             <span style="margin-left:24px"><strong>中止：</strong>终止该考站考试，标记为异常状态，需说明原因</span>
           </div>
@@ -127,7 +127,7 @@
       <div class="drawer-container" style="width:640px"><div class="drawer-header"><span style="font-weight:600">{{ deviceListTitle }} — {{ deviceListTypeLabel }}设备</span><button class="btn-default btn-sm" @click="deviceListVisible = false">✕</button></div>
       <div class="drawer-body"><div class="card" style="padding:0"><div class="table-wrapper"><table class="table">
         <thead><tr v-if="deviceListType === 'SP'"><th>设备名称</th><th>登录账号</th><th>当前考生</th><th>状态</th><th>考核项目</th><th>IP</th><th>在线</th></tr><tr v-else><th>设备名称</th><th>登录账号</th><th>考官</th><th>IP</th><th>在线</th></tr></thead>
-        <tbody><tr v-for="d in deviceListData" :key="d.id"><td>{{ d.device_name }}</td><td>{{ d.account }}</td><td style="font-weight:500">{{ d.user || '-' }}</td><td v-if="deviceListType === 'SP'"><span :style="{color: d.userStatus === '答题中' ? 'var(--primary)' : 'var(--text-secondary)'}">{{ d.userStatus }}</span></td><td v-if="deviceListType === 'SP'"><span style="font-size:12px">{{ d.examItems }}</span></td><td><code style="background:#f3f4f6;padding:2px 6px;border-radius:4px">{{ d.ip }}</code></td><td><span :style="{color:d.online?'var(--success)':'var(--text-tertiary)'}">{{ d.online ? '在线' : '离线' }}</span></td></tr></tbody>
+        <tbody><tr v-for="d in deviceListData" :key="d.id"><td>{{ d.device_name }}</td><td>{{ d.account }}</td><td style="font-weight:500">{{ d.user || '-' }}</td><td v-if="deviceListType === 'SP'"><span :style="{color: d.userStatus === '答题中' ? 'var(--primary)' : 'var(--text-secondary)'}">{{ d.userStatus }}</span></td><td v-if="deviceListType === 'SP'"><span style="font-size:12px">{{ d.examItems }}</span></td><td><code style="background:#F5F7FA;padding:2px 6px;border-radius:4px">{{ d.ip }}</code></td><td><span :style="{color:d.online?'var(--success)':'var(--text-tertiary)'}">{{ d.online ? '在线' : '离线' }}</span></td></tr></tbody>
       </table></div></div></div>
     </div></div>
 
@@ -856,7 +856,7 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
 }
 
 .table th {
-  background: #f9fafb;
+  background: #FAFAFA;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -871,23 +871,23 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
 }
 
 .badge-info {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #BAE7FF;
+  color: #096DD9;
 }
 
 .badge-warning {
-  background: #fef3c7;
-  color: #92400e;
+  background: #FFF7E6;
+  color: #D46B08;
 }
 
 .badge-success {
-  background: #d1fae5;
-  color: #065f46;
+  background: #F6FFED;
+  color: #389E0D;
 }
 
 .badge-error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #FFF1F0;
+  color: #CF1322;
 }
 
 .stat-cards-row {
@@ -1057,7 +1057,7 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
 }
 
 .score-table th {
-  background: #f9fafb;
+  background: #FAFAFA;
   font-weight: 600;
 }
 
@@ -1066,7 +1066,7 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #f9fafb;
+  background: #FAFAFA;
   border-radius: 8px;
 }
 
@@ -1089,7 +1089,7 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
   font-size: 13px;
   line-height: 1.8;
   color: var(--text-secondary);
-  background: #f9fafb;
+  background: #FAFAFA;
   padding: 12px 16px;
   border-radius: 8px;
 }
@@ -1116,7 +1116,7 @@ const viewAIReport = (s) => { aiReportCandidate.value = s; aiReportVisible.value
 .radar-bar-wrap {
   flex: 1;
   height: 12px;
-  background: #f3f4f6;
+  background: #F5F7FA;
   border-radius: 6px;
   overflow: hidden;
 }

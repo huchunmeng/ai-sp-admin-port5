@@ -130,21 +130,21 @@ onBeforeUnmount(() => { document.removeEventListener('click', handleClickOutside
 .search-select { position: relative; min-width: 120px; }
 .search-select-input {
   display: flex; align-items: center; gap: 6px; padding: 7px 10px;
-  border-radius: var(--input-radius, 8px); border: 1px solid var(--border, #d1d5db);
+  border-radius: var(--input-radius, 8px); border: 1px solid var(--border, #C0C4CC);
   background: white; cursor: pointer; font-size: 13px; user-select: none;
 }
 .search-select-dropdown {
   position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
-  background: white; border: 1px solid var(--border, #d1d5db); border-radius: 8px;
+  background: white; border: 1px solid var(--border, #C0C4CC); border-radius: 8px;
   margin-top: 4px; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 .search-select-dropdown input {
-  width: 100%; padding: 8px 10px; border: none; border-bottom: 1px solid #e5e7eb;
+  width: 100%; padding: 8px 10px; border: none; border-bottom: 1px solid #EBEEF5;
   outline: none; font-size: 13px; position: sticky; top: 0; background: #fff; z-index: 1;
 }
 .search-select-option {
   padding: 8px 10px; cursor: pointer; font-size: 13px; transition: background .1s;
 }
 .search-select-option:hover,
-.search-select-option.highlighted { background: var(--primary-light, #eff6ff); }
+.search-select-option.highlighted { background: var(--primary-light, #E6F7FF); }
 </style>

@@ -50,7 +50,7 @@
             <line x1="140" y1="140" x2="215" y2="228" stroke="var(--border)" stroke-width="1"/>
             <line x1="140" y1="140" x2="65" y2="228" stroke="var(--border)" stroke-width="1"/>
             <line x1="140" y1="140" x2="41" y2="100" stroke="var(--border)" stroke-width="1"/>
-            <polygon points="140,57 195,110 189,200 80,200 59,110" fill="rgba(37,99,235,0.12)" stroke="var(--primary)" stroke-width="2"/>
+            <polygon points="140,57 195,110 189,200 80,200 59,110" fill="rgba(24,144,255,0.12)" stroke="var(--primary)" stroke-width="2"/>
             <circle cx="140" cy="57" r="4" fill="var(--primary)"/>
             <circle cx="195" cy="110" r="4" fill="var(--error)"/>
             <circle cx="189" cy="200" r="4" fill="var(--primary)"/>
@@ -252,10 +252,10 @@ function goToCompanion(rec) {
   font-size: 22px;
   flex-shrink: 0;
 }
-.stat-blue { background: #eff6ff; color: #2563eb; }
-.stat-green { background: #d1fae5; color: #10b981; }
-.stat-purple { background: #f0f0ff; color: #7c3aed; }
-.stat-red { background: #fee2e2; color: #ef4444; }
+.stat-blue { background: #E6F7FF; color: #1890FF; }
+.stat-green { background: #F6FFED; color: #52C41A; }
+.stat-purple { background: #EDE9FE; color: #7c3aed; }
+.stat-red { background: #FFF1F0; color: #F5222D; }
 .stat-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
 .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
 
@@ -301,8 +301,8 @@ function goToCompanion(rec) {
   padding: 10px 14px;
   border-radius: 8px;
   margin-bottom: 8px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: #FFF1F0;
+  border: 1px solid #FFA39E;
 }
 .weakness-icon { font-size: 18px; flex-shrink: 0; }
 .weakness-label { font-size: 13px; font-weight: 500; }
@@ -314,8 +314,8 @@ function goToCompanion(rec) {
   font-weight: 600;
   flex-shrink: 0;
 }
-.w-severity.high { background: #fecaca; color: #dc2626; }
-.w-severity.medium { background: #fed7aa; color: #ea580c; }
+.w-severity.high { background: #FFA39E; color: #F5222D; }
+.w-severity.medium { background: #FFF7E6; color: #D46B08; }
 
 /* 趋势 */
 .trend-warning {
@@ -332,7 +332,7 @@ function goToCompanion(rec) {
   margin-bottom: 8px;
 }
 .score-bar-label { width: 90px; font-size: 12px; flex-shrink: 0; color: var(--text-secondary); }
-.score-bar-track { flex: 1; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+.score-bar-track { flex: 1; height: 8px; background: #F5F7FA; border-radius: 4px; overflow: hidden; }
 .score-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
 .score-bar-val { width: 36px; font-size: 12px; font-weight: 600; text-align: right; flex-shrink: 0; }
 
@@ -379,9 +379,9 @@ function goToCompanion(rec) {
   font-size: 12px;
   font-weight: 500;
 }
-.badge-info { background: #dbeafe; color: #1e40af; }
-.badge-success { background: #d1fae5; color: #065f46; }
-.badge-warning { background: #fef3c7; color: #92400e; }
-.badge-error { background: #fee2e2; color: #991b1b; }
-.badge-purple { background: #f3f0ff; color: #7c3aed; }
+.badge-info { background: #BAE7FF; color: #096DD9; }
+.badge-success { background: #F6FFED; color: #389E0D; }
+.badge-warning { background: #FFF7E6; color: #D46B08; }
+.badge-error { background: #FFF1F0; color: #CF1322; }
+.badge-purple { background: #EDE9FE; color: #7c3aed; }
 </style>

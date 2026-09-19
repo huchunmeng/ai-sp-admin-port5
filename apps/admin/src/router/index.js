@@ -28,6 +28,10 @@ const routes = [
       { path: 'mdt-cases', name: 'mdtCases', component: () => import('@/views/mdt-case-manage/MDTCaseList.vue') },
       { path: 'mdt-case-view/:mdtId', name: 'mdtCaseView', props: true, component: () => import('@/views/mdt-case-manage/MDTCaseView.vue') },
       { path: 'mdt-case-editor/:mdtId?', name: 'mdtCaseEditor', props: true, component: () => import('@/views/mdt-case-manage/MDTEditor.vue') },
+      // 住培/实习/考试管理（占位模块，待补真实页面）
+      { path: 'residency-manage', name: 'residencyManage', component: () => import('@/views/PlaceholderView.vue'), meta: { title: '住培管理' } },
+      { path: 'internship-manage', name: 'internshipManage', component: () => import('@/views/PlaceholderView.vue'), meta: { title: '实习管理' } },
+      { path: 'exam-manage', name: 'examManage', component: () => import('@/views/PlaceholderView.vue'), meta: { title: '考试管理' } },
 
     ]
   }

@@ -343,7 +343,7 @@ onMounted(() => {
 .editor-title { margin: 0; font-size: 16px; color: var(--text-main); }
 .patient-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
-  background: #eef2ff; color: #4338ca;
+  background: #E6F7FF; color: #096DD9;
 }
 .case-id-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
@@ -403,7 +403,7 @@ onMounted(() => {
   width: 230px;
   min-width: 230px;
   border-right: 1px solid var(--border);
-  background: #fafbfc;
+  background: #FAFAFA;
   display: flex;
   flex-direction: column;
 }
@@ -437,7 +437,7 @@ onMounted(() => {
   text-align: left;
   transition: background 0.15s;
 }
-.rrkb-nav-item:hover { background: #eef2ff; }
+.rrkb-nav-item:hover { background: #E6F7FF; }
 .rrkb-nav-item.active {
   background: var(--primary-light);
   color: var(--primary);
@@ -469,9 +469,9 @@ onMounted(() => {
   color: var(--text-secondary);
   border-left: 3px solid transparent;
 }
-.rrkb-nav-l2:hover { background: #eef2ff; }
+.rrkb-nav-l2:hover { background: #E6F7FF; }
 .rrkb-nav-l2.active {
-  background: #f0f4ff;
+  background: #E6F7FF;
   color: var(--primary);
   font-weight: 600;
   border-left-color: var(--primary);
@@ -489,7 +489,7 @@ onMounted(() => {
   min-width: 20px;
   padding: 1px 6px;
   border-radius: 10px;
-  background: #eef2ff;
+  background: #E6F7FF;
   color: var(--primary);
   font-size: 11px;
   font-weight: 600;
@@ -535,7 +535,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #f8fafc;
+  background: #F0F2F5;
   border-bottom: 1px solid var(--border);
 }
 .rrkb-card-meta {

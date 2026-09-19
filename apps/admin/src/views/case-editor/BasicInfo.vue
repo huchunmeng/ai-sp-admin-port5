@@ -169,8 +169,8 @@ function onCategoryChange(val) {
 .filter-item label { font-size: 12px; color: var(--text-secondary); }
 .tag-chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: var(--primary-light); font-size: 13px; }
-.tag-chip-primary { background: #dbeafe; color: #1e40af; }
-.tag-chip-warning { background: #fef3c7; color: #92400e; }
+.tag-chip-primary { background: #BAE7FF; color: #096DD9; }
+.tag-chip-warning { background: #FFF7E6; color: #D46B08; }
 .tag-chip-close { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-tertiary); }
 .tag-search-row { display: flex; gap: 8px; }
 .tag-search-input-wrap { position: relative; flex: 1; }

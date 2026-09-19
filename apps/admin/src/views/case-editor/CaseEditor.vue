@@ -424,7 +424,7 @@
                           </tr>
                         </tbody>
                         <tfoot>
-                          <tr style="background:#f0f4ff;font-weight:600;">
+                          <tr style="background:#E6F7FF;font-weight:600;">
                             <td class="pv-td-num" colspan="3" style="text-align:right;font-size:12px;">合计</td>
                             <td class="pv-td-num">{{ scoreSheetTotalGroup }}</td>
                             <td></td>
@@ -2066,8 +2066,8 @@ async function acceptGenerated() {
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 4px;
-  background: #f0fdf4;
-  color: #16a34a;
+  background: #F6FFED;
+  color: #52C41A;
   font-family: monospace;
 }
 
@@ -2118,8 +2118,8 @@ async function acceptGenerated() {
 .bg-gen-banner {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   padding: 8px 14px; margin-bottom: 8px;
-  background: #ecf5ff; border: 1px solid #b3d8ff; border-radius: 8px;
-  font-size: 13px; color: #409EFF;
+  background: #E6F7FF; border: 1px solid #BAE7FF; border-radius: 8px;
+  font-size: 13px; color: #1890FF;
 }
 .bg-gen-hint { font-size: 11px; color: #909399; margin-left: 12px; }
 
@@ -2133,28 +2133,28 @@ async function acceptGenerated() {
 }
 
 .mock-warning {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: #FFF7E6;
+  border: 1px solid #FFD591;
   border-radius: 6px;
   padding: 8px 14px;
   font-size: 13px;
-  color: #856404;
+  color: #D46B08;
   line-height: 1.6;
 }
 .mock-warning a {
-  color: #0d6efd;
+  color: #1890FF;
   font-weight: 500;
 }
 .mock-help-box {
   margin-top: 8px;
   padding: 10px 14px;
-  background: #f8f9fa;
+  background: #FAFAFA;
   border-radius: 4px;
   font-size: 12px;
   line-height: 1.8;
 }
 .mock-help-box code {
-  background: #e9ecef;
+  background: #F5F7FA;
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 11px;
@@ -2318,7 +2318,7 @@ async function acceptGenerated() {
   left: 9%;
   right: 9%;
   height: 2px;
-  background: #e5e7eb;
+  background: #EBEEF5;
   transition: background .3s;
 }
 
@@ -2342,10 +2342,10 @@ async function acceptGenerated() {
   align-items: center;
   justify-content: center;
   background: #fff;
-  border: 2px solid #d1d5db;
+  border: 2px solid #C0C4CC;
   font-size: 13px;
   font-weight: 700;
-  color: #9ca3af;
+  color: #909399;
   transition: all .2s ease;
   flex-shrink: 0;
 }
@@ -2359,23 +2359,23 @@ async function acceptGenerated() {
   border-color: var(--primary);
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(64,158,255,0.25);
+  box-shadow: 0 2px 8px rgba(24,144,255,0.25);
 }
 
 .stepper-node.current .stepper-bullet {
-  box-shadow: 0 0 0 4px rgba(64,158,255,0.15), 0 2px 8px rgba(64,158,255,0.3);
+  box-shadow: 0 0 0 4px rgba(24,144,255,0.15), 0 2px 8px rgba(24,144,255,0.3);
 }
 
 .stepper-node.done .stepper-bullet {
   border-color: var(--success);
   background: var(--success);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.2);
+  box-shadow: 0 2px 8px rgba(82,196,26,0.2);
 }
 
 .stepper-label {
   font-size: 12px;
-  color: #9ca3af;
+  color: #909399;
   text-align: center;
   white-space: nowrap;
   transition: color .2s;
@@ -2396,7 +2396,7 @@ async function acceptGenerated() {
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  background: var(--primary-light, #eff6ff);
+  background: var(--primary-light, #E6F7FF);
   border-radius: 8px;
   font-size: 13px;
   flex-wrap: wrap;
@@ -2444,9 +2444,9 @@ async function acceptGenerated() {
   display: inline-block;
   padding: 2px 10px;
   font-size: 11px;
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  background: #F6FFED;
+  color: #389E0D;
+  border: 1px solid #B7EB8F;
   border-radius: 10px;
 }
 
@@ -2490,7 +2490,7 @@ async function acceptGenerated() {
 }
 
 .status-failed {
-  color: var(--danger, #ef4444);
+  color: var(--danger, #F5222D);
   font-weight: 500;
 }
 
@@ -2509,7 +2509,7 @@ async function acceptGenerated() {
 }
 
 .progress-bar-fill.animating {
-  background: linear-gradient(90deg, var(--primary), #93c5fd, var(--primary));
+  background: linear-gradient(90deg, var(--primary), #BAE7FF, var(--primary));
   background-size: 200% 100%;
   animation: progress-shimmer 1.5s ease-in-out infinite;
 }
@@ -2520,7 +2520,7 @@ async function acceptGenerated() {
 }
 
 .progress-bar-fill.failed {
-  background: var(--danger, #ef4444);
+  background: var(--danger, #F5222D);
   transition: width .3s ease;
 }
 
@@ -2578,7 +2578,7 @@ async function acceptGenerated() {
 }
 
 .preview-json {
-  background: #f9fafb;
+  background: #FAFAFA;
   padding: 16px;
   border-radius: 8px;
   font-size: 12px;
@@ -2667,7 +2667,7 @@ async function acceptGenerated() {
 
 .pv-card {
   background: #fff;
-  border: 1px solid var(--border-light, #e5e7eb);
+  border: 1px solid var(--border-light, #EBEEF5);
   border-radius: 8px;
   padding: 16px;
 }
@@ -2678,7 +2678,7 @@ async function acceptGenerated() {
   color: var(--text-main);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-light, #f3f4f6);
+  border-bottom: 1px solid var(--border-light, #F5F7FA);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2702,7 +2702,7 @@ async function acceptGenerated() {
 
 .pv-label {
   font-size: 11px;
-  color: var(--text-tertiary, #9ca3af);
+  color: var(--text-tertiary, #909399);
   text-transform: uppercase;
   letter-spacing: .3px;
 }
@@ -2736,20 +2736,20 @@ async function acceptGenerated() {
   display: inline-block;
   padding: 2px 10px;
   font-size: 12px;
-  background: var(--primary-light, #eff6ff);
+  background: var(--primary-light, #E6F7FF);
   color: var(--primary);
   border-radius: 12px;
 }
 
 .pv-tag-outline {
   background: #fff;
-  border: 1px solid var(--border, #d1d5db);
+  border: 1px solid var(--border, #C0C4CC);
   color: var(--text-secondary);
 }
 
 .pv-quote {
-  background: #f9fafb;
-  border-left: 3px solid var(--primary-light, #93c5fd);
+  background: #FAFAFA;
+  border-left: 3px solid var(--primary-light, #BAE7FF);
   padding: 12px 16px;
   border-radius: 0 6px 6px 0;
   font-size: 13px;
@@ -2783,23 +2783,23 @@ async function acceptGenerated() {
 }
 
 .pv-dialog-doctor {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: #E6F7FF;
+  border: 1px solid #BAE7FF;
   align-self: flex-start;
   margin-right: 40px;
 }
 
 .pv-dialog-patient,
 .pv-dialog-sp {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: #F6FFED;
+  border: 1px solid #B7EB8F;
   align-self: flex-end;
   margin-left: 40px;
 }
 
 .pv-dialog-sp-family {
-  background: #fef3c7;
-  border: 1px solid #fde68a;
+  background: #FFF7E6;
+  border: 1px solid #FFD591;
 }
 
 .pv-dialog-role {
@@ -2813,26 +2813,26 @@ async function acceptGenerated() {
 }
 
 .pv-dialog-doctor .pv-dialog-role {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #BAE7FF;
+  color: #096DD9;
 }
 
 .pv-dialog-patient .pv-dialog-role,
 .pv-dialog-sp .pv-dialog-role {
-  background: #dcfce7;
-  color: #15803d;
+  background: #F6FFED;
+  color: #389E0D;
 }
 
 .pv-dialog-sp-family .pv-dialog-role {
-  background: #fef9c3;
-  color: #a16207;
+  background: #FFF7E6;
+  color: #D46B08;
 }
 
 .pv-dialog-emotion {
   font-size: 11px;
   padding: 0 6px;
   border-radius: 3px;
-  background: #f3f4f6;
+  background: #F5F7FA;
   color: var(--text-tertiary);
   flex-shrink: 0;
 }
@@ -2845,14 +2845,14 @@ async function acceptGenerated() {
 }
 
 .pv-step {
-  border: 1px solid var(--border-light, #e5e7eb);
+  border: 1px solid var(--border-light, #EBEEF5);
   border-radius: 8px;
   margin-top: 12px;
   overflow: hidden;
 }
 
 .pv-step-header {
-  background: var(--primary-light, #eff6ff);
+  background: var(--primary-light, #E6F7FF);
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 600;
@@ -2875,7 +2875,7 @@ async function acceptGenerated() {
 .pv-step-q {
   font-size: 13px;
   color: var(--primary);
-  background: var(--primary-light, #eff6ff);
+  background: var(--primary-light, #E6F7FF);
   padding: 8px 12px;
   border-radius: 6px;
   line-height: 1.6;
@@ -2891,7 +2891,7 @@ async function acceptGenerated() {
   font-size: 12px;
   color: var(--text-secondary);
   padding-top: 6px;
-  border-top: 1px dashed var(--border-light, #e5e7eb);
+  border-top: 1px dashed var(--border-light, #EBEEF5);
 }
 
 .pv-criteria {
@@ -2918,12 +2918,12 @@ async function acceptGenerated() {
 }
 
 .pv-table th {
-  background: #f1f5f9;
+  background: #F5F7FA;
   padding: 10px 10px;
   text-align: left;
   font-weight: 600;
   color: var(--text-secondary);
-  border-bottom: 2px solid var(--border, #e5e7eb);
+  border-bottom: 2px solid var(--border, #EBEEF5);
   white-space: nowrap;
   font-size: 12px;
 }
@@ -2938,7 +2938,7 @@ async function acceptGenerated() {
 
 .pv-table td {
   padding: 8px 10px;
-  border-bottom: 1px solid var(--border-light, #f3f4f6);
+  border-bottom: 1px solid var(--border-light, #F5F7FA);
   color: var(--text-main);
   vertical-align: top;
   line-height: 1.45;
@@ -2946,11 +2946,11 @@ async function acceptGenerated() {
 }
 
 .pv-table tbody tr:nth-child(even) {
-  background: #fafbfc;
+  background: #FAFAFA;
 }
 
 .pv-table tbody tr:hover {
-  background: #f0f4ff;
+  background: #E6F7FF;
 }
 
 .pv-td-num {
@@ -2962,7 +2962,7 @@ async function acceptGenerated() {
 
 .pv-td-cat {
   font-weight: 600;
-  background: #f1f5f9;
+  background: #F5F7FA;
   text-align: center;
   font-size: 12px;
   vertical-align: middle !important;
@@ -2990,22 +2990,22 @@ async function acceptGenerated() {
 }
 
 .pv-badge-core {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #FFF1F0;
+  color: #F5222D;
 }
 
 .pv-badge-recommended {
-  background: #ffedd5;
-  color: #ea580c;
+  background: #FFF7E6;
+  color: #D46B08;
 }
 
 .pv-badge-optional {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #F5F7FA;
+  color: #606266;
 }
 
 .pv-badge-layer {
-  background: #ede9fe;
+  background: #EDE9FE;
   color: #7c3aed;
 }
 
@@ -3020,12 +3020,12 @@ async function acceptGenerated() {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  background: #f9fafb;
+  background: #FAFAFA;
   border-radius: 8px;
   font-size: 12px;
   flex-wrap: wrap;
   line-height: 1.6;
-  border: 1px solid #f3f4f6;
+  border: 1px solid #F5F7FA;
 }
 
 .pv-stage-num {
@@ -3124,7 +3124,7 @@ async function acceptGenerated() {
   gap: 10px;
   margin-bottom: 16px;
   padding: 10px 14px;
-  background: #f8fafc;
+  background: #F0F2F5;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;

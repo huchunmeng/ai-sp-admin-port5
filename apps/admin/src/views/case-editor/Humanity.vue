@@ -449,7 +449,7 @@ onMounted(() => {
   width: 280px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
-  background: #fafafa;
+  background: #FAFAFA;
   overflow-y: auto;
 }
 
@@ -487,7 +487,7 @@ onMounted(() => {
 }
 
 .scenario-header:hover {
-  background: #f0f0f0;
+  background: #EBEEF5;
 }
 
 .scenario-header.active {
@@ -520,7 +520,7 @@ onMounted(() => {
 }
 
 .sub-item:hover {
-  background: #f0f0f0;
+  background: #EBEEF5;
 }
 
 .sub-item.active {
@@ -573,8 +573,8 @@ onMounted(() => {
 }
 
 .scene-field-id input {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #F5F7FA;
+  color: #606266;
 }
 
 .scene-field-name {
@@ -683,7 +683,7 @@ onMounted(() => {
 .empty-state {
   text-align: center;
   padding: 20px;
-  background: #f9fafb;
+  background: #FAFAFA;
   border-radius: 8px;
   color: var(--text-secondary);
 }
@@ -724,7 +724,7 @@ onMounted(() => {
 .score-table th {
   text-align: left;
   font-weight: 500;
-  background: #f9fafb;
+  background: #FAFAFA;
 }
 
 .col-num {
@@ -753,7 +753,7 @@ onMounted(() => {
   border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 8px;
-  background: #fafafa;
+  background: #FAFAFA;
 }
 
 .dialogue-group {

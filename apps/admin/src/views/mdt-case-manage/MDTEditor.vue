@@ -323,7 +323,7 @@ onMounted(() => {
 }
 .version-badge {
   font-size: 12px; padding: 2px 8px; border-radius: 4px;
-  background: #f0fdf4; color: #16a34a; font-family: monospace;
+  background: #F6FFED; color: #52C41A; font-family: monospace;
 }
 .header-right { display: flex; gap: 8px; }
 
@@ -401,15 +401,15 @@ onMounted(() => {
 
 .source-config {
   margin-top: 16px; border: 1px solid var(--border); border-radius: 10px;
-  padding: 14px; background: #fafbfc;
+  padding: 14px; background: #FAFAFA;
 }
 .filter-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 20px; }
 .filter-item { display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 1 0 auto; }
 .filter-item label { font-size: 12px; color: var(--text-secondary); }
 .filter-item .input, .filter-item .select, .filter-item textarea { width: 100%; }
 .ai-note {
-  margin-top: 10px; font-size: 12px; color: #92400e;
-  background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px;
+  margin-top: 10px; font-size: 12px; color: #D46B08;
+  background: #FFF7E6; border: 1px solid #FFD591; border-radius: 8px; padding: 10px 14px;
 }
 .raw-preview {
   margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 12px;

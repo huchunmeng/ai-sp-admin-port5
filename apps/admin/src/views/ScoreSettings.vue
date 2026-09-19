@@ -101,7 +101,7 @@
                 <input type="checkbox" v-model="selectedRows" :value="item.id">
               </td>
               <td class="sticky-left" style="left:40px" v-if="visibleColumns.includes('template_code')">
-                <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px">{{ item.template_code }}</code>
+                <code style="background:#F5F7FA;padding:2px 6px;border-radius:4px">{{ item.template_code }}</code>
               </td>
               <td v-if="visibleColumns.includes('template_name')">
                 <a href="#" @click.prevent="editTemplate(item)" style="color:var(--primary);text-decoration:none">{{ item.template_name }}</a>
@@ -176,12 +176,12 @@
         <div class="drawer-body" style="padding:16px 20px;">
           <div class="flex gap-3 mb-4" style="align-items:center;flex-wrap:wrap;">
             <span class="badge" :class="statusBadgeClass(detailTarget?.status)">{{ detailTarget?.status }}</span>
-            <span v-if="detailTarget?.is_system" class="badge" style="background:#ede9fe;color:#7c3aed;border:1px solid #c4b5fd">系统模板</span>
+            <span v-if="detailTarget?.is_system" class="badge" style="background:#EDE9FE;color:#7C3AED;border:1px solid #D3ADF7">系统模板</span>
             <span v-if="detailTarget?.version" style="font-size:12px;color:var(--text-tertiary);font-family:monospace">{{ detailTarget.version }}</span>
             <span v-if="!detailEditMode" style="font-size:13px;color:var(--text-secondary)">{{ detailTarget?.specialty }} | 总分 {{ detailTarget?.total_score || 100 }} | 共 {{ detailItems.length }} 项</span>
             <span v-else style="font-size:13px;color:var(--text-secondary)">{{ detailTarget?.specialty }} | 总分 {{ editTotalScore }} | 共 {{ editItems.length }} 项</span>
           </div>
-          <div v-if="!detailEditMode && detailTarget?.description" style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;padding:8px 12px;background:#f9fafb;border-radius:6px">{{ detailTarget.description }}</div>
+          <div v-if="!detailEditMode && detailTarget?.description" style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;padding:8px 12px;background:#FAFAFA;border-radius:6px">{{ detailTarget.description }}</div>
           <div v-if="detailEditMode" style="margin-bottom:12px;">
             <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">描述</label>
             <textarea class="input" v-model="editMeta.description" rows="2" style="width:100%;resize:vertical;"></textarea>
@@ -219,7 +219,7 @@
                 </template>
               </tbody>
             </table>
-            <div v-if="detailEditMode" style="padding:8px 12px;border-top:1px solid #e5e7eb;">
+            <div v-if="detailEditMode" style="padding:8px 12px;border-top:1px solid #EBEEF5;">
               <button class="btn btn-sm" @click="addEditItem">+ 添加评分项</button>
             </div>
           </div>
@@ -586,17 +586,17 @@ const statusBadgeClass = (status) => {
 /* 详情抽屉 */
 .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: flex-end; }
 .drawer { background: #fff; height: 100%; overflow-y: auto; box-shadow: -4px 0 12px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-.drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; }
+.drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #EBEEF5; flex-shrink: 0; }
 .drawer-body { flex: 1; overflow-y: auto; }
 
 /* 评分表详情表格 */
-.ss-table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+.ss-table-wrap { overflow-x: auto; border: 1px solid #EBEEF5; border-radius: 8px; }
 .ss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.ss-table th { background: #f8fafc; padding: 10px 8px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; white-space: nowrap; font-size: 12px; }
-.ss-table td { padding: 4px 6px; border-bottom: 1px solid #f3f4f6; }
+.ss-table th { background: #F0F2F5; padding: 10px 8px; text-align: center; font-weight: 600; color: #303133; border-bottom: 2px solid #EBEEF5; white-space: nowrap; font-size: 12px; }
+.ss-table td { padding: 4px 6px; border-bottom: 1px solid #F5F7FA; }
 .ss-table tr:last-child td { border-bottom: none; }
-.td-num { text-align: center; color: #9ca3af; font-size: 12px; }
-.td-merged { vertical-align: middle; text-align: center; font-size: 13px; color: #374151; font-weight: 500; background: #fafbfc; border-right: 1px solid #e5e7eb; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-num { text-align: center; color: #909399; font-size: 12px; }
+.td-merged { vertical-align: middle; text-align: center; font-size: 13px; color: #303133; font-weight: 500; background: #FAFAFA; border-right: 1px solid #EBEEF5; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cell-num { text-align: center; font-size: 13px; }
 .cell-text { font-size: 13px; color: #303133; padding: 6px 8px; vertical-align: middle; }
 </style>

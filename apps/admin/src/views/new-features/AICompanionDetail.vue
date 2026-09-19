@@ -341,7 +341,7 @@ onMounted(() => {
 }
 .qa-msg.ai {
   align-self: flex-start;
-  background: #f9fafb;
+  background: #FAFAFA;
   border: 1px solid var(--border);
 }
 .qa-msg .ref {
@@ -392,8 +392,8 @@ onMounted(() => {
   border-radius: 8px;
   font-weight: 500;
 }
-.src-badge.manual { background: #d1fae5; color: #065f46; }
-.src-badge.ai-gen { background: #fff7ed; color: #ea580c; }
+.src-badge.manual { background: #F6FFED; color: #389E0D; }
+.src-badge.ai-gen { background: #FFF7E6; color: #D46B08; }
 .commentary-body {
   font-size: 13px;
   line-height: 1.7;

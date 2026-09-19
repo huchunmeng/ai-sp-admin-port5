@@ -4,7 +4,7 @@ import { ref } from 'vue'
 export const useAdminStore = defineStore('admin', () => {
   const tabs = ref([{ id: 'home', label: '首页', closable: false }])
   const activeTabId = ref('home')
-  const currentInstitution = ref('仁爱医院 (总部)')
+  const currentInstitution = ref('东南大学医学院')
 
   function openTab(page) {
     const existing = tabs.value.find(t => t.id === page.id)

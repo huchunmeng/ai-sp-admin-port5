@@ -299,7 +299,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  background: #f8fafc;
+  background: #F0F2F5;
   border-bottom: 1px solid var(--border);
 }
 
@@ -336,7 +336,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   width: 44px;
   height: 24px;
   border-radius: 12px;
-  background: #cbd5e1;
+  background: #BFBFBF;
   position: relative;
   transition: background 0.2s;
 }
@@ -380,7 +380,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 }
 
 .ekb-section {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EBEEF5;
   border-radius: 8px;
   padding: 20px;
 }
@@ -425,7 +425,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 }
 
 .ekb-required {
-  color: #ef4444;
+  color: #F5222D;
 }
 
 .ekb-row-avatar {
@@ -441,18 +441,18 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed #C0C4CC;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s, background 0.2s;
-  background: #f9fafb;
+  background: #FAFAFA;
 }
 
 .ekb-avatar-upload:hover,
 .ekb-avatar-upload.dragging {
   border-color: var(--primary);
-  background: #eef2ff;
+  background: #E6F7FF;
 }
 
 .ekb-avatar-upload.uploading {
@@ -506,19 +506,19 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 
 .ekb-avatar-upload-placeholder i {
   font-size: 24px;
-  color: #9ca3af;
+  color: #909399;
   margin-bottom: 2px;
 }
 
 .ekb-avatar-upload-placeholder span {
   font-size: 10px;
-  color: #9ca3af;
+  color: #909399;
   line-height: 1.3;
 }
 
 .ekb-avatar-upload-hint {
   font-size: 9px !important;
-  color: #c4c4c4 !important;
+  color: #C0C4CC !important;
 }
 
 .ekb-avatar-upload-loading {
@@ -533,7 +533,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 .ekb-avatar-remove {
   margin-top: 6px;
   font-size: 12px;
-  color: #ef4444;
+  color: #F5222D;
   background: none;
   border: none;
   cursor: pointer;
@@ -570,8 +570,8 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background: #eef2ff;
-  color: #4338ca;
+  background: #E6F7FF;
+  color: #096DD9;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
@@ -582,13 +582,13 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   border: none;
   cursor: pointer;
   font-size: 14px;
-  color: #6366f1;
+  color: #7C3AED;
   padding: 0;
   line-height: 1;
 }
 
 .ekb-tag-remove:hover {
-  color: #ef4444;
+  color: #F5222D;
 }
 
 .ekb-tags-empty {
@@ -627,7 +627,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   flex: 1;
   height: 4px;
   border-radius: 2px;
-  background: #e5e7eb;
+  background: #EBEEF5;
   overflow: hidden;
 }
 
@@ -638,15 +638,15 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 }
 
 .ekb-char-fill.low {
-  background: #f59e0b;
+  background: #FA8C16;
 }
 
 .ekb-char-fill.good {
-  background: #10b981;
+  background: #52C41A;
 }
 
 .ekb-char-fill.full {
-  background: #6366f1;
+  background: #7C3AED;
 }
 
 .ekb-char-count {
@@ -655,13 +655,13 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   flex-shrink: 0;
 }
 
-.ekb-char-count.low { color: #f59e0b; }
-.ekb-char-count.good { color: #10b981; }
-.ekb-char-count.full { color: #6366f1; }
+.ekb-char-count.low { color: #FA8C16; }
+.ekb-char-count.good { color: #52C41A; }
+.ekb-char-count.full { color: #7C3AED; }
 
 /* Preview */
 .ekb-preview {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EBEEF5;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -671,15 +671,15 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   align-items: center;
   gap: 14px;
   padding: 16px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
-  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #E6F7FF 0%, #F0F2F5 100%);
+  border-bottom: 1px solid #EBEEF5;
 }
 
 .ekb-preview-avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #e0e7ff;
+  background: #EDE9FE;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,7 +695,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 
 .ekb-preview-avatar i {
   font-size: 22px;
-  color: #6366f1;
+  color: #7C3AED;
 }
 
 .ekb-preview-meta {
@@ -724,8 +724,8 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 .ekb-preview-tag {
   font-size: 10px;
   padding: 1px 7px;
-  background: #eef2ff;
-  color: #6366f1;
+  background: #E6F7FF;
+  color: #7C3AED;
   border-radius: 4px;
   font-weight: 500;
 }
@@ -742,7 +742,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 }
 
 .ekb-preview-review-title i {
-  color: #f59e0b;
+  color: #FA8C16;
   margin-right: 4px;
 }
 
@@ -762,7 +762,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #F5F7FA;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -771,7 +771,7 @@ const charPercent = computed(() => Math.min(100, (ekbLength.value / 2000) * 100)
 
 .ekb-disabled-icon i {
   font-size: 28px;
-  color: #94a3b8;
+  color: #909399;
 }
 
 .ekb-disabled-title {

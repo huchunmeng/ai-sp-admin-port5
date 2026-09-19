@@ -87,7 +87,7 @@ defineExpose({ getData, setSection, getFullText })
 
 <style scoped>
 .record-editor { background: var(--card-bg, #fff); border-radius: 8px; overflow: hidden; }
-.editor-toolbar { display: flex; gap: 8px; padding: 12px 20px; background: #f9fafb; border-bottom: 1px solid var(--border); }
+.editor-toolbar { display: flex; gap: 8px; padding: 12px 20px; background: #FAFAFA; border-bottom: 1px solid var(--border); }
 .tool-btn {
   display: flex; align-items: center; gap: 6px; padding: 6px 14px;
   background: var(--primary); color: #fff; border: none; border-radius: 6px;
@@ -104,5 +104,5 @@ defineExpose({ getData, setSection, getFullText })
   width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
   font-size: 13px; line-height: 1.6; resize: vertical; box-sizing: border-box; font-family: inherit;
 }
-.record-section textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+.record-section textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
 </style>

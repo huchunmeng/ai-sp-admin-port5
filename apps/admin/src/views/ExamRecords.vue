@@ -85,7 +85,7 @@
               </td>
               <td>{{ item.subtype_label }}</td>
               <td>
-                <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">{{ item.access_code }}</code>
+                <code style="background:#F5F7FA;padding:2px 6px;border-radius:4px;">{{ item.access_code }}</code>
                 <span class="copy-icon" @click="copyCode(item.access_code)" style="cursor:pointer; margin-left:4px;">📋</span>
               </td>
               <td>{{ item.start_time }}</td>

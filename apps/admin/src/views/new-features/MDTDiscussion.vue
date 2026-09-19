@@ -369,7 +369,7 @@ function resetMDT() {
 .step-dot.current {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 0 0 4px rgba(37,99,235,0.2);
+  box-shadow: 0 0 0 4px rgba(24,144,255,0.2);
 }
 
 .step-label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
@@ -438,12 +438,12 @@ function resetMDT() {
   color: #fff;
   flex-shrink: 0;
 }
-.av-host { background: #6366f1; }
-.av-onco { background: #ef4444; }
-.av-radio { background: #f59e0b; }
-.av-path { background: #8b5cf6; }
-.av-nurse { background: #10b981; }
-.av-anes { background: #06b6d4; }
+.av-host { background: #7C3AED; }
+.av-onco { background: #F5222D; }
+.av-radio { background: #FA8C16; }
+.av-path { background: #7C3AED; }
+.av-nurse { background: #52C41A; }
+.av-anes { background: #1890FF; }
 .av-student { background: var(--primary); }
 
 .mdt-name { font-size: 13px; font-weight: 500; }
@@ -482,7 +482,7 @@ function resetMDT() {
   font-size: 13px;
   line-height: 1.7;
   padding: 10px 14px;
-  background: #f9fafb;
+  background: #FAFAFA;
   border-radius: 8px;
 }
 .mdt-msg-text.typing {
@@ -505,7 +505,7 @@ function resetMDT() {
   width: 100%;
   max-width: 500px;
   height: 260px;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  background: linear-gradient(135deg, #2B3A4A, #1A5F9E);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -516,8 +516,8 @@ function resetMDT() {
 }
 .ct-inner { text-align: center; }
 .ct-icon { font-size: 60px; margin-bottom: 10px; }
-.ct-title { font-size: 14px; color: #ccc; }
-.ct-subtitle { font-size: 11px; color: #888; }
+.ct-title { font-size: 14px; color: #C0C4CC; }
+.ct-subtitle { font-size: 11px; color: #909399; }
 
 .ct-markers {
   position: absolute;
@@ -528,7 +528,7 @@ function resetMDT() {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(239,68,68,0.7);
+  background: rgba(245,34,45,0.7);
   border: 2px solid #fff;
   color: #fff;
   font-size: 10px;
@@ -541,15 +541,15 @@ function resetMDT() {
 
 .ct-result {
   padding: 12px;
-  background: #d1fae5;
-  border: 1px solid #a7f3d0;
+  background: #F6FFED;
+  border: 1px solid #B7EB8F;
   border-radius: 8px;
   font-size: 13px;
   line-height: 1.8;
   margin-bottom: 8px;
 }
-.result-hit { color: #059669; }
-.result-miss { color: #dc2626; }
+.result-hit { color: #52C41A; }
+.result-miss { color: #F5222D; }
 
 .vote-options {
   display: flex;

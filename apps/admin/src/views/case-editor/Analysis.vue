@@ -45,7 +45,7 @@
                 <h4 style="margin:0">步骤</h4>
                 <button class="btn btn-sm" @click="addExaminerStep">+ 新增步骤</button>
               </div>
-              <div v-for="(step, idx) in formData.analysis.examiner_version.steps" :key="idx" style="margin-bottom:24px;padding:16px;background:#f9fafb;border-radius:8px">
+              <div v-for="(step, idx) in formData.analysis.examiner_version.steps" :key="idx" style="margin-bottom:24px;padding:16px;background:#FAFAFA;border-radius:8px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                   <h5 style="margin:0;color:var(--primary)">步骤 {{ idx + 1 }}</h5>
                   <button class="btn-icon-sm" @click="deleteExaminerStep(idx)" v-if="formData.analysis.examiner_version.steps.length > 1" style="color:var(--error)">🗑️ 删除</button>
@@ -64,7 +64,7 @@
                     <label style="font-size:12px;color:var(--text-secondary);font-weight:600">题目（{{ step.questions?.length || 0 }} 题）</label>
                     <button class="btn btn-sm" @click="addQuestionToStep(step)">+ 添加题目</button>
                   </div>
-                  <div v-for="(q, qi) in step.questions" :key="qi" style="margin-bottom:12px;padding:12px;background:#fff;border:1px solid var(--border-light);border-radius:6px">
+                  <div v-for="(q, qi) in step.questions" :key="qi" style="margin-bottom:12px;padding:12px;background:#FFFFFF;border:1px solid var(--border-light);border-radius:6px">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                       <span style="font-size:12px;font-weight:600;color:var(--primary)">题目 {{ qi + 1 }}</span>
                       <button class="btn-icon-sm" @click="deleteQuestionFromStep(step, qi)" v-if="step.questions.length > 1" style="color:var(--error);font-size:12px">✕ 删除</button>
@@ -121,7 +121,7 @@
                 <h4 style="margin:0">步骤</h4>
                 <button class="btn btn-sm" @click="addCandidateStep">+ 新增步骤</button>
               </div>
-              <div v-for="(step, idx) in formData.analysis.candidate_version.steps" :key="idx" style="margin-bottom:24px;padding:16px;background:#f9fafb;border-radius:8px">
+              <div v-for="(step, idx) in formData.analysis.candidate_version.steps" :key="idx" style="margin-bottom:24px;padding:16px;background:#FAFAFA;border-radius:8px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                   <h5 style="margin:0;color:var(--primary)">步骤 {{ idx + 1 }}</h5>
                   <button class="btn-icon-sm" @click="deleteCandidateStep(idx)" v-if="formData.analysis.candidate_version.steps.length > 1" style="color:var(--error)">🗑️ 删除</button>
@@ -135,7 +135,7 @@
                     <label style="font-size:12px;color:var(--text-secondary);font-weight:600">题目（{{ step.questions?.length || 0 }} 题）</label>
                     <button class="btn btn-sm" @click="addCandidateQuestion(step)">+ 添加题目</button>
                   </div>
-                  <div v-for="(q, qi) in step.questions" :key="qi" style="margin-bottom:8px;padding:10px;background:#fff;border:1px solid var(--border-light);border-radius:6px">
+                  <div v-for="(q, qi) in step.questions" :key="qi" style="margin-bottom:8px;padding:10px;background:#FFFFFF;border:1px solid var(--border-light);border-radius:6px">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                       <span style="font-size:12px;font-weight:600;color:var(--primary)">题目 {{ qi + 1 }}</span>
                       <button class="btn-icon-sm" @click="deleteCandidateQuestion(step, qi)" v-if="step.questions.length > 1" style="color:var(--error);font-size:12px">✕ 删除</button>
@@ -581,7 +581,7 @@ watch(() => props.formData, () => {
   border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 10px 12px;
-  background: #fafbfc;
+  background: #FAFAFA;
 }
 
 .sg-total-row {
@@ -630,11 +630,11 @@ watch(() => props.formData, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e5e7eb;
+  background: #EBEEF5;
   border-radius: 50%;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: #606266;
   flex-shrink: 0;
 }
 
@@ -656,13 +656,13 @@ watch(() => props.formData, () => {
 }
 
 .sg-criteria-del {
-  color: #d1d5db;
+  color: #C0C4CC;
   flex-shrink: 0;
 }
 
 .sg-criteria-del:hover {
-  color: #ef4444;
-  background: #fef2f2;
+  color: #F5222D;
+  background: #FFF1F0;
 }
 
 .sg-criteria-empty {

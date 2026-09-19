@@ -34,7 +34,7 @@
               </div>
               <div class="filter-item" style="min-width:140px">
                 <label>沟通对象</label>
-                <input class="input" :value="communicationTargetLabel" disabled style="color:var(--text-secondary);background:#f9fafb" :title="spRole === 'family' ? '家属模式下沟通对象为家属' : '患者本人模式下沟通对象为患者'">
+                <input class="input" :value="communicationTargetLabel" disabled style="color:var(--text-secondary);background:#FAFAFA" :title="spRole === 'family' ? '家属模式下沟通对象为家属' : '患者本人模式下沟通对象为患者'">
               </div>
             </div>
             <div class="role-info-grid">
@@ -641,8 +641,8 @@ onMounted(() => {
   gap: 16px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background: #f0f4ff;
-  border: 1px solid #dbeafe;
+  background: #E6F7FF;
+  border: 1px solid #BAE7FF;
   border-radius: 8px;
 }
 

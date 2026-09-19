@@ -126,7 +126,7 @@ onMounted(fetchSettings)
   font-weight: 600;
   color: var(--text-main);
   border-bottom: 1px solid var(--border);
-  background: #fafbfc;
+  background: #FAFAFA;
 }
 .setting-row {
   display: flex;
@@ -166,7 +166,7 @@ onMounted(fetchSettings)
 .toggle-slider {
   position: absolute;
   inset: 0;
-  background: #dcdfe6;
+  background: #BFBFBF;
   border-radius: 26px;
   transition: background .2s;
 }

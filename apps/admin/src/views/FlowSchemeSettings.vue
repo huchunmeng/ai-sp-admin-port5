@@ -59,8 +59,8 @@
               <td>{{ index + 1 }}</td>
               <td>
                 <a href="javascript:void(0)" @click="openEditPanel(scheme.id)"
-                   style="font-size:13px;font-weight:500;color:#1e40af;cursor:pointer;text-decoration:none">{{ scheme.name }}</a>
-                <span v-if="scheme.status === true" style="margin-left:8px;padding:2px 8px;background:#dcfce7;color:#15803d;border-radius:4px;font-size:11px">启用中</span>
+                   style="font-size:13px;font-weight:500;color:#096DD9;cursor:pointer;text-decoration:none">{{ scheme.name }}</a>
+                <span v-if="scheme.status === true" style="margin-left:8px;padding:2px 8px;background:#F6FFED;color:#389E0D;border-radius:4px;font-size:11px">启用中</span>
               </td>
               <td style="font-size:12px;color:var(--text-secondary)">{{ majorSummary(scheme) }}</td>
               <td>{{ scheme.source }}</td>
@@ -88,8 +88,8 @@
 
     <!-- slide-panel 编辑器 -->
     <div v-if="schemePanelVisible" class="slide-panel open"
-         style="position:fixed;top:0;right:0;width:820px;max-width:95vw;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:1000;display:flex;flex-direction:column">
-      <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:#f9fafb;flex-shrink:0">
+         style="position:fixed;top:0;right:0;width:820px;max-width:95vw;height:100%;background:#FFFFFF;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:1000;display:flex;flex-direction:column">
+      <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:#FAFAFA;flex-shrink:0">
         <h3 style="margin:0;font-size:16px;font-weight:600">{{ editingScheme?.isNew ? '新增方案' : '编辑：' + editingScheme?.name }}</h3>
         <button class="btn" @click="closeSchemePanel">✕ 关闭</button>
       </div>
@@ -157,7 +157,7 @@
                   </td>
                   <td>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                      <span v-if="mod.scoreTableCode" style="font-size:12px;color:#1f2937;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 8px;background:#eff6ff;border-radius:4px">{{ boundTableName(mod.scoreTableCode) }}</span>
+                      <span v-if="mod.scoreTableCode" style="font-size:12px;color:#303133;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 8px;background:#E6F7FF;border-radius:4px">{{ boundTableName(mod.scoreTableCode) }}</span>
                       <button class="btn btn-sm" @click="openScoreTableModal(idx)">{{ mod.scoreTableCode ? '更换' : '绑定评分表' }}</button>
                     </div>
                   </td>
@@ -181,8 +181,8 @@
     <div v-if="showScoreTableModal" class="modal-overlay" @click.self="showScoreTableModal = false"
          style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1100;">
       <div style="background:white;border-radius:12px;width:600px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.12);">
-        <div style="padding:18px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
-          <span style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:16px;">📋</span>
+        <div style="padding:18px 24px;border-bottom:1px solid #EBEEF5;display:flex;align-items:center;gap:12px;">
+          <span style="width:36px;height:36px;border-radius:8px;background:#E6F7FF;display:flex;align-items:center;justify-content:center;font-size:16px;">📋</span>
           <div>
             <h3 style="margin:0;font-size:15px;font-weight:600;">选择评分表</h3>
             <p style="margin:2px 0 0;font-size:12px;color:var(--text-tertiary);">为「{{ currentMajorName }}」的「{{ scoreTableModuleName }}」绑定评分表</p>
@@ -193,26 +193,26 @@
             <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-size:13px;"></i>
             <input class="input" v-model="scoreTableSearchKeyword" placeholder="搜索评分表名称、编码或专业..." style="width:100%;padding-left:34px;box-sizing:border-box;height:38px;">
           </div>
-          <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-            <div style="padding:8px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:var(--text-secondary);font-weight:600;">
+          <div style="border:1px solid #EBEEF5;border-radius:8px;overflow:hidden;">
+            <div style="padding:8px 14px;background:#FAFAFA;border-bottom:1px solid #EBEEF5;font-size:12px;color:var(--text-secondary);font-weight:600;">
               可选评分表 <span style="font-weight:400;color:var(--text-tertiary);">（{{ filteredScoreTableOptions.length }} 个，含考站版与全流程版）</span>
             </div>
             <div style="max-height:320px;overflow-y:auto;">
               <div v-if="filteredScoreTableOptions.length === 0" style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:13px;">
-                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:#d1d5db;"></i>
+                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:#C0C4CC;"></i>
                 无匹配评分表
               </div>
               <label v-for="(st, idx) in filteredScoreTableOptions" :key="st.template_code || idx"
-                     style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #f3f4f6;"
-                     :style="{ background: scoreTableSelectedCode === st.template_code ? '#eff6ff' : '#fff' }"
-                     @mouseenter="$event.target.style.background = scoreTableSelectedCode !== st.template_code ? '#fafbfc' : '#eff6ff'"
-                     @mouseleave="$event.target.style.background = scoreTableSelectedCode === st.template_code ? '#eff6ff' : '#fff'">
+                     style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #F5F7FA;"
+                     :style="{ background: scoreTableSelectedCode === st.template_code ? '#E6F7FF' : '#FFFFFF' }"
+                     @mouseenter="$event.target.style.background = scoreTableSelectedCode !== st.template_code ? '#FAFAFA' : '#E6F7FF'"
+                     @mouseleave="$event.target.style.background = scoreTableSelectedCode === st.template_code ? '#E6F7FF' : '#fff'">
                 <input type="radio" :value="st.template_code" v-model="scoreTableSelectedCode" style="flex-shrink:0;accent-color:var(--primary);">
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:13px;font-weight:500;color:#1f2937;line-height:1.4;">
+                  <div style="font-size:13px;font-weight:500;color:#303133;line-height:1.4;">
                     {{ st.template_name }}
-                    <span v-if="st.category === '全流程版'" style="margin-left:6px;padding:1px 6px;background:#eff6ff;color:#1e40af;border-radius:4px;font-size:10px;font-weight:600;">全流程</span>
-                    <span v-else style="margin-left:6px;padding:1px 6px;background:#f3f4f6;color:#4b5563;border-radius:4px;font-size:10px;font-weight:600;">考站</span>
+                    <span v-if="st.category === '全流程版'" style="margin-left:6px;padding:1px 6px;background:#E6F7FF;color:#096DD9;border-radius:4px;font-size:10px;font-weight:600;">全流程</span>
+                    <span v-else style="margin-left:6px;padding:1px 6px;background:#F5F7FA;color:#606266;border-radius:4px;font-size:10px;font-weight:600;">考站</span>
                   </div>
                   <div style="display:flex;gap:12px;margin-top:3px;">
                     <span style="font-size:11px;color:var(--text-tertiary);font-family:monospace;">{{ st.template_code }}</span>
@@ -224,7 +224,7 @@
             </div>
           </div>
         </div>
-        <div style="padding:14px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px;">
+        <div style="padding:14px 24px;border-top:1px solid #EBEEF5;display:flex;justify-content:flex-end;gap:10px;">
           <button class="btn" @click="showScoreTableModal = false" style="min-width:80px;">取消</button>
           <button class="btn btn-primary" @click="confirmBindScoreTable" :disabled="!scoreTableSelectedCode" style="min-width:80px;">确定绑定</button>
         </div>
@@ -597,8 +597,8 @@ function resetFilter() {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
-.weight-ok { color: #16a34a; font-weight: 600; font-size: 13px; }
-.weight-err { color: #dc2626; font-weight: 600; font-size: 13px; }
+.weight-ok { color: #52C41A; font-weight: 600; font-size: 13px; }
+.weight-err { color: #F5222D; font-weight: 600; font-size: 13px; }
 .major-tab {
   display: flex; align-items: center; gap: 6px; padding: 6px 14px;
   border: 1px solid var(--border); border-radius: 20px; font-size: 13px;

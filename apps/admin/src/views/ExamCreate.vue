@@ -311,7 +311,7 @@
       <div class="drawer-container" style="width:550px">
         <div class="drawer-header"><span>修改评分表设置</span><button class="btn-default btn-sm" @click="scoreSettingsVisible=false" data-review-exempt>✕</button></div>
         <div class="drawer-body">
-          <div class="form-item mb-3"><label>评分表名称</label><input class="input-field" :value="scoreSettingsTargetSt?.name" disabled style="background:#f3f4f6"></div>
+          <div class="form-item mb-3"><label>评分表名称</label><input class="input-field" :value="scoreSettingsTargetSt?.name" disabled style="background:#F5F7FA"></div>
           <div class="form-item mb-3"><label>关联考核项目</label>
             <div style="border:1px solid var(--border);border-radius:8px;padding:10px;max-height:200px;overflow-y:auto">
               <div v-for="item in scoreSettingsTargetSession?.items_duration || []" :key="item.id" style="margin-bottom:6px">
@@ -341,7 +341,7 @@ const route = useRoute()
 const adminStore = useAdminStore()
 
 const institutionProvinceMap = {
-  '仁爱医院 (总部)': '北京',
+  '东南大学医学院': '江苏',
   '华西医院': '四川',
   '中山医院': '广东',
   '协和医院': '北京',
@@ -1096,7 +1096,7 @@ onMounted(async () => {
 
 .input-field:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
 }
 
 .select-field {
@@ -1116,7 +1116,7 @@ onMounted(async () => {
 .major-group {
   margin-bottom: 16px;
   padding: 12px;
-  background: #f9fafb;
+  background: #FAFAFA;
   border-radius: 8px;
 }
 
@@ -1169,7 +1169,7 @@ onMounted(async () => {
 }
 
 .session-nav-major:hover {
-  background: #f0f5ff;
+  background: #E6F7FF;
 }
 
 .nav-station-top {
@@ -1204,13 +1204,13 @@ onMounted(async () => {
 }
 
 .session-nav-station.active {
-  background: #eff6ff;
+  background: #E6F7FF;
   border-left-color: var(--primary);
 }
 
 .session-nav-station:hover {
-  background: #f0f5ff;
-  border-left-color: #bfdbfe;
+  background: #E6F7FF;
+  border-left-color: #BAE7FF;
 }
 
 .nav-actions {
@@ -1221,7 +1221,7 @@ onMounted(async () => {
 
 .nav-actions button {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EBEEF5;
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 12px;
@@ -1239,7 +1239,7 @@ onMounted(async () => {
 
 .nav-arrows button {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EBEEF5;
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 12px;
@@ -1275,7 +1275,7 @@ onMounted(async () => {
 }
 
 .session-header:hover {
-  background: #f9fafb;
+  background: #FAFAFA;
 }
 
 .session-header-left {
@@ -1339,7 +1339,7 @@ onMounted(async () => {
 }
 
 .table th {
-  background: #f9fafb;
+  background: #FAFAFA;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -1482,7 +1482,7 @@ onMounted(async () => {
 .review-disabled {
   pointer-events: none;
   opacity: 0.7;
-  background: #f3f4f6;
+  background: #F5F7FA;
 }
 
 .status-ok {
@@ -1564,11 +1564,11 @@ onMounted(async () => {
 }
 
 .text-red-500 {
-  color: #ef4444;
+  color: #F5222D;
 }
 
 .text-gray-500 {
-  color: #6b7280;
+  color: #606266;
 }
 
 .text-primary {
@@ -1688,7 +1688,7 @@ onMounted(async () => {
 .case-filter-item .select {
   padding: 6px 8px;
   font-size: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #EBEEF5;
   border-radius: 6px;
   outline: none;
   background: #fff;
@@ -1709,6 +1709,6 @@ onMounted(async () => {
   justify-content: space-between;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid #EBEEF5;
 }
 </style>

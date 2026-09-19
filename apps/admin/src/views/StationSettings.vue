@@ -4,10 +4,10 @@
       <h1 style="margin-top: 8px; font-size: 1.5rem; font-weight: 600;">考站设置</h1>
     </div>
 
-    <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid #e5e7eb;padding-bottom:0;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid #EBEEF5;padding-bottom:0;">
       <button v-for="ph in phaseTabs" :key="ph.value"
               @click="activePhaseTab = ph.value"
-              :style="{ padding:'8px 20px', border:'none', background:'none', cursor:'pointer', fontSize:'14px', fontWeight: activePhaseTab === ph.value ? 600 : 400, color: activePhaseTab === ph.value ? '#409EFF' : '#6b7280', borderBottom: activePhaseTab === ph.value ? '2px solid #409EFF' : '2px solid transparent', marginBottom:'-2px', transition:'all .15s' }">
+              :style="{ padding:'8px 20px', border:'none', background:'none', cursor:'pointer', fontSize:'14px', fontWeight: activePhaseTab === ph.value ? 600 : 400, color: activePhaseTab === ph.value ? '#1890FF' : '#606266', borderBottom: activePhaseTab === ph.value ? '2px solid #1890FF' : '2px solid transparent', marginBottom:'-2px', transition:'all .15s' }">
         {{ ph.label }} ({{ schemes.filter(s => s.phase === ph.value).length }})
       </button>
     </div>
@@ -71,12 +71,12 @@
                   'bg-green-50': isSchemeEnabled(scheme),
                   'bg-gray-50': scheme.type === 'province' && !isSchemeEnabled(scheme)
                 }"
-                :style="scheme.type === 'platform' && isSchemeEnabled(scheme) ? {backgroundColor: '#f0fdf4'} : scheme.type === 'province' && !isSchemeEnabled(scheme) ? {backgroundColor: '#f9fafb'} : {}">
+                :style="scheme.type === 'platform' && isSchemeEnabled(scheme) ? {backgroundColor: '#F6FFED'} : scheme.type === 'province' && !isSchemeEnabled(scheme) ? {backgroundColor: '#FAFAFA'} : {}">
               <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
               <td>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <a href="javascript:void(0)" @click="viewScheme(scheme.id)" style="font-size: 13px; font-weight: 500; color: #1e40af; cursor: pointer; text-decoration: none;" :title="'查看 ' + scheme.name">{{ scheme.name }}</a>
-                  <span v-if="isSchemeEnabled(scheme)" style="padding: 2px 8px; background: #dcfce7; color: #15803d; border-radius: 4px; font-size: 11px;">启用中</span>
+                  <a href="javascript:void(0)" @click="viewScheme(scheme.id)" style="font-size: 13px; font-weight: 500; color: #096DD9; cursor: pointer; text-decoration: none;" :title="'查看 ' + scheme.name">{{ scheme.name }}</a>
+                  <span v-if="isSchemeEnabled(scheme)" style="padding: 2px 8px; background: #F6FFED; color: #389E0D; border-radius: 4px; font-size: 11px;">启用中</span>
                 </div>
               </td>
               <td>
@@ -121,7 +121,7 @@
     </div>
 
     <div v-if="showSlidePanel" class="slide-panel open" style="position: fixed; top: 0; right: 0; width: 70%; height: 100%; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column;">
-      <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
+      <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #FAFAFA;">
         <div>
           <h3 style="margin: 0; font-size: 16px; font-weight: 600;">编辑：{{ editingScheme?.name }}</h3>
           <span class="badge" :class="{ 'badge-info': editingScheme?.type === 'platform', 'badge-warning': editingScheme?.type === 'province', 'badge-error': editingScheme?.type === 'institution' }" style="margin-top: 4px;">{{ editingScheme?.type === 'platform' ? '平台' : editingScheme?.type === 'province' ? '省级' : '机构' }}</span>
@@ -137,8 +137,8 @@
             <div :style="{ flex: '1', minWidth: 0, overflow: majorsExpanded ? 'visible' : 'hidden', display: 'flex', gap: '4px', flexWrap: majorsExpanded ? 'wrap' : 'nowrap' }">
               <div v-for="(major, midx) in editingScheme.majors" :key="midx"
                    @click="editingMajorTab = midx"
-                   :style="{ padding: '10px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: editingMajorTab === midx ? 600 : 400, color: editingMajorTab === midx ? '#409EFF' : 'var(--text-secondary)', borderBottom: editingMajorTab === midx ? '2px solid #409EFF' : '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', transition: 'all .15s', borderRadius: '6px 6px 0 0' }"
-                   @mouseenter="$event.target.style.background = editingMajorTab !== midx ? '#f0f5ff' : 'transparent'"
+                   :style="{ padding: '10px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: editingMajorTab === midx ? 600 : 400, color: editingMajorTab === midx ? '#1890FF' : 'var(--text-secondary)', borderBottom: editingMajorTab === midx ? '2px solid #1890FF' : '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', transition: 'all .15s', borderRadius: '6px 6px 0 0' }"
+                   @mouseenter="$event.target.style.background = editingMajorTab !== midx ? '#E6F7FF' : 'transparent'"
                    @mouseleave="$event.target.style.background = 'transparent'">
                 {{ major.name }}
               </div>
@@ -160,7 +160,7 @@
             <div style="border: 1px solid var(--border); border-radius: 8px;">
               <div style="padding: 12px 16px; background: var(--background); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span :style="{ width: '4px', height: '16px', borderRadius: '2px', backgroundColor: editingMajorTab % 2 === 0 ? '#3b82f6' : '#10b981' }"></span>
+                  <span :style="{ width: '4px', height: '16px', borderRadius: '2px', backgroundColor: editingMajorTab % 2 === 0 ? '#1890FF' : '#52C41A' }"></span>
                   <strong>{{ editingScheme.majors[editingMajorTab]?.name }}专业</strong>
                   <button class="btn btn-sm" @click="toggleAllStations" style="padding: 2px 10px; font-size: 12px;">
                     {{ allStationsCollapsed ? '展开所有考站' : '收起所有考站' }}
@@ -173,12 +173,12 @@
               </div>
               <div v-if="editingScheme.majors[editingMajorTab]?.stations.length === 0" style="padding: 16px; color: var(--text-secondary); text-align: center;">暂无考站</div>
               <div v-for="(station, sindex) in editingScheme.majors[editingMajorTab]?.stations" :key="sindex" draggable="true" @dragstart="stationDragStart($event, editingMajorTab, sindex)" @dragover="stationDragOver" @drop="stationDrop($event, editingMajorTab, sindex)" style="border-bottom: 1px solid var(--border-light); padding: 0;">
-                <div style="background: #f9fafb; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #e5e7eb;" @click="toggleStation(editingMajorTab, sindex)">
+                <div style="background: #FAFAFA; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #EBEEF5;" @click="toggleStation(editingMajorTab, sindex)">
                   <div style="display: flex; align-items: center; gap: 12px;">
-                    <i class="fas fa-grip-vertical" style="color: #9ca3af; cursor: grab;" @click.stop></i>
+                    <i class="fas fa-grip-vertical" style="color: #909399; cursor: grab;" @click.stop></i>
                     <i class="fas" :class="station.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'" style="color: var(--text-tertiary);" @click.stop="toggleStation(editingMajorTab, sindex)"></i>
-                    <input v-model="station.name" style="font-weight: 600; border: 1px solid transparent; background: transparent; padding: 2px 6px; border-radius: 4px; font-size: 14px; width: 140px;" @click.stop @focus="$event.target.style.border='1px solid #409EFF'; $event.target.style.background='#fff'" @blur="syncStationName(editingMajorTab, sindex); $event.target.style.border='1px solid transparent'; $event.target.style.background='transparent'">
-                    <span style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;" @click.stop>时长：<input type="number" v-model.number="station.duration" style="width: 60px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center;" min="1" @click.stop /> 分钟</span>
+                    <input v-model="station.name" style="font-weight: 600; border: 1px solid transparent; background: transparent; padding: 2px 6px; border-radius: 4px; font-size: 14px; width: 140px;" @click.stop @focus="$event.target.style.border='1px solid #1890FF'; $event.target.style.background='#fff'" @blur="syncStationName(editingMajorTab, sindex); $event.target.style.border='1px solid transparent'; $event.target.style.background='transparent'">
+                    <span style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;" @click.stop>时长：<input type="number" v-model.number="station.duration" style="width: 60px; padding: 2px 6px; border: 1px solid #C0C4CC; border-radius: 4px; text-align: center;" min="1" @click.stop /> 分钟</span>
 
                   </div>
                   <button class="btn btn-sm btn-danger" @click.stop="deleteStation(editingMajorTab, sindex)">删除</button>
@@ -190,8 +190,8 @@
                       <button class="btn btn-sm" @click="openProjectModal(editingMajorTab, sindex)">+ 配置考核项目</button>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                      <span v-for="(proj, pindex) in station.projects" :key="pindex" draggable="true" @dragstart="projectDragStart($event, editingMajorTab, sindex, pindex)" @dragover="projectDragOver" @drop="projectDrop($event, editingMajorTab, sindex, pindex)" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 13px; cursor: grab;">
-                        <i class="fas fa-grip-lines" style="color: #93c5fd;"></i>
+                      <span v-for="(proj, pindex) in station.projects" :key="pindex" draggable="true" @dragstart="projectDragStart($event, editingMajorTab, sindex, pindex)" @dragover="projectDragOver" @drop="projectDrop($event, editingMajorTab, sindex, pindex)" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #E6F7FF; border: 1px solid #BAE7FF; border-radius: 6px; font-size: 13px; cursor: grab;">
+                        <i class="fas fa-grip-lines" style="color: #BAE7FF;"></i>
                         <span>{{ proj.name }}</span>
                         <i class="fas fa-times" style="cursor: pointer; color: var(--error);" @click.stop="deleteProject(editingMajorTab, sindex, pindex)"></i>
                       </span>
@@ -202,15 +202,15 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                       <span style="font-weight: 500;">评分表绑定：</span>
                       <div style="display:flex;align-items:center;gap:8px;">
-                        <span v-if="station.scoreTables.length > 0" style="font-size: 12px; color: var(--text-secondary);">权重合计：<b :style="{ color: getStationWeightSum(station) === 100 ? '#16a34a' : 'var(--error)' }">{{ getStationWeightSum(station) }} / 100</b></span>
+                        <span v-if="station.scoreTables.length > 0" style="font-size: 12px; color: var(--text-secondary);">权重合计：<b :style="{ color: getStationWeightSum(station) === 100 ? '#52C41A' : 'var(--error)' }">{{ getStationWeightSum(station) }} / 100</b></span>
                         <button class="btn btn-sm" @click="openScoreTableModal(editingMajorTab, sindex)">+ 添加评分表</button>
                       </div>
                     </div>
                     <div v-if="station.scoreTables.length === 0" style="color: var(--text-tertiary);">暂无评分表</div>
-                    <div v-for="(st, stindex) in station.scoreTables" :key="stindex" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #eff6ff; border-radius: 6px; margin-bottom: 4px;">
+                    <div v-for="(st, stindex) in station.scoreTables" :key="stindex" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #E6F7FF; border-radius: 6px; margin-bottom: 4px;">
                       <div style="flex:1;min-width:0;">
                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-                          <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{ st.name }}</span>
+                          <span style="background: #BAE7FF; color: #096DD9; padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{ st.name }}</span>
                           <span v-if="st.templateCode" style="font-size:11px;color:var(--text-tertiary);font-family:monospace;">{{ st.templateCode }}</span>
                           <span v-if="st.fileName" style="font-size:11px;color:var(--text-tertiary);">
                             <i class="fas fa-paperclip"></i> {{ st.fileName }}
@@ -220,7 +220,7 @@
                       </div>
                       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
                         <span style="font-size: 12px; color: var(--text-secondary);">权重</span>
-                        <input type="number" v-model.number="st.weight" min="1" max="100" style="width: 58px; padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center;" title="该评分表占考站总分的权重（合计须为100）">
+                        <input type="number" v-model.number="st.weight" min="1" max="100" style="width: 58px; padding: 2px 6px; border: 1px solid #C0C4CC; border-radius: 4px; text-align: center;" title="该评分表占考站总分的权重（合计须为100）">
                         <button class="btn btn-sm" @click="autoDistributeWeights(editingMajorTab, sindex)" title="按张数自动均分">均分</button>
                         <i v-if="st.fileData" class="fas fa-download" style="cursor:pointer;color:var(--primary);font-size:12px;" title="下载文件" @click="downloadScoreTableFile(st)"></i>
                         <i class="fas fa-times" style="cursor: pointer; color: var(--error);" @click="deleteScoreTable(editingMajorTab, sindex, stindex)"></i>
@@ -233,14 +233,14 @@
           </template>
         </div>
       </div>
-      <div style="padding: 16px; border-top: 1px solid var(--border); background: #f9fafb; text-align: right;">
+      <div style="padding: 16px; border-top: 1px solid var(--border); background: #FAFAFA; text-align: right;">
         <button class="btn btn-primary" @click="closeSlidePanel">保存并关闭</button>
       </div>
     </div>
     <div v-if="showSlidePanel" class="panel-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;" @click="closeSlidePanel"></div>
 
     <div v-if="showViewSlidePanel" class="slide-panel open" style="position: fixed; top: 0; right: 0; width: 70%; height: 100%; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column;">
-      <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f0fdf4;">
+      <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #F6FFED;">
         <div>
           <h3 style="margin: 0; font-size: 16px; font-weight: 600;">查看：{{ viewingScheme?.name }}</h3>
           <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
@@ -258,8 +258,8 @@
             <div :style="{ flex: '1', minWidth: 0, overflow: viewMajorsExpanded ? 'visible' : 'hidden', display: 'flex', gap: '4px', flexWrap: viewMajorsExpanded ? 'wrap' : 'nowrap' }">
               <div v-for="(major, midx) in viewingScheme.majors" :key="midx"
                    @click="viewingMajorTab = midx"
-                   :style="{ padding: '10px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: viewingMajorTab === midx ? 600 : 400, color: viewingMajorTab === midx ? '#059669' : 'var(--text-secondary)', borderBottom: viewingMajorTab === midx ? '2px solid #059669' : '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', transition: 'all .15s', borderRadius: '6px 6px 0 0' }"
-                   @mouseenter="$event.target.style.background = viewingMajorTab !== midx ? '#f0fdf4' : 'transparent'"
+                   :style="{ padding: '10px 18px', cursor: 'pointer', fontSize: '13px', fontWeight: viewingMajorTab === midx ? 600 : 400, color: viewingMajorTab === midx ? '#52C41A' : 'var(--text-secondary)', borderBottom: viewingMajorTab === midx ? '2px solid #52C41A' : '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', transition: 'all .15s', borderRadius: '6px 6px 0 0' }"
+                   @mouseenter="$event.target.style.background = viewingMajorTab !== midx ? '#F6FFED' : 'transparent'"
                    @mouseleave="$event.target.style.background = 'transparent'">
                 {{ major.name }}
               </div>
@@ -269,9 +269,9 @@
             </div>
           </div>
           <div v-if="viewingScheme.majors[viewingMajorTab]" style="border: 1px solid var(--border); border-radius: 8px;">
-            <div style="padding: 12px 16px; background: #f0fdf4; border-bottom: 1px solid var(--border); display: flex; align-items: center;">
+            <div style="padding: 12px 16px; background: #F6FFED; border-bottom: 1px solid var(--border); display: flex; align-items: center;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span :style="{ width: '4px', height: '16px', borderRadius: '2px', backgroundColor: viewingMajorTab % 2 === 0 ? '#059669' : '#10b981' }"></span>
+                <span :style="{ width: '4px', height: '16px', borderRadius: '2px', backgroundColor: viewingMajorTab % 2 === 0 ? '#52C41A' : '#52C41A' }"></span>
                 <strong>{{ viewingScheme.majors[viewingMajorTab].name }}专业</strong>
               </div>
               <button class="btn btn-sm" @click="toggleAllViewStations" style="padding: 2px 10px; font-size: 12px;">
@@ -289,16 +289,16 @@
                 <div style="margin-bottom: 8px;">
                   <div style="font-weight: 500; margin-bottom: 6px;">考核项目：</div>
                   <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <span v-for="proj in station.projects" :key="proj.name" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; font-size: 13px;">{{ proj.name }}</span>
+                    <span v-for="proj in station.projects" :key="proj.name" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #F6FFED; border: 1px solid #B7EB8F; border-radius: 6px; font-size: 13px;">{{ proj.name }}</span>
                     <span v-if="station.projects.length === 0" style="color: var(--text-tertiary);">暂无考核项目</span>
                   </div>
                 </div>
                 <div style="padding-top: 10px; border-top: 1px solid var(--border-light);">
                   <div style="font-weight: 500; margin-bottom: 6px;">评分表绑定：</div>
                   <div v-if="station.scoreTables.length === 0" style="color: var(--text-tertiary);">暂无评分表</div>
-                  <div v-for="st in station.scoreTables" :key="st.name" style="display: flex; align-items: center; padding: 6px 10px; background: #f0fdf4; border-radius: 6px; margin-bottom: 4px;">
+                  <div v-for="st in station.scoreTables" :key="st.name" style="display: flex; align-items: center; padding: 6px 10px; background: #F6FFED; border-radius: 6px; margin-bottom: 4px;">
                     <div>
-                      <span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 6px;">{{ st.name }}</span>
+                      <span style="background: #F6FFED; color: #389E0D; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 6px;">{{ st.name }}</span>
                       <span v-if="st.fileName" style="font-size:11px;color:var(--text-tertiary);"><i class="fas fa-paperclip"></i> {{ st.fileName }}</span>
                       <span style="font-size: 12px; color: var(--text-secondary); display:block;margin-top:2px;">覆盖：{{ st.bindProjects.join(', ') }}</span>
                       <span v-if="typeof st.weight === 'number'" style="font-size: 12px; color: var(--text-secondary);">权重：{{ st.weight }}%</span>
@@ -310,7 +310,7 @@
           </div>
         </div>
       </div>
-      <div style="padding: 16px; border-top: 1px solid var(--border); background: #f9fafb; text-align: right;">
+      <div style="padding: 16px; border-top: 1px solid var(--border); background: #FAFAFA; text-align: right;">
         <button class="btn" @click="closeViewPanel">关闭</button>
       </div>
     </div>
@@ -325,15 +325,15 @@
         </div>
         <div class="filter-item mb-3">
           <label>类型</label>
-          <input class="input" value="机构" disabled style="background: #f3f4f6;">
+          <input class="input" value="机构" disabled style="background: #F5F7FA;">
         </div>
         <div class="filter-item mb-3">
           <label>机构 *</label>
-          <input class="input" :value="newSchemeInstitution" disabled style="background: #f3f4f6;">
+          <input class="input" :value="newSchemeInstitution" disabled style="background: #F5F7FA;">
         </div>
         <div class="filter-item mb-3">
           <label>培训阶段 *</label>
-          <input class="input" :value="activePhaseTab" disabled style="background: #f3f4f6;">
+          <input class="input" :value="activePhaseTab" disabled style="background: #F5F7FA;">
         </div>
         <div class="flex justify-end gap-2 mt-4">
           <button class="btn" @click="closeAddModal">取消</button>
@@ -368,10 +368,10 @@
           <div v-if="availableStationPresets.length" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
             <span style="font-size: 11px; color: var(--text-tertiary); align-self: center;">常用：</span>
             <span v-for="name in availableStationPresets" :key="name"
-                  style="padding: 2px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; font-size: 12px; color: #1e40af; cursor: pointer; transition: all .15s;"
+                  style="padding: 2px 10px; background: #E6F7FF; border: 1px solid #BAE7FF; border-radius: 12px; font-size: 12px; color: #096DD9; cursor: pointer; transition: all .15s;"
                   @click="newStationName = name"
-                  @mouseenter="$event.target.style.background='#dbeafe'"
-                  @mouseleave="$event.target.style.background='#eff6ff'">
+                  @mouseenter="$event.target.style.background='#BAE7FF'"
+                  @mouseleave="$event.target.style.background='#E6F7FF'">
               {{ name }}
             </span>
           </div>
@@ -392,8 +392,8 @@
     <div v-if="showScoreTableModal && currentStationContext" class="modal-overlay" @click.self="showScoreTableModal = false" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;">
       <div style="background:white;border-radius:12px;width:560px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.12);">
         <!-- 头部 -->
-        <div style="padding:18px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
-          <span style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:16px;">📋</span>
+        <div style="padding:18px 24px;border-bottom:1px solid #EBEEF5;display:flex;align-items:center;gap:12px;">
+          <span style="width:36px;height:36px;border-radius:8px;background:#E6F7FF;display:flex;align-items:center;justify-content:center;font-size:16px;">📋</span>
           <div>
             <h3 style="margin:0;font-size:15px;font-weight:600;">选择评分表</h3>
             <p style="margin:2px 0 0;font-size:12px;color:var(--text-tertiary);">从评分表管理中选择，单选绑定考核项目</p>
@@ -407,23 +407,23 @@
             <input class="input" v-model="scoreTableSearchKeyword" placeholder="搜索评分表名称、编码或专业..." style="width:100%;padding-left:34px;box-sizing:border-box;height:38px;">
           </div>
           <!-- 评分表列表 -->
-          <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px;">
-            <div style="padding:8px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:var(--text-secondary);font-weight:600;">
+          <div style="border:1px solid #EBEEF5;border-radius:8px;overflow:hidden;margin-bottom:16px;">
+            <div style="padding:8px 14px;background:#FAFAFA;border-bottom:1px solid #EBEEF5;font-size:12px;color:var(--text-secondary);font-weight:600;">
               可选评分表 <span style="font-weight:400;color:var(--text-tertiary);">（{{ filteredScoreTableOptions.length }} 个）</span>
             </div>
             <div style="max-height:220px;overflow-y:auto;">
               <div v-if="filteredScoreTableOptions.length === 0" style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:13px;">
-                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:#d1d5db;"></i>
+                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:#C0C4CC;"></i>
                 无匹配评分表
               </div>
               <label v-for="(st, idx) in filteredScoreTableOptions" :key="st.template_code || idx"
-                     style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #f3f4f6;"
-                     :style="{ background: scoreTableSelectedCode === st.template_code ? '#eff6ff' : '#fff' }"
-                     @mouseenter="$event.target.style.background = scoreTableSelectedCode !== st.template_code ? '#fafbfc' : '#eff6ff'"
-                     @mouseleave="$event.target.style.background = scoreTableSelectedCode === st.template_code ? '#eff6ff' : '#fff'">
+                     style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #F5F7FA;"
+                     :style="{ background: scoreTableSelectedCode === st.template_code ? '#E6F7FF' : '#FFFFFF' }"
+                     @mouseenter="$event.target.style.background = scoreTableSelectedCode !== st.template_code ? '#FAFAFA' : '#E6F7FF'"
+                     @mouseleave="$event.target.style.background = scoreTableSelectedCode === st.template_code ? '#E6F7FF' : '#fff'">
                 <input type="radio" :value="st.template_code" v-model="scoreTableSelectedCode" style="flex-shrink:0;accent-color:var(--primary);">
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:13px;font-weight:500;color:#1f2937;line-height:1.4;">{{ st.template_name }}</div>
+                  <div style="font-size:13px;font-weight:500;color:#303133;line-height:1.4;">{{ st.template_name }}</div>
                   <div style="display:flex;gap:12px;margin-top:3px;">
                     <span style="font-size:11px;color:var(--text-tertiary);font-family:monospace;">{{ st.template_code }}</span>
                     <span style="font-size:11px;color:var(--text-tertiary);">{{ st.specialty }}</span>
@@ -434,26 +434,26 @@
             </div>
           </div>
           <!-- 绑定项目 -->
-          <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-            <div style="padding:8px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;color:var(--text-secondary);font-weight:600;">
+          <div style="border:1px solid #EBEEF5;border-radius:8px;overflow:hidden;">
+            <div style="padding:8px 14px;background:#FAFAFA;border-bottom:1px solid #EBEEF5;font-size:12px;color:var(--text-secondary);font-weight:600;">
               绑定考核项目 <span style="font-weight:400;color:var(--text-tertiary);">（多选，{{ scoreTableSelectedProject.length }} 个已选）</span>
             </div>
             <div style="padding:6px 0;max-height:150px;overflow-y:auto;">
               <div v-if="freeProjectsForScoreTable.length === 0" style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">所有考核项目已绑定评分表</div>
               <label v-for="proj in freeProjectsForScoreTable" :key="proj.name"
                      style="display:flex;align-items:center;gap:10px;padding:7px 14px;cursor:pointer;transition:background .12s;"
-                     :style="{ background: scoreTableSelectedProject.includes(proj.name) ? '#f0fdf4' : '#fff' }"
-                     @mouseenter="$event.target.style.background = scoreTableSelectedProject.includes(proj.name) ? '#f0fdf4' : '#fafbfc'"
-                     @mouseleave="$event.target.style.background = scoreTableSelectedProject.includes(proj.name) ? '#f0fdf4' : '#fff'">
+                     :style="{ background: scoreTableSelectedProject.includes(proj.name) ? '#F6FFED' : '#FFFFFF' }"
+                     @mouseenter="$event.target.style.background = scoreTableSelectedProject.includes(proj.name) ? '#F6FFED' : '#FAFAFA'"
+                     @mouseleave="$event.target.style.background = scoreTableSelectedProject.includes(proj.name) ? '#F6FFED' : '#fff'">
                 <input type="checkbox" :value="proj.name" v-model="scoreTableSelectedProject" style="flex-shrink:0;accent-color:var(--success);width:16px;height:16px;">
-                <span style="font-size:13px;color:#1f2937;">{{ proj.name }}</span>
-                <span v-if="scoreTableSelectedProject.includes(proj.name)" style="font-size:11px;color:#16a34a;margin-left:auto;">已选</span>
+                <span style="font-size:13px;color:#303133;">{{ proj.name }}</span>
+                <span v-if="scoreTableSelectedProject.includes(proj.name)" style="font-size:11px;color:#52C41A;margin-left:auto;">已选</span>
               </label>
             </div>
           </div>
         </div>
         <!-- 底部 -->
-        <div style="padding:14px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:10px;">
+        <div style="padding:14px 24px;border-top:1px solid #EBEEF5;display:flex;justify-content:flex-end;gap:10px;">
           <button class="btn" @click="showScoreTableModal = false" style="min-width:80px;">取消</button>
           <button class="btn btn-primary" @click="submitScoreTable" :disabled="!scoreTableSelectedCode || scoreTableSelectedProject.length === 0" style="min-width:80px;">确定绑定</button>
         </div>
@@ -495,7 +495,7 @@ const adminStore = useAdminStore()
 const schemes = ref([])
 
 const institutionProvinceMap = {
-  '仁爱医院 (总部)': '北京',
+  '东南大学医学院': '江苏',
   '华西医院': '四川',
   '中山医院': '广东',
   '协和医院': '北京',

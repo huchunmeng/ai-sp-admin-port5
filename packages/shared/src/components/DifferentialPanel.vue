@@ -93,12 +93,12 @@ defineExpose({ getData })
 }
 .diff-card-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-  background: #f9fafb; border-bottom: 1px solid var(--border);
+  background: #FAFAFA; border-bottom: 1px solid var(--border);
 }
 .diff-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 600; }
 .diff-disease-input { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; font-weight: 500; }
 .diff-disease-input:focus { outline: none; border-color: var(--primary); }
-.btn-remove-sm { background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; }
+.btn-remove-sm { background: none; border: none; color: #F5222D; cursor: pointer; padding: 4px; }
 .diff-card-body { padding: 12px; }
 .diff-field { margin-bottom: 10px; }
 .diff-field:last-child { margin-bottom: 0; }

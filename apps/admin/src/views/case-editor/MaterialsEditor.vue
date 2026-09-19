@@ -348,7 +348,7 @@ function cancelEdit() {
 .materials-editor { padding: 16px; }
 
 .empty-state { text-align: center; padding: 60px 20px; color: #909399; }
-.empty-state i { font-size: 48px; margin-bottom: 16px; display: block; color: #DCDFE6; }
+.empty-state i { font-size: 48px; margin-bottom: 16px; display: block; color: #D9D9D9; }
 .empty-state p { font-size: 14px; margin-bottom: 4px; }
 .empty-state .hint { font-size: 12px; color: #C0C4CC; max-width: 400px; margin: 0 auto; }
 
@@ -363,21 +363,21 @@ function cancelEdit() {
 .material-card { background: #fff; border: 1px solid #EBEEF5; border-radius: 8px; overflow: hidden; cursor: pointer; transition: box-shadow .15s; }
 .material-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-.card-thumb { height: 100px; display: flex; align-items: center; justify-content: center; background: #f5f7fa; }
+.card-thumb { height: 100px; display: flex; align-items: center; justify-content: center; background: #F5F7FA; }
 .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .card-thumb i { font-size: 28px; color: #C0C4CC; }
 
 .card-body { padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-.card-type-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #ecf5ff; color: #409EFF; }
-.card-type-badge.badge-video { background: #fef0f0; color: #F56C6C; }
-.card-type-badge.badge-audio { background: #fdf6ec; color: #E6A23C; }
+.card-type-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #E6F7FF; color: #1890FF; }
+.card-type-badge.badge-video { background: #FFF1F0; color: #F5222D; }
+.card-type-badge.badge-audio { background: #FFF7E6; color: #FA8C16; }
 .card-date { font-size: 10px; color: #C0C4CC; margin-left: auto; }
 
 .card-footer { padding: 4px 8px 8px; }
 .card-name { font-size: 12px; color: #606266; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-.add-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 156px; border: 2px dashed #DCDFE6; color: #909399; background: transparent; }
-.add-card:hover { border-color: #409EFF; color: #409EFF; }
+.add-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 156px; border: 2px dashed #D9D9D9; color: #909399; background: transparent; }
+.add-card:hover { border-color: #1890FF; color: #1890FF; }
 .add-card i { font-size: 20px; }
 
 /* Modal */
@@ -391,31 +391,31 @@ function cancelEdit() {
 .modal-footer .spacer { flex: 1; }
 
 .form-section { margin-bottom: 20px; }
-.section-label { display: block; font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f0f0f0; }
+.section-label { display: block; font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #EBEEF5; }
 
-.file-upload-area { border: 2px dashed #DCDFE6; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color .15s; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #909399; }
-.file-upload-area:hover { border-color: #409EFF; }
+.file-upload-area { border: 2px dashed #D9D9D9; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color .15s; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #909399; }
+.file-upload-area:hover { border-color: #1890FF; }
 .upload-preview { max-width: 100%; max-height: 200px; object-fit: contain; }
 .upload-hint { font-size: 11px; color: #C0C4CC; }
 
 .form-row { display: flex; gap: 12px; margin-bottom: 10px; }
 .form-item { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .form-item label { font-size: 12px; color: #909399; }
-.form-item input, .form-item select, .form-item textarea { padding: 8px 10px; border: 1px solid #DCDFE6; border-radius: 6px; font-size: 13px; outline: none; color: #303133; }
-.form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: #409EFF; }
+.form-item input, .form-item select, .form-item textarea { padding: 8px 10px; border: 1px solid #D9D9D9; border-radius: 6px; font-size: 13px; outline: none; color: #303133; }
+.form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: #1890FF; }
 .form-item textarea { resize: vertical; font-family: inherit; }
 
-.tag-input { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 8px; border: 1px solid #DCDFE6; border-radius: 6px; min-height: 34px; align-items: center; }
-.tag-input:focus-within { border-color: #409EFF; }
-.tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 8px; background: #ecf5ff; color: #409EFF; border-radius: 3px; }
+.tag-input { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 8px; border: 1px solid #D9D9D9; border-radius: 6px; min-height: 34px; align-items: center; }
+.tag-input:focus-within { border-color: #1890FF; }
+.tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 8px; background: #E6F7FF; color: #1890FF; border-radius: 3px; }
 .tag i { cursor: pointer; font-size: 10px; }
-.tag i:hover { color: #F56C6C; }
-.hint-tag { background: #f0f9ff; color: #0ea5e9; }
+.tag i:hover { color: #F5222D; }
+.hint-tag { background: #E6F7FF; color: #1890FF; }
 .tag-input input { border: none; outline: none; flex: 1; min-width: 80px; font-size: 13px; padding: 4px 0; }
 
-.btn { padding: 8px 16px; border: 1px solid #DCDFE6; border-radius: 6px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; background: #fff; color: #606266; }
-.btn-primary { background: #409EFF; color: #fff; border-color: #409EFF; }
+.btn { padding: 8px 16px; border: 1px solid #D9D9D9; border-radius: 6px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; background: #fff; color: #606266; }
+.btn-primary { background: #1890FF; color: #fff; border-color: #1890FF; }
 .btn-outline { background: #fff; color: #606266; }
-.btn-danger { background: #fff; color: #F56C6C; border-color: #F56C6C; }
+.btn-danger { background: #fff; color: #F5222D; border-color: #F5222D; }
 .btn:hover { opacity: 0.85; }
 </style>
