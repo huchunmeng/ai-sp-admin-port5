@@ -91,8 +91,9 @@ function genericItems(sample) {
       ]
     },
     'GEN-02': {
-      rules: '本条的号码字段已全掩，本期不纳入评分（不可评）',
-      points: [{ id: 'p1', text: `检查号 / 影像号按脱敏形态保留后 4 位（${d.examNo} / ${d.imageNo}）`, accept: [d.examNo, d.imageNo] }]
+      rules: '本条要评的是各类号码（住院/门诊号、检查号、就诊卡号、影像号）。' 
+        + '2026-09-20 起这四类号码字段整体从样本里去掉（对"写报告"没有可练内容），本条对本模块全部样本不适用',
+      points: [{ id: 'p1', text: '各类号码按脱敏形态书写（本模块不评）', accept: [] }]
     },
     'GEN-03': {
       points: [{ id: 'p1', text: `写明检查时间（${d.examTime}）`, accept: [d.examTime] }]

@@ -91,12 +91,12 @@ export const DEIDENTIFY_ROWS = [
   { k: '年龄', key: 'ageRange', copy: true, note: '年龄段' },
   { k: '性别', key: 'sex', copy: true },
   { k: '科别', key: 'dept', copy: true },
-  { k: '检查号', key: 'examNo', copy: true, note: '保留后 4 位' },
-  { k: '影像号', key: 'imageNo', copy: true, note: '保留后 4 位' },
-  { k: '住院/门诊号', key: 'inpatientNo', masked: true },
-  { k: '就诊卡号', key: 'cardNo', masked: true },
   { k: '检查时间', key: 'examTime', copy: true }
 ]
+// 2026-09-20 批注：删掉「检查号 / 影像号 / 住院门诊号 / 就诊卡号」四个号码字段——
+// 这些号对"写报告"没有可练的内容（原设计里 GEN-02 也一直判"不适用"），
+// 去掉后剩下的字段够少，可以直接摊在影像下面，不必再挤进 tab 或折叠面板。
+// 样本数据里若仍留着这几个键，只是不再渲染与评分，不报错。
 
 /**
  * 报告字数上限（四段合计的兜底值）。

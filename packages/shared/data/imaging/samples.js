@@ -84,9 +84,10 @@ const RC_SAMPLES = [
         + '双侧胸腔未见积液，心影及大血管形态未见异常。',
       impression: '右肺上叶尖段实性结节，边缘分叶伴短毛刺、胸膜牵拉，考虑周围型肺癌可能性大，建议增强CT及多学科评估。'
     },
-    version: 3, status: 'published',
+    version: 3, status: 'draft',
     createdAt: '2026-09-10 09:12', createdBy: '教研 · 陈',
-    publishedAt: '2026-09-18 15:20', updatedAt: '2026-09-18 15:20', updatedBy: '教研 · 陈'
+    publishedAt: null, updatedAt: '2026-09-20 02:30', updatedBy: '系统',
+    sampleNote: '下架：影像原为程序生成的演示占位图（非真实影像）。2026-09-20 接入公开数据集真实序列后，本模块不再保留假影像的病例；补上真实影像后可重新上架'
   },
   {
     id: 'RC-002',
@@ -111,9 +112,10 @@ const RC_SAMPLES = [
         + '脑沟脑裂未见增宽。颅内未见明确异常流空影。',
       impression: '左侧基底节区及放射冠区急性期脑梗死。'
     },
-    version: 2, status: 'published',
+    version: 2, status: 'draft',
     createdAt: '2026-09-08 10:30', createdBy: '教研 · 陈',
-    publishedAt: '2026-09-17 09:40', updatedAt: '2026-09-17 09:40', updatedBy: '教研 · 陈'
+    publishedAt: null, updatedAt: '2026-09-20 02:30', updatedBy: '系统',
+    sampleNote: '下架：影像原为程序生成的演示占位图（非真实影像）。补上真实影像后可重新上架'
   },
   {
     id: 'RC-003',
@@ -139,9 +141,10 @@ const RC_SAMPLES = [
         + '肝内外胆管未见扩张，胆囊壁不厚。脾脏不大，腹腔未见积液，腹膜后未见肿大淋巴结。',
       impression: '肝右叶肝细胞癌 TACE 术后，碘油沉积致密，未见明确存活灶；建议结合 AFP 及 MR 复查随访。'
     },
-    version: 1, status: 'published',
+    version: 1, status: 'draft',
     createdAt: '2026-09-05 14:20', createdBy: '教研 · 王',
-    publishedAt: '2026-09-16 17:02', updatedAt: '2026-09-16 17:02', updatedBy: '教研 · 王'
+    publishedAt: null, updatedAt: '2026-09-20 02:30', updatedBy: '系统',
+    sampleNote: '下架：影像原为程序生成的演示占位图（非真实影像）。补上真实影像后可重新上架'
   },
   {
     id: 'RC-004',

@@ -56,7 +56,6 @@
       <div v-show="step === 0" class="card" data-reviewable="患者信息">
         <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:clinicalBrief="form.clinicalBrief" />
       </div>
-
       <!-- ② 影像序列与标准报告 -->
       <template v-if="step === 1">
         <div class="card mb-4" data-reviewable="影像序列">
@@ -78,16 +77,6 @@
       <div v-show="step === 3" class="card" data-reviewable="评分表">
         <RubricPanel v-model="form.rubric" :sample="rubricSample" />
       </div>
-    </div>
-
-    <!-- 页脚：仅步骤导航 -->
-    <div class="is-foot">
-      <button class="btn" :disabled="step === 0" @click="go(step - 1)">
-        <i class="fa-solid fa-chevron-left"></i> 上一步
-      </button>
-      <button class="btn" :disabled="step === STEPS.length - 1" @click="go(step + 1)">
-        下一步 <i class="fa-solid fa-chevron-right"></i>
-      </button>
     </div>
   </div>
 </template>
@@ -204,17 +193,10 @@ function commit(row, target, isRev) {
 .is-step.active .is-step-no { background: var(--primary); color: #fff; }
 .is-step.done .is-step-no { background: var(--success); color: #fff; }
 
-.is-body { padding: 16px 24px 0; }
+.is-body { padding: 16px 24px 24px; }
 .is-sub { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; }
 .is-sub::before {
   content: ''; display: inline-block; width: 3px; height: 13px; background: var(--primary);
   border-radius: 2px; margin-right: 7px; vertical-align: -1px;
-}
-
-.is-foot {
-  position: sticky; bottom: 0; z-index: 15;
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 24px; background: var(--card-bg); border-top: 1px solid var(--border);
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.04);
 }
 </style>

@@ -4,11 +4,9 @@
       <div v-for="f in FIELDS" :key="f.key" class="filter-item" :style="f.span ? 'grid-column:span ' + f.span : ''">
         <label>
           {{ f.label }}
-          <span v-if="f.locked" class="badge badge-info" style="margin-left:6px">强制全掩</span>
-          <span v-else-if="f.rule" class="text-secondary" style="font-weight:400"> · {{ f.ruleText }}</span>
+          <span v-if="f.rule" class="text-secondary" style="font-weight:400"> · {{ f.ruleText }}</span>
         </label>
-        <input v-if="!f.locked" class="input" v-model="model[f.key]" :placeholder="f.placeholder" style="width:100%" @input="pushUp">
-        <input v-else class="input" :value="model[f.key]" disabled style="width:100%;background:#F5F7FA">
+        <input class="input" v-model="model[f.key]" :placeholder="f.placeholder" style="width:100%" @input="pushUp">
         <span v-if="errors[f.key]" class="text-error" style="font-size:11.5px">{{ errors[f.key] }}</span>
       </div>
       <div class="filter-item" style="grid-column:span 4">
@@ -28,16 +26,13 @@
 <script setup>
 import { computed, reactive, watch } from 'vue'
 
-/** 脱敏字段与硬校验（PRD §5.12.4）—— 不合规不允许保存 */
+/** 患者信息字段与硬校验（PRD §5.12.4）—— 不合规不允许保存
+ *  2026-09-20 批注：删掉「检查号 / 影像号 / 住院门诊号 / 就诊卡号」四个号码字段 */
 const FIELDS = [
   { key: 'name', label: '患者姓名', ruleText: '仅露首字，必须含 *', placeholder: '张*', test: v => /^\S\*+$/.test(v), msg: '须形如「张*」（仅露首字）' },
   { key: 'ageRange', label: '年龄', ruleText: '必须是年龄段，拒绝具体年龄', placeholder: '50–59 岁', test: v => /^\d{1,3}\s*[–\-~至]\s*\d{1,3}\s*岁$/.test(v), msg: '须形如「50–59 岁」（年龄段）' },
   { key: 'sex', label: '性别', placeholder: '女' },
   { key: 'dept', label: '科别', placeholder: '呼吸内科' },
-  { key: 'examNo', label: '检查号', ruleText: '保留后 4 位', placeholder: '****1234', test: v => /^\*{4}\d{4}$/.test(v), msg: '须形如「****1234」（保留后 4 位）' },
-  { key: 'imageNo', label: '影像号', ruleText: '保留后 4 位', placeholder: '****5678', test: v => /^\*{4}\d{4}$/.test(v), msg: '须形如「****5678」（保留后 4 位）' },
-  { key: 'inpatientNo', label: '住院/门诊号', locked: true },
-  { key: 'cardNo', label: '就诊卡号', locked: true },
   { key: 'examTime', label: '检查时间', ruleText: '原样', placeholder: '2026-09-16 14:32', span: 2 }
 ]
 
@@ -53,20 +48,13 @@ const clinicalModel = computed({
   set: v => emit('update:clinicalBrief', v)
 })
 
-// 父组件替换样本时同步；全掩字段锁死为 ****
-watch(() => props.deidentify, v => {
-  Object.assign(model, v)
-  model.inpatientNo = '****'
-  model.cardNo = '****'
-}, { deep: true })
-
-Object.assign(model, { inpatientNo: '****', cardNo: '****' })
+// 父组件替换样本时同步
+watch(() => props.deidentify, v => { Object.assign(model, v) }, { deep: true })
 
 /** 格式错误：只对**已填写**的字段判，避免新建空白表单一片红 */
 const errors = computed(() => {
   const out = {}
   FIELDS.forEach(f => {
-    if (f.locked) return
     const v = String(model[f.key] || '').trim()
     if (!v) return
     if (f.test && !f.test(v)) out[f.key] = f.msg
@@ -76,7 +64,7 @@ const errors = computed(() => {
 
 /** 必填缺失 */
 const missing = computed(() => FIELDS
-  .filter(f => !f.locked && !String(model[f.key] || '').trim())
+  .filter(f => !String(model[f.key] || '').trim())
   .map(f => `${f.label}未填写`))
 
 /** 提交前由父组件调用；返回问题清单（空数组 = 通过） */

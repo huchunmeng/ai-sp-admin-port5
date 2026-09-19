@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 工具条 -->
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px">
       <span class="text-secondary" style="font-size:12.5px">
         共 {{ resolved.items.length }} 条
@@ -20,64 +21,87 @@
       还没有评分表 —— 点右上「AI 从标准报告抽取」生成一版，再逐条校正
     </div>
 
+    <!-- 每个维度一张标准表格 -->
     <div v-for="dim in dims" :key="dim.dim" class="is-dim">
       <div class="section-head">
         <span class="section-head-title">{{ dim.dim }}</span>
+        <span class="text-secondary" style="font-size:12px">
+          {{ dim.items.length }} 个条目
+        </span>
       </div>
 
-      <div v-for="item in dim.items" :key="item.code" class="is-item">
-        <div class="is-item-head" @click="toggle(item.code)">
-          <i class="fa-solid" :class="open[item.code] ? 'fa-chevron-down' : 'fa-chevron-right'" style="font-size:10px;color:#909399"></i>
-          <code class="is-code">{{ item.code }}</code>
-          <span class="is-item-name">{{ item.name }}</span>
-          <span class="badge" :class="item.scoreableFull === item.full ? 'badge-success' : 'badge-warning'">
-            {{ item.scoreableFull }} / {{ item.full }} 分
-          </span>
-          <span v-if="!editableCodes.includes(item.code)" class="badge badge-info">自动生成</span>
-          <span class="text-secondary" style="font-size:11.5px;margin-left:auto">{{ item.points.length }} 个要点</span>
-        </div>
+      <div class="card" style="padding:0">
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:190px">条目</th>
+                <th style="width:78px">分值</th>
+                <th>要点</th>
+                <th style="width:240px">可接受表述</th>
+                <th style="width:64px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="item in dim.items" :key="item.code">
+                <tr v-for="(p, pi) in item.points" :key="item.code + '-' + p.id">
+                  <td v-if="pi === 0" :rowspan="item.points.length" class="is-item-cell">
+                    <code class="is-code">{{ item.code }}</code>
+                    <div class="is-item-name">{{ item.name }}</div>
+                    <span v-if="!editableCodes.includes(item.code)" class="badge badge-info">自动生成</span>
+                    <span v-else-if="item.wholeNA" class="badge badge-warning">不适用</span>
+                  </td>
 
-        <div v-show="open[item.code]" class="is-item-body">
-          <div v-if="item.rules" class="is-rules">{{ item.rules }}</div>
+                  <td v-if="pi === 0" :rowspan="item.points.length">
+                    <span class="badge" :class="item.scoreableFull === item.full ? 'badge-success' : 'badge-warning'">
+                      {{ item.scoreableFull }} / {{ item.full }}
+                    </span>
+                  </td>
 
-          <div v-for="(p, pi) in item.points" :key="p.id" class="is-point" :class="{ 'is-point-na': !p.assessable }">
-            <div class="is-point-row">
-              <span class="is-point-id">{{ p.id }}</span>
-              <template v-if="editableCodes.includes(item.code)">
-                <input class="input is-point-text" :value="p.text" placeholder="要点内容（要可判定）"
-                       @input="updatePoint(item.code, pi, 'text', $event.target.value)">
-              </template>
-              <template v-else>
-                <span class="is-point-text-ro">{{ p.text }}</span>
-              </template>
-              <span v-if="!p.assessable" class="badge" :class="p.nASource === 'na' ? 'badge-info' : 'badge-warning'">
-                {{ p.nASource === 'na' ? '不适用' : '不可评' }}
-              </span>
-              <button v-if="editableCodes.includes(item.code)" class="btn btn-sm btn-danger"
-                      title="删除该要点" @click="removePoint(item.code, pi)">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-            <div class="is-point-sub">
-              <template v-if="editableCodes.includes(item.code)">
-                <span class="is-accept-label">可接受表述</span>
-                <input class="input is-accept" :value="(p.accept || []).join(' / ')"
-                       placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
-                       @change="updatePoint(item.code, pi, 'accept', $event.target.value)">
-              </template>
-              <template v-else-if="p.accept && p.accept.length">
-                <span class="is-accept-label">可接受表述</span>
-                <span class="is-accept-ro">{{ p.accept.join(' / ') }}</span>
-              </template>
-              <span v-if="!p.assessable" class="is-na-why">{{ p.nAReason }}</span>
-            </div>
-          </div>
+                  <td>
+                    <div class="is-point">
+                      <input v-if="editableCodes.includes(item.code)" class="input" :value="p.text"
+                             placeholder="要点内容（要可判定）"
+                             @input="updatePoint(item.code, pi, 'text', $event.target.value)">
+                      <span v-else class="is-point-ro">{{ p.text }}</span>
+                      <span v-if="!p.assessable" class="badge" :class="p.nASource === 'na' ? 'badge-info' : 'badge-warning'">
+                        {{ p.nASource === 'na' ? '不适用' : '不可评' }}
+                      </span>
+                    </div>
+                  </td>
 
-          <div v-if="editableCodes.includes(item.code)" class="is-item-ops">
-            <button class="btn btn-sm" @click="addPoint(item.code)">+ 添加要点</button>
-            <input class="input is-rules-input" :value="item.rules" placeholder="判定说明（可选）"
-                   @change="updateRules(item.code, $event.target.value)">
-          </div>
+                  <td>
+                    <input v-if="editableCodes.includes(item.code)" class="input" :value="(p.accept || []).join(' / ')"
+                           placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
+                           @change="updatePoint(item.code, pi, 'accept', $event.target.value)">
+                    <span v-else class="is-accept-ro">{{ (p.accept || []).join(' / ') || '—' }}</span>
+                  </td>
+
+                  <td>
+                    <button v-if="editableCodes.includes(item.code)" class="btn btn-sm btn-danger"
+                            title="删除该要点" @click="removePoint(item.code, pi)">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 条目级：判定说明 + 加要点 -->
+                <tr v-if="editableCodes.includes(item.code)" :key="item.code + '-ops'" class="is-ops-row">
+                  <td colspan="5">
+                    <div class="is-ops">
+                      <button class="btn btn-sm" @click="addPoint(item.code)">+ 添加要点</button>
+                      <input class="input is-rules-input" :value="item.rules"
+                             placeholder="判定说明（可选）"
+                             @change="updateRules(item.code, $event.target.value)">
+                    </div>
+                  </td>
+                </tr>
+                <tr v-else-if="item.rules" :key="item.code + '-rules'" class="is-ops-row">
+                  <td colspan="5"><div class="is-rules">{{ item.rules }}</div></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -85,7 +109,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { toast } from '@ai-sp/shared'
 import {
   resolveRubric,
@@ -97,14 +121,13 @@ import { useAIChat } from '@/composables/useAIChat'
 const props = defineProps({
   /** 完整样本（含 goldStandard / capabilities） */
   sample: { type: Object, required: true },
-  /** 要点集 `{ version, updatedAt, updatedBy, items: { [code]: { points, rules } } }` */
+  /** 评分表 `{ version, updatedAt, updatedBy, items: { [code]: { points, rules } } }` */
   modelValue: { type: Object, default: null }
 })
 const emit = defineEmits(['update:modelValue'])
 
 const { sendMessage } = useAIChat()
 const extracting = ref(false)
-const open = reactive({})
 
 /** 内容条目（可编辑）；通用条目由样单元数据自动生成，不给改 */
 const CONTENT_CODES = [
@@ -114,7 +137,6 @@ const CONTENT_CODES = [
 
 const rubric = computed(() => props.modelValue || { version: 0, items: {} })
 const editableCodes = CONTENT_CODES
-const editableCount = CONTENT_CODES.length
 const hasRubric = computed(() => Object.keys(rubric.value.items || {}).length > 0)
 const goldReady = computed(() => {
   const g = props.sample.goldStandard
@@ -139,8 +161,6 @@ const dims = computed(() => {
     scoreableFull: Math.round(d.scoreableFull * 10) / 10
   }))
 })
-
-function toggle(code) { open[code] = !open[code] }
 
 function emitItems(items, extra) {
   emit('update:modelValue', {
@@ -190,7 +210,7 @@ function removePoint(code, pi) {
 function resetAll() {
   const src = BUILD_IN_RUBRIC[props.sample.id]
   emitItems(src ? JSON.parse(JSON.stringify(src.items)) : {})
-  toast.show(src ? '已恢复内置要点集' : '该样本没有内置要点集，已清空', 'success')
+  toast.show(src ? '已恢复内置评分表' : '该样本没有内置评分表，已清空', 'success')
 }
 
 async function extract() {
@@ -201,12 +221,10 @@ async function extract() {
     if (!res.ok) { toast.show('抽取失败：' + (res.content || '模型不可用'), 'error'); return }
     const parsed = parseRubricExtraction(res.content)
     if (!parsed.ok) { toast.show('抽取失败：' + parsed.reason, 'error'); return }
-    // 与既有要点集合并：模型产出的条目覆盖，未产出的保留
+    // 与既有评分表合并：模型产出的条目覆盖，未产出的保留
     const merged = { ...JSON.parse(JSON.stringify(rubric.value.items || {})), ...parsed.items }
     emitItems(merged, { extracted: true })
-    // 默认展开被抽取的条目，便于逐条核对
-    Object.keys(parsed.items).forEach(c => { open[c] = true })
-    toast.show(`已抽取 ${parsed.count} 条要点集，请逐条核对后再发布`, 'success')
+    toast.show(`已抽取 ${parsed.count} 条评分表，请逐条核对后再发布`, 'success')
   } finally {
     extracting.value = false
   }
@@ -219,28 +237,15 @@ async function extract() {
   background: #FAFAFA; border-radius: 8px; padding: 32px 20px; margin-bottom: 16px;
 }
 .is-dim { margin-bottom: 18px; }
-.is-item { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
-.is-item-head {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 9px 12px; background: #FAFBFC; cursor: pointer; user-select: none;
-}
-.is-item-head:hover { background: #F0F7FF; }
-.is-item-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
 .is-code { background: #F5F7FA; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
-.is-item-body { padding: 10px 12px 12px; border-top: 1px solid var(--border); }
-.is-rules { font-size: 12px; color: #909399; margin-bottom: 8px; }
-.is-point { padding: 7px 0; border-bottom: 1px dashed #EBEEF5; }
-.is-point:last-child { border-bottom: none; }
-.is-point-na { opacity: .72; }
-.is-point-row { display: flex; align-items: center; gap: 8px; }
-.is-point-id { flex-shrink: 0; width: 26px; font-family: monospace; font-size: 11px; color: #A8ABB2; }
-.is-point-text { flex: 1; min-width: 0; }
-.is-point-text-ro { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-main); }
-.is-point-sub { display: flex; align-items: center; gap: 8px; margin: 5px 0 0 34px; flex-wrap: wrap; }
-.is-accept-label { flex-shrink: 0; font-size: 11.5px; color: #A8ABB2; }
-.is-accept { flex: 1; min-width: 220px; font-size: 12px; }
+.is-item-cell { vertical-align: top; }
+.is-item-name { font-size: 13px; font-weight: 600; color: var(--text-main); margin: 4px 0 6px; }
+.is-point { display: flex; align-items: center; gap: 8px; }
+.is-point .input { flex: 1; min-width: 0; }
+.is-point-ro { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-main); }
 .is-accept-ro { font-size: 11.5px; color: #909399; }
-.is-na-why { font-size: 11.5px; color: #D46B08; }
-.is-item-ops { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.is-ops-row > td { background: #FAFBFC; padding: 8px 12px; }
+.is-ops { display: flex; gap: 8px; align-items: center; }
 .is-rules-input { flex: 1; min-width: 200px; font-size: 12px; }
+.is-rules { font-size: 12px; color: #909399; }
 </style>
