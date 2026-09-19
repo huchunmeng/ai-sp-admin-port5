@@ -194,12 +194,13 @@ const MENU_CONFIG = [
   { module: '考试管理', icon: 'examRoom', system: 'exam' }
 ]
 
-// 外部系统地址：三家地址均随部署环境不同，由院方/客户协调后填入。
-// url 为空时点击只弹提示、不跳转——避免开到空白页或错误域名。
+// 外部系统登录地址：三家均随部署环境不同，集中在这里改。
+// 住培与实习同在 zp6 平台的 rest-xk，考试系统登录地址统一、按身份进入对应页面。
+// 留空时点击只弹提示、不跳转——避免开到空白页或错误域名。
 const EXTERNAL_SYSTEMS = {
-  residency: { url: '', pending: '住培系统由医院提供，地址待院方协调后开通' },
-  internship: { url: '', pending: '实习系统为本地部署，地址待与客户协调后开通' },
-  exam: { url: '', pending: '考试系统地址待客户提供' }
+  residency: { url: 'https://zp6.mvwchina.com/rest-xk/login.html?_=xfwmqHXkhzFS6x4f' },
+  internship: { url: 'https://zp6.mvwchina.com/rest-xk/login.html?_=ryQKfM9NeqZBYJ26' },
+  exam: { url: 'https://examon.mvwchina.com/' }
 }
 
 const menu = ref(MENU_CONFIG.map(m => ({
@@ -212,7 +213,7 @@ function onModuleClick(mod) {
   if (mod.system) {
     const sys = EXTERNAL_SYSTEMS[mod.system]
     if (sys && sys.url) window.open(sys.url, '_blank', 'noopener,noreferrer')
-    else toast.show(sys ? sys.pending : '该系统地址未配置', 'warning')
+    else toast.show('该系统地址未配置', 'warning')
     return
   }
   mod.expanded = !mod.expanded
@@ -254,7 +255,7 @@ onUnmounted(() => {
 })
 
 function openTraining() {
-  window.location.href = urls.training
+  window.open(urls.training, '_blank', 'noopener,noreferrer')
 }
 </script>
 
