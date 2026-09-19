@@ -15,11 +15,16 @@
         </div>
         <div class="sidebar-menu">
           <div v-for="mod in menu" :key="mod.module" class="menu-module">
-            <div class="module-header" :class="{ expanded: mod.expanded }" @click="mod.expanded = !mod.expanded; saveSidebarState()">
+            <div class="module-header" :class="{ expanded: mod.expanded }" @click="onModuleClick(mod)">
               <span class="nav-icon" v-html="iconSvg(mod.icon)"></span>
               <span class="module-label">{{ mod.module }}</span>
-              <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-if="!mod.system">
                 <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-else>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <path d="M15 3h6v6"/>
+                <path d="M10 14 21 3"/>
               </svg>
             </div>
             <template v-if="mod.expanded && mod.groups">
@@ -98,7 +103,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
-import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls } from '@ai-sp/shared'
+import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls, toast } from '@ai-sp/shared'
 
 const router = useRouter()
 const route = useRoute()
@@ -111,7 +116,7 @@ function loadSidebarState() {
     const raw = localStorage.getItem(SIDEBAR_KEY)
     if (raw) return JSON.parse(raw)
   } catch (e) { /* ignore */ }
-  return { collapsed: false, top: ['临床思维管理', '住培管理', '实习管理', '考试管理'], groups: ['病例管理'] }
+  return { collapsed: false, top: ['临床思维管理'], groups: ['病例管理'] }
 }
 
 function toggleSidebar() {
@@ -153,10 +158,7 @@ const ICON_PATHS = {
   clinical: '<path d="M3 12h4l2.5-6 3.5 12 2.5-6H21"/>',
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10.5" r="2"/><path d="M5.8 16a3.6 3.6 0 0 1 6.4 0"/><path d="M14.5 10h4M14.5 14h2.5"/>',
   internship: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0"/><path d="M18 8v6M15 11h6"/>',
-  examRoom: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
-  cert: '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9.5 3v3h5V3"/><path d="m9.5 13.5 1.8 1.8 3.5-3.6"/>',
-  clipboardPen: '<path d="M9 4H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h5"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m20.5 14.6-4.2 4.2-2.6.6.6-2.6 4.2-4.2z"/>',
-  screenQuiz: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="m9.5 9 2 2 3.5-3.5"/>'
+  examRoom: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'
 }
 
 function iconSvg(name) {
@@ -186,22 +188,36 @@ const MENU_CONFIG = [
         { id: 'system-settings', label: '系统设置', route: '/system-settings', icon: 'gear' }
     ]}
   ]},
-  { module: '住培管理', icon: 'idcard', pages: [
-      { id: 'residency-manage', label: '住培管理', route: '/residency-manage', icon: 'cert' }
-  ]},
-  { module: '实习管理', icon: 'internship', pages: [
-      { id: 'internship-manage', label: '实习管理', route: '/internship-manage', icon: 'clipboardPen' }
-  ]},
-  { module: '考试管理', icon: 'examRoom', pages: [
-      { id: 'exam-manage', label: '考试管理', route: '/exam-manage', icon: 'screenQuiz' }
-  ]}
+  // 以下三项为外部系统入口，点击直接跳转，不在本系统内开页
+  { module: '住培管理', icon: 'idcard', system: 'residency' },
+  { module: '实习管理', icon: 'internship', system: 'internship' },
+  { module: '考试管理', icon: 'examRoom', system: 'exam' }
 ]
+
+// 外部系统地址：三家地址均随部署环境不同，由院方/客户协调后填入。
+// url 为空时点击只弹提示、不跳转——避免开到空白页或错误域名。
+const EXTERNAL_SYSTEMS = {
+  residency: { url: '', pending: '住培系统由医院提供，地址待院方协调后开通' },
+  internship: { url: '', pending: '实习系统为本地部署，地址待与客户协调后开通' },
+  exam: { url: '', pending: '考试系统地址待客户提供' }
+}
 
 const menu = ref(MENU_CONFIG.map(m => ({
   ...m,
   expanded: saved.top.includes(m.module),
   groups: m.groups ? m.groups.map(g => ({ ...g, expanded: saved.groups.includes(g.module) })) : undefined
 })))
+
+function onModuleClick(mod) {
+  if (mod.system) {
+    const sys = EXTERNAL_SYSTEMS[mod.system]
+    if (sys && sys.url) window.open(sys.url, '_blank', 'noopener,noreferrer')
+    else toast.show(sys ? sys.pending : '该系统地址未配置', 'warning')
+    return
+  }
+  mod.expanded = !mod.expanded
+  saveSidebarState()
+}
 
 function isTabActive(page) {
   return route.path === page.route
@@ -282,6 +298,7 @@ function openTraining() {
 .nav-icon :deep(svg) { width: 100%; height: 100%; display: block; }
 .module-label, .group-label { flex: 1; }
 .expand-icon { width: 14px; transition: transform .2s; flex-shrink: 0; }
+.external-icon { width: 13px; flex-shrink: 0; opacity: .55; }
 .group-header .expand-icon { width: 12px; }
 .expanded > .expand-icon { transform: rotate(90deg); }
 .page-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 32px; cursor: pointer; font-size: 13px; color: var(--sidebar-text); transition: background .15s, color .15s; }
