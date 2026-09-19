@@ -35,7 +35,7 @@ const routes = [
       { path: 'report-writing', name: 'reportWriting', component: () => import('@/views/report-writing/ReportWritingHome.vue') },
       { path: 'report-writing/train', name: 'reportWritingTrain', component: () => import('@/views/report-writing/ReportWritingTrainList.vue') },
       { path: 'report-writing/train/:caseId', name: 'reportWritingWorkbench', component: () => import('@/views/report-writing/ReportWritingWorkbench.vue') },
-      { path: 'report-writing/train/:caseId/result', name: 'reportWritingResult', component: () => import('@/views/report-writing/ReportWritingResult.vue') },
+      { path: 'report-writing/records', name: 'reportWritingRecords', component: () => import('@/views/report-writing/ReportWritingRecords.vue') },
       // 考核侧本期未实现，保留可达的占位骨架（避免首页与在线考试页的入口 404）
       { path: 'report-writing/exam', name: 'reportWritingExam', component: () => import('@/views/report-writing/ReportWritingExam.vue') },
       { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },

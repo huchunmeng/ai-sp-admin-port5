@@ -19,6 +19,7 @@ import { useReportScoring } from './useReportScoring'
 
 const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
+const RECORDS_KEY = 'report_writing_records_v1'
 
 /** 四段合集字数上限（各段上限之和的兜底值） */
 const TOTAL_LIMIT = 7000
@@ -47,6 +48,33 @@ function emptyDraft() {
 
 export function readPracticeStats() {
   return readJson(STATS_KEY, {})
+}
+
+/**
+ * 逐回合训练记录（训练记录页与成绩报告弹窗的数据源）。
+ * 每条 = 一次「提交报告」，含报告快照与评分结果；评分未回来时 `status: 'pending'`。
+ * @returns {Array<{id,caseId,title,bodyPart,modality,level,round,submittedAt,status,score,scoreableMax} & object>}
+ */
+export function readPracticeRecords() {
+  const list = readJson(RECORDS_KEY, [])
+  return Array.isArray(list) ? list : []
+}
+
+export function readPracticeRecord(id) {
+  return readPracticeRecords().find(r => r.id === id) || null
+}
+
+function upsertPracticeRecord(patch) {
+  const list = readPracticeRecords()
+  const i = list.findIndex(r => r.id === patch.id)
+  if (i >= 0) list[i] = { ...list[i], ...patch }
+  else list.unshift(patch)
+  writeJson(RECORDS_KEY, list)
+  return patch
+}
+
+export function clearPracticeRecords() {
+  writeJson(RECORDS_KEY, [])
 }
 
 /**
@@ -153,7 +181,7 @@ export function useReportSession(caseId, sample) {
     }
   }
 
-  /** 提交报告 → 进入评分与对照，并**立即发起评分** */
+  /** 提交报告 → 进入评分与对照，并**立即发起评分**；同时落一条训练记录 */
   async function toReview() {
     if (!canSubmit.value) return { ok: false, reason: submitBlockReason.value }
     state.phase = 'review'
@@ -164,8 +192,37 @@ export function useReportSession(caseId, sample) {
       lastPracticedAt: nowStamp()
     }
     writeJson(STATS_KEY, stats)
-    runScoring()   // 不 await：UI 先切页展示"AI 评阅中"
-    return { ok: true }
+
+    const s = sampleRef.value || {}
+    const rec = upsertPracticeRecord({
+      id: `${caseId}-${Date.now()}`,
+      caseId,
+      title: s.title || caseId,
+      bodyPart: s.bodyPart || '',
+      modality: s.modality || '',
+      level: s.level || '',
+      round: state.roundIndex,
+      submittedAt: nowStamp(),
+      status: 'pending',
+      score: null,
+      scoreableMax: null,
+      result: null,
+      draft: { ...state.draft }
+    })
+
+    // 不 await：UI 先展示"AI 评阅中"；评分回来后把结果补进这条记录
+    runScoring().then(() => {
+      const r = state.scoringResult
+      upsertPracticeRecord({
+        id: rec.id,
+        status: r ? 'done' : 'failed',
+        score: r ? r.rawTotal : null,
+        scoreableMax: r ? r.scoreableMax : null,
+        result: r,
+        error: r ? '' : state.scoringError
+      })
+    })
+    return { ok: true, recordId: rec.id }
   }
 
   /** 运行（或重跑）评分。失败不阻塞学员：对照参考始终可用，只是没有分数 */

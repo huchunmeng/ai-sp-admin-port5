@@ -38,6 +38,19 @@
           <i class="fa-solid fa-chevron-right"></i>
         </div>
       </div>
+
+      <div class="rwh-entry" @click="goRecords">
+        <div class="rwh-entry-top">
+          <span class="rwh-entry-icon is-records"><i class="fa-solid fa-clock-rotate-left"></i></span>
+          <span class="badge badge-info">记录</span>
+        </div>
+        <div class="rwh-entry-name">训练记录</div>
+        <div class="rwh-entry-desc">逐次训练的成绩报告与报告原文，可随时回看</div>
+        <div class="rwh-entry-foot">
+          <span>{{ recordCount ? recordCount + ' 条' : '暂无记录' }}</span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -46,17 +59,21 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { TRAINING_CASES, IMAGING_SAMPLES } from '@ai-sp/shared/imaging'
+import { readPracticeRecords } from '@/composables/useReportSession'
 
 const router = useRouter()
 
-/** 可练病例 = 已发布且金标准已录（PRD §5.12.2 / §5.12.6） */
+/** 可练病例 = 已发布且标准报告已录（PRD §5.12.2 / §5.12.6） */
 const cases = computed(() => TRAINING_CASES)
 
-/** 题库里还有多少例在草稿态（金标准待教研录入）——如实告知，别让学生以为系统缺题 */
+/** 题库里还有多少例在草稿态（标准报告待教研录入）——如实告知，别让学生以为系统缺题 */
 const draftCount = computed(() => IMAGING_SAMPLES.filter(s => s.status === 'draft').length)
+
+const recordCount = computed(() => readPracticeRecords().length)
 
 const goTrain = () => router.push({ name: 'reportWritingTrain' })
 const goExam = () => router.push({ name: 'reportWritingExam' })
+const goRecords = () => router.push({ name: 'reportWritingRecords' })
 </script>
 
 <style scoped>
@@ -79,7 +96,7 @@ const goExam = () => router.push({ name: 'reportWritingExam' })
 .rwh-stat strong { font-size: 20px; color: var(--primary); }
 .rwh-stat span { font-size: 11.5px; color: #6b7280; }
 
-.rwh-entries { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px; }
+.rwh-entries { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
 .rwh-entry {
   background: #fff; border: 1px solid #f0f2f5; border-radius: 14px;
   padding: 18px; cursor: pointer; transition: all .18s;
@@ -93,6 +110,7 @@ const goExam = () => router.push({ name: 'reportWritingExam' })
 }
 .rwh-entry-icon.is-train { background: #eff6ff; color: var(--primary); }
 .rwh-entry-icon.is-exam { background: #fef3c7; color: #b45309; }
+.rwh-entry-icon.is-records { background: #ecfdf5; color: #059669; }
 .rwh-entry-name { font-size: 15px; font-weight: 700; color: #111827; margin-top: 14px; }
 .rwh-entry-desc { font-size: 12.5px; color: #6b7280; line-height: 1.8; margin-top: 6px; min-height: 44px; }
 .rwh-entry-foot {

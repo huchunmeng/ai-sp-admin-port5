@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="training-container" style="position:relative;min-height:100vh;">
     <header class="app-header" v-if="!isChromeless">
       <div class="header-left">
@@ -134,8 +134,8 @@ function switchVersion(v) {
 const stationRoutes = ['historyTaking', 'physicalExam', 'ancillaryTests', 'diagnosis', 'treatmentPlan', 'medicalRecord', 'caseAnalysis', 'humanisticComm', 'mentalExam']
 
 // 「无壳页」：隐藏全局页头与面包屑，页面自带 TrainingTopBar（与病史采集/体格检查同一套框架）。
-// 影像报告书写的工作台与成绩报告页按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
-const reportWritingStationRoutes = ['reportWritingWorkbench', 'reportWritingResult']
+// 影像报告书写的工作台按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
+const reportWritingStationRoutes = ['reportWritingWorkbench']
 const chromelessRoutes = [...stationRoutes, ...reportWritingStationRoutes]
 
 const isStationRoute = computed(function() {
@@ -190,6 +190,9 @@ const crumbs = computed(function() {
   } else if (name === 'reportWritingTrain') {
     items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: null })
+  } else if (name === 'reportWritingRecords') {
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
+    items.push({ label: lang === 'zh' ? '训练记录' : 'Records', to: null })
   } else if (name === 'reportWritingWorkbench') {
     items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'reportWritingTrain' } })

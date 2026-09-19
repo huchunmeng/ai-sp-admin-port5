@@ -42,6 +42,9 @@
         </select>
         <input class="input" v-model.trim="keyword" placeholder="搜索病例名称" style="width:180px">
         <span class="rwt-count">共 {{ grouped.length }} 例</span>
+        <button class="btn btn-sm" @click="goRecords">
+          <i class="fa-solid fa-clock-rotate-left"></i> 训练记录
+        </button>
       </div>
     </div>
 
@@ -158,6 +161,10 @@ const unfinished = computed(() => {
 
 function open(sample) {
   router.push({ name: 'reportWritingWorkbench', params: { caseId: sample.id } })
+}
+
+function goRecords() {
+  router.push({ name: 'reportWritingRecords' })
 }
 </script>
 
