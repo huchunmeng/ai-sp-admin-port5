@@ -192,13 +192,15 @@
             <div class="mooc-card" v-for="m in MOOC_MODULES" :key="m.key" @click="goMoocModule(m.key)">
               <span class="mooc-bar" :style="{ background: m.color }"></span>
               <div class="mooc-card-top">
-                <span class="mooc-icon" :style="{ background: m.tint, color: m.color }">
+                <span class="mooc-icon" :style="{ background: m.gradient }">
                   <i class="fa-solid" :class="m.icon"></i>
                 </span>
-                <span class="mooc-tag">MOOC</span>
+                <span class="mooc-count">{{ m.courses.length }} 门</span>
               </div>
-              <div class="mooc-title">{{ m.title }}</div>
-              <div class="mooc-course">{{ platformText(m) }}</div>
+              <div class="mooc-body">
+                <div class="mooc-title">MOOC {{ m.title }}</div>
+                <div class="mooc-course">{{ platformText(m) }}</div>
+              </div>
               <i class="fa-solid fa-chevron-right mooc-arrow"></i>
             </div>
           </div>
@@ -494,10 +496,10 @@ function goMoocModule(key) {
   router.push({ name: 'moocModule', params: { module: key } })
 }
 
-// 模块卡副标题：课程平台（去重、去掉 SPOC 后缀）+ 课程门数
+// 模块卡副标题：课程平台（去重、去掉 SPOC 后缀）；课程门数移到卡片右上角标
 function platformText(m) {
   const names = [...new Set(m.courses.map(c => c.platform.split(' · ')[0]))]
-  return `${names.join(' / ')} · ${m.courses.length} 门课程`
+  return names.join(' / ')
 }
 
 function goRecords() {
@@ -754,6 +756,12 @@ onMounted(() => {
   min-height: calc(100vh - 60px); align-items: flex-start;
 }
 
+/* ─── 标题统一黑体 ─── */
+.zone-title, .card-title, .entry-title, .elite-title, .mooc-title,
+.spec-card-title, .record-name, .notify-title, .welcome-name {
+  font-family: 'SimHei', 'Heiti SC', 'Microsoft YaHei', sans-serif;
+}
+
 /* ─── 左侧栏 ─── */
 .home-left {
   width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;
@@ -889,30 +897,27 @@ onMounted(() => {
 /* ─── 慕课四个模块 ─── */
 .mooc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
 .mooc-card {
-  position: relative; display: flex; flex-direction: column; gap: 8px;
-  padding: 14px 14px 14px 16px; border-radius: 12px; cursor: pointer;
-  background: #fff; border: 1px solid #f0f2f5; overflow: hidden;
+  position: relative; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px; border-radius: 12px; cursor: pointer;
+  background: #fafbfc; border: 1px solid #f0f2f5; overflow: hidden;
   transition: all .2s;
 }
-.mooc-card:hover { border-color: #dbe3ef; box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); }
+.mooc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); background: #fff; }
 .mooc-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
 .mooc-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mooc-icon {
   width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center; color: #fff;
 }
-.mooc-tag {
-  font-size: 10px; font-weight: 700; letter-spacing: .6px; font-family: 'Inter', sans-serif;
-  color: #fff; background: linear-gradient(135deg, #1e3a8a, #2563eb);
-  padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
+.mooc-count {
+  font-size: 13px; font-weight: 700; color: #1f2937;
+  background: #f3f4f6; padding: 4px 10px; border-radius: 8px; flex-shrink: 0;
 }
-/* 模块名——院方要求用黑体，需覆盖全局 Inter 字体 */
-.mooc-title {
-  font-family: 'SimHei', 'Heiti SC', 'Microsoft YaHei', sans-serif;
-  font-size: 14px; font-weight: 700; color: #1f2937; letter-spacing: .3px;
-}
-.mooc-course { font-size: 11px; color: #9ca3af; line-height: 1.5; padding-right: 14px; }
-.mooc-arrow { position: absolute; right: 14px; bottom: 14px; color: #d1d5db; font-size: 11px; transition: color .2s; }
+.mooc-body { flex: 1; }
+.mooc-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+/* 副标题补足两行高度，使卡片与上方「名医名课研习」四卡等高 */
+.mooc-course { font-size: 12px; color: #6b7280; line-height: 1.5; min-height: 36px; }
+.mooc-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: color .2s; }
 .mooc-card:hover .mooc-arrow { color: #6b7280; }
 
 /* ─── 科室入口 ─── */
