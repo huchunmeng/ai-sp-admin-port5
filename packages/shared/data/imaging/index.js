@@ -12,15 +12,17 @@
 //   · **不接入**影像控件——全仓无 DICOM / 序列浏览 / 调窗 / 测量 组件（实证：零命中）。
 //     本期三视图为占位，界面明写「影像待接入」，待院方样本与影像教学底座到位后按 §9.4 黑盒接入。
 
-export { R1_TABLE, R1_ITEMS, SEGMENTS, COVERAGE_ELEMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
+export { R1_TABLE, R1_ITEMS, SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
 export {
   CAPABILITIES, CAPABILITY_ITEMS, CAPABILITY_FIELDS, DEIDENTIFY_ITEMS,
   emptyCapabilities, scoreableOf, weightedScoreable, SCOREABLE_PUBLISH_FLOOR
 } from './capabilities.js'
 export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, DEFAULT_VIEWS, VIEW_CANDIDATES, viewMeta } from './samples.js'
 export {
-  hintFor, hintBody, HINT_ELEMENTS, HINT_LEVELS, DEFAULT_QUOTA, HINT_COOLDOWN_MS
-} from './hint-library.js'
+  HINT_LEVELS, DEFAULT_QUOTA, HINT_COOLDOWN_MS,
+  L1_HINTS, DEGRADED_HINT, MAX_COMMON_SUBSTRING,
+  extractFactWords, longestCommonSubstring, checkRedline, buildCompanionPrompt
+} from './companion.js'
 
 import { IMAGING_SAMPLES, viewMeta } from './samples.js'
 import { SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
@@ -115,9 +117,9 @@ export function unassessableOf(caseId, cap) {
 
 /**
  * 训练端卡片视图（列表页用）。
- * 练习统计（已练 N 次 / 最近自评得分 / 最近练习时间）**不在静态样本里**——按 PRD §5.3
- * 它们来自 `practiceStats[caseId] = { completedRounds, lastSelfReviewScore, lastPracticedAt }`，
- * 由训练端基于 localStorage 维护；此处只做**字段名映射**（契约名 → 卡片展示名）。
+ * 练习统计不在静态样本里——由训练端基于 localStorage 维护
+ * `practiceStats[caseId] = { completedRounds, lastPracticedAt }`。
+ * ⚠️ 原契约里还有 `lastSelfReviewScore`，**已随"取消逐条自评"的批注一并去掉**（完成一例 = 提交报告）。
  */
 export function trainingCardOf(sample, stat) {
   const { max } = scoreableOf(sample.id, sample.capabilities)
@@ -134,7 +136,6 @@ export function trainingCardOf(sample, stat) {
     viewCount: seriesListOf(sample).length,
     scoreableMax: max,
     trainedRounds: s.completedRounds || 0,
-    lastSelfReview: s.lastSelfReviewScore != null ? s.lastSelfReviewScore : null,
     lastAt: s.lastPracticedAt || null
   }
 }

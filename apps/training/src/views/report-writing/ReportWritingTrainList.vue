@@ -68,7 +68,7 @@
               <div class="rwt-card-clinical">{{ c.clinical }}</div>
               <div class="rwt-card-foot">
                 <span class="rwt-card-practice">
-                  <template v-if="c.trainedRounds">已练 {{ c.trainedRounds }} 次 · 最近自评 {{ c.lastSelfReview }}</template>
+                  <template v-if="c.trainedRounds">已练 {{ c.trainedRounds }} 次<template v-if="c.lastAt"> · 最近 {{ c.lastAt.slice(5, 16) }}</template></template>
                   <template v-else>未练过</template>
                 </span>
                 <span class="rwt-card-go">开始训练 <i class="fa-solid fa-chevron-right"></i></span>

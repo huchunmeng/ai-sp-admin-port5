@@ -1,6 +1,6 @@
 <template>
   <div class="rww-page">
-    <!-- 两态：书写报告 → 对照自评 -->
+    <!-- 两态：书写报告 → 对照参考 -->
     <StepBar :phases="phases" :current="phaseIndex" :round-index="state.roundIndex" @go="onGoPhase" />
 
     <div class="rww-body">
@@ -11,29 +11,23 @@
         <!-- 影像显示控件：序列数量随病例变，翻层面用图片切换 -->
         <ImageViewer :sample="sample" />
 
-        <!-- 阅片笔记：放在影像下方，可选、默认收起 -->
-        <NotesPanel :notes="state.viewNotes" @update:notes="v => state.viewNotes = v" />
-
-        <!-- 三段报告（同时可写） -->
+        <!-- 三段报告（同时可写；对照态下由对照区左栏呈现，此处收起，点"返回修改报告"再展开） -->
         <SegmentForm v-if="!inReview" :segments="segments" :draft="state.draft"
                      :total-chars="totalChars" :total-over="totalOver" :total-limit="TOTAL_LIMIT"
                      @update:segment="onSegmentInput" />
 
-        <!-- 提交后：自评 + 对照 -->
-        <template v-if="inReview">
-          <SelfReviewPanel :marks="state.marks" :submitted="selfSubmitted" :total="selfReviewTotal()"
-                           @mark="onMark" @submit="onSubmitSelfReview"
-                           @rewrite="onRewrite" @restart="onRestartRound" />
-          <ComparePanel :unlocked="selfSubmitted" :draft="state.draft" :sample="sample"
-                        :self-total="selfReviewTotal()" :system-coverage="systemCoverage" />
-        </template>
+        <!-- 提交后：与参考报告对照 -->
+        <ComparePanel v-if="inReview" :draft="state.draft" :sample="sample" />
+
+        <!-- 阅片笔记：按批注放在最后 -->
+        <NotesPanel :notes="state.viewNotes" @update:notes="v => state.viewNotes = v" />
       </div>
 
-      <!-- 右侧：要素自检 + 提示栏（提示按段发放） -->
-      <HintAside :coverage="coverage" :hints="state.hints" :used-hint-count="usedHintCount"
-                 :segments="segments" :active-segment="state.activeSegment"
-                 :quota-left="quotaLeft" :cooling-left="coolingLeft"
-                 @update:activeSegment="setActiveSegment" @hint="onHint" />
+      <!-- 右侧：AI伴学 -->
+      <CompanionPanel :hints="state.hints" :used-hint-count="usedHintCount" :loading="state.hintLoading"
+                      :segments="segments" :active-segment="state.activeSegment"
+                      :quota-left="quotaLeft" :cooling-left="coolingLeft"
+                      @update:activeSegment="setActiveSegment" @hint="onHint" />
     </div>
 
     <!-- 底部操作区 -->
@@ -46,18 +40,18 @@
       <div class="rww-foot-right">
         <template v-if="!inReview">
           <button class="btn btn-primary" :disabled="!canSubmit" @click="onSubmit">
-            <i class="fa-solid fa-paper-plane"></i> 提交报告，进入自评对照
+            <i class="fa-solid fa-paper-plane"></i> 提交报告，对照参考
           </button>
         </template>
         <template v-else>
           <button class="btn" @click="onRewrite">
             <i class="fa-solid fa-rotate-left"></i> 返回修改报告
           </button>
-          <button v-if="selfSubmitted" class="btn btn-primary" @click="backToList">
-            完成，返回列表 <i class="fa-solid fa-check"></i>
+          <button class="btn" @click="onRestartRound">
+            <i class="fa-solid fa-forward"></i> 重练（新回合）
           </button>
-          <button v-else class="btn btn-primary" @click="scrollToSelfReview">
-            去自评 <i class="fa-solid fa-chevron-down"></i>
+          <button class="btn btn-primary" @click="backToList">
+            完成，返回列表 <i class="fa-solid fa-check"></i>
           </button>
         </template>
       </div>
@@ -74,11 +68,10 @@ import { useReportSession } from '@/composables/useReportSession'
 import StepBar from './components/StepBar.vue'
 import InfoBar from './components/InfoBar.vue'
 import ImageViewer from './components/ImageViewer.vue'
-import NotesPanel from './components/NotesPanel.vue'
 import SegmentForm from './components/SegmentForm.vue'
-import HintAside from './components/HintAside.vue'
-import SelfReviewPanel from './components/SelfReviewPanel.vue'
 import ComparePanel from './components/ComparePanel.vue'
+import NotesPanel from './components/NotesPanel.vue'
+import CompanionPanel from './components/CompanionPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -95,28 +88,20 @@ const sample = computed(() => {
 
 const session = useReportSession(route.params.caseId, sample.value)
 const {
-  state, inReview, phases, segments, coverage,
+  state, inReview, phases, segments,
   totalChars, totalOver, TOTAL_LIMIT,
   canSubmit, submitBlockReason,
   usedHintCount, quotaLeft, coolingLeft, requestHint, setActiveSegment,
-  toReview, backToWrite, restartRound,
-  submitSelfReview, selfSubmitted, selfReviewTotal
+  toReview, backToWrite, restartRound
 } = session
 
 const PHASE_HINT = {
-  write: '三段报告同时可写，不必按顺序推进；写影像所见时右侧「要素自检」会跟着判读',
-  review: '先逐条自评，提交后才解锁参考报告；自评不参与评分，只看你自己的认知偏差'
+  write: '三段报告同时可写，不必按顺序推进；卡住了用右侧「AI伴学」要点提示',
+  review: '与参考报告逐段对照，重点看该写哪几类有没有漏、顺序条理、诊断有没有正面回应临床问题'
 }
 
 const phaseIndex = computed(() => (inReview.value ? 1 : 0))
 const phaseHint = computed(() => PHASE_HINT[inReview.value ? 'review' : 'write'])
-
-/** 要素覆盖率（0–100），给对照页的系统参考分用 */
-const systemCoverage = computed(() => {
-  if (!coverage.value.length) return 0
-  const score = coverage.value.reduce((a, c) => a + (c.mark === 'ok' ? 1 : c.mark === 'doubt' ? 0.5 : 0), 0)
-  return Math.round((score / coverage.value.length) * 100)
-})
 
 onMounted(() => {
   if (!raw) { toast.show('未找到该病例', 'error'); router.replace({ name: 'reportWritingTrain' }); return }
@@ -128,57 +113,40 @@ function onSegmentInput(key, val) {
 }
 
 function onCopy(text) {
-  // 复制进「影像所见」段末尾；复制只是省打字，照抄不得满分（GEN-04）
+  // 复制进当前选中的段；复制只是省打字，照抄不得满分（GEN-04）
   const key = state.activeSegment || 'findings'
   const cur = state.draft[key] || ''
   state.draft[key] = cur ? `${cur}\n${text}` : text
   setActiveSegment(key)
 }
 
-/** 提交报告 → 自评对照（收口动作，不可跳过） */
+/** 提交报告 → 对照参考 */
 function onSubmit() {
   if (!canSubmit.value) { toast.show(submitBlockReason.value, 'warning'); return }
-  confirm('提交报告并进入逐条自评？自评表按 R1 表 23 条逐条判定，不可跳过（允许整页快速自评）；提交后才解锁金标准对照。')
+  confirm('提交报告并对照参考报告？提交后可逐段对照，也可随时返回修改（重写不重置 AI伴学配额）。')
     .then(ok => {
       if (!ok) return
       const r = toReview()
       if (!r.ok) { toast.show(r.reason || '无法提交', 'warning'); return }
-      setTimeout(scrollToSelfReview, 120)
+      setTimeout(() => document.querySelector('.rwb-cmp')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
     })
     .catch(() => {})
 }
 
-/** 从"对照自评"点回"书写报告"= 重写（不新建回合、配额不重置） */
 function onGoPhase(i) {
-  if (i === 0 && inReview.value) onRewrite()
+  if (i === 0 && inReview.value) backToWrite()
 }
 
-function onHint(level) {
-  const r = requestHint(level)
-  if (!r.ok) { toast.show(r.reason, 'warning'); return }
-  toast.show(`已给出 ${level} 提示`, 'success')
-}
-
-function onMark(code, mark) {
-  state.marks = { ...state.marks, [code]: mark }
-}
-
-function scrollToSelfReview() {
-  document.querySelector('.rwb-sr')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-function onSubmitSelfReview() {
-  const filled = Object.keys(state.marks).length
-  if (!filled) { toast.show('请先逐条自评（可用「整页快速自评」）', 'warning'); return }
-  const r = submitSelfReview()
-  if (r.alreadySubmitted) { toast.show('本回合已提交过自评，不重复计数', 'warning'); return }
-  toast.show('自评已提交，已解锁对照', 'success')
+async function onHint(level) {
+  const r = await requestHint(level)
+  if (r.ok) { toast.show(`AI伴学已给出 ${level} 提示`, 'success'); return }
+  toast.show(r.degraded ? `${r.reason}（配额已退还）` : r.reason, r.degraded ? 'warning' : 'warning')
 }
 
 function onRewrite() { backToWrite() }
 
 function onRestartRound() {
-  confirm('开始新一轮（重练）？本回合记录会保留可回看，提示配额将重置。').then(ok => {
+  confirm('开始新一轮（重练）？本回合记录会保留可回看，AI伴学配额将重置。').then(ok => {
     if (!ok) return
     restartRound()
     toast.show('新回合已开始', 'success')

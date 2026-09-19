@@ -69,18 +69,6 @@ export const SEGMENTS = [
 ]
 
 /**
- * 影像描述段的五类要素（PRD §6.2 提示栏的覆盖清单口径）。
- * 训练侧据此给出「●已覆盖 / ○缺失 / ?存疑」，考核侧不下发（§5.8）。
- */
-export const COVERAGE_ELEMENTS = [
-  { key: 'location', name: '部位与范围' },
-  { key: 'size', name: '数目与大小' },
-  { key: 'margin', name: '形态与边界' },
-  { key: 'density', name: '密度/信号/强化程度' },
-  { key: 'negative', name: '重要阴性征象' }
-]
-
-/**
  * 一般信息条的字段顺序与脱敏展示规则（PRD §5.2.2 / §5.12.4）。
  * `masked: true` 为全掩字段——不提供复制、本期不纳入评分（GEN-02 甲类）。
  */
