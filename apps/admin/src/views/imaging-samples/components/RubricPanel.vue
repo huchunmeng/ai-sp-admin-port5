@@ -39,27 +39,27 @@
       <table class="ss-table">
         <thead>
           <tr>
-            <th style="width:40px">序号</th>
-            <th style="width:92px">维度</th>
-            <th style="width:170px">条目</th>
-            <th style="width:76px">分值</th>
-            <th>要点</th>
-            <th style="width:230px">可接受表述</th>
-            <th style="width:200px">判定说明</th>
+            <th style="width:96px">维度</th>
+            <th style="width:200px">条目</th>
+            <th style="width:78px">分值</th>
+            <th>要点 / 可接受表述</th>
             <th style="width:130px">可评条件</th>
             <th style="width:58px">操作</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, idx) in tableRows" :key="row.item.code + '-' + row.p.id">
-            <td class="td-num">{{ idx + 1 }}</td>
-
+          <tr v-for="row in tableRows" :key="row.item.code + '-' + row.p.id">
             <td v-if="row.dimSpan" :rowspan="row.dimSpan" class="td-merged">{{ shortDim(row.dim) }}</td>
 
             <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-item"
-                :title="editableCodes.includes(row.item.code) ? row.item.code + ' ' + row.item.name : row.item.code + ' ' + row.item.name + '（按样单元数据自动生成，不可编辑）'">
+                :title="row.item.code + ' ' + row.item.name + (editableCodes.includes(row.item.code) ? '' : '（按样单元数据自动生成，不可编辑）')">
               <code class="is-code">{{ row.item.code }}</code>
               <div class="td-item-name">{{ row.item.name }}</div>
+              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea is-item-rules"
+                        :rows="rowsFor(row.item.rules, 16)" :value="row.item.rules"
+                        placeholder="判定说明（可选）"
+                        @change="updateRules(row.item.code, $event.target.value)"></textarea>
+              <div v-else-if="row.item.rules" class="is-item-rules-ro">{{ row.item.rules }}</div>
             </td>
 
             <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged cell-num">
@@ -75,22 +75,14 @@
                         placeholder="要点内容（要可判定）"
                         @input="updatePoint(row.item.code, row.pi, 'text', $event.target.value)"></textarea>
               <span v-else class="cell-ro">{{ row.p.text }}</span>
-            </td>
-
-            <td>
-              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
-                        :rows="rowsFor(acceptText(row.p))" :value="acceptText(row.p)"
-                        placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
-                        @change="updatePoint(row.item.code, row.pi, 'accept', $event.target.value)"></textarea>
-              <span v-else class="cell-ro">{{ acceptText(row.p) || '—' }}</span>
-            </td>
-
-            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-rules">
-              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
-                        :rows="rowsFor(row.item.rules)" :value="row.item.rules"
-                        placeholder="判定说明（可选）"
-                        @change="updateRules(row.item.code, $event.target.value)"></textarea>
-              <span v-else class="cell-ro">{{ row.item.rules || '—' }}</span>
+              <div class="is-accept-row">
+                <span class="is-accept-label">可接受表述</span>
+                <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea is-accept"
+                          :rows="rowsFor(acceptText(row.p), 26)" :value="acceptText(row.p)"
+                          placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
+                          @change="updatePoint(row.item.code, row.pi, 'accept', $event.target.value)"></textarea>
+                <span v-else class="cell-ro">{{ acceptText(row.p) || '—' }}</span>
+              </div>
             </td>
 
             <td>
@@ -119,9 +111,9 @@
         </tbody>
         <tfoot>
           <tr class="ss-total-row">
-            <td colspan="3" style="text-align:right;font-weight:600;font-size:12px">合计</td>
+            <td colspan="2" style="text-align:right;font-weight:600;font-size:12px">合计</td>
             <td class="cell-num" style="font-weight:600">100</td>
-            <td colspan="3" style="font-size:12px;color:var(--text-secondary)">本卷可评</td>
+            <td style="font-size:12px;color:var(--text-secondary)">本卷可评</td>
             <td class="cell-num" style="font-weight:600">{{ resolved.scoreableMax }}</td>
             <td></td>
           </tr>
@@ -216,7 +208,7 @@ const shortDim = d => String(d || '').replace(/^[一二三四五六七八九十]
 const acceptText = p => (p.accept || []).join(' / ')
 
 /** 文本域行数按内容估算（不用 autoResize：面板在 v-show 下量不到高度，会塌成 0） */
-const rowsFor = t => Math.max(1, Math.min(6, Math.ceil(String(t || '').length / 20)))
+const rowsFor = (t, per = 20) => Math.max(1, Math.min(6, Math.ceil(String(t || '').length / per)))
 
 function emitItems(items, extra) {
   emit('update:modelValue', {
@@ -314,7 +306,12 @@ async function extract() {
 }
 .td-item { text-align: left; padding: 6px 8px; }
 .td-item-name { font-size: 12.5px; line-height: 1.5; margin: 4px 0 5px; }
-.td-rules { text-align: left; }
+.is-item-rules { font-size: 11.5px; color: #909399; }
+.is-item-rules-ro { font-size: 11.5px; color: #909399; line-height: 1.6; padding: 2px 4px; }
+/* 「可接受表述」是要点的从属属性，收在要点下面一行，省一列 */
+.is-accept-row { display: flex; align-items: flex-start; gap: 6px; margin-top: 2px; }
+.is-accept-label { flex-shrink: 0; font-size: 11px; color: #A8ABB2; padding-top: 8px; }
+.is-accept { flex: 1; min-width: 0; }
 .is-code { background: #fff; border: 1px solid #EBEEF5; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
 
 .cell-input {

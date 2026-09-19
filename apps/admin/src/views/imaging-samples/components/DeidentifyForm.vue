@@ -1,15 +1,17 @@
 <template>
   <div>
     <div class="is-grid">
-      <div v-for="f in FIELDS" :key="f.key" class="filter-item" :style="f.span ? 'grid-column:span ' + f.span : ''">
+      <div v-for="f in FIELDS" :key="f.key" class="filter-item" :class="'is-w-' + f.key">
         <label>
           {{ f.label }}
           <span v-if="f.rule" class="text-secondary" style="font-weight:400"> · {{ f.ruleText }}</span>
         </label>
-        <input class="input" v-model="model[f.key]" :placeholder="f.placeholder" style="width:100%" @input="pushUp">
+        <input v-if="f.type === 'datetime'" class="input" type="datetime-local"
+               :value="toLocalInput(model[f.key])" @input="setTime($event.target.value)">
+        <input v-else class="input" v-model="model[f.key]" :placeholder="f.placeholder" style="width:100%" @input="pushUp">
         <span v-if="errors[f.key]" class="text-error" style="font-size:11.5px">{{ errors[f.key] }}</span>
       </div>
-      <div class="filter-item" style="grid-column:span 4">
+      <div class="filter-item is-w-clinical">
         <label>临床主要信息及检查目的</label>
         <textarea class="input" v-model="clinicalModel" rows="3" style="width:100%;resize:vertical"
                   placeholder="如：咳嗽伴痰中带血 2 周。胸部 CT 平扫发现右肺上叶占位，请评估结节性质，并回答有无纵隔淋巴结肿大及胸腔积液。"></textarea>
@@ -33,8 +35,20 @@ const FIELDS = [
   { key: 'ageRange', label: '年龄', ruleText: '必须是年龄段，拒绝具体年龄', placeholder: '50–59 岁', test: v => /^\d{1,3}\s*[–\-~至]\s*\d{1,3}\s*岁$/.test(v), msg: '须形如「50–59 岁」（年龄段）' },
   { key: 'sex', label: '性别', placeholder: '女' },
   { key: 'dept', label: '科别', placeholder: '呼吸内科' },
-  { key: 'examTime', label: '检查时间', ruleText: '原样', placeholder: '2026-09-16 14:32', span: 2 }
+  { key: 'examTime', label: '检查时间', type: 'datetime' }
 ]
+
+/** 存储形如 `2026-09-16 14:32`；`datetime-local` 需要 `2026-09-16T14:32` */
+function toLocalInput(v) {
+  const s = String(v || '').trim()
+  if (!s) return ''
+  return s.includes('T') ? s.slice(0, 16) : s.replace(' ', 'T').slice(0, 16)
+}
+
+function setTime(v) {
+  model.examTime = String(v || '').replace('T', ' ')
+  pushUp()
+}
 
 const props = defineProps({
   deidentify: { type: Object, required: true },
@@ -80,7 +94,13 @@ function pushUp() {
 </script>
 
 <style scoped>
-.is-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; align-items: end; }
+.is-grid {
+  display: grid;
+  /* 五个字段排一行，按内容宽度分配（批注：性别/年龄窄一点、检查时间宽一点） */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr) minmax(0, .7fr) minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 12px 16px; align-items: end;
+}
+.is-w-clinical { grid-column: 1 / -1; }
 .is-tip {
   margin-top: 14px; padding: 10px 14px; border-radius: 8px;
   background: #F5F7FA; color: var(--text-secondary); font-size: 12px; line-height: 1.9;

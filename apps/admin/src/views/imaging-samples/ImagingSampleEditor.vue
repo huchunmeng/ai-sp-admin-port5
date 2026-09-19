@@ -17,8 +17,8 @@
 
     <!-- 基本信息：钉在固定头下方，不作为步骤（与病例编辑器的「钉顶信息卡」同形） -->
     <div class="common-info-card card">
-      <div class="common-info-grid">
-        <div class="filter-item" style="grid-column:span 2">
+      <div class="common-info-grid is-basic-grid">
+        <div class="filter-item">
           <label>病例标题 <span style="color:var(--error)">*</span></label>
           <input class="input" v-model="form.title" placeholder="如：胸部CT · 右肺上叶结节" style="width:100%">
         </div>
@@ -92,7 +92,7 @@ const props = defineProps({ id: { type: String, default: '' } })
 const router = useRouter()
 
 const STEPS = [
-  { key: 'series', label: '影像序列与标准报告' },
+  { key: 'series', label: '影像与报告' },
   { key: 'rubric', label: '评分表' }
 ]
 
@@ -178,4 +178,6 @@ function commit(row, target, isRev) {
 }
 /* 卡片之间留出与病例编辑器一致的间距（差异点：这里一屏内是多张卡） */
 .editor-panel .card + .card { margin-top: 16px; }
+/* 基本信息四个字段排一行：标题略宽，三个下拉等宽（批注：宽度收窄、四字段同行） */
+.is-basic-grid { grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); }
 </style>

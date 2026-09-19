@@ -6,7 +6,6 @@
         <div class="is-series-head">
           <input class="input is-view-name" :value="view.name" placeholder="视图名称"
                  @input="rename(vi, $event.target.value)" @blur="normalizeName(vi, $event.target.value)">
-          <span class="is-view-en">{{ view.en }}</span>
           <div class="is-view-ops">
             <button class="btn-icon-sm is-view-btn" title="前移" :disabled="vi === 0" @click="move(vi, -1)">
               <i class="fa-solid fa-arrow-left"></i>
@@ -42,7 +41,11 @@
             </div>
             <div class="is-series-foot">
               <span class="text-secondary" style="font-size:12px">{{ framesOf(view.key).length }} 帧</span>
-              <button class="btn btn-sm" @click="clear(view.key)">清空</button>
+              <div class="flex gap-2">
+                <button class="btn btn-sm" @click="pick(view.key, true)"><i class="fa-solid fa-plus"></i> 添加图片</button>
+                <button class="btn btn-sm" @click="pickZip(view.key, true)">导入 zip</button>
+                <button class="btn btn-sm" @click="clear(view.key)">清空</button>
+              </div>
             </div>
           </template>
           <template v-else>
@@ -264,14 +267,32 @@ function naturalSort(names) {
   return names.slice().sort((a, b) => a.localeCompare(b, 'zh-Hans-CN', { numeric: true, sensitivity: 'base' }))
 }
 
-function pick(key) {
+/** 新增/追加模式：序列已有帧时也要能继续「添加图片 / 导入 zip」（2026-09-20 批注） */
+const appendMode = ref(false)
+
+function pick(key, append = false) {
+  appendMode.value = !!append
   const input = inputEls[key]
   if (input) { input.value = ''; input.click() }
 }
 
-function pickZip(key) {
+function pickZip(key, append = false) {
+  appendMode.value = !!append
   const input = zipEls[key]
   if (input) { input.value = ''; input.click() }
+}
+
+/** 追加时并入已有帧并去重、按自然序重排；总数仍受 MAX_FRAMES 限制 */
+function mergeFrames(key, incoming) {
+  const seen = new Set()
+  const out = []
+  ;[...framesOf(key), ...incoming].forEach(f => {
+    const k = `${f.name}|${f.size || 0}`
+    if (seen.has(k)) return
+    seen.add(k)
+    out.push(f)
+  })
+  return sortFrames(out)
 }
 
 function onPickImages(e, key) {
@@ -316,7 +337,12 @@ function ingestFiles(files, key) {
   if (oversized.length) errors.value.push(`超过单张 5 MB 已跳过：${oversized.slice(0, 3).join('、')}${oversized.length > 3 ? ` 等 ${oversized.length} 张` : ''}`)
   if (skipped.length) errors.value.push(`非 jpg / png 已忽略：${skipped.slice(0, 3).map(f => f.name).join('、')}`)
   if (!frames.length) { errors.value.push('没有可用的图片；本序列未改动'); return }
-  setList(key, sortFrames(frames))
+  const merged = appendMode.value ? mergeFrames(key, frames) : sortFrames(frames)
+  if (merged.length > MAX_FRAMES) {
+    errors.value.push(`追加后共 ${merged.length} 张，超出单视图上限 ${MAX_FRAMES} 张；本序列未改动`)
+    return
+  }
+  setList(key, merged)
 }
 
 /** 文件名自然序：1.jpg < 2.jpg < 10.jpg */
@@ -368,7 +394,12 @@ async function ingest(file, key) {
     errors.value.push(`以下图片超过单张 5 MB 上限，已跳过：${oversized.slice(0, 3).join('、')}${oversized.length > 3 ? ` 等 ${oversized.length} 张` : ''}`)
   }
   if (!frames.length) { errors.value.push('没有可用的图片；本序列未改动'); return }
-  setList(key, sortFrames(frames))
+  const mergedZip = appendMode.value ? mergeFrames(key, frames) : sortFrames(frames)
+  if (mergedZip.length > MAX_FRAMES) {
+    errors.value.push(`追加后共 ${mergedZip.length} 张，超出单视图上限 ${MAX_FRAMES} 张；本序列未改动`)
+    return
+  }
+  setList(key, mergedZip)
 }
 
 /** Q2 未答复时的兜底：绑定系统内置样例序列（PRD §5.12.3「兜底」） */
