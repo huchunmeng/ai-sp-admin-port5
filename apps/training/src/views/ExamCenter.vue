@@ -61,7 +61,7 @@ const EXAM_ITEMS = [
   {
     key: 'report',
     title: '影像报告书写考核',
-    desc: '不给提示，按金标准报告评定书写质量',
+    desc: '不给提示，按标准报告评定书写质量',
     platform: '本系统内置影像数据',
     icon: 'fa-clipboard-check',
     tint: '#eef2ff',
