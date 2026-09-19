@@ -33,7 +33,7 @@ NSCLC-Radiomics（The Cancer Imaging Archive, TCIA）
 ----
     <out>/PUB-00N/ax-lung-001.jpg …     肺窗轴位（WW 1500 / WL −600）
     <out>/PUB-00N/ax-med-001.jpg  …     纵隔窗轴位（WW 400 / WL 40）
-    <out>/PUB-00N/_facts.json           该例的客观事实（供起草标准报告引用）
+    docs/…/05_实现落地/_facts/PUB-00N.json   该例的客观事实（溯源用，**不写进题库图片目录**）
 """
 import argparse, json, os, sys
 import numpy as np
@@ -102,7 +102,7 @@ def contrast_flag(vol, gtv, affine):
     return bool(ratio > 0.03), round(ratio, 4)
 
 
-def export_case(raw_dir, out_root, cid, sample_id, keep_every=1, max_slices=120):
+def export_case(raw_dir, out_root, cid, sample_id, keep_every=1, max_slices=120, facts_dir=None):
     img = nib.load(os.path.join(raw_dir, f"{cid}-image.nii.gz"))
     vol = np.asarray(img.dataobj, dtype=np.float32)
     aff = img.affine
@@ -174,8 +174,12 @@ def export_case(raw_dir, out_root, cid, sample_id, keep_every=1, max_slices=120)
             "headFraction": round(head, 3),      # 0 = 肺尖，1 = 肺底
         },
     }
-    with open(os.path.join(case_dir, "_facts.json"), "w", encoding="utf-8") as f:
-        json.dump(facts, f, ensure_ascii=False, indent=1)
+    # `_facts.json` 是**溯源记录，不是应用要读的数据**，所以写到题库图片目录之外
+    # （写在里面会被 vite 当静态资源发出去、也会被训练端构建整目录拷走）。
+    if facts_dir:
+        os.makedirs(facts_dir, exist_ok=True)
+        with open(os.path.join(facts_dir, f"{sample_id}.json"), "w", encoding="utf-8") as f:
+            json.dump(facts, f, ensure_ascii=False, indent=1)
     return facts
 
 
@@ -187,6 +191,9 @@ def main():
     ap.add_argument("--keep-every", type=int, default=1)
     ap.add_argument("--max-slices", type=int, default=120)
     ap.add_argument("--start-at", type=int, default=1, help="PUB 编号起始")
+    ap.add_argument("--facts", default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "docs", "design", "影像报告书写训练", "05_实现落地", "_facts"),
+                    help="溯源 JSON 的输出目录（默认写进 docs，不随 static 资源发布）")
     a = ap.parse_args()
 
     nums = [int(s) for s in a.cases.split(",") if s.strip()]
@@ -194,7 +201,7 @@ def main():
     for i, num in enumerate(nums, a.start_at):
         cid = f"LUNG1-{num:03d}"
         sid = f"PUB-{i:03d}"
-        facts = export_case(a.raw, a.out, cid, sid, a.keep_every, a.max_slices)
+        facts = export_case(a.raw, a.out, cid, sid, a.keep_every, a.max_slices, a.facts)
         d = os.path.join(a.out, sid)
         size = sum(os.path.getsize(os.path.join(d, f)) for f in os.listdir(d))
         total += size

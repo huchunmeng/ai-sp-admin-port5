@@ -65,7 +65,7 @@
               <th style="cursor:pointer;white-space:nowrap" @click="toggleScoreSort">
                 可评满分 {{ filters.sort === 'scoreAsc' ? '↑' : '' }}
               </th>
-              <th>能力位</th>
+              <th>本卷条件</th>
               <th>标准报告</th>
               <th>最近更新</th>
               <th class="sticky-right" style="right:268px;width:90px">状态</th>
@@ -129,7 +129,7 @@
       </div>
     </div>
 
-    <!-- 不可评条目：该样本缺失能力位而判不了的条目 -->
+    <!-- 不可评条目：该样本本卷条件不足而判不了的条目 -->
     <div v-if="derivedSample" class="modal-overlay" @click.self="derivedSample = null">
       <div class="modal-container" style="width:600px">
         <div class="modal-header">
@@ -138,22 +138,21 @@
         </div>
         <table class="table">
           <thead>
-            <tr><th>条目</th><th>名称</th><th>分值</th><th>来源</th><th>原因</th></tr>
+            <tr><th>条目</th><th>名称</th><th>分值</th><th>原因</th></tr>
           </thead>
           <tbody>
             <tr v-for="l in derivedSample.lost" :key="l.code">
               <td><code style="background:#F5F7FA;padding:2px 6px;border-radius:4px">{{ l.code }}</code></td>
               <td>{{ l.label }}</td>
               <td>{{ l.score }}</td>
-              <td><span class="badge" :class="l.source === 'na' ? 'badge-info' : 'badge-warning'">{{ l.source === 'na' ? '不适用 N/A' : '能力位缺失' }}</span></td>
               <td class="text-secondary" style="font-size:12px">{{ l.why }}</td>
             </tr>
-            <tr v-if="!derivedSample.lost.length"><td colspan="5" style="text-align:center;padding:24px;color:var(--text-secondary)">全部条目可评</td></tr>
+            <tr v-if="!derivedSample.lost.length"><td colspan="4" style="text-align:center;padding:24px;color:var(--text-secondary)">全部条目可评</td></tr>
           </tbody>
         </table>
         <div class="modal-footer">
           <button class="btn" @click="derivedSample = null">关闭</button>
-          <button class="btn btn-primary" @click="editSample(derivedSample)">去编辑能力位</button>
+          <button class="btn btn-primary" @click="editSample(derivedSample)">去编辑评分表</button>
         </div>
       </div>
     </div>
@@ -197,7 +196,7 @@ const levelKey = level => LEVEL_TO_CASE_LEVEL[level] || ''
 function capTitle(field, item) {
   const on = item.capabilities[field.key]
   const head = `${field.label}：${on ? '具备' : '不具备'} → ${(field.affects || []).join(' · ')}`
-  return field.derived ? `${head}（由影像控件能力决定，本期只读）` : head
+  return field.readonly ? `${head}（由影像控件决定，只读）` : head
 }
 
 const filtered = computed(() => {
@@ -215,7 +214,7 @@ const filtered = computed(() => {
     if (filters.scoreBand === 'low' && item.scoreableMax >= 85) return false
     return true
   })
-  // 默认最近更新倒序；可切换为可评分升序（便于先找出"考不满"的病例去补能力位）
+  // 默认最近更新倒序；可切换为可评满分升序（便于先找出"考不满"的病例去补条件）
   return list.slice().sort((a, b) =>
     filters.sort === 'scoreAsc'
       ? a.scoreableMax - b.scoreableMax || a.id.localeCompare(b.id)

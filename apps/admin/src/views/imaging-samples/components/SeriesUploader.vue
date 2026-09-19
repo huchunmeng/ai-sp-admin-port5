@@ -41,9 +41,7 @@
               </div>
             </div>
             <div class="is-series-foot">
-              <span class="text-secondary" style="font-size:12px">
-                {{ framesOf(view.key).length === 1 ? '单帧 · 点击看大图' : '点击看大图；拖拽缩略图可微调层面顺序，顺序即层面序号' }}
-              </span>
+              <span class="text-secondary" style="font-size:12px">{{ framesOf(view.key).length }} 帧</span>
               <button class="btn btn-sm" @click="clear(view.key)">清空</button>
             </div>
           </template>
@@ -55,7 +53,6 @@
               <button class="btn btn-sm" @click="pickZip(view.key)">选择 zip</button>
               <button class="btn btn-sm" @click="useBuiltin(view.key)">样例序列</button>
             </div>
-            <div class="text-secondary" style="font-size:11px;margin-top:8px;text-align:center">jpg / png，单视图 ≤ 300 张、单张 ≤ 5 MB</div>
           </template>
         </div>
 
@@ -70,9 +67,6 @@
         <button class="btn btn-sm" @click="addOpen = !addOpen">
           <i class="fa-solid fa-plus"></i> 添加视图
         </button>
-        <span class="text-secondary" style="font-size:11.5px;display:block;margin-top:8px;line-height:1.8">
-          有几个序列/方位就建几个，名称可改
-        </span>
 
         <div v-if="addOpen" class="is-add-panel">
           <div class="is-add-row">

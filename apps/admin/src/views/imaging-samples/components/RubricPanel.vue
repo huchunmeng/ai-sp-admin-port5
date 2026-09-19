@@ -3,15 +3,13 @@
     <!-- 本卷条件：原「能力位」并入此处（2026-09-20 批注：不单独一个模块） -->
     <div class="is-conds">
       <span class="is-conds-title">本卷条件</span>
-      <label v-for="f in CAPABILITY_FIELDS" :key="f.key" class="is-cond">
+      <label v-for="f in CAPABILITY_FIELDS" :key="f.key" class="is-cond" :title="'影响 ' + (f.affects || []).join(' · ')">
         <input type="checkbox" :checked="!!caps[f.key]" @change="setCond(f.key, $event.target.checked)">
         <span>{{ f.label }}</span>
-        <span class="is-cond-affects">影响 {{ (f.affects || []).join(' · ') }}</span>
       </label>
-      <label class="is-cond is-cond-ro" :title="DERIVED_CAPABILITY.note">
+      <label class="is-cond is-cond-ro" :title="DERIVED_CAPABILITY.note + '；影响 ' + (DERIVED_CAPABILITY.affects || []).join(' · ')">
         <input type="checkbox" :checked="false" disabled>
         <span>{{ DERIVED_CAPABILITY.label }}</span>
-        <span class="is-cond-affects">{{ DERIVED_CAPABILITY.note }}，影响 {{ (DERIVED_CAPABILITY.affects || []).join(' · ') }}</span>
       </label>
     </div>
 
@@ -58,11 +56,10 @@
 
             <td v-if="row.dimSpan" :rowspan="row.dimSpan" class="td-merged">{{ shortDim(row.dim) }}</td>
 
-            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-item" :title="row.item.code + ' ' + row.item.name">
+            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-item"
+                :title="editableCodes.includes(row.item.code) ? row.item.code + ' ' + row.item.name : row.item.code + ' ' + row.item.name + '（按样单元数据自动生成，不可编辑）'">
               <code class="is-code">{{ row.item.code }}</code>
               <div class="td-item-name">{{ row.item.name }}</div>
-              <span v-if="!editableCodes.includes(row.item.code)" class="badge badge-info">自动生成</span>
-              <span v-else-if="row.item.wholeNA" class="badge badge-warning">不适用</span>
             </td>
 
             <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged cell-num">
@@ -103,9 +100,9 @@
                   <option value="">无条件可评</option>
                   <option v-for="a in ASSESS_KINDS" :key="a.key" :value="a.key">{{ a.label }}</option>
                 </select>
-                <div v-if="!row.p.assessable" class="cell-na">{{ row.p.nAReason }}</div>
               </template>
-              <span v-else class="badge" :class="row.p.assessable ? 'badge-info' : (row.p.nASource === 'na' ? 'badge-info' : 'badge-warning')">
+              <span v-else class="badge" :class="row.p.assessable ? 'badge-info' : (row.p.nASource === 'na' ? 'badge-info' : 'badge-warning')"
+                    :title="row.p.assessable ? '' : row.p.nAReason">
                 {{ row.p.assessable ? (row.p.assessLabel || '可评') : (row.p.nASource === 'na' ? '不适用' : '不可评') }}
               </span>
             </td>
@@ -331,7 +328,6 @@ async function extract() {
 .cell-select { padding: 5px 6px; }
 .cell-num { text-align: center; }
 .cell-ro { display: block; font-size: 12.5px; line-height: 1.6; color: #303133; padding: 2px 4px; }
-.cell-na { font-size: 11px; color: #D46B08; line-height: 1.5; margin-top: 3px; }
 
 .ss-total-row td { background: #E6F7FF; border-top: 2px solid #EBEEF5; }
 
@@ -365,6 +361,5 @@ async function extract() {
 .is-conds-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
 .is-cond { display: flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer; }
 .is-cond input { width: 15px; height: 15px; }
-.is-cond-affects { font-size: 11px; color: #9ca3af; }
 .is-cond-ro { cursor: not-allowed; color: #9ca3af; }
 </style>
