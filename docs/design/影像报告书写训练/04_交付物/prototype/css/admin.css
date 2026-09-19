@@ -1,0 +1,239 @@
+/* 管理端（P9–P13）专用样式 —— 只在本轮新增，不改训练端既有类。
+   令牌取自 apps/admin/src/styles/variables.css（见 tokens.css 的 --adm-*）。
+   落到页面上由 body.end-admin 触发，切换外壳观感（顶栏深蓝 / 主色 #1890FF）。 */
+
+/* ── 外壳观感切换：管理端 ── */
+body.end-admin { background: var(--adm-bg); }
+body.end-admin .app-header { background: var(--adm-header-bg); border-bottom-color: transparent; }
+body.end-admin .app-header .system-name { color: #fff; }
+body.end-admin .app-header .crumb { color: rgba(255, 255, 255, .72); }
+body.end-admin .app-header .crumb b { color: #fff; }
+body.end-admin .app-header .panel-toggle {
+  background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .26); color: #fff;
+}
+body.end-admin .app-header .panel-toggle:hover { background: rgba(255, 255, 255, .22); color: #fff; }
+body.end-admin .app-header .institution-selector {
+  background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .26); color: #fff;
+}
+body.end-admin .app-header .user-chip { color: rgba(255, 255, 255, .88); }
+body.end-admin .app-header .user-avatar { background: rgba(255, 255, 255, .2); color: #fff; }
+body.end-admin .proto-badge { color: #E6F7FF; background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .3); }
+/* 主色替换：管理端的按钮 / 标签 / 高亮一律走 #1890FF */
+body.end-admin { --primary: var(--adm-primary); --primary-dark: var(--adm-primary-dark); --primary-light: var(--adm-primary-light); --primary-lightest: #BAE7FF; }
+body.end-admin .proto-sidebar { background: var(--adm-sidebar-bg); border-right-color: transparent; }
+body.end-admin .side-note { color: #7E8C9B; }
+body.end-admin .side-item { color: var(--adm-sidebar-text); }
+body.end-admin .side-item:hover { background: rgba(255, 255, 255, .07); }
+body.end-admin .side-item.active { background: rgba(24, 144, 255, .18); color: #fff; }
+body.end-admin .side-item .side-idx { background: rgba(255, 255, 255, .1); color: #98A6B5; }
+body.end-admin .side-item.active .side-idx { background: var(--adm-primary); color: #fff; }
+body.end-admin .side-divider { background: rgba(255, 255, 255, .1); }
+body.end-admin .content-inner { max-width: var(--adm-content-max-width); }
+
+/* 侧栏分组标题（训练端 P1–P8 / 管理端 P9–P13 / 说明） */
+.side-group {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .05em;
+  color: var(--text-tertiary); padding: 12px 20px 6px;
+}
+.side-group .side-group-no {
+  font-family: var(--font-mono); font-size: 10px;
+  border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; opacity: .75;
+}
+
+/* ── 页面级小工具条 ── */
+.adm-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; border-bottom: 1px solid var(--border-light);
+}
+.adm-bar .adm-bar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.adm-count { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.adm-count b { color: var(--primary-dark); }
+
+/* ── 四步流程（组卷与派发） ── */
+.adm-steps { display: flex; align-items: center; gap: 0; padding: 14px 18px; }
+.adm-step { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.adm-step .adm-step-no {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: var(--border-light); color: var(--text-tertiary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+}
+.adm-step .adm-step-label { font-size: 13px; color: var(--text-tertiary); white-space: nowrap; }
+.adm-step.done .adm-step-no { background: var(--adm-primary); color: #fff; }
+.adm-step.done .adm-step-label { color: var(--text-secondary); }
+.adm-step.current .adm-step-no { background: var(--adm-primary); color: #fff; box-shadow: 0 0 0 4px rgba(24, 144, 255, .18); }
+.adm-step.current .adm-step-label { color: var(--primary-dark); font-weight: 700; }
+.adm-step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; min-width: 24px; }
+.adm-step-line.done { background: var(--adm-primary); }
+
+/* ── 可评分三色带（整卷 scoreableMax） ── */
+.adm-range { padding: 12px 18px; border-top: 1px solid var(--border-light); background: #fcfdfe; }
+.adm-range-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.adm-range-top .adm-range-k { font-size: 12.5px; color: var(--text-secondary); }
+.adm-range-top .adm-range-v { font-family: var(--font-mono); font-size: 22px; font-weight: 700; }
+.adm-range-top .adm-range-den { font-family: var(--font-mono); font-size: 13px; color: var(--text-tertiary); }
+.adm-range-top .adm-range-hint { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+.adm-range-bar { height: 8px; border-radius: 4px; background: #eef1f5; overflow: hidden; position: relative; }
+.adm-range-bar i { display: block; height: 100%; border-radius: 4px; transition: width .18s; }
+.adm-range-bar i.ok { background: var(--success); }
+.adm-range-bar i.mid { background: var(--warning); }
+.adm-range-bar i.bad { background: var(--error); }
+/* 85 分刻度线：把阈值画在带上，不用读数字 */
+.adm-range-bar .adm-threshold {
+  position: absolute; top: -3px; bottom: -3px; width: 2px; background: #94a3b8; border-radius: 1px;
+}
+.adm-range-bar .adm-threshold::after {
+  content: '85'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: 9.5px; color: #64748b;
+}
+.adm-range.ok .adm-range-v { color: #047857; }
+.adm-range.mid .adm-range-v { color: #b45309; }
+.adm-range.bad .adm-range-v { color: #b91c1c; }
+.adm-range.bad { background: var(--error-light); border-top-color: var(--error-border); }
+
+/* ── 题库样本卡（选样列表 / 题库列表共用） ── */
+.adm-samples { display: flex; flex-direction: column; gap: 10px; padding: 14px 18px; }
+.adm-sample {
+  display: flex; align-items: center; gap: 14px;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; background: #fff; transition: border-color .12s, box-shadow .12s;
+}
+.adm-sample:hover { border-color: var(--adm-primary); box-shadow: 0 0 0 2px rgba(24, 144, 255, .08); }
+.adm-sample.picked { border-color: var(--adm-primary); background: var(--adm-primary-light); }
+.adm-sample.off { opacity: .5; }
+.adm-sample.off:hover { border-color: var(--border); box-shadow: none; }
+.adm-sample .adm-pick { flex-shrink: 0; width: 16px; height: 16px; }
+.adm-thumb {
+  width: 62px; height: 62px; flex-shrink: 0; border-radius: 8px;
+  background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 8px, #31353d, #31353d 16px);
+  display: flex; align-items: center; justify-content: center;
+  color: #94a3b8; font-size: 20px; position: relative; overflow: hidden;
+}
+.adm-thumb .adm-thumb-tag {
+  position: absolute; bottom: 0; left: 0; right: 0; text-align: center;
+  background: rgba(0, 0, 0, .55); color: #e5e7eb; font-size: 9.5px; padding: 1px 0;
+}
+.adm-sample-main { flex: 1; min-width: 0; }
+.adm-sample-title { font-size: 13.5px; font-weight: 600; color: var(--text-main); }
+.adm-sample-meta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.adm-sample-meta .mono { font-family: var(--font-mono); }
+.adm-sample-side { flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.adm-scoreable { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+.adm-scoreable.ok { color: #047857; }
+.adm-scoreable.mid { color: #b45309; }
+.adm-scoreable.bad { color: #b91c1c; }
+.adm-scoreable .adm-scoreable-den { font-weight: 400; color: var(--text-tertiary); }
+
+/* 能力位徽章 */
+.adm-caps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.adm-cap {
+  font-size: 10.5px; padding: 1px 6px; border-radius: 4px;
+  background: var(--border-light); color: var(--text-secondary); font-family: var(--font-mono);
+}
+.adm-cap.on { background: #E6F7FF; color: #096DD9; }
+.adm-cap.off { background: #fafafa; color: #b0b7c0; }
+.adm-cap.locked { background: #fff7e6; color: #ad6800; }
+
+/* ── 星级权重 ── */
+.adm-stars { display: inline-flex; align-items: center; gap: 2px; cursor: pointer; }
+.adm-stars .adm-star { color: #d9dde3; display: inline-flex; }
+.adm-stars .adm-star.on { color: #FAAD14; }
+.adm-stars .adm-stars-cap { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-left: 6px; }
+
+/* ── zip 上传区 ── */
+.adm-upload {
+  border: 1.5px dashed var(--border); border-radius: 10px;
+  padding: 20px; text-align: center; background: #fcfdfe;
+}
+.adm-upload.has { border-style: solid; border-color: var(--success-border); background: var(--success-light); text-align: left; }
+.adm-upload-ico { color: #b6bec9; margin-bottom: 8px; }
+.adm-upload-title { font-size: 13px; font-weight: 600; color: #4b5563; }
+.adm-upload-desc { font-size: 12px; color: var(--text-secondary); margin-top: 5px; line-height: 1.7; }
+.adm-upload .btn { margin-top: 10px; }
+.adm-frames { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.adm-frame {
+  width: 38px; height: 38px; border-radius: 6px; position: relative;
+  background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 5px, #31353d, #31353d 10px);
+  color: #cbd5e1; font-family: var(--font-mono); font-size: 9.5px;
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;
+}
+.adm-frames-note { font-size: 11.5px; color: var(--text-secondary); margin-top: 8px; }
+
+/* ── 分色不可评条目（成绩汇总） ── */
+.adm-unassess { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.adm-ua-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.6; }
+.adm-ua-mark {
+  flex-shrink: 0; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+  font-family: var(--font-mono);
+}
+.adm-ua-mark.deid { background: #f0f0f0; color: #6b7280; }
+.adm-ua-mark.cap { background: #E6F7FF; color: #096DD9; }
+.adm-ua-txt { color: var(--text-secondary); }
+.adm-ua-txt code { font-family: var(--font-mono); font-size: 11px; color: #475569; }
+
+/* ── 成绩汇总：学生行 ── */
+.adm-student {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+}
+.adm-student:hover { background: #fcfdfe; }
+.adm-student.open { background: var(--adm-primary-light); }
+.adm-student .adm-stu-name { width: 96px; flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--text-main); }
+.adm-student .adm-stu-class { width: 62px; flex-shrink: 0; font-size: 12px; color: var(--text-tertiary); }
+.adm-student .adm-stu-state { width: 84px; flex-shrink: 0; }
+.adm-student .adm-stu-score { width: 168px; flex-shrink: 0; font-family: var(--font-mono); font-size: 13px; }
+.adm-student .adm-stu-score b { font-size: 16px; color: var(--text-main); }
+.adm-student.silent .adm-stu-score b { color: var(--text-tertiary); font-size: 13px; font-weight: 500; }
+.adm-student .adm-stu-note { flex: 1; min-width: 0; font-size: 11.5px; color: var(--text-tertiary); text-align: right; }
+.adm-detail { padding: 4px 14px 16px 14px; background: #fbfcfd; border-bottom: 1px solid var(--border-light); }
+.adm-case-block { border: 1px solid var(--border-light); border-radius: 10px; background: #fff; padding: 12px 14px; margin-top: 10px; }
+.adm-case-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.adm-case-head .adm-case-name { font-size: 13.5px; font-weight: 600; }
+.adm-case-head .adm-case-score { margin-left: auto; font-family: var(--font-mono); font-size: 18px; font-weight: 700; }
+
+/* 折叠的折算说明（评审专用，学生端不展示） */
+.adm-fold { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.adm-fold summary {
+  cursor: pointer; font-size: 12px; color: var(--text-secondary); outline: none;
+  display: flex; align-items: center; gap: 6px;
+}
+.adm-fold summary::-webkit-details-marker { display: none; }
+.adm-fold summary::before { content: '▸'; font-size: 10px; color: var(--text-tertiary); }
+.adm-fold[open] summary::before { content: '▾'; }
+.adm-fold .adm-fold-body { font-size: 12px; line-height: 1.9; color: #475569; padding: 8px 0 2px 16px; }
+.adm-fold .adm-fold-body .mono { font-family: var(--font-mono); }
+.adm-review-only {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .03em;
+  background: #fff7e6; color: #ad6800; border: 1px solid #ffe7ba;
+  border-radius: 4px; padding: 0 5px; margin-left: 6px;
+}
+
+/* ── 学情：条目失分率 ── */
+.adm-loss-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-light); }
+.adm-loss-row:last-child { border-bottom: none; }
+.adm-loss-code { width: 74px; flex-shrink: 0; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-tertiary); }
+.adm-loss-name { flex: 1; min-width: 0; font-size: 12.5px; }
+.adm-loss-bar { width: 150px; height: 6px; border-radius: 3px; background: #eef1f5; overflow: hidden; flex-shrink: 0; }
+.adm-loss-bar i { display: block; height: 100%; background: var(--error); }
+.adm-loss-bar i.low { background: var(--warning); }
+.adm-loss-v { width: 62px; flex-shrink: 0; text-align: right; font-family: var(--font-mono); font-size: 12px; }
+.adm-loss-na { font-size: 11.5px; color: var(--text-tertiary); }
+
+/* ── 版本 / 状态标记 ── */
+.adm-ver { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+.adm-lock-note {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: #92400e; background: var(--warning-light);
+  border: 1px solid var(--warning-border); border-radius: 8px; padding: 8px 12px;
+}
+
+/* 大面积提交按钮行（四步向导页脚） */
+.adm-sticky-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  background: #fff; position: sticky; bottom: 0;
+}
+.adm-sticky-foot .adm-foot-note { font-size: 12px; color: var(--text-secondary); }
+.adm-sticky-foot .adm-foot-right { margin-left: auto; display: flex; gap: 8px; }
