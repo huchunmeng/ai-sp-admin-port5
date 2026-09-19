@@ -19,11 +19,12 @@
       <div class="rwb-cmp-col is-gold">
         <div class="rwb-cmp-head"><i class="fa-solid fa-circle-check"></i> 参考报告（金标准）</div>
         <div class="rwb-cmp-body">
-          <template v-for="seg in SEGMENTS" :key="seg.key">
+          <template v-for="seg in GOLD_SEGMENTS" :key="seg.key">
             <span class="rwb-cmp-seg">{{ seg.name }}</span>
             <span class="rwb-cmp-text">{{ (sample.goldStandard || {})[seg.key] }}</span>
           </template>
         </div>
+        <div class="rwb-cmp-note">参考报告不含「一般信息」段 —— 该段的答案就是上方一般信息条里的脱敏值与临床主要信息</div>
       </div>
     </div>
 
@@ -48,7 +49,7 @@
 </template>
 
 <script setup>
-import { SEGMENTS } from '@ai-sp/shared/imaging'
+import { SEGMENTS, GOLD_SEGMENTS } from '@ai-sp/shared/imaging'
 
 defineProps({
   draft: { type: Object, default: () => ({}) },
@@ -79,6 +80,10 @@ defineProps({
 .rwb-cmp-seg:first-child { margin-top: 0; }
 .rwb-cmp-text { display: block; white-space: pre-wrap; }
 .rwb-cmp-col.is-gold .rwb-cmp-text { color: #065f46; }
+.rwb-cmp-note {
+  font-size: 11.5px; line-height: 1.75; color: #6b7280;
+  padding: 9px 14px; background: #f8fafc; border-top: 1px solid #d1fae5;
+}
 .rwb-cmp-how {
   display: flex; align-items: flex-start; gap: 8px;
   margin: 12px 18px 0; padding: 10px 14px; border-radius: 9px;

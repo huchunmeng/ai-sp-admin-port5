@@ -12,11 +12,19 @@
 //   · **不接入**影像控件——全仓无 DICOM / 序列浏览 / 调窗 / 测量 组件（实证：零命中）。
 //     本期三视图为占位，界面明写「影像待接入」，待院方样本与影像教学底座到位后按 §9.4 黑盒接入。
 
-export { R1_TABLE, R1_ITEMS, SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
+export { R1_TABLE, R1_ITEMS, SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
 export {
-  CAPABILITIES, CAPABILITY_ITEMS, CAPABILITY_FIELDS, DEIDENTIFY_ITEMS,
-  emptyCapabilities, scoreableOf, weightedScoreable, SCOREABLE_PUBLISH_FLOOR
+  CAPABILITIES, CAPABILITY_FIELDS, emptyCapabilities, SCOREABLE_PUBLISH_FLOOR
 } from './capabilities.js'
+export {
+  RUBRIC, RUBRIC_VERSION, POINT_RULES, POINT_SCORE, RUBRIC_SEGMENTS, RUBRIC_TABLE,
+  resolveRubric, hasHandRubric, scoreableOf, weightedScoreable
+} from './rubric.js'
+export {
+  buildScoringPrompt, parseScoringResult, composeScore, prepareScoring,
+  buildRubricExtractionPrompt, parseRubricExtraction,
+  SCORING_FAILED_TEXT, NOT_COVERED_TEXT, PARTIAL_TEXT
+} from './scoring.js'
 export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, DEFAULT_VIEWS, VIEW_CANDIDATES, viewMeta } from './samples.js'
 export {
   HINT_LEVELS, DEFAULT_QUOTA, HINT_COOLDOWN_MS,
@@ -25,8 +33,8 @@ export {
 } from './companion.js'
 
 import { IMAGING_SAMPLES, viewMeta } from './samples.js'
-import { SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
-import { scoreableOf } from './capabilities.js'
+import { SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
+import { scoreableOf } from './rubric.js'
 
 /** 运行时索引（样本元数据回取，避免各处重复造 title / modality） */
 export const IMAGING_SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))
@@ -35,11 +43,11 @@ export function getImagingSample(id) {
   return IMAGING_SAMPLE_BY_ID[id] || null
 }
 
-/** 三段皆非空 = 金标准已录（PRD §5.12.6 的发布前提） */
+/** 三段金标准皆非空 = 金标准已录（PRD §5.12.6 的发布前提）。「一般信息」段无独立金标准，不计 */
 export function hasGoldStandard(sample) {
   const g = sample && sample.goldStandard
   if (!g) return false
-  return SEGMENTS.every(seg => String(g[seg.key] || '').trim().length > 0)
+  return GOLD_SEGMENTS.every(seg => String(g[seg.key] || '').trim().length > 0)
 }
 
 /**
@@ -72,10 +80,10 @@ export function infoRowsOf(sample) {
 
 // 与 r1-table.js 的 DEIDENTIFY_ROWS 同源，infoRowsOf 只做一次浅拷贝以附挂 v 值
 
-/** 三段式金标准 → 对照页展示的纯文本（T4 对照右栏 / 结果页参考报告） */
+/** 三段式金标准 → 对照页展示的纯文本（T4 对照右栏 / 结果页参考报告）。「一般信息」段无金标准，不计 */
 export function goldStandardText(gold) {
   if (!gold) return ''
-  return SEGMENTS
+  return GOLD_SEGMENTS
     .filter(seg => String(gold[seg.key] || '').trim())
     .map(seg => `${seg.name}：\n${gold[seg.key]}`)
     .join('\n\n')

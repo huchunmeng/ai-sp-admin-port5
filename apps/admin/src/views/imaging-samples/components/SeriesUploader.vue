@@ -4,17 +4,17 @@
       <div v-for="(view, vi) in views" :key="view.key" class="is-series-view">
         <!-- 视图头：名称可改、顺序可调、可删除 —— 视图集合由用户自主掌握 -->
         <div class="is-series-head">
-          <input class="is-view-name" :value="view.name" placeholder="视图名称"
+          <input class="input is-view-name" :value="view.name" placeholder="视图名称"
                  @input="rename(vi, $event.target.value)" @blur="normalizeName(vi, $event.target.value)">
           <span class="is-view-en">{{ view.en }}</span>
           <div class="is-view-ops">
-            <button class="is-view-btn" title="前移" :disabled="vi === 0" @click="move(vi, -1)">
+            <button class="btn-icon-sm is-view-btn" title="前移" :disabled="vi === 0" @click="move(vi, -1)">
               <i class="fa-solid fa-arrow-left"></i>
             </button>
-            <button class="is-view-btn" title="后移" :disabled="vi === views.length - 1" @click="move(vi, 1)">
+            <button class="btn-icon-sm is-view-btn" title="后移" :disabled="vi === views.length - 1" @click="move(vi, 1)">
               <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <button class="is-view-btn is-view-del" title="删除该视图"
+            <button class="btn-icon-sm is-view-btn is-view-del" title="删除该视图"
                     :disabled="views.length <= 1" @click="remove(vi)">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -305,23 +305,11 @@ function onReorder(key, target) {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 10px; background: #FAFBFC; border-bottom: 1px solid var(--border);
 }
-.is-view-name {
-  flex: 1; min-width: 0; font-size: 13px; font-weight: 600; font-family: inherit;
-  border: 1px solid transparent; background: transparent; border-radius: 5px;
-  padding: 3px 6px; color: var(--text-main); outline: none;
-}
-.is-view-name:hover { border-color: var(--border); background: #fff; }
-.is-view-name:focus { border-color: var(--primary); background: #fff; }
+.is-view-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; }
 .is-view-en { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; }
 .is-view-ops { display: flex; gap: 3px; flex-shrink: 0; }
-.is-view-btn {
-  width: 20px; height: 20px; border-radius: 5px; cursor: pointer; font-size: 10px;
-  border: 1px solid var(--border); background: #fff; color: #909399;
-  display: flex; align-items: center; justify-content: center;
-}
-.is-view-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
-.is-view-btn:disabled { opacity: .4; cursor: not-allowed; }
-.is-view-del:hover:not(:disabled) { border-color: var(--danger, #f56c6c); color: var(--danger, #f56c6c); }
+.is-view-btn { font-size: 10px; }
+.is-view-btn.is-view-del:hover:not(:disabled) { border-color: var(--error); color: var(--error); }
 .is-view-count { font-size: 11px; color: var(--text-secondary); padding: 5px 12px 0; }
 .is-drop {
   min-height: 140px; padding: 10px 14px 14px; display: flex; flex-direction: column;

@@ -15,6 +15,7 @@ import { reactive } from 'vue'
 import {
   IMAGING_SAMPLE_ROWS,
   DEFAULT_VIEWS,
+  RUBRIC as BUILD_IN_RUBRIC,
   emptyCapabilities,
   hasGoldStandard,
   scoreableOf
@@ -58,12 +59,17 @@ function framesOf(row, views) {
 function normalize(row) {
   const views = viewsOf(row)
   const caps = { ...emptyCapabilities(), ...(row.capabilities || {}) }
+  const builtIn = BUILD_IN_RUBRIC[row.id]
   return {
     ...row,
     capabilities: caps,
     views,
     goldStandard: row.goldStandard ? { ...row.goldStandard } : null,
-    seriesFrames: framesOf(row, views)
+    seriesFrames: framesOf(row, views),
+    // 内置要点集作为初值；管理端可「AI 抽取」或手工改
+    rubric: builtIn
+      ? { version: builtIn.version, updatedAt: builtIn.updatedAt, updatedBy: builtIn.updatedBy, items: JSON.parse(JSON.stringify(builtIn.items)) }
+      : { version: 0, updatedAt: '', updatedBy: '', items: {} }
   }
 }
 
@@ -120,6 +126,7 @@ export function blankSample() {
     },
     capabilities: emptyCapabilities(),
     goldStandard: null,
+    rubric: { version: 0, updatedAt: '', updatedBy: '', items: {} },
     version: 1,
     status: 'draft',
     createdAt: now(), createdBy: '管理端',

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="seg in SEGMENTS" :key="seg.key" class="is-seg">
+    <div v-for="seg in GOLD_SEGMENTS" :key="seg.key" class="is-seg">
       <div class="is-seg-head">
         <span class="is-seg-name">{{ seg.name }}</span>
         <span class="text-secondary" style="font-size:11.5px">≤ {{ seg.limit }} 字</span>
@@ -27,7 +27,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { SEGMENTS } from '@ai-sp/shared/imaging'
+import { GOLD_SEGMENTS } from '@ai-sp/shared/imaging'
 
 const PLACEHOLDER = {
   technique: '如：胸部CT平扫。',
@@ -44,7 +44,7 @@ const emit = defineEmits(['update:modelValue'])
 const gold = computed(() => props.modelValue || { technique: '', findings: '', impression: '' })
 const text = seg => gold.value[seg.key] || ''
 const over = seg => (text(seg) || '').length >= seg.limit
-const allFilled = computed(() => SEGMENTS.every(s => String(text(s)).trim().length > 0))
+const allFilled = computed(() => GOLD_SEGMENTS.every(s => String(text(s)).trim().length > 0))
 
 function onInput(key, val) {
   emit('update:modelValue', { ...gold.value, [key]: val })

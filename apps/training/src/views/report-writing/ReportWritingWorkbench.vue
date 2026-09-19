@@ -16,8 +16,11 @@
                      :total-chars="totalChars" :total-over="totalOver" :total-limit="TOTAL_LIMIT"
                      @update:segment="onSegmentInput" />
 
-        <!-- 提交后：与参考报告对照 -->
-        <ComparePanel v-if="inReview" :draft="state.draft" :sample="sample" />
+        <!-- 提交后：AI 评阅结果 + 与参考报告对照 -->
+        <template v-if="inReview">
+          <ScoreResultPanel :scoring="scoring" @score="onScore" @retry="onScore" @appeal="onAppeal" />
+          <ComparePanel :draft="state.draft" :sample="sample" />
+        </template>
 
         <!-- 阅片笔记：按批注放在最后 -->
         <NotesPanel :notes="state.viewNotes" @update:notes="v => state.viewNotes = v" />
@@ -40,7 +43,7 @@
       <div class="rww-foot-right">
         <template v-if="!inReview">
           <button class="btn btn-primary" :disabled="!canSubmit" @click="onSubmit">
-            <i class="fa-solid fa-paper-plane"></i> 提交报告，对照参考
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 提交报告，开始 AI 评阅
           </button>
         </template>
         <template v-else>
@@ -69,6 +72,7 @@ import StepBar from './components/StepBar.vue'
 import InfoBar from './components/InfoBar.vue'
 import ImageViewer from './components/ImageViewer.vue'
 import SegmentForm from './components/SegmentForm.vue'
+import ScoreResultPanel from './components/ScoreResultPanel.vue'
 import ComparePanel from './components/ComparePanel.vue'
 import NotesPanel from './components/NotesPanel.vue'
 import CompanionPanel from './components/CompanionPanel.vue'
@@ -92,12 +96,13 @@ const {
   totalChars, totalOver, TOTAL_LIMIT,
   canSubmit, submitBlockReason,
   usedHintCount, quotaLeft, coolingLeft, requestHint, setActiveSegment,
-  toReview, backToWrite, restartRound
+  toReview, backToWrite, restartRound,
+  scoring, scoringRunning, runScoring, fileAppeal
 } = session
 
 const PHASE_HINT = {
   write: '三段报告同时可写，不必按顺序推进；卡住了用右侧「AI伴学」要点提示',
-  review: '与参考报告逐段对照，重点看该写哪几类有没有漏、顺序条理、诊断有没有正面回应临床问题'
+  review: 'AI 按评分要点集逐条判定你的报告内容；下方可与参考报告逐段对照'
 }
 
 const phaseIndex = computed(() => (inReview.value ? 1 : 0))
@@ -112,23 +117,23 @@ function onSegmentInput(key, val) {
   state.draft[key] = val
 }
 
-function onCopy(text) {
-  // 复制进当前选中的段；复制只是省打字，照抄不得满分（GEN-04）
-  const key = state.activeSegment || 'findings'
+function onCopy(text, segment) {
+  // 复制进指定段（一般信息条默认进「一般信息」段）；复制只是省打字，照抄不得满分（GEN-04）
+  const key = segment || state.activeSegment || 'general'
   const cur = state.draft[key] || ''
   state.draft[key] = cur ? `${cur}\n${text}` : text
   setActiveSegment(key)
 }
 
-/** 提交报告 → 对照参考 */
+/** 提交报告 → 进入评分与对照（评分由 session 自动发起，此处只做确认与滚动） */
 function onSubmit() {
   if (!canSubmit.value) { toast.show(submitBlockReason.value, 'warning'); return }
-  confirm('提交报告并对照参考报告？提交后可逐段对照，也可随时返回修改（重写不重置 AI伴学配额）。')
+  confirm('提交报告并开始 AI 评阅？模型会按本题评分要点集逐条判定，约需 10–40 秒；提交后仍可返回修改。')
     .then(ok => {
       if (!ok) return
       const r = toReview()
       if (!r.ok) { toast.show(r.reason || '无法提交', 'warning'); return }
-      setTimeout(() => document.querySelector('.rwb-cmp')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
+      setTimeout(() => document.querySelector('#score-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
     })
     .catch(() => {})
 }
@@ -144,6 +149,18 @@ async function onHint(level) {
 }
 
 function onRewrite() { backToWrite() }
+
+async function onScore() {
+  if (scoringRunning.value) return
+  const r = await runScoring()
+  if (r.ok) toast.show(`AI 评阅完成：${r.result.rawTotal} / ${r.result.scoreableMax}`, 'success')
+  else toast.show('评分失败：' + (r.reason || '未知原因') + '（可重试）', 'warning')
+}
+
+function onAppeal(reason) {
+  const r = fileAppeal(reason)
+  if (!r.ok) toast.show(r.reason, 'warning')
+}
 
 function onRestartRound() {
   confirm('开始新一轮（重练）？本回合记录会保留可回看，AI伴学配额将重置。').then(ok => {

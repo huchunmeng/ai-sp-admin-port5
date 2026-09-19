@@ -18,6 +18,7 @@
 import { computed, reactive, watch } from 'vue'
 import { SEGMENTS, DEFAULT_QUOTA, HINT_COOLDOWN_MS } from '@ai-sp/shared/imaging'
 import { useReportCompanion } from './useReportCompanion'
+import { useReportScoring } from './useReportScoring'
 
 const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
@@ -25,11 +26,19 @@ const STATS_KEY = 'report_writing_stats_v1'
 /** 三段合集字数上限（PRD §5.4.1 单例合计 ≤ 5000 字） */
 const TOTAL_LIMIT = 5000
 
-/** 两态：书写报告 → 对照参考 */
+/** 两态：书写报告 → 评分与对照 */
 export const PHASES = [
   { key: 'write', name: '书写报告' },
-  { key: 'review', name: '对照参考' }
+  { key: 'review', name: '评分与对照' }
 ]
+
+/** 评分状态机 */
+export const SCORING_STATE = {
+  idle: { key: 'idle', label: '未评分' },
+  running: { key: 'running', label: 'AI 评阅中' },
+  done: { key: 'done', label: '已评分' },
+  failed: { key: 'failed', label: '评分失败' }
+}
 
 function readJson(key, fallback) {
   try {
@@ -43,7 +52,8 @@ function writeJson(key, val) {
 }
 
 function emptyDraft() {
-  return { technique: '', findings: '', impression: '' }
+  // 四段：一般信息 / 检查技术 / 影像所见 / 诊断意见
+  return { general: '', technique: '', findings: '', impression: '' }
 }
 
 function emptyQuota() {
@@ -64,6 +74,7 @@ export function readPracticeStats() {
 export function useReportSession(caseId, sample) {
   const saved = readJson(SESSION_KEY, {})[caseId] || {}
   const companion = useReportCompanion()
+  const scorer = useReportScoring()
 
   const state = reactive({
     phase: saved.phase === 'review' ? 'review' : 'write',
@@ -79,7 +90,17 @@ export function useReportSession(caseId, sample) {
     /** 当前要问提示的段（与"阶段"无关，由用户自己选） */
     activeSegment: saved.activeSegment || 'findings',
     /** 提示是否正在生成（按钮 loading 态） */
-    hintLoading: false
+    hintLoading: false,
+    /** 评分状态：idle / running / done / failed */
+    scoringStatus: saved.scoringResult ? 'done' : 'idle',
+    /** 结构化评分结果（逐条 + 维度 + 总分 + 缺失项 + 不可评条目 + scoreTrace） */
+    scoringResult: saved.scoringResult || null,
+    /** 评分失败原因 */
+    scoringError: '',
+    /** 评分尝试次数（失败重试用） */
+    scoringAttempts: saved.scoringAttempts || 0,
+    /** 申诉登记（只读留痕，本期不做复核流程） */
+    appeal: saved.appeal || null
   })
 
   // 兼容旧会话，缺失的段补齐
@@ -99,7 +120,11 @@ export function useReportSession(caseId, sample) {
       hints: state.hints,
       quota: JSON.parse(JSON.stringify(state.quota)),
       cooling: { ...state.cooling },
-      activeSegment: state.activeSegment
+      activeSegment: state.activeSegment,
+      // 评分结果留痕：可复现性与申诉的依据
+      scoringResult: state.scoringResult,
+      scoringAttempts: state.scoringAttempts,
+      appeal: state.appeal
     }
     writeJson(SESSION_KEY, all)
   }
@@ -121,7 +146,7 @@ export function useReportSession(caseId, sample) {
   const missingSegments = computed(() => segments.value.filter(s => !s.filled).map(s => s.name))
   const canSubmit = computed(() => missingSegments.value.length === 0)
   const submitBlockReason = computed(() =>
-    canSubmit.value ? '' : `${missingSegments.value.join('、')}段还没写，三段都写完才能提交报告`)
+    canSubmit.value ? '' : `${missingSegments.value.join('、')}还没写，四段都写完才能提交报告`)
 
   const usedHintCount = computed(() => state.hints.length)
 
@@ -216,8 +241,8 @@ export function useReportSession(caseId, sample) {
     return { ok: true }
   }
 
-  /** 提交报告 → 进入对照参考 */
-  function toReview() {
+  /** 提交报告 → 进入评分与对照，并**立即发起评分** */
+  async function toReview() {
     if (!canSubmit.value) return { ok: false, reason: submitBlockReason.value }
     state.phase = 'review'
     const stats = readPracticeStats()
@@ -227,6 +252,38 @@ export function useReportSession(caseId, sample) {
       lastPracticedAt: nowStamp()
     }
     writeJson(STATS_KEY, stats)
+    // 不 await：UI 先切到对照页并展示"AI 评阅中"，评分完成后自动填充
+    runScoring()
+    return { ok: true }
+  }
+
+  /**
+   * 运行（或重跑）报告评分。
+   * 失败不阻塞学生：对照参考始终可用，只是没有分数。
+   */
+  async function runScoring() {
+    if (scoringRunning.value) return { ok: false, reason: '评分正在进行中' }
+    state.scoringStatus = 'running'
+    state.scoringError = ''
+    state.scoringAttempts += 1
+    const res = await scorer.score({ sample, reportText: { ...state.draft } })
+    if (res.ok) {
+      state.scoringResult = res.result
+      state.scoringStatus = 'done'
+    } else {
+      state.scoringResult = null
+      state.scoringStatus = 'failed'
+      state.scoringError = res.reason || '评分失败'
+    }
+    return res
+  }
+
+  /** 申诉登记（本期只落数据，不做复核流程 —— PRD §5.9.3） */
+  function fileAppeal(reason) {
+    const text = String(reason || '').trim()
+    if (!text) return { ok: false, reason: '请填写申诉原因' }
+    if (text.length > 200) return { ok: false, reason: '申诉原因不超过 200 字' }
+    state.appeal = { filedAt: nowStamp(), reason: text, score: state.scoringResult ? state.scoringResult.rawTotal : null }
     return { ok: true }
   }
 
@@ -235,7 +292,7 @@ export function useReportSession(caseId, sample) {
     state.phase = 'write'
   }
 
-  /** 重练：新回合 —— roundIndex+1，清空文本、配额重置，上一轮提示记录保留可回看（§5.2.5） */
+  /** 重练：新回合 —— roundIndex+1，清空文本与评分，配额重置（§5.2.5） */
   function restartRound() {
     state.roundIndex += 1
     state.phase = 'write'
@@ -244,14 +301,29 @@ export function useReportSession(caseId, sample) {
     state.hints = []
     state.quota = emptyQuota()
     state.cooling = {}
+    state.scoringStatus = 'idle'
+    state.scoringResult = null
+    state.scoringError = ''
+    state.scoringAttempts = 0
+    state.appeal = null
   }
+
+  const scoringRunning = computed(() => state.scoringStatus === 'running')
+  const scoring = computed(() => ({
+    status: state.scoringStatus,
+    result: state.scoringResult,
+    error: state.scoringError,
+    attempts: state.scoringAttempts,
+    appeal: state.appeal
+  }))
 
   return {
     state, inReview, phases: PHASES,
     segments, totalChars, totalOver, TOTAL_LIMIT,
     canSubmit, missingSegments, submitBlockReason,
     usedHintCount, quotaLeft, coolingLeft, requestHint, setActiveSegment,
-    toReview, backToWrite, restartRound
+    toReview, backToWrite, restartRound,
+    scoring, scoringRunning, runScoring, fileAppeal
   }
 }
 

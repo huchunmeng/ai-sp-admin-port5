@@ -61,12 +61,26 @@ export const R1_ITEMS = R1_TABLE.flatMap(d =>
   d.items.map(it => ({ ...it, dim: d.dim, dimFull: d.full }))
 )
 
-/** 报告三段字段规则（PRD §5.4.1，两侧同值同规则） */
+/**
+ * 报告字段规则（PRD §5.4.1，两侧同值同规则）。
+ *
+ * ⚠️ **四段而非三段**（2026-09-19 评分引擎接通后修正）：
+ * R1 表「一、一般信息及报告及时性」占 14 分（`GEN-01` 患者信息 / `GEN-03` 检查时间 / `GEN-04` 临床主要信息
+ * 及检查目的），而原先的三段输入（检查技术/影像所见/诊断意见）**没有任何地方能写这些内容** ——
+ * 13 分对所有人都不可达（`GEN-02` 因全掩不评）。真实影像报告也以患者信息开头。故补「一般信息」段。
+ *
+ * `inGold: false` 表示该段**没有独立金标准**：它的"答案"就是样单元数据本身（脱敏值 + 临床主要信息），
+ * 已写进 `rubric.js` 的 `GEN-01/03/04` 要点里。故 `hasGoldStandard()` 不计它，发布门槛不受影响。
+ */
 export const SEGMENTS = [
-  { key: 'technique', name: '检查技术', limit: 500, trainingRequired: true, examRequired: false },
-  { key: 'findings', name: '影像所见', limit: 3000, trainingRequired: true, examRequired: false },
-  { key: 'impression', name: '诊断意见', limit: 3000, trainingRequired: true, examRequired: false }
+  { key: 'general', name: '一般信息', limit: 800, trainingRequired: true, examRequired: false, inGold: false },
+  { key: 'technique', name: '检查技术', limit: 500, trainingRequired: true, examRequired: false, inGold: true },
+  { key: 'findings', name: '影像所见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true },
+  { key: 'impression', name: '诊断意见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true }
 ]
+
+/** 有独立金标准的段（发布门槛 / 金标准对照只看这三段） */
+export const GOLD_SEGMENTS = SEGMENTS.filter(s => s.inGold !== false)
 
 /**
  * 一般信息条的字段顺序与脱敏展示规则（PRD §5.2.2 / §5.12.4）。
@@ -84,8 +98,12 @@ export const DEIDENTIFY_ROWS = [
   { k: '检查时间', key: 'examTime', copy: true }
 ]
 
-/** 三段合集字数上限（PRD §5.4.1 单例合计 ≤ 5000 字） */
-export const REPORT_TOTAL_LIMIT = 5000
+/**
+ * 报告字数上限（四段合计的兜底值）。
+ * 原为 5000，但三段各自上限相加已达 6500，5000 反而成了"合法输入也被拦"的假约束；
+ * 补「一般信息」段后取 7000（≈ 各段上限之和），只作防滥用的兜底。
+ */
+export const REPORT_TOTAL_LIMIT = 7000
 
 /** R1 表版本号——随评分表改动递增，评分记录须留痕以解释历史成绩（PRD §5.9） */
 export const R1_TABLE_VERSION = 'R1-2026.09'

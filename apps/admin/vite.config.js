@@ -19,6 +19,85 @@ try {
 }
 const { mockGenPlugin } = await import('./mock-gen.js')
 
+// ── 通用 LLM 代理（影像题库「AI 从金标准抽取要点集」用）──
+// 复用管理端已有的 AI_GENERATE_* 配置，不新增环境变量。
+// 暴露 POST /api/llm，请求体 { system, messages, temperature, max_tokens, model }，与训练端同形。
+
+function llmProxyPlugin(env) {
+  const API_KEY = env.AI_GENERATE_API_KEY || ''
+  const API_URL = env.AI_GENERATE_API_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+  const MODEL = env.AI_GENERATE_MODEL || 'qwen-plus'
+
+  function readBody(req) {
+    return new Promise((resolve, reject) => {
+      let body = ''
+      req.on('data', c => { body += c })
+      req.on('end', () => { try { resolve(JSON.parse(body || '{}')) } catch (e) { reject(e) } })
+      req.on('error', reject)
+    })
+  }
+
+  return {
+    name: 'llm-proxy',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== 'POST' || req.url.split('?')[0] !== '/api/llm') return next()
+        if (!API_KEY || API_KEY === 'your-api-key-here') {
+          res.writeHead(503, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: '未配置 AI_GENERATE_API_KEY（apps/admin/.env.local）' }))
+          return
+        }
+        let body
+        try { body = await readBody(req) } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: 'Invalid JSON body' }))
+          return
+        }
+        const { messages, system, temperature = 0.2, max_tokens = 3000, model } = body
+        if (!Array.isArray(messages)) {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: 'Missing messages array' }))
+          return
+        }
+        const usedModel = model || MODEL
+        try {
+          const controller = new AbortController()
+          const timer = setTimeout(() => controller.abort(), 180000)
+          const payload = {
+            model: usedModel,
+            messages: system ? [{ role: 'system', content: system }, ...messages] : messages,
+            temperature,
+            max_tokens
+          }
+          // 关思考模式，保证结构化输出的低延迟（与训练端一致的处理）
+          if (usedModel.startsWith('deepseek')) payload.thinking = { type: 'disabled' }
+          else if (usedModel.startsWith('qwen')) payload.enable_thinking = false
+
+          const resp = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          })
+          clearTimeout(timer)
+          if (!resp.ok) {
+            const t = await resp.text()
+            res.writeHead(resp.status, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ ok: false, error: `LLM API error ${resp.status}: ${t.slice(0, 300)}` }))
+            return
+          }
+          const result = await resp.json()
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: true, content: result.choices?.[0]?.message?.content || '', model: usedModel }))
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: e.message }))
+        }
+      })
+    }
+  }
+}
+
 function resolveGenPlugin(env) {
   const hasKey = env.VITE_ENABLE_AI_GENERATE === 'true'
     && env.AI_GENERATE_API_KEY
@@ -333,7 +412,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: '/',
     root: __dirname,
-    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), rawRecordsApi(), mdtCasesPersist(), resolveGenPlugin(env), buildCasesIndexPlugin(), vue()],
+    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), rawRecordsApi(), mdtCasesPersist(), resolveGenPlugin(env), llmProxyPlugin(env), buildCasesIndexPlugin(), vue()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

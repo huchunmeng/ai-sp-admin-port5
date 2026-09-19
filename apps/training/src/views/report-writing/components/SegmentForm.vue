@@ -2,7 +2,7 @@
   <section class="card rwb-block">
     <div class="rwb-block-head">
       <i class="fa-solid fa-pen-to-square"></i> 学生报告
-      <span class="rwb-tag">三段式 · 检查技术 / 影像所见 / 诊断意见</span>
+      <span class="rwb-tag">四段式 · 一般信息 / 检查技术 / 影像所见 / 诊断意见</span>
       <span class="rwb-count" :class="{ 'text-error': totalOver }">{{ totalChars }} / {{ TOTAL_LIMIT }} 字</span>
     </div>
 
@@ -17,21 +17,25 @@
           </span>
         </div>
         <textarea class="rwb-seg-area" :value="draft[seg.key]" :maxlength="seg.limit"
-                  :rows="seg.key === 'technique' ? 2 : 6"
+                  :rows="seg.key === 'general' ? 3 : seg.key === 'technique' ? 2 : 6"
                   :placeholder="PLACEHOLDER[seg.key]"
                   @input="$emit('update:segment', seg.key, $event.target.value)"></textarea>
+        <div v-if="seg.key === 'general'" class="rwb-seg-tip">
+          患者信息与检查号可直接用上方一般信息条的「复制到报告」；<b>临床主要信息及检查目的要规范转述</b>——照抄不得满分。
+        </div>
       </div>
     </div>
 
     <div class="rwb-note">
-      三段<b>同时可写</b>，不必按顺序逐段推进；字数上限前端硬限、<b>不做静默截断</b>；
-      粘贴内容自动剥离格式（防带入外部样式与不可见字符）。单例三段合计上限 {{ TOTAL_LIMIT }} 字。
+      四段<b>同时可写</b>，不必按顺序逐段推进；字数上限前端硬限、<b>不做静默截断</b>；
+      粘贴内容自动剥离格式（防带入外部样式与不可见字符）。四段合计上限 {{ TOTAL_LIMIT }} 字。
     </div>
   </section>
 </template>
 
 <script setup>
 const PLACEHOLDER = {
+  general: '按上方一般信息条复述患者信息与检查号，并规范转述临床主要信息及检查目的（整段照抄不得满分）。',
   technique: '如：胸部CT平扫。',
   findings: '按部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象逐类描述。',
   impression: '回应临床问题，给出定位与定性倾向、诊断依据及下一步建议。'
@@ -65,6 +69,7 @@ defineEmits(['update:segment'])
 .rwb-seg-ok { font-size: 11px; color: var(--success); display: inline-flex; align-items: center; gap: 3px; }
 .rwb-seg-todo { font-size: 11px; color: #c0c4cc; }
 .rwb-seg-count { margin-left: auto; font-size: 11.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+.rwb-seg-tip { font-size: 11.5px; color: #9ca3af; line-height: 1.75; margin-top: 6px; }
 .rwb-seg-area {
   width: 100%; box-sizing: border-box; resize: vertical; outline: none;
   padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 9px;

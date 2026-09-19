@@ -3755,3 +3755,34 @@ input:checked + .slider:before {
   .vital-signs { grid-template-columns: repeat(3, 1fr); }
   .report-score-hero { flex-direction: column; text-align: center; }
 }
+
+/* ============================================================
+   编辑器统一外壳（病例 / MDT / 原始病历 / 影像题库共用）
+   原先这几条在各编辑器里各写一份 <style scoped>，新页面漏写就会"头部不粘、不换行、无内距"。
+   提到全局，新编辑器直接 class="case-editor > .editor-header" 即可。
+   各页原有的 scoped 同名规则特异性更高，仍优先生效，不会改变既有页面观感。
+   ============================================================ */
+.case-editor { background: var(--background); }
+
+.editor-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 24px; background: var(--card-bg); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20;
+}
+.editor-header .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.editor-header .header-right { display: flex; gap: 8px; flex-shrink: 0; }
+.editor-header .editor-title { margin: 0; font-size: 16px; color: var(--text-main); }
+.editor-header .case-id-badge {
+  font-size: 12px; padding: 2px 8px; border-radius: 4px;
+  background: var(--primary-light); color: var(--primary); font-family: monospace;
+}
+
+/* 编辑器内的分区块：标题带 3px 主色竖条（与 MDTCaseView / MDTEditor 既有观感一致） */
+.section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.section-head-title {
+  font-size: 14px; font-weight: 600; color: var(--text-main);
+  display: flex; align-items: center; gap: 6px;
+}
+.section-head-title::before {
+  content: ''; width: 3px; height: 14px; background: var(--primary); border-radius: 2px;
+}

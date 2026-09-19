@@ -60,13 +60,14 @@ const rows = computed(() => DEIDENTIFY_ROWS.map(r => {
 }))
 
 function copy(row) {
-  emit('copy', `${row.k}：${row.v}`)
-  toast.show('已复制到报告', 'success')
+  // 复制进「一般信息」段——那一段就是用来复述这些脱敏值 + 转述临床信息的
+  emit('copy', `${row.k}：${row.v}`, 'general')
+  toast.show('已复制到「一般信息」段', 'success')
 }
 
 function copyClinical() {
-  emit('copy', `临床主要信息及检查目的：${props.sample.clinicalBrief}`)
-  toast.show('已复制到报告，记得规范改写', 'success')
+  emit('copy', `临床主要信息及检查目的：${props.sample.clinicalBrief}`, 'general')
+  toast.show('已复制到「一般信息」段，记得规范改写', 'success')
 }
 </script>
 

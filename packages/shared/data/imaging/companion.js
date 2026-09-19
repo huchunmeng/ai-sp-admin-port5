@@ -18,7 +18,7 @@
 //   · 泛化体裁词（"部位与范围""重要阴性征象""密度/信号/强化程度"）**不进词表**（PRD §9.5 明确），
 //     否则 L1 体裁提示会被全部误拦。
 
-import { SEGMENTS } from './r1-table.js'
+import { SEGMENTS, GOLD_SEGMENTS } from './r1-table.js'
 
 const SEGMENT_NAME = Object.fromEntries(SEGMENTS.map(s => [s.key, s.name]))
 
@@ -41,6 +41,7 @@ export const MAX_COMMON_SUBSTRING = 8
 
 /** L1 体裁提示（静态库；case-agnostic，不含任何本病例信息） */
 export const L1_HINTS = {
+  general: '一般信息段建议覆盖：患者信息（姓名 / 年龄段 / 性别 / 科别）、检查号与影像号、检查时间，以及临床主要信息及检查目的——后者需规范转述，整段照抄申请单不得满分。',
   technique: '检查技术段建议覆盖：检查部位 / 检查类型 / 检查技术（扫描方式、层厚、是否增强）。',
   findings: '影像所见建议覆盖：部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象。',
   impression: '诊断意见段建议覆盖：是否回答临床问题 / 定位与定性诊断 / 诊断依据或鉴别 / 对临床的下一步建议。'
@@ -61,7 +62,7 @@ const MEASURE_RE = /\d+(?:\.\d+)?\s*(?:mm|cm|毫米|厘米)/gi
  */
 export function extractFactWords(goldStandard) {
   if (!goldStandard) return { measures: [], signs: [] }
-  const full = SEGMENTS.map(s => goldStandard[s.key] || '').join('\n')
+  const full = GOLD_SEGMENTS.map(s => goldStandard[s.key] || '').join('\n')
   const measures = [...new Set((full.match(MEASURE_RE) || []).map(s => s.replace(/\s+/g, '')))]
   const signs = SIGN_WORDS.filter(w => full.includes(w))
   return { measures, signs }
@@ -120,7 +121,7 @@ export function checkRedline(text, goldText, facts) {
 export function buildCompanionPrompt({ caseTitle, goldStandard, segment, level, draftText }) {
   if (level === 'L1') return null
   const segName = SEGMENT_NAME[segment] || segment
-  const gold = SEGMENTS.map(s => `${s.name}：${(goldStandard && goldStandard[s.key]) || '（未录入）'}`).join('\n')
+  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(goldStandard && goldStandard[s.key]) || '（未录入）'}`).join('\n')
 
   const system = [
     '你是医学影像报告书写训练的伴学助手。学员正在写一份影像诊断报告的「' + segName + '」段。',
