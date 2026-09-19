@@ -1,8 +1,5 @@
 <template>
   <div class="rwb-patient">
-    <div class="rwb-patient-head">
-      <i class="fa-solid fa-circle-info"></i> 患者信息
-    </div>
     <div class="rwb-patient-body">
       <div v-for="row in rows" :key="row.k" class="rwb-patient-item">
         <span class="rwb-patient-k">{{ row.k }}</span>
@@ -49,17 +46,9 @@ function copyClinical() {
 </script>
 
 <style scoped>
-/* 与影像同卡，图片下方、报告上方 */
-.rwb-patient { border-top: 1px solid #f0f2f5; background: #fff; }
-.rwb-patient-head {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 13px; font-weight: 700; color: #1f2937;
-  padding: 10px 18px 0;
-}
-.rwb-patient-head i { color: var(--primary); font-size: 12px; }
 .rwb-patient-body {
-  display: flex; flex-wrap: wrap; gap: 8px 24px;
-  padding: 10px 18px 16px;
+  display: flex; flex-wrap: wrap; gap: 9px 24px;
+  padding: 14px 18px 18px;
 }
 .rwb-patient-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; min-width: 0; }
 .rwb-patient-k { color: #909399; flex-shrink: 0; }

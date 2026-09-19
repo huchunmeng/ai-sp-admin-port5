@@ -52,15 +52,16 @@
     </div>
 
     <div class="is-body">
-      <!-- ① 患者信息 -->
-      <div v-show="step === 0" class="card" data-reviewable="患者信息">
-        <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:clinicalBrief="form.clinicalBrief" />
-      </div>
-      <!-- ② 影像序列与标准报告 -->
-      <template v-if="step === 1">
+      <!-- ① 影像序列（图片 → 患者信息 → 标准报告） -->
+      <template v-if="step === 0">
         <div class="card mb-4" data-reviewable="影像序列">
           <div class="is-sub">影像序列</div>
           <SeriesUploader v-model="form.seriesFrames" v-model:views="form.views" />
+          <!-- 患者信息与影像同卡：放在图片下面、报告内容上面（2026-09-20 批注 9） -->
+          <div class="is-patient" data-reviewable="患者信息">
+            <div class="is-sub">患者信息</div>
+            <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:clinicalBrief="form.clinicalBrief" />
+          </div>
         </div>
         <div class="card" data-reviewable="标准报告">
           <div class="is-sub">标准报告</div>
@@ -68,13 +69,13 @@
         </div>
       </template>
 
-      <!-- ③ 能力位 -->
-      <div v-show="step === 2" class="card" data-reviewable="能力位">
+      <!-- ② 能力位 -->
+      <div v-show="step === 1" class="card" data-reviewable="能力位">
         <CapabilityPanel v-model="form.capabilities" :sample-id="form.id || ''" />
       </div>
 
-      <!-- ④ 评分表 -->
-      <div v-show="step === 3" class="card" data-reviewable="评分表">
+      <!-- ③ 评分表 -->
+      <div v-show="step === 2" class="card" data-reviewable="评分表">
         <RubricPanel v-model="form.rubric" :sample="rubricSample" />
       </div>
     </div>
@@ -97,7 +98,6 @@ const props = defineProps({ id: { type: String, default: '' } })
 const router = useRouter()
 
 const STEPS = [
-  { key: 'patient', label: '患者信息' },
   { key: 'series', label: '影像序列与标准报告' },
   { key: 'capability', label: '能力位' },
   { key: 'rubric', label: '评分表' }
@@ -133,8 +133,8 @@ function save(target) {
   const problems = deidentifyRef.value ? deidentifyRef.value.validate() : []
   if (problems.length) { toast.show(problems[0], 'error'); step.value = 0; return }
   if (!String(form.value.title || '').trim()) { toast.show('请填写病例标题', 'warning'); return }
-  if (target === 'published' && !goldFilled.value) { toast.show('三段标准报告皆非空方可发布', 'warning'); step.value = 1; return }
-  if (target === 'published' && !rubricFilled.value) { toast.show('请先维护评分表', 'warning'); step.value = 3; return }
+  if (target === 'published' && !goldFilled.value) { toast.show('三段标准报告皆非空方可发布', 'warning'); return }
+  if (target === 'published' && !rubricFilled.value) { toast.show('请先维护评分表', 'warning'); step.value = 2; return }
 
   const row = { ...form.value, capabilities: { ...form.value.capabilities } }
   const existing = props.id ? getSample(props.id) : null
@@ -198,5 +198,9 @@ function commit(row, target, isRev) {
 .is-sub::before {
   content: ''; display: inline-block; width: 3px; height: 13px; background: var(--primary);
   border-radius: 2px; margin-right: 7px; vertical-align: -1px;
+}
+/* 患者信息并入影像序列卡后的小节：与图片之间有一条分隔线 */
+.is-patient {
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
 }
 </style>
