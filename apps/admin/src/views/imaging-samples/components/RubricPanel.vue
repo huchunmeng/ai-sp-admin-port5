@@ -1,18 +1,5 @@
 <template>
   <div class="ss-root">
-    <!-- 本卷条件：原「能力位」并入此处（2026-09-20 批注：不单独一个模块） -->
-    <div class="is-conds">
-      <span class="is-conds-title">本卷条件</span>
-      <label v-for="f in CAPABILITY_FIELDS" :key="f.key" class="is-cond" :title="'影响 ' + (f.affects || []).join(' · ')">
-        <input type="checkbox" :checked="!!caps[f.key]" @change="setCond(f.key, $event.target.checked)">
-        <span>{{ f.label }}</span>
-      </label>
-      <label class="is-cond is-cond-ro" :title="DERIVED_CAPABILITY.note + '；影响 ' + (DERIVED_CAPABILITY.affects || []).join(' · ')">
-        <input type="checkbox" :checked="false" disabled>
-        <span>{{ DERIVED_CAPABILITY.label }}</span>
-      </label>
-    </div>
-
     <!-- 与病例编辑器的评分表同一套表头 -->
     <div class="ss-header">
       <h3>评分表</h3>
@@ -22,13 +9,14 @@
           <i class="fa-solid" :class="extracting ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
           {{ extracting ? '抽取中...' : 'AI 从标准报告抽取' }}
         </button>
-        <button class="btn btn-outline btn-sm" :disabled="extracting" @click="resetAll">恢复内置</button>
+        <button class="btn btn-outline btn-sm" :disabled="extracting" @click="resetAll"
+                title="丢弃本页的改动，回到题库里存的那一版（样机内是「AI 从标准报告抽取」的初版）">还原初始评分表</button>
       </div>
     </div>
 
     <div v-if="!goldReady" class="empty-state">
       <i class="fa-solid fa-file-circle-exclamation"></i>
-      <p>先在「影像序列与标准报告」填完三段，再来抽取评分表</p>
+      <p>先在「影像与报告」填完三段标准报告，再来抽取评分表</p>
     </div>
     <div v-else-if="!hasRubric" class="empty-state">
       <i class="fa-solid fa-table-list"></i>
@@ -39,11 +27,12 @@
       <table class="ss-table">
         <thead>
           <tr>
-            <th style="width:96px">维度</th>
-            <th style="width:200px">条目</th>
-            <th style="width:78px">分值</th>
-            <th>要点 / 可接受表述</th>
-            <th style="width:130px">可评条件</th>
+            <th style="width:92px">维度</th>
+            <th style="width:176px">条目</th>
+            <th style="width:64px">分值</th>
+            <th>评分要点</th>
+            <th style="width:78px">要点分值</th>
+            <th style="width:300px">评分规则</th>
             <th style="width:58px">操作</th>
           </tr>
         </thead>
@@ -53,28 +42,41 @@
 
             <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-item"
                 :title="row.item.code + ' ' + row.item.name + (editableCodes.includes(row.item.code) ? '' : '（按样单元数据自动生成，不可编辑）')">
-              <code class="is-code">{{ row.item.code }}</code>
               <div class="td-item-name">{{ row.item.name }}</div>
               <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea is-item-rules"
                         :rows="rowsFor(row.item.rules, 16)" :value="row.item.rules"
-                        placeholder="判定说明（可选）"
+                        placeholder="整条判定说明（可选）"
                         @change="updateRules(row.item.code, $event.target.value)"></textarea>
               <div v-else-if="row.item.rules" class="is-item-rules-ro">{{ row.item.rules }}</div>
             </td>
 
             <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged cell-num">
-              <span :class="row.item.scoreableFull === row.item.full ? '' : 'text-warning'" style="font-weight:600">
-                {{ row.item.scoreableFull }}
-              </span>
-              <span class="text-secondary"> / {{ row.item.full }}</span>
+              <span style="font-weight:600">{{ row.item.full }}</span>
+              <div v-if="row.item.full !== row.item.r1Score" class="is-score-warn"
+                   :title="'R1 表里这条是 ' + row.item.r1Score + ' 分，要点分值之和对不上'">≠{{ row.item.r1Score }}</div>
             </td>
 
             <td>
               <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
                         :rows="rowsFor(row.p.text)" :value="row.p.text"
-                        placeholder="要点内容（要可判定）"
+                        placeholder="评分要点（要可判定）"
                         @input="updatePoint(row.item.code, row.pi, 'text', $event.target.value)"></textarea>
               <span v-else class="cell-ro">{{ row.p.text }}</span>
+            </td>
+
+            <td class="cell-num">
+              <input v-if="editableCodes.includes(row.item.code)" class="cell-input cell-num-input" type="number"
+                     step="0.5" min="0" :value="row.p.score"
+                     @change="updatePoint(row.item.code, row.pi, 'score', Number($event.target.value))">
+              <span v-else>{{ row.p.score }}</span>
+            </td>
+
+            <td>
+              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
+                        :rows="rowsFor(row.p.rule, 22)" :value="row.p.rule"
+                        placeholder="评分规则"
+                        @change="updatePoint(row.item.code, row.pi, 'rule', $event.target.value)"></textarea>
+              <span v-else class="cell-ro">{{ row.p.rule || '—' }}</span>
               <div class="is-accept-row">
                 <span class="is-accept-label">可接受表述</span>
                 <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea is-accept"
@@ -83,20 +85,10 @@
                           @change="updatePoint(row.item.code, row.pi, 'accept', $event.target.value)"></textarea>
                 <span v-else class="cell-ro">{{ acceptText(row.p) || '—' }}</span>
               </div>
-            </td>
-
-            <td>
-              <template v-if="editableCodes.includes(row.item.code)">
-                <select class="cell-input cell-select" :value="row.p.assess || ''"
-                        @change="updatePoint(row.item.code, row.pi, 'assess', $event.target.value)">
-                  <option value="">无条件可评</option>
-                  <option v-for="a in ASSESS_KINDS" :key="a.key" :value="a.key">{{ a.label }}</option>
-                </select>
-              </template>
-              <span v-else class="badge" :class="row.p.assessable ? 'badge-info' : (row.p.nASource === 'na' ? 'badge-info' : 'badge-warning')"
-                    :title="row.p.assessable ? '' : row.p.nAReason">
-                {{ row.p.assessable ? (row.p.assessLabel || '可评') : (row.p.nASource === 'na' ? '不适用' : '不可评') }}
-              </span>
+              <div v-if="!row.p.assessable" class="is-na-line" :title="row.p.nAReason">
+                {{ row.p.nASource === 'na' ? '本题不适用' : '本题条件不足，不评' }}（{{ row.p.nAReason }}）
+                <a v-if="editableCodes.includes(row.item.code)" href="#" @click.prevent="setAssessable(row.item.code, row.pi)">改为参评</a>
+              </div>
             </td>
 
             <td style="white-space:nowrap;text-align:center">
@@ -113,7 +105,7 @@
           <tr class="ss-total-row">
             <td colspan="2" style="text-align:right;font-weight:600;font-size:12px">合计</td>
             <td class="cell-num" style="font-weight:600">100</td>
-            <td style="font-size:12px;color:var(--text-secondary)">本卷可评</td>
+            <td colspan="2" style="font-size:12px;color:var(--text-secondary)">本卷可评</td>
             <td class="cell-num" style="font-weight:600">{{ resolved.scoreableMax }}</td>
             <td></td>
           </tr>
@@ -129,8 +121,6 @@ import { toast } from '@ai-sp/shared'
 import {
   resolveRubric,
   RUBRIC as BUILD_IN_RUBRIC,
-  CAPABILITY_FIELDS, DERIVED_CAPABILITY,
-  ASSESS_KINDS,
   buildRubricExtractionPrompt, parseRubricExtraction
 } from '@ai-sp/shared/imaging'
 import { useAIChat } from '@/composables/useAIChat'
@@ -141,17 +131,10 @@ const props = defineProps({
   /** 评分表 `{ version, updatedAt, updatedBy, items: { [code]: { points, rules } } }` */
   modelValue: { type: Object, default: null }
 })
-const emit = defineEmits(['update:modelValue', 'update:capabilities'])
+const emit = defineEmits(['update:modelValue'])
 
 const { sendMessage } = useAIChat()
 const extracting = ref(false)
-
-const caps = computed(() => props.sample.capabilities || {})
-
-/** 本卷条件（原「能力位」）——勾选即改样本的 capabilities */
-function setCond(key, checked) {
-  emit('update:capabilities', { ...caps.value, [key]: checked })
-}
 
 /** 内容条目（可编辑）；通用条目由样单元数据自动生成，不给改 */
 const CONTENT_CODES = [
@@ -226,13 +209,18 @@ function updatePoint(code, pi, field, value) {
   if (field === 'accept') {
     items[code].points[pi].accept = String(value || '').split('/').map(s => s.trim()).filter(Boolean)
   } else if (field === 'assess') {
-    // 空串 = 无条件可评，直接把字段删掉，别在数据里留空值
-    if (value) items[code].points[pi].assess = value
-    else delete items[code].points[pi].assess
+    // 显式写值（含空串）：「空串」= 明确无条件可评，要与「没声明」区分开，
+    // 否则会被兜底推断又拉回不可评，「改为参评」就失效了
+    items[code].points[pi].assess = value
   } else {
     items[code].points[pi][field] = value
   }
   emitItems(items)
+}
+
+/** 「改为参评」：显式写空串，覆盖兜底推断 */
+function setAssessable(code, pi) {
+  updatePoint(code, pi, 'assess', '')
 }
 
 function updateRules(code, value) {
@@ -312,7 +300,6 @@ async function extract() {
 .is-accept-row { display: flex; align-items: flex-start; gap: 6px; margin-top: 2px; }
 .is-accept-label { flex-shrink: 0; font-size: 11px; color: #A8ABB2; padding-top: 8px; }
 .is-accept { flex: 1; min-width: 0; }
-.is-code { background: #fff; border: 1px solid #EBEEF5; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
 
 .cell-input {
   width: 100%; border: 1px solid transparent; background: transparent;
@@ -349,14 +336,10 @@ async function extract() {
 .empty-state i { font-size: 34px; color: var(--text-placeholder); margin-bottom: 10px; display: block; }
 .empty-state p { margin: 0; font-size: 13.5px; }
 
-/* 本卷条件（原「能力位」） */
-.is-conds {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px;
-  padding: 12px 16px; margin-bottom: 16px;
-  background: #FAFBFC; border: 1px solid var(--border); border-radius: 8px;
-}
-.is-conds-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-.is-cond { display: flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer; }
-.is-cond input { width: 15px; height: 15px; }
-.is-cond-ro { cursor: not-allowed; color: #9ca3af; }
+.cell-num-input { width: 56px; text-align: center; }
+.is-score-warn { font-size: 10.5px; color: #D46B08; }
+/* 该要点本题不评：一行说明 + 「改为参评」 */
+.is-na-line { font-size: 11px; color: #D46B08; line-height: 1.6; margin-top: 3px; }
+.is-na-line a { color: var(--primary); text-decoration: none; margin-left: 4px; }
+.is-na-line a:hover { text-decoration: underline; }
 </style>

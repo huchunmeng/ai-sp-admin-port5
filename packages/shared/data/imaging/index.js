@@ -18,7 +18,7 @@ export {
 } from './capabilities.js'
 export {
   RUBRIC, RUBRIC_VERSION, POINT_RULES, POINT_SCORE, RUBRIC_SEGMENTS, RUBRIC_TABLE,
-  ASSESS_KINDS, ASSESS_BY_KEY,
+  ASSESS_KINDS, ASSESS_BY_KEY, defaultPointScores,
   resolveRubric, hasHandRubric, scoreableOf, weightedScoreable
 } from './rubric.js'
 export {

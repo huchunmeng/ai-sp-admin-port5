@@ -123,6 +123,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import JSZip from 'jszip'
+import { toast } from '@ai-sp/shared'
 import { VIEW_CANDIDATES } from '@ai-sp/shared/imaging'
 
 /** 校验上限（PRD §5.12.3）：单视图 ≤ 300 张；单张 ≤ 5 MB；格式仅 jpg/jpeg/png */
@@ -284,15 +285,7 @@ function pickZip(key, append = false) {
 
 /** 追加时并入已有帧并去重、按自然序重排；总数仍受 MAX_FRAMES 限制 */
 function mergeFrames(key, incoming) {
-  const seen = new Set()
-  const out = []
-  ;[...framesOf(key), ...incoming].forEach(f => {
-    const k = `${f.name}|${f.size || 0}`
-    if (seen.has(k)) return
-    seen.add(k)
-    out.push(f)
-  })
-  return sortFrames(out)
+  return mergeFrameLists(framesOf(key), incoming)
 }
 
 function onPickImages(e, key) {
@@ -378,6 +371,18 @@ async function ingest(file, key) {
   const images = entries.filter(f => OK_EXT.test(f.name))
   if (!entries.length) { errors.value.push('压缩包是空包；本序列未改动'); return }
   if (!images.length) { errors.value.push(`压缩包内 ${entries.length} 个文件，无 JPG / PNG 图片；本序列未改动`); return }
+
+  // PACS 导出的包常是「一个序列一个文件夹」。包里有多个顶层文件夹时**按文件夹分到多个视图**，
+  // 而不是全部拍平塞进当前视图——否则老师没法知道哪几张属于哪个序列（2026-09-20 批注）。
+  const folders = [...new Set(images.map(f => {
+    const parts = f.name.split('/').filter(Boolean)
+    return parts.length > 1 ? parts.slice(0, -1).join('/') : ''
+  }).filter(Boolean))]
+  if (folders.length > 1 && folders.length <= 8) {
+    await ingestByFolders(zip, images, folders)
+    return
+  }
+
   if (images.length > MAX_FRAMES) {
     errors.value.push(`本包 ${images.length} 张，超出单视图上限 ${MAX_FRAMES} 张；本序列未改动`)
     return
@@ -400,6 +405,69 @@ async function ingest(file, key) {
     return
   }
   setList(key, mergedZip)
+}
+
+/**
+ * 多文件夹 zip：每个顶层文件夹 → 一个视图（同名视图直接并入，否则新建视图）。
+ * 视图可能在循环里新增，所以视图表与帧表都先用本地副本累积，最后一次写回。
+ */
+async function ingestByFolders(zip, images, folders) {
+  const views = props.views.slice()
+  const framesMap = {}
+  views.forEach(v => { framesMap[v.key] = framesOf(v.key).slice() })
+  const usedKeys = new Set(views.map(v => v.key))
+  const oversized = []
+  let added = 0
+
+  for (const folder of folders) {
+    const inFolder = images.filter(f => f.name.split('/').filter(Boolean).slice(0, -1).join('/') === folder)
+    if (!inFolder.length) continue
+    const fname = folder.split('/').filter(Boolean).pop()
+    let view = views.find(v => v.name === fname)
+    if (!view) {
+      let n = 1
+      while (usedKeys.has(`custom${n}`)) n += 1
+      view = { key: `custom${n}`, name: fname, en: 'CUSTOM' }
+      usedKeys.add(view.key)
+      views.push(view)
+      added += 1
+    }
+    if (!framesMap[view.key]) framesMap[view.key] = []
+
+    const frames = []
+    for (const f of inFolder) {
+      const blob = await f.async('blob')
+      const name = f.name.split('/').pop()
+      if (blob.size > MAX_BYTES) { oversized.push(name); continue }
+      frames.push({ name, size: blob.size, url: URL.createObjectURL(blob), order: null })
+    }
+    const merged = mergeFrameLists(framesMap[view.key], frames)
+    if (merged.length > MAX_FRAMES) {
+      errors.value.push(`「${fname}」合并后共 ${merged.length} 张，超出单视图上限 ${MAX_FRAMES} 张；该视图未改动`)
+      continue
+    }
+    framesMap[view.key] = merged
+  }
+
+  if (oversized.length) {
+    errors.value.push(`以下图片超过单张 5 MB 上限，已跳过：${oversized.slice(0, 3).join('、')}${oversized.length > 3 ? ` 等 ${oversized.length} 张` : ''}`)
+  }
+  emit('update:views', views)
+  emit('update:modelValue', { ...props.modelValue, ...framesMap })
+  toast.show(`压缩包内 ${folders.length} 个文件夹，已按文件夹分到 ${folders.length} 个视图${added ? `（新建 ${added} 个）` : ''}`, 'success')
+}
+
+/** 合并两份帧列表：按「名称+大小」去重，再按自然序重排 */
+function mergeFrameLists(base, incoming) {
+  const seen = new Set()
+  const out = []
+  ;[...(base || []), ...incoming].forEach(f => {
+    const k = `${f.name}|${f.size || 0}`
+    if (seen.has(k)) return
+    seen.add(k)
+    out.push(f)
+  })
+  return sortFrames(out)
 }
 
 /** Q2 未答复时的兜底：绑定系统内置样例序列（PRD §5.12.3「兜底」） */

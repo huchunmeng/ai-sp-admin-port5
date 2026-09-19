@@ -51,9 +51,24 @@ export const ASSESS_KINDS = [
 
 export const ASSESS_BY_KEY = Object.fromEntries(ASSESS_KINDS.map(a => [a.key, a]))
 
-/** 老数据（没有 `assess` 字段）的兜底推断：按条目 + 关键词猜 */
+/**
+ * 把条目满分**均分到要点**：每个要点取 0.5 的整数倍，余数补给最后一个要点，保证 Σ = 条目满分。
+ * 例：满分 4 分 2 个要点 → [2, 2]；满分 2 分 3 个要点 → [0.5, 0.5, 1]。
+ * 这是"要点分值"的默认值，老师改过则以改的为准。
+ */
+export function defaultPointScores(itemScore, n) {
+  if (!n) return []
+  const each = Math.floor((itemScore / n) * 2) / 2
+  const arr = Array.from({ length: n }, () => each)
+  arr[n - 1] = Math.round((itemScore - each * (n - 1)) * 100) / 100
+  return arr
+}
+
+/** 老数据（没有 `assess` 字段）的兜底推断：按条目 + 关键词猜。
+ *  注意：**显式声明了 `assess`（哪怕空串）就以声明为准**——空串表示"明确无条件可评"，
+ *  这样管理端「改为参评」才有意义，不会被兜底推断又拉回不可评。 */
 function inferAssess(code, p) {
-  if (p && p.assess) return p.assess
+  if (p && Object.prototype.hasOwnProperty.call(p, 'assess')) return p.assess || null
   const t = `${(p && p.id) || ''} ${(p && p.text) || ''}`
   if (code === 'FIND-04' && /测量|大小|尺寸|直径|实测|层面/.test(t)) return 'measure'
   if (code === 'FIND-06' && /强化/.test(t)) return 'enhance'
@@ -431,8 +446,11 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
     const rules = rulesFor(base.code)
     // 条目级规则（whole）若生效，该条所有要点都标成对应条件，界面上能看到原因
     const wholeRule = rules.find(r => r.whole && r.when(caps)) || null
+    // 要点分值：R1 条目满分按要点数**均分到 0.5**、余数给最后一个要点（保证 Σ = 条目满分）。
+    // 老数据没有 `p.score` 时用这个默认值，管理端改过则以改的为准。
+    const defaults = defaultPointScores(base.score, (src.points || []).length)
 
-    const points = (src.points || []).map(p => {
+    const points = (src.points || []).map((p, pi) => {
       // 要点级规则：按 `assess` 标签命中（老数据用 inferAssess 兜底），不再拿正则去猜措辞。
       // 同一 code 可能有多条规则，必须**先筛出命中的、再取第一条真正生效的**——用 find 一把梭会在
       // 第一条"命中但条件不成立"的规则上停下，后面的永远不会被评估。
@@ -449,6 +467,11 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
         id: p.id,
         text: p.text,
         accept: p.accept || [],
+        /** 逐要点判定规则（LLM 生成 / 人工校正），评分时随要点一起交给模型 */
+        rule: p.rule || '',
+        /** 要点分值（未设置时用均分默认值） */
+        score: Number.isFinite(p.score) ? p.score : defaults[pi],
+        scoreDeclared: Number.isFinite(p.score),
         /** 该要点依赖的条件标签（'' = 无条件，始终可评） */
         assess,
         assessLabel: (ASSESS_BY_KEY[assess] || {}).label || '',
@@ -459,18 +482,19 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
       }
     })
 
+    const r2 = n => Math.round(n * 100) / 100
     const assessablePoints = points.filter(p => p.assessable)
-    // 条目可评满分 = 条目满分 × 可评要点数 / 要点总数
-    const scoreableFull = points.length
-      ? Math.round(base.score * (assessablePoints.length / points.length) * 100) / 100
-      : base.score
+    const full = r2(points.reduce((a, p) => a + p.score, 0)) || base.score
+    const scoreableFull = r2(assessablePoints.reduce((a, p) => a + p.score, 0))
 
     return {
       code: base.code,
       name: base.name,
       dim: base.dim,
       dimFull: base.dimFull,
-      full: base.score,
+      /** R1 表里该条目的标称满分（用来核对要点分值之和是否被改乱） */
+      r1Score: base.score,
+      full,
       scoreableFull,
       points,
       rules: src.rules || '',

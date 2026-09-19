@@ -51,10 +51,15 @@ export function buildScoringPrompt({ sample, rubric, reportText }) {
 
   const itemSpec = assessable.map(i => {
     const pts = i.points.filter(p => p.assessable)
-      .map(p => `    - ${p.id}: ${p.text}${p.accept && p.accept.length ? `（可接受表述：${p.accept.join(' / ')}）` : ''}`)
+      .map(p => {
+        const bits = [`${p.score} 分`]
+        if (p.accept && p.accept.length) bits.push(`可接受表述：${p.accept.join(' / ')}`)
+        const rule = p.rule ? `\n        判定规则：${p.rule}` : ''
+        return `    - ${p.id}（${bits.join('；')}）：${p.text}${rule}`
+      })
       .join('\n')
     return [
-      `- ${i.code} 《${i.name}》（本类病例可评满分 ${i.scoreableFull} 分，共 ${pts.split('\n').length} 个要点）`,
+      `- ${i.code} 《${i.name}》（本类病例可评满分 ${i.scoreableFull} 分，共 ${pts.split('\n    - ').length} 个要点）`,
       i.rules ? `  判定说明：${i.rules}` : '',
       pts
     ].filter(Boolean).join('\n')
@@ -161,13 +166,15 @@ export function composeScore(parsed, rubric, sample) {
   const items = rubric.items.map(item => {
     const assessable = item.points.filter(p => p.assessable)
     const judged = (parsed.byItem && parsed.byItem[item.code]) || []
-    const hits = judged.reduce((a, p) => a + p.score, 0)
-    const got = assessable.length
-      ? Math.round(item.scoreableFull * (hits / assessable.length) * 10) / 10
-      : 0
+    // 逐要点计分：得数 = Σ(该要点命中档 × 要点分值)
+    const byId = Object.fromEntries(assessable.map(p => [p.id, p]))
+    const got = Math.round(judged.reduce((a, p) => {
+      const rp = byId[p.id]
+      return a + (rp ? Number(rp.score) * Number(p.score) : 0)
+    }, 0) * 10) / 10
 
     const points = judged.map(p => {
-      // 出站安全：点评语不得泄漏金标准（PRD §5.9.1 白名单 + §9.5 红线）
+      // 出站安全：点评语不得泄漏标准报告（PRD §5.9.1 白名单 + §9.5 红线）
       let comment = p.comment
       let blocked = false
       if (comment && goldText) {
@@ -176,7 +183,8 @@ export function composeScore(parsed, rubric, sample) {
       }
       // 未命中且模型没给话术时，用固定通用话术兜底
       if (!comment && p.score < 1) comment = p.score === 0 ? NOT_COVERED_TEXT : PARTIAL_TEXT
-      return { ...p, comment, commentBlocked: blocked }
+      const rp = byId[p.id] || {}
+      return { ...p, text: rp.text || p.text, scoreWeight: rp.score, comment, commentBlocked: blocked }
     })
 
     const missing = points.filter(p => p.score === 0).map(p => ({ text: p.text, comment: p.comment }))
@@ -186,8 +194,7 @@ export function composeScore(parsed, rubric, sample) {
       full: item.full, scoreableFull: item.scoreableFull,
       got, points, missing,
       nAPoints: item.points.filter(p => !p.assessable).map(p => ({ text: p.text, why: p.nAReason, source: p.nASource }))
-    }
-  })
+    }  })
 
   // 维度归并
   const dimMap = new Map()
@@ -295,13 +302,15 @@ export function buildRubricExtractionPrompt({ sample }) {
     '3. 对**通用规范要求**（条理、顺序、术语规范、少错别字等），写通用表述即可，accept 留空数组。',
     '4. 每条目给 2–4 个要点；要点要覆盖该条目该评的核心内容，不要凑数。',
     '5. **要点必须落在本条目的语义范围内**（例如 FIND-06 是"密度/信号/强化程度"，不要把"紧贴膈面"这类位置描述放进去）。',
-    '6. 若某要点依赖本病例不具备的条件，给该要点加 `assess` 标签（取值只能是下面四个之一，否则省略该字段）：',
+    '6. 每条要点给一个 `rule`：**这条要点的判定规则**——命中要写到什么程度、什么情况算错、哪些表述算对。',
+    '   它会被评分模型直接使用，所以要写成可执行的判据（不要写"描述准确"这类空话）。',
+    '7. 若某要点依赖本病例不具备的条件，给该要点加 `assess` 标签（取值只能是下面四个之一，否则省略该字段）：',
     '   - "measure"：需要影像测量工具才能评（如病灶大小/尺寸的实测值）',
     '   - "enhance"：需要增强期相才能评（如强化程度、强化方式）',
     '   - "prior"：需要既往检查影像才能评（如与以前片比较、病灶有无变化）',
     '   - "staging"：需要临床提供分期依据才能评（如 TNM 分期是否正确）',
     '   省略该字段 = 该要点无条件、始终可评。',
-    '7. 只输出 JSON，不要 markdown 代码块，不要解释。'
+    '8. 只输出 JSON，不要 markdown 代码块，不要解释。'
   ].join('\n')
 
   const user = [
@@ -317,8 +326,10 @@ export function buildRubricExtractionPrompt({ sample }) {
     '{',
     '  "items": {',
     '    "FIND-03": { "rules": "（可选，该条的判定说明，没有就空串）",',
-    '                 "points": [ { "id": "p1", "text": "要点内容", "accept": ["可接受说法A", "可接受说法B"] },',
-    '                             { "id": "p2", "text": "需要增强才能评的要点", "accept": [], "assess": "enhance" } ] },',
+    '                 "points": [',
+    '                   { "id": "p1", "text": "要点内容", "rule": "这条要点的判定规则", "accept": ["可接受说法A", "可接受说法B"] },',
+    '                   { "id": "p2", "text": "需要增强才能评的要点", "rule": "…", "accept": [], "assess": "enhance" }',
+    '                 ] },',
     '    "...": {}',
     '  }',
     '}',
@@ -350,10 +361,15 @@ export function parseRubricExtraction(rawText) {
       .slice(0, 6)
       .map((p, i) => {
         const assess = String(p.assess || '').trim()
+        const score = Number(p.score)
         return {
           id: String(p.id || `p${i + 1}`),
           text: String(p.text).trim(),
           accept: Array.isArray(p.accept) ? p.accept.map(a => String(a).trim()).filter(Boolean).slice(0, 6) : [],
+          // 逐要点判定规则（评分时交给模型；也是老师改判据的地方）
+          ...(String(p.rule || '').trim() ? { rule: String(p.rule).trim() } : {}),
+          // 要点分值：模型给不出准确分配时可以省略，界面用 R1 满分均分的默认值
+          ...(Number.isFinite(score) && score >= 0 ? { score } : {}),
           // 可评条件标签：measure / enhance / prior / staging，空串 = 无条件
           ...(['measure', 'enhance', 'prior', 'staging'].includes(assess) ? { assess } : {})
         }
