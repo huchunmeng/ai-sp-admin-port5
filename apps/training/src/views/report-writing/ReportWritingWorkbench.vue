@@ -13,12 +13,9 @@
       </template>
     </TrainingTopBar>
 
-    <!-- 左侧浮动患者信息（与病史采集同一套浮动面板） -->
-    <FloatPatientInfo :sample="sample" @copy="onCopy" />
-
     <div class="rww-body">
       <div class="rww-main">
-        <ImageViewer :sample="sample" />
+        <ImagePanel :sample="sample" @copy="onCopy" />
         <SegmentForm :segments="segments" :draft="state.draft"
                      :total-chars="totalChars" :total-over="totalOver" :total-limit="TOTAL_LIMIT"
                      @update:segment="onSegmentInput" />
@@ -53,8 +50,7 @@ import { toast, confirm } from '@ai-sp/shared'
 import { getImagingSample, scoreableOf, hasGoldStandard } from '@ai-sp/shared/imaging'
 import { useReportSession } from '@/composables/useReportSession'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
-import FloatPatientInfo from './components/FloatPatientInfo.vue'
-import ImageViewer from './components/ImageViewer.vue'
+import ImagePanel from './components/ImagePanel.vue'
 import SegmentForm from './components/SegmentForm.vue'
 import NotesPanel from './components/NotesPanel.vue'
 import CompanionPanel from './components/CompanionPanel.vue'

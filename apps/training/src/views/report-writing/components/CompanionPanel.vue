@@ -73,8 +73,12 @@ function submit() {
 </script>
 
 <style scoped>
-.rwb-aside { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
-.rwb-side { overflow: hidden; display: flex; flex-direction: column; }
+.rwb-aside { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; }
+/* 面板高度自适应屏幕：顶部站点条 58px + 上下留白，聊天区自己滚动、输入框钉在底部 */
+.rwb-side {
+  height: calc(100vh - 82px); min-height: 360px;
+  overflow: hidden; display: flex; flex-direction: column;
+}
 .rwb-side-head {
   display: flex; align-items: center; gap: 8px;
   font-size: 13.5px; font-weight: 700; color: #1f2937;
@@ -83,7 +87,7 @@ function submit() {
 .rwb-side-head i { color: #4f46e5; }
 .rwb-side-sub { margin-left: auto; font-size: 11px; font-weight: 400; color: #9ca3af; }
 
-.rwb-chat { flex: 1; min-height: 240px; max-height: 420px; overflow-y: auto; padding: 12px 14px 4px; display: flex; flex-direction: column; gap: 10px; }
+.rwb-chat { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px 4px; display: flex; flex-direction: column; gap: 10px; }
 .rwb-msg { display: flex; flex-direction: column; max-width: 92%; }
 .rwb-msg.is-ai { align-self: flex-start; }
 .rwb-msg.is-user { align-self: flex-end; align-items: flex-end; }
@@ -119,5 +123,5 @@ function submit() {
 .rwb-chat-input:focus { border-color: var(--primary); }
 .rwb-chat-bar .btn { flex-shrink: 0; height: 32px; }
 
-@media (max-width: 1100px) { .rwb-aside { width: 100%; } .rwb-chat { max-height: 300px; } }
+@media (max-width: 1100px) { .rwb-aside { width: 100%; } .rwb-side { height: auto; max-height: 560px; } }
 </style>

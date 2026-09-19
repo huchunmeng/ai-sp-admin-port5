@@ -1,11 +1,5 @@
 <template>
-  <section class="card rwb-block">
-    <div class="rwb-block-head">
-      <i class="fa-solid fa-image"></i> 影像显示控件
-      <span class="rwb-tag">{{ sample.modality }} · {{ views.length }} 个序列 / 共 {{ totalFrames }} 帧</span>
-      <span class="rwb-cap">滚轮 / ↑↓ 翻层面</span>
-    </div>
-
+  <div class="rwb-viewer-root">
     <!-- 序列切换：数量随病例变（DR 只有正/侧位，MR 可能有五个序列） -->
     <div class="rwb-seq-bar">
       <button v-for="(v, vi) in views" :key="v.key" class="rwb-seq"
@@ -59,8 +53,8 @@
       </div>
     </div>
 
-    <div class="rwb-note">影像待接入</div>
-  </section>
+    <div v-if="!hasRealImage" class="rwb-note">影像待接入</div>
+  </div>
 </template>
 
 <script setup>
@@ -75,6 +69,8 @@ const props = defineProps({
 /** 视图列表——**不假设三视图**，按样本声明的序列渲染 */
 const views = computed(() => seriesListOf(props.sample))
 const totalFrames = computed(() => views.value.reduce((a, v) => a + (v.frames || 0), 0))
+/** 本病例是否已接真实影像（没接才显示"影像待接入"） */
+const hasRealImage = computed(() => views.value.some(v => (v.images || []).length > 0))
 
 const activeIndex = ref(0)
 
@@ -179,16 +175,6 @@ watch(() => props.sample.id, () => {
 </script>
 
 <style scoped>
-.rwb-block { overflow: hidden; }
-.rwb-block-head {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  font-size: 14px; font-weight: 700; color: #1f2937;
-  padding: 12px 18px; background: #fafbfc; border-bottom: 1px solid #f3f4f6;
-}
-.rwb-block-head i { color: var(--primary); }
-.rwb-tag { font-size: 11px; font-weight: 500; color: #6b7280; background: #f3f4f6; padding: 3px 10px; border-radius: 8px; }
-.rwb-cap { margin-left: auto; font-size: 11px; color: #9ca3af; font-weight: 400; }
-
 .rwb-seq-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 18px 0; }
 .rwb-seq {
   display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: 12.5px;
