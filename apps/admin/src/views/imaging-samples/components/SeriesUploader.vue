@@ -30,7 +30,8 @@
             <div class="is-strip">
               <div v-for="(f, i) in framesOf(view.key)" :key="f.name + i" class="is-frame"
                    draggable="true"
-                   :title="f.name + (f.order != null ? '（原序 ' + f.order + '）' : '')"
+                   :title="f.name + (f.order != null ? '（原序 ' + f.order + '）' : '') + ' · 点击看大图 · 拖拽调序'"
+                   @click="openPreview(view.key, i)"
                    @dragstart="dragFrom = { view: view.key, index: i }"
                    @dragover.prevent
                    @drop.stop.prevent="onReorder(view.key, i)">
@@ -41,7 +42,7 @@
             </div>
             <div class="is-series-foot">
               <span class="text-secondary" style="font-size:12px">
-                {{ framesOf(view.key).length === 1 ? '单帧（如 DR 平片的体位）' : '拖拽缩略图可微调层面顺序，顺序即层面序号' }}
+                {{ framesOf(view.key).length === 1 ? '单帧 · 点击看大图' : '点击看大图；拖拽缩略图可微调层面顺序，顺序即层面序号' }}
               </span>
               <button class="btn btn-sm" @click="clear(view.key)">清空</button>
             </div>
@@ -93,11 +94,37 @@
     <div v-if="errors.length" class="is-errors">
       <div v-for="(e, i) in errors" :key="i"><i class="fa-solid fa-circle-exclamation"></i> {{ e }}</div>
     </div>
+
+    <!-- 看大图：导入后要能核对图对不对、层序对不对 -->
+    <div v-if="previewMeta" class="modal-overlay is-lb" data-review-exempt @click.self="closePreview">
+      <div class="is-lb-box">
+        <div class="is-lb-head">
+          <span class="is-lb-view">{{ previewMeta.viewName }}</span>
+          <span class="is-lb-count">{{ previewMeta.index + 1 }} / {{ previewMeta.total }}</span>
+          <button class="is-lb-close" title="关闭（Esc）" @click="closePreview">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="is-lb-stage">
+          <button class="is-lb-nav" :disabled="previewMeta.total <= 1" title="上一张（←）" @click="stepPreview(-1)">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <img v-if="previewMeta.frame.url" :src="previewMeta.frame.url" :alt="previewMeta.frame.name" class="is-lb-img">
+          <div v-else class="is-lb-empty"><i class="fa-solid fa-film"></i></div>
+          <button class="is-lb-nav" :disabled="previewMeta.total <= 1" title="下一张（→）" @click="stepPreview(1)">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="is-lb-foot">
+          <span class="is-lb-file">{{ previewMeta.frame.name }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import JSZip from 'jszip'
 import { VIEW_CANDIDATES } from '@ai-sp/shared/imaging'
 
@@ -125,6 +152,43 @@ const zipEls = {}
 const setInputRef = (key, el) => { if (el) inputEls[key] = el }
 const setZipRef = (key, el) => { if (el) zipEls[key] = el }
 const framesOf = key => props.modelValue[key] || []
+
+/* ── 看大图（灯箱） ── */
+
+const preview = ref(null)
+
+const previewMeta = computed(() => {
+  if (!preview.value) return null
+  const list = framesOf(preview.value.viewKey)
+  const index = Math.min(Math.max(preview.value.index, 0), Math.max(list.length - 1, 0))
+  const view = props.views.find(v => v.key === preview.value.viewKey)
+  return {
+    frame: list[index] || { name: '', url: '' },
+    viewName: view ? view.name : '',
+    index,
+    total: list.length
+  }
+})
+
+function openPreview(viewKey, index) { preview.value = { viewKey, index } }
+function closePreview() { preview.value = null }
+
+function stepPreview(delta) {
+  const meta = previewMeta.value
+  if (!meta || meta.total <= 1) return
+  preview.value = { ...preview.value, index: (meta.index + delta + meta.total) % meta.total }
+}
+
+/** 键盘：← / → 翻张，Esc 关闭（灯箱打开时才接管） */
+function onKeydown(e) {
+  if (!preview.value) return
+  if (e.key === 'Escape') { closePreview(); return }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); stepPreview(-1) }
+  if (e.key === 'ArrowRight') { e.preventDefault(); stepPreview(1) }
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 const availableCandidates = computed(() =>
   VIEW_CANDIDATES.filter(c => !props.views.some(v => v.key === c.key))
@@ -363,11 +427,12 @@ function onReorder(key, target) {
 .is-drop-over { border-color: var(--primary); background: var(--primary-light); }
 .is-strip { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; width: 100%; max-height: 190px; overflow-y: auto; }
 .is-frame {
-  position: relative; width: 42px; height: 42px; border-radius: 6px; cursor: grab;
+  position: relative; width: 42px; height: 42px; border-radius: 6px; cursor: zoom-in;
   background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 5px, #31353d, #31353d 10px);
   color: #8b93a1; font-size: 14px;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
+.is-frame:hover { outline: 2px solid var(--primary); outline-offset: -2px; }
 .is-frame img { width: 100%; height: 100%; object-fit: cover; }
 .is-frame-no {
   position: absolute; right: 1px; bottom: 0; font-size: 9px; line-height: 1;
@@ -389,4 +454,39 @@ function onReorder(key, target) {
   margin-top: 12px; background: #FFF7E6; border: 1px solid #FFE7BA; border-radius: 8px;
   padding: 10px 14px; font-size: 12.5px; color: #D46B08; line-height: 1.9;
 }
+
+/* ── 看大图灯箱（复用全局 .modal-overlay 遮罩，容器自己定尺寸） ── */
+.is-lb { background: rgba(0, 0, 0, .78); }
+.is-lb-box {
+  width: 92vw; max-width: 1200px; max-height: 92vh;
+  display: flex; flex-direction: column;
+  background: #1b1e24; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .5);
+}
+.is-lb-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: #23272f; border-bottom: 1px solid #343a44;
+}
+.is-lb-view { font-size: 13px; font-weight: 600; color: #e8eaed; }
+.is-lb-count { font-size: 12px; color: #98a0ac; }
+.is-lb-close {
+  margin-left: auto; width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+  border: none; background: transparent; color: #98a0ac; font-size: 15px;
+}
+.is-lb-close:hover { background: #343a44; color: #fff; }
+.is-lb-stage { display: flex; align-items: center; gap: 8px; padding: 12px; min-height: 0; flex: 1; }
+.is-lb-img { flex: 1; min-width: 0; max-height: 74vh; object-fit: contain; background: #0f1115; border-radius: 6px; }
+.is-lb-empty {
+  flex: 1; min-height: 320px; display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 8px, #31353d, #31353d 16px);
+  color: #6b7280; font-size: 32px; border-radius: 6px;
+}
+.is-lb-nav {
+  flex-shrink: 0; width: 36px; height: 64px; border-radius: 8px; cursor: pointer;
+  border: 1px solid #343a44; background: #23272f; color: #cbd2dc; font-size: 14px;
+}
+.is-lb-nav:hover:not(:disabled) { background: var(--primary); border-color: var(--primary); color: #fff; }
+.is-lb-nav:disabled { opacity: .35; cursor: not-allowed; }
+.is-lb-foot { padding: 0 14px 10px; }
+.is-lb-file { font-size: 11.5px; color: #98a0ac; font-family: monospace; }
 </style>

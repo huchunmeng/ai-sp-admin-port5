@@ -64,7 +64,6 @@
             <thead>
               <tr>
                 <th class="sticky-left" style="left:0;width:40px"><input type="checkbox" :checked="selectAll" @change="toggleSelectAll"></th>
-                <th class="sticky-left" style="left:40px;width:64px">缩略图</th>
                 <th>病例标题</th>
                 <th>部位 · 模态</th>
                 <th>难度</th>
@@ -81,18 +80,12 @@
             <tbody>
               <tr v-for="item in paginatedData" :key="item.id">
                 <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
-                <td class="sticky-left" style="left:40px">
-                  <div class="is-thumb" :title="'影像待接入 · ' + (item.viewCount || 0) + ' 个序列 / 共 ' + (item.seriesTotal || 0) + ' 帧'">
-                    <img v-if="thumbOf(item)" :src="thumbOf(item)" alt="">
-                    <template v-else><i class="fa-solid" :class="item.icon || 'fa-image'"></i></template>
-                    <span v-if="item.viewCount" class="is-thumb-n">{{ item.viewCount }}</span>
-                  </div>
-                </td>
                 <td>
                   <a href="#" @click.prevent="editSample(item)" style="color:var(--primary);text-decoration:none">{{ item.title }}</a>
                   <div class="text-secondary" style="font-size:12px;margin-top:2px">
                     <code style="background:#F5F7FA;padding:1px 6px;border-radius:4px">{{ item.id }}</code>
                     <span style="margin-left:6px">v{{ item.version }}</span>
+                    <span v-if="item.viewCount" style="margin-left:6px">· {{ item.viewCount }} 序列 / {{ item.seriesTotal }} 帧</span>
                   </div>
                 </td>
                 <td>{{ item.bodyPart }} · {{ item.modality }}</td>
@@ -198,13 +191,6 @@ const filters = reactive({
 })
 
 const levelKey = level => LEVEL_TO_CASE_LEVEL[level] || ''
-
-/** 缩略图：有真实影像就用第一张，否则回退图标 */
-function thumbOf(item) {
-  const s = Array.isArray(item.series) ? item.series : []
-  for (const v of s) if (v.images && v.images.length) return v.images[0]
-  return ''
-}
 
 function capTitle(field, item) {
   const on = item.capabilities[field.key]
@@ -326,16 +312,6 @@ function batchSetStatus(status) {
 
 <style scoped>
 /* 仅本页专有形态；表格 / 筛选 / 徽章 / 按钮一律走 global.css 既有类 */
-.is-thumb {
-  width: 44px; height: 44px; border-radius: 8px; position: relative;
-  background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 6px, #31353d, #31353d 12px);
-  color: #8b93a1; font-size: 16px;
-  display: flex; align-items: center; justify-content: center;
-}
-.is-thumb-n {
-  position: absolute; right: 2px; bottom: 1px; font-size: 9px; line-height: 1;
-  padding: 1px 4px; border-radius: 4px; background: rgba(0,0,0,.55); color: #fff;
-}
 .is-cap-list { display: inline-flex; gap: 3px; }
 .is-cap-list .badge { padding: 1px 5px; font-size: 10px; font-weight: 600; }
 </style>
