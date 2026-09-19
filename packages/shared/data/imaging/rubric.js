@@ -21,6 +21,7 @@ import { R1_TABLE, R1_ITEMS, SEGMENTS } from './r1-table.js'
 import { CAPABILITIES } from './capabilities.js'
 import { IMAGING_SAMPLES } from './samples.js'
 import { SEU_RUBRIC } from './samples-seu.js'
+import { PUB_RUBRIC } from './samples-pub.js'
 
 /** 样单元数据表（本文件内自建，避免与 index.js 形成循环依赖） */
 const SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))
@@ -360,6 +361,13 @@ export const RUBRIC = {
     Object.entries(SEU_RUBRIC).map(([caseId, items]) => [
       caseId,
       { version: 1, updatedAt: '2026-09-19', updatedBy: '院方素材导入 · AI 抽取', items }
+    ])
+  ),
+  // 公开数据集样例（NSCLC-Radiomics）：要点集由 AI 从标准报告抽取，待教研校正（见 samples-pub.js 头部说明）
+  ...Object.fromEntries(
+    Object.entries(PUB_RUBRIC).map(([caseId, r]) => [
+      caseId,
+      { version: 1, updatedAt: '2026-09-20', updatedBy: '公开数据集导入 · AI 抽取', items: r.items }
     ])
   )
 }

@@ -31,7 +31,7 @@
 
         <div class="rwb-view-foot">
           <span class="rwb-view-label">{{ v.name }} <span class="rwb-view-en">{{ v.en }}</span></span>
-          <span class="rwb-wl">W 400 · L 40</span>
+          <span v-if="v.window" class="rwb-wl">W {{ v.window.WW }} · L {{ v.window.WL }}</span>
         </div>
 
         <!-- 图片切换：上一张 / 下一张（真实阅片的翻页习惯），不是拖动条 -->

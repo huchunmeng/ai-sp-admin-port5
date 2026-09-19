@@ -39,6 +39,12 @@ export const CAPABILITIES = {
   'RC-005': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: true, isTumor: false, hasStagingInfo: false },
   'RC-006': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: false, hasStagingInfo: false },
   'RC-007': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: true, hasStagingInfo: false },
+  // 公开数据集样例（NSCLC-Radiomics）：均为肿瘤病例，无既往片、无分期依据；
+  // 增强位按逐例目视判定（PUB-002 为增强扫描，其余为平扫）
+  'PUB-001': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: true, hasStagingInfo: false },
+  'PUB-002': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: true, isTumor: true, hasStagingInfo: false },
+  'PUB-003': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: true, hasStagingInfo: false },
+  'PUB-004': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: true, hasStagingInfo: false },
   'RC-008': { hasMeasurement: false, hasPriorExam: false, hasEnhancedPhase: false, isTumor: false, hasStagingInfo: false }
 }
 

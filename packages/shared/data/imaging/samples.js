@@ -58,6 +58,7 @@ export function viewMeta(key) {
 const v = (key, frames) => ({ key, ...viewMeta(key), frames })
 
 import { SEU_SAMPLES } from './samples-seu.js'
+import { PUB_SAMPLES } from './samples-pub.js'
 
 /** 手写样例（界面骨架用假数据，金标准取自仓库既有原文） */
 const RC_SAMPLES = [
@@ -237,7 +238,7 @@ const RC_SAMPLES = [
  * 题库 = 手写样例（RC-*，界面骨架用假数据） + 院方素材样例（SEU-*，真实影像）
  * 院方样例的元数据、金标准与要点集见 `samples-seu.js`（自动生成，含已知事项说明）。
  */
-export const IMAGING_SAMPLES = [...RC_SAMPLES, ...SEU_SAMPLES]
+export const IMAGING_SAMPLES = [...RC_SAMPLES, ...SEU_SAMPLES, ...PUB_SAMPLES]
 
 /** 模态 / 部位 / 状态 筛选项（PRD §5.3 / §5.12.2 的枚举） */
 export const MODALITIES = ['CT', 'MR', 'DR', '超声']

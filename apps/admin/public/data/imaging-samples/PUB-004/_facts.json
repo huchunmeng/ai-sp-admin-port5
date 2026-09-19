@@ -1,0 +1,49 @@
+{
+ "sampleId": "PUB-004",
+ "source": "NSCLC-Radiomics (TCIA) / farrell236/NSCLC-Radiomics-NIFTI",
+ "license": "CC BY 3.0",
+ "sourceCaseId": "LUNG1-266",
+ "spacingMm": [
+  0.9766,
+  0.9766,
+  3.0
+ ],
+ "cropBox": [
+  15,
+  497,
+  53,
+  482
+ ],
+ "exportedSlices": 86,
+ "sliceRange": [
+  85,
+  0
+ ],
+ "keptEvery": 1,
+ "series": {
+  "lung": {
+   "file": "ax-lung-*.jpg",
+   "window": {
+    "WW": 1500,
+    "WL": -600
+   }
+  },
+  "med": {
+   "file": "ax-med-*.jpg",
+   "window": {
+    "WW": 400,
+    "WL": 40
+   }
+  }
+ },
+ "enhanced": true,
+ "enhancedHiDensityRatio": 0.0853,
+ "lesion": {
+  "sideVoxel": "right",
+  "equivDiamMm": 27.5,
+  "slices": 9,
+  "cranioCaudalMm": 27.0,
+  "xOffsetMm": -34.2,
+  "headFraction": 0.651
+ }
+}
