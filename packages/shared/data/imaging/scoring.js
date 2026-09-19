@@ -294,7 +294,14 @@ export function buildRubricExtractionPrompt({ sample }) {
     '   同时给出 accept（可接受表述域）——即同样算对的 2–4 种说法，用于避免误伤表述不同的学员。',
     '3. 对**通用规范要求**（条理、顺序、术语规范、少错别字等），写通用表述即可，accept 留空数组。',
     '4. 每条目给 2–4 个要点；要点要覆盖该条目该评的核心内容，不要凑数。',
-    '5. 只输出 JSON，不要 markdown 代码块，不要解释。'
+    '5. **要点必须落在本条目的语义范围内**（例如 FIND-06 是"密度/信号/强化程度"，不要把"紧贴膈面"这类位置描述放进去）。',
+    '6. 若某要点依赖本病例不具备的条件，给该要点加 `assess` 标签（取值只能是下面四个之一，否则省略该字段）：',
+    '   - "measure"：需要影像测量工具才能评（如病灶大小/尺寸的实测值）',
+    '   - "enhance"：需要增强期相才能评（如强化程度、强化方式）',
+    '   - "prior"：需要既往检查影像才能评（如与以前片比较、病灶有无变化）',
+    '   - "staging"：需要临床提供分期依据才能评（如 TNM 分期是否正确）',
+    '   省略该字段 = 该要点无条件、始终可评。',
+    '7. 只输出 JSON，不要 markdown 代码块，不要解释。'
   ].join('\n')
 
   const user = [
@@ -310,7 +317,8 @@ export function buildRubricExtractionPrompt({ sample }) {
     '{',
     '  "items": {',
     '    "FIND-03": { "rules": "（可选，该条的判定说明，没有就空串）",',
-    '                 "points": [ { "id": "p1", "text": "要点内容", "accept": ["可接受说法A", "可接受说法B"] } ] },',
+    '                 "points": [ { "id": "p1", "text": "要点内容", "accept": ["可接受说法A", "可接受说法B"] },',
+    '                             { "id": "p2", "text": "需要增强才能评的要点", "accept": [], "assess": "enhance" } ] },',
     '    "...": {}',
     '  }',
     '}',
@@ -340,11 +348,16 @@ export function parseRubricExtraction(rawText) {
     const points = it.points
       .filter(p => p && String(p.text || '').trim())
       .slice(0, 6)
-      .map((p, i) => ({
-        id: String(p.id || `p${i + 1}`),
-        text: String(p.text).trim(),
-        accept: Array.isArray(p.accept) ? p.accept.map(a => String(a).trim()).filter(Boolean).slice(0, 6) : []
-      }))
+      .map((p, i) => {
+        const assess = String(p.assess || '').trim()
+        return {
+          id: String(p.id || `p${i + 1}`),
+          text: String(p.text).trim(),
+          accept: Array.isArray(p.accept) ? p.accept.map(a => String(a).trim()).filter(Boolean).slice(0, 6) : [],
+          // 可评条件标签：measure / enhance / prior / staging，空串 = 无条件
+          ...(['measure', 'enhance', 'prior', 'staging'].includes(assess) ? { assess } : {})
+        }
+      })
     if (points.length) items[code] = { rules: String(it.rules || '').trim(), points }
   })
   const n = Object.keys(items).length

@@ -69,14 +69,9 @@
         </div>
       </template>
 
-      <!-- ② 能力位 -->
-      <div v-show="step === 1" class="card" data-reviewable="能力位">
-        <CapabilityPanel v-model="form.capabilities" :sample-id="form.id || ''" />
-      </div>
-
-      <!-- ③ 评分表 -->
-      <div v-show="step === 2" class="card" data-reviewable="评分表">
-        <RubricPanel v-model="form.rubric" :sample="rubricSample" />
+      <!-- ② 评分表（本卷条件并入其顶部，不再单独成步） -->
+      <div v-show="step === 1" class="card" data-reviewable="评分表">
+        <RubricPanel v-model="form.rubric" :sample="rubricSample" @update:capabilities="onCapabilities" />
       </div>
     </div>
   </div>
@@ -89,7 +84,6 @@ import { toast, confirm, TRAINING_LEVELS, getCaseLevelLabel } from '@ai-sp/share
 import { MODALITIES, BODY_PARTS, SAMPLE_STATUS } from '@ai-sp/shared/imaging'
 import SeriesUploader from './components/SeriesUploader.vue'
 import DeidentifyForm from './components/DeidentifyForm.vue'
-import CapabilityPanel from './components/CapabilityPanel.vue'
 import GoldStandardForm from './components/GoldStandardForm.vue'
 import RubricPanel from './components/RubricPanel.vue'
 import { blankSample, getSample, upsertSample, nextSampleId, now, loadSamples } from './store.js'
@@ -99,7 +93,6 @@ const router = useRouter()
 
 const STEPS = [
   { key: 'series', label: '影像序列与标准报告' },
-  { key: 'capability', label: '能力位' },
   { key: 'rubric', label: '评分表' }
 ]
 
@@ -109,6 +102,11 @@ const form = ref(loadForm())
 const deidentifyRef = ref(null)
 
 const rubricSample = computed(() => ({ ...form.value, capabilities: form.value.capabilities }))
+
+/** 本卷条件（原「能力位」）改在评分表里勾 */
+function onCapabilities(next) {
+  form.value.capabilities = next
+}
 
 const goldFilled = computed(() => {
   const g = form.value.goldStandard || {}
@@ -134,7 +132,7 @@ function save(target) {
   if (problems.length) { toast.show(problems[0], 'error'); step.value = 0; return }
   if (!String(form.value.title || '').trim()) { toast.show('请填写病例标题', 'warning'); return }
   if (target === 'published' && !goldFilled.value) { toast.show('三段标准报告皆非空方可发布', 'warning'); return }
-  if (target === 'published' && !rubricFilled.value) { toast.show('请先维护评分表', 'warning'); step.value = 2; return }
+  if (target === 'published' && !rubricFilled.value) { toast.show('请先维护评分表', 'warning'); step.value = 1; return }
 
   const row = { ...form.value, capabilities: { ...form.value.capabilities } }
   const existing = props.id ? getSample(props.id) : null

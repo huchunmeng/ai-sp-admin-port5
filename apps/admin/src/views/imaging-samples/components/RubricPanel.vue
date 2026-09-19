@@ -1,5 +1,20 @@
 <template>
   <div>
+    <!-- 本卷条件：原来独立的「能力位」模块并入此处（2026-09-20 批注：不单独一个模块） -->
+    <div class="is-conds">
+      <span class="is-conds-title">本卷条件</span>
+      <label v-for="f in CAPABILITY_FIELDS" :key="f.key" class="is-cond">
+        <input type="checkbox" :checked="!!caps[f.key]" @change="setCond(f.key, $event.target.checked)">
+        <span>{{ f.label }}</span>
+        <span class="is-cond-affects">影响 {{ (f.affects || []).join(' · ') }}</span>
+      </label>
+      <label class="is-cond is-cond-ro" :title="DERIVED_CAPABILITY.note">
+        <input type="checkbox" :checked="false" disabled>
+        <span>{{ DERIVED_CAPABILITY.label }}</span>
+        <span class="is-cond-affects">{{ DERIVED_CAPABILITY.note }}，影响 {{ (DERIVED_CAPABILITY.affects || []).join(' · ') }}</span>
+      </label>
+    </div>
+
     <!-- 工具条 -->
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px">
       <span class="text-secondary" style="font-size:12.5px">
@@ -67,6 +82,14 @@
                       <span v-if="!p.assessable" class="badge" :class="p.nASource === 'na' ? 'badge-info' : 'badge-warning'">
                         {{ p.nASource === 'na' ? '不适用' : '不可评' }}
                       </span>
+                      <span v-else-if="p.assessLabel" class="badge badge-info">{{ p.assessLabel }}</span>
+                    </div>
+                    <div v-if="editableCodes.includes(item.code)" class="is-point-cond">
+                      <select class="select" :value="p.assess || ''"
+                              @change="updatePoint(item.code, pi, 'assess', $event.target.value)">
+                        <option value="">无条件可评</option>
+                        <option v-for="a in ASSESS_KINDS" :key="a.key" :value="a.key">{{ a.label }}</option>
+                      </select>
                     </div>
                   </td>
 
@@ -114,6 +137,8 @@ import { toast } from '@ai-sp/shared'
 import {
   resolveRubric,
   RUBRIC as BUILD_IN_RUBRIC,
+  CAPABILITY_FIELDS, DERIVED_CAPABILITY,
+  ASSESS_KINDS,
   buildRubricExtractionPrompt, parseRubricExtraction
 } from '@ai-sp/shared/imaging'
 import { useAIChat } from '@/composables/useAIChat'
@@ -124,10 +149,17 @@ const props = defineProps({
   /** 评分表 `{ version, updatedAt, updatedBy, items: { [code]: { points, rules } } }` */
   modelValue: { type: Object, default: null }
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'update:capabilities'])
 
 const { sendMessage } = useAIChat()
 const extracting = ref(false)
+
+const caps = computed(() => props.sample.capabilities || {})
+
+/** 本卷条件（原「能力位」）——勾选即改样本的 capabilities */
+function setCond(key, checked) {
+  emit('update:capabilities', { ...caps.value, [key]: checked })
+}
 
 /** 内容条目（可编辑）；通用条目由样单元数据自动生成，不给改 */
 const CONTENT_CODES = [
@@ -177,6 +209,10 @@ function updatePoint(code, pi, field, value) {
   if (!items[code]) return
   if (field === 'accept') {
     items[code].points[pi].accept = String(value || '').split('/').map(s => s.trim()).filter(Boolean)
+  } else if (field === 'assess') {
+    // 空串 = 无条件可评，直接把字段删掉，别在数据里留空值
+    if (value) items[code].points[pi].assess = value
+    else delete items[code].points[pi].assess
   } else {
     items[code].points[pi][field] = value
   }
@@ -236,6 +272,17 @@ async function extract() {
   font-size: 13px; color: #909399; text-align: center;
   background: #FAFAFA; border-radius: 8px; padding: 32px 20px; margin-bottom: 16px;
 }
+/* 本卷条件（原「能力位」） */
+.is-conds {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px;
+  padding: 12px 16px; margin-bottom: 16px;
+  background: #FAFBFC; border: 1px solid var(--border); border-radius: 8px;
+}
+.is-conds-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
+.is-cond { display: flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer; }
+.is-cond input { width: 15px; height: 15px; }
+.is-cond-affects { font-size: 11px; color: #9ca3af; }
+.is-cond-ro { cursor: not-allowed; color: #9ca3af; }
 .is-dim { margin-bottom: 18px; }
 .is-code { background: #F5F7FA; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
 .is-item-cell { vertical-align: top; }
@@ -243,6 +290,8 @@ async function extract() {
 .is-point { display: flex; align-items: center; gap: 8px; }
 .is-point .input { flex: 1; min-width: 0; }
 .is-point-ro { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-main); }
+.is-point-cond { margin-top: 5px; }
+.is-point-cond .select { width: 170px; font-size: 12px; height: 28px; padding: 0 8px; }
 .is-accept-ro { font-size: 11.5px; color: #909399; }
 .is-ops-row > td { background: #FAFBFC; padding: 8px 12px; }
 .is-ops { display: flex; gap: 8px; align-items: center; }

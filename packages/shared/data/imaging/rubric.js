@@ -32,40 +32,67 @@ export const RUBRIC_VERSION = 'rubric-2026.09'
 export const POINT_SCORE = { miss: 0, partial: 0.5, hit: 1 }
 
 /**
- * 能力位 → 要点可评性的规则表。
- * `match` 命中要点 id 或 text；`whole: true` 表示整条不可评；
- * `source`：`capability` = 系统给不了输入（结果页标注折算）；`na` = 本类病例不适用（结果页不标注）
+ * 要点的「可评条件」标签（2026-09-20 起）。
+ *
+ * 为什么不再用正则匹配要点文字：原实现拿 `测量|大小|实测` 这类正则去匹配要点文本，
+ * 于是**同一个条件在不同样本上结果不同**——`FIND-04` 在 SEU-005（要点写"提及结节大小"）命中、
+ * 在 PUB-001（要点写"给出最大横断面二维尺寸"）不命中；`FIND-06` 的强化规则甚至一次都没生效过
+ * （16 例里没有一条要点含"强化"字样）。判据变成了"措辞像不像关键词"，而不是"这个子项能不能评"。
+ *
+ * 现在：要点自带 `assess` 标签（AI 抽取时一并产出、管理端可逐条改），`resolveRubric` 按标签查条件，
+ * **必中**。老数据没有标签时用 `inferAssess` 兜底推断，行为与改造前一致。
+ */
+export const ASSESS_KINDS = [
+  { key: 'measure', label: '需测量工具', caps: 'hasMeasurement', why: '影像控件不提供测量工具，无法实测' },
+  { key: 'enhance', label: '需增强序列', caps: 'hasEnhancedPhase', why: '本样本无增强期相序列，"强化程度"无从判读' },
+  { key: 'prior', label: '需既往影像', caps: 'hasPriorExam', why: '本样本未提供既往检查影像，无法对比' },
+  { key: 'staging', label: '需分期依据', caps: 'hasStagingInfo', why: '临床主要信息未给足分期依据' }
+]
+
+export const ASSESS_BY_KEY = Object.fromEntries(ASSESS_KINDS.map(a => [a.key, a]))
+
+/** 老数据（没有 `assess` 字段）的兜底推断：按条目 + 关键词猜 */
+function inferAssess(code, p) {
+  if (p && p.assess) return p.assess
+  const t = `${(p && p.id) || ''} ${(p && p.text) || ''}`
+  if (code === 'FIND-04' && /测量|大小|尺寸|直径|实测|层面/.test(t)) return 'measure'
+  if (code === 'FIND-06' && /强化/.test(t)) return 'enhance'
+  if (code === 'IMP-08') return 'prior'
+  return null
+}
+
+/**
+ * 条件 → 要点可评性的规则表。
+ * `assess`：命中带该标签的要点（**要点级**）；`whole: true`：整条不可评（**条目级**）。
+ * `source`：`capability` = 系统给不了输入；`na` = 本类病例不适用。二者都从分母剔除，差别只在标注。
+ * `when` / `source` / `why` 都可以是值，也可以是函数（收到该样本的能力位）。
  */
 export const POINT_RULES = [
   {
-    code: 'FIND-04', match: /测量|大小|实测/i, source: 'capability',
+    code: 'FIND-04', assess: 'measure', source: 'capability',
     when: c => !c.hasMeasurement,
     why: '影像控件不提供测量工具，只能目测，不要求实测值'
   },
   {
-    code: 'FIND-06', match: /强化/i, source: 'capability',
+    code: 'FIND-06', assess: 'enhance', source: 'capability',
     when: c => !c.hasEnhancedPhase,
     why: '本样本无增强期相序列，"强化程度"无从判读'
   },
   {
-    code: 'IMP-08', whole: true, source: 'capability',
+    code: 'IMP-08', whole: true, assess: 'prior', source: 'capability',
     when: c => !c.hasPriorExam,
-    why: '本病例为单次检查，没有既往片子可供比较'
+    why: '本样本未提供既往检查影像，无法与以前检查比较'
   },
   {
-    code: 'IMP-05', whole: true, source: 'na',
-    when: c => !c.isTumor,
-    why: '非肿瘤病例，分期不适用（N/A）'
-  },
-  {
-    code: 'IMP-05', whole: true, source: 'capability',
-    when: c => c.isTumor && !c.hasStagingInfo,
-    why: '肿瘤病例但临床主要信息未给足分期依据'
+    code: 'IMP-05', whole: true, assess: 'staging',
+    source: c => (c.isTumor ? 'capability' : 'na'),
+    when: c => !c.hasStagingInfo,
+    why: c => (c.isTumor ? '肿瘤病例但临床主要信息未给足分期依据' : '非肿瘤病例，分期不适用（N/A）')
   },
   {
     code: 'GEN-02', whole: true, source: 'na',
     when: () => true,
-    why: '全掩字段（住院/门诊号、就诊卡号）本期不纳入评分'
+    why: '各类号码字段已整体从样本里去掉，本模块不适用'
   }
 ]
 
@@ -394,20 +421,33 @@ export function resolveRubric(caseId, capabilities) {
   const items = R1_ITEMS.map(base => {
     const src = hand[base.code] || gen[base.code] || { points: [{ id: 'p1', text: base.name, accept: [] }] }
     const rules = rulesFor(base.code)
+    // 条目级规则（whole）若生效，该条所有要点都标成对应条件，界面上能看到原因
+    const wholeRule = rules.find(r => r.whole && r.when(caps)) || null
 
     const points = (src.points || []).map(p => {
-      // 注意：同一 code 可能有多条规则（如 IMP-05 有「非肿瘤→N/A」与「肿瘤但信息不足→不可评」两条），
-      // 必须**先筛出选择器命中的规则、再取第一条真正生效的**，不能用 find 一把梭——
-      // find 会在第一条"选择器命中但条件不成立"的规则上停下，后面的规则永远不会被评估。
-      const matched = rules.filter(r => (r.whole ? true : (r.match ? r.match.test(`${p.id} ${p.text}`) : false)))
-      const applied = matched.find(r => r.when(caps)) || null
+      // 要点级规则：按 `assess` 标签命中（老数据用 inferAssess 兜底），不再拿正则去猜措辞。
+      // 同一 code 可能有多条规则，必须**先筛出命中的、再取第一条真正生效的**——用 find 一把梭会在
+      // 第一条"命中但条件不成立"的规则上停下，后面的永远不会被评估。
+      const match = rules.filter(r => {
+        if (r.whole) return false
+        if (!r.when(caps)) return false
+        return inferAssess(base.code, p) === r.assess
+      })[0] || null
+      const applied = match
+      const source = applied ? applied.source : (wholeRule ? wholeRule.source : '')
+      const why = applied ? applied.why : (wholeRule ? wholeRule.why : '')
+      const assess = inferAssess(base.code, p) || (wholeRule && wholeRule.assess) || ''
       return {
         id: p.id,
         text: p.text,
         accept: p.accept || [],
-        assessable: !applied,
-        nAReason: applied ? applied.why : '',
-        nASource: applied ? applied.source : ''
+        /** 该要点依赖的条件标签（'' = 无条件，始终可评） */
+        assess,
+        assessLabel: (ASSESS_BY_KEY[assess] || {}).label || '',
+        assessDeclared: !!p.assess,
+        assessable: !applied && !wholeRule,
+        nAReason: applied || wholeRule ? why : '',
+        nASource: applied || wholeRule ? source : ''
       }
     })
 
