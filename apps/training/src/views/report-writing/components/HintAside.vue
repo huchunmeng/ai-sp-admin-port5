@@ -1,10 +1,13 @@
 <template>
   <aside class="rwb-aside">
-    <!-- 要素覆盖清单（训练侧专属，考核侧不下发） -->
+    <!-- 要素自检（只针对「影像所见」段，只提示不计分） -->
     <div class="card rwb-side">
       <div class="rwb-side-head">
-        <i class="fa-solid fa-list-check"></i> 要素覆盖
-        <span class="rwb-side-sub">影像所见段</span>
+        <i class="fa-solid fa-list-check"></i> 影像所见 · 要素自检
+      </div>
+      <div class="rwb-side-purpose">
+        写<b>影像所见</b>时的自查清单：系统按你已写的内容，判读下面五类要素有没有覆盖到。
+        <b>只提示、不计分</b>；标为「缺失」的那类，就是可以往下补的方向。
       </div>
       <div class="rwb-cov">
         <div v-for="c in coverage" :key="c.key" class="rwb-cov-item">
@@ -15,7 +18,7 @@
           </div>
         </div>
       </div>
-      <div class="rwb-side-note">● 已覆盖 &nbsp; ? 存疑 &nbsp; ○ 缺失 —— 系统判读，仅供自检</div>
+      <div class="rwb-side-note">● 已覆盖 &nbsp; ? 存疑 &nbsp; ○ 缺失 —— 机器判读，仅供自检</div>
     </div>
 
     <!-- 培训提示栏 -->
@@ -25,58 +28,82 @@
         <span class="rwb-side-sub">已用 {{ usedHintCount }} 次</span>
       </div>
 
-      <template v-if="locked">
-        <div class="rwb-lock">
-          <i class="fa-solid fa-lock"></i>
-          <div class="rwb-lock-title">本阶段不提供提示</div>
-          <div class="rwb-lock-desc">{{ lockReason }}</div>
-        </div>
-      </template>
-      <template v-else>
-        <div class="rwb-tips">
-          <div v-for="(h, i) in hints" :key="i" class="rwb-tip">
-            <span class="rwb-tip-lv" :class="'lv-' + h.level">{{ h.level }}</span>
-            <div class="rwb-tip-body">
-              <div class="rwb-tip-title">{{ h.title }}<span class="rwb-tip-time">{{ h.time }}</span></div>
-              <div v-for="(it, j) in h.items" :key="j" class="rwb-tip-text">{{ it.text }}</div>
-            </div>
-          </div>
-          <div v-if="!hints.length" class="rwb-tips-empty">还没有请求过提示。先自己写，卡住了再要。</div>
-        </div>
+      <!-- 提示按"段"发放：先选要问哪一段 -->
+      <div class="rwb-seg-tabs">
+        <button v-for="s in segments" :key="s.key" class="rwb-seg-tab"
+                :class="{ active: s.key === activeSegment }" @click="$emit('update:activeSegment', s.key)">
+          {{ s.name }}
+        </button>
+      </div>
+      <div class="rwb-seg-hint">提示按「段 × 回合」发放：换段不重置、新回合才重置</div>
 
-        <div class="rwb-hint-btns">
-          <button v-for="l in HINT_LEVELS" :key="l.value" class="rwb-hint-btn"
-                  :disabled="disabled(l.value)" :title="l.desc" @click="$emit('hint', l.value)">
-            <span class="rwb-hint-lv">{{ l.value }}</span>
-            <span class="rwb-hint-txt">{{ l.label.replace(l.value + ' ', '') }}</span>
-            <span class="rwb-hint-q">{{ quotaText(l.value) }}</span>
-          </button>
+      <div class="rwb-tips">
+        <div v-for="(h, i) in segHints" :key="i" class="rwb-tip">
+          <span class="rwb-tip-lv" :class="'lv-' + h.level">{{ h.level }}</span>
+          <div class="rwb-tip-body">
+            <div class="rwb-tip-title">{{ h.title }}<span class="rwb-tip-time">{{ h.time }}</span></div>
+            <div v-for="(it, j) in h.items" :key="j" class="rwb-tip-text">{{ it.text }}</div>
+          </div>
         </div>
-        <div class="rwb-side-note">
-          点一次深一级，也可直接要 L3。L1 不限；L2 每段每回合 3 次；L3 每段每回合 1 次；同级冷却 10 秒；
-          <b>重写不重置配额</b>，新回合才重置。L3 只给要点词，不给金标准原句。
+        <div v-if="!segHints.length" class="rwb-tips-empty">
+          这一段还没有请求过提示。先自己写，卡住了再要。
         </div>
-      </template>
+      </div>
+
+      <div class="rwb-hint-btns">
+        <button v-for="l in HINT_LEVELS" :key="l.value" class="rwb-hint-btn"
+                :disabled="disabled(l.value)" :title="l.desc" @click="$emit('hint', l.value)">
+          <span class="rwb-hint-lv">{{ l.value }}</span>
+          <span class="rwb-hint-txt">{{ l.label.replace(l.value + ' ', '') }}</span>
+          <span class="rwb-hint-q">{{ quotaText(l.value) }}</span>
+        </button>
+      </div>
+      <div class="rwb-side-note">
+        点一次深一级，也可直接要 L3。L1 不限；L2 每段每回合 3 次；L3 每段每回合 1 次；同级冷却 10 秒；
+        <b>重写不重置配额</b>，新回合才重置。L3 只给要点词，不给金标准原句。
+      </div>
+    </div>
+
+    <!-- 本病例的提示使用记录（跨段汇总，便于回看） -->
+    <div v-if="hints.length > segHints.length" class="card rwb-side">
+      <div class="rwb-side-head">
+        <i class="fa-solid fa-clock-rotate-left"></i> 本回合其他段的提示
+      </div>
+      <div class="rwb-tips">
+        <div v-for="(h, i) in otherHints" :key="i" class="rwb-tip">
+          <span class="rwb-tip-lv" :class="'lv-' + h.level">{{ h.level }}</span>
+          <div class="rwb-tip-body">
+            <div class="rwb-tip-title">{{ SEG_NAME[h.segment] || h.segment }} · {{ h.time }}</div>
+            <div v-for="(it, j) in h.items" :key="j" class="rwb-tip-text">{{ it.text }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="rwb-side-note">提示使用记录是比分数更细的学情信号——用得多说明这一段还不熟。</div>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { HINT_LEVELS } from '@ai-sp/shared/imaging'
+import { computed } from 'vue'
+import { HINT_LEVELS, SEGMENTS } from '@ai-sp/shared/imaging'
 
 const MARK = { ok: '●', doubt: '?', miss: '○' }
+const SEG_NAME = Object.fromEntries(SEGMENTS.map(s => [s.key, s.name]))
 
 const props = defineProps({
   coverage: { type: Array, default: () => [] },
   hints: { type: Array, default: () => [] },
   usedHintCount: { type: Number, default: 0 },
-  /** 当前段无提示通道时（T0 / T4）置 true */
-  locked: { type: Boolean, default: false },
-  lockReason: { type: String, default: '' },
+  segments: { type: Array, default: () => SEGMENTS },
+  /** 当前要问提示的段 */
+  activeSegment: { type: String, default: 'findings' },
   quotaLeft: { type: Function, required: true },
   coolingLeft: { type: Function, required: true }
 })
-defineEmits(['hint'])
+defineEmits(['hint', 'update:activeSegment'])
+
+const segHints = computed(() => props.hints.filter(h => h.segment === props.activeSegment))
+const otherHints = computed(() => props.hints.filter(h => h.segment !== props.activeSegment))
 
 function disabled(level) {
   if (level === 'L1') return false
@@ -93,7 +120,7 @@ function quotaText(level) {
 </script>
 
 <style scoped>
-.rwb-aside { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+.rwb-aside { width: 330px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
 .rwb-side { overflow: hidden; }
 .rwb-side-head {
   display: flex; align-items: center; gap: 8px;
@@ -102,6 +129,10 @@ function quotaText(level) {
 }
 .rwb-side-head i { color: #d97706; }
 .rwb-side-sub { margin-left: auto; font-size: 11px; font-weight: 400; color: #9ca3af; }
+.rwb-side-purpose {
+  font-size: 11.5px; line-height: 1.85; color: #6b7280;
+  padding: 9px 16px; background: #f8fafc; border-bottom: 1px solid #f3f4f6;
+}
 .rwb-cov { padding: 10px 16px 4px; display: flex; flex-direction: column; gap: 9px; }
 .rwb-cov-item { display: flex; gap: 8px; }
 .rwb-mark { flex-shrink: 0; width: 14px; text-align: center; font-size: 13px; font-weight: 700; }
@@ -111,7 +142,17 @@ function quotaText(level) {
 .rwb-cov-body { min-width: 0; }
 .rwb-cov-name { font-size: 12.5px; font-weight: 600; color: #4b5563; }
 .rwb-cov-text { font-size: 11.5px; line-height: 1.7; color: #9ca3af; }
-.rwb-tips { padding: 10px 16px 2px; display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
+
+.rwb-seg-tabs { display: flex; gap: 0; margin: 10px 16px 0; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.rwb-seg-tab {
+  flex: 1; font-family: inherit; font-size: 12px; padding: 6px 0; cursor: pointer;
+  border: none; background: #fff; color: #6b7280; border-right: 1px solid #e5e7eb;
+}
+.rwb-seg-tab:last-child { border-right: none; }
+.rwb-seg-tab.active { background: var(--primary); color: #fff; font-weight: 600; }
+.rwb-seg-hint { font-size: 10.5px; color: #c0c4cc; padding: 5px 16px 0; }
+
+.rwb-tips { padding: 10px 16px 2px; display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
 .rwb-tip { display: flex; gap: 8px; }
 .rwb-tip-lv {
   flex-shrink: 0; height: 18px; padding: 0 6px; border-radius: 5px;
@@ -137,10 +178,6 @@ function quotaText(level) {
 .rwb-hint-lv { font-weight: 700; }
 .rwb-hint-txt { flex: 1; text-align: left; }
 .rwb-hint-q { font-size: 11px; color: #9ca3af; }
-.rwb-lock { padding: 26px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.rwb-lock i { font-size: 26px; color: #d1d5db; }
-.rwb-lock-title { font-size: 13px; font-weight: 700; color: #6b7280; }
-.rwb-lock-desc { font-size: 12px; color: #9ca3af; line-height: 1.8; }
 .rwb-side-note { font-size: 11px; line-height: 1.75; color: #9ca3af; padding: 12px 16px 14px; border-top: 1px solid #f3f4f6; margin-top: 12px; }
 @media (max-width: 1100px) { .rwb-aside { width: 100%; } }
 </style>

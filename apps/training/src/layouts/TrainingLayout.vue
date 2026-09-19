@@ -49,8 +49,10 @@
     </div>
 
     <router-view v-slot="{ Component }">
+      <!-- key 用 path（含路由参数、不含 query）：换病例/换参数时重建组件，避免复用旧数据；
+           仅 query 变化时不重建，保持既有交互不变 -->
       <transition name="fade">
-        <component :is="Component" />
+        <component :is="Component" :key="route.path" />
       </transition>
     </router-view>
 

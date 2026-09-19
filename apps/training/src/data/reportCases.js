@@ -50,7 +50,9 @@ export {
   MODALITIES,
   BODY_PARTS,
   SAMPLE_STATUS,
-  VIEW_KEYS,
+  DEFAULT_VIEWS,
+  VIEW_CANDIDATES,
+  viewMeta,
   // 便捷函数
   getImagingSample,
   hasGoldStandard,
@@ -58,9 +60,7 @@ export {
   goldStandardText,
   draftText,
   seriesTotal,
+  seriesListOf,
   trainingCardOf,
   unassessableOf
 } from '@ai-sp/shared/imaging'
-
-/** 三视图（PRD §9.4：静态浏览 + 基础切换，互不联动） */
-export { VIEW_KEYS as VIEWS } from '@ai-sp/shared/imaging'

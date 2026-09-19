@@ -1,14 +1,14 @@
 <template>
   <section class="card rwb-block">
     <div class="rwb-block-head">
-      <i class="fa-solid fa-clipboard-check"></i> T4 逐条自评
+      <i class="fa-solid fa-clipboard-check"></i> 逐条自评
       <span class="rwb-tag">R1 表 · 5 维度 / 23 条目</span>
       <button v-if="!submitted" class="btn btn-sm" style="margin-left:auto" @click="quickFill">整页快速自评</button>
       <span v-else class="badge badge-success" style="margin-left:auto">自评已提交</span>
     </div>
 
     <div v-if="!submitted" class="rwb-sr-note">
-      先自评、再看参考 —— T4 不是"看答案"。逐条判断你**写了 / 没写 / 不确定**，
+      先自评、再看参考 —— 提交报告后不是"看答案"。逐条判断你<b>写了 / 没写 / 不确定</b>，
       提交后才解锁金标准对照（不可跳过）。
     </div>
 
@@ -35,7 +35,7 @@
       <div class="rwb-sr-total">
         <span>自评合计</span>
         <b>{{ total.raw }}</b>
-        <span class="text-secondary">/ {{ total.pool }}（该样本可评分）→ 归一 <b>{{ total.normalized }}</b> 分</span>
+        <span class="text-secondary">/ {{ total.pool }}（该病例可评分）→ 归一 <b>{{ total.normalized }}</b> 分</span>
       </div>
       <div class="rwb-sr-btns">
         <button v-if="!submitted" class="btn btn-primary" @click="$emit('submit')">
@@ -43,7 +43,7 @@
         </button>
         <template v-else>
           <button class="btn" @click="$emit('rewrite')">
-            <i class="fa-solid fa-rotate-left"></i> 重写（回到 T1，配额不重置）
+            <i class="fa-solid fa-rotate-left"></i> 返回修改报告（配额不重置）
           </button>
           <button class="btn" @click="$emit('restart')">
             <i class="fa-solid fa-forward"></i> 重练（新回合，配额重置）
@@ -53,7 +53,7 @@
     </div>
 
     <div class="rwb-note">
-      自评合计按"写了"的条目分值合计，<b>不可评条目整体不纳入</b>、分母为该样本可评分。
+      自评合计按"写了"的条目分值合计，<b>不可评条目整体不纳入</b>、分母为该病例可评分。
       自评<b>不参与任何计算</b>，只作学情信号——它的价值是让你看到自己的认知偏差。
     </div>
   </section>

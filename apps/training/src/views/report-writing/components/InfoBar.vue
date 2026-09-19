@@ -4,9 +4,12 @@
       <i class="fa-solid fa-circle-info"></i> 一般信息
       <span class="rwb-tag">{{ sample.bodyPart }} · {{ sample.modality }}</span>
       <span class="rwb-mask-note">脱敏形态即评分基准</span>
+      <button class="rwb-collapse" @click="toggle">
+        {{ open ? '收起' : '展开' }} <i class="fa-solid" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </button>
     </div>
 
-    <div class="rwb-info">
+    <div v-show="open" class="rwb-info">
       <div v-for="row in rows" :key="row.k" class="rwb-info-item" :class="{ 'is-masked': row.masked }">
         <span class="rwb-info-k">{{ row.k }}</span>
         <span class="rwb-info-v">{{ row.v }}</span>
@@ -25,14 +28,14 @@
       </div>
     </div>
 
-    <div class="rwb-note">
+    <div v-if="open" class="rwb-note">
       复制只是省打字，<b>照抄不得满分</b>——GEN-04（10 分）要求规范转述临床主要信息与检查目的。
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { toast } from '@ai-sp/shared'
 import { DEIDENTIFY_ROWS } from '@ai-sp/shared/imaging'
 
@@ -40,6 +43,14 @@ const props = defineProps({
   sample: { type: Object, required: true }
 })
 const emit = defineEmits(['copy'])
+
+/** 一般信息条默认展开，可收起（收起状态记忆在本机） */
+const COLLAPSE_KEY = 'report_writing_info_collapsed'
+const open = ref(localStorage.getItem(COLLAPSE_KEY) !== '1')
+function toggle() {
+  open.value = !open.value
+  try { localStorage.setItem(COLLAPSE_KEY, open.value ? '0' : '1') } catch (e) { /* 忽略 */ }
+}
 
 const rows = computed(() => DEIDENTIFY_ROWS.map(r => {
   const row = { k: r.k, v: (props.sample.deidentify || {})[r.key] || '', note: r.note }
@@ -69,6 +80,11 @@ function copyClinical() {
 .rwb-block-head i { color: var(--primary); }
 .rwb-tag { font-size: 11px; font-weight: 500; color: #6b7280; background: #f3f4f6; padding: 3px 10px; border-radius: 8px; }
 .rwb-mask-note { margin-left: auto; font-size: 11px; color: #9ca3af; font-weight: 400; }
+.rwb-collapse {
+  font-family: inherit; font-size: 12px; color: var(--primary); background: none; border: none;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px;
+}
+.rwb-collapse:hover { text-decoration: underline; }
 .rwb-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 16px; padding: 14px 18px 2px; }
 .rwb-info-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; min-width: 0; }
 .rwb-info-k { color: #909399; flex-shrink: 0; }

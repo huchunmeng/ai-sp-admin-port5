@@ -44,9 +44,11 @@
       <section class="card mb-4">
         <div class="is-sec-head">
           <span class="is-sec-title">① 影像序列入库</span>
-          <span class="text-secondary" style="font-size:12px">三视图分区独立上传 · 前端解包 · 单视图 ≤ 300 张 / 单张 ≤ 5 MB / 仅 jpg·png</span>
+          <span class="text-secondary" style="font-size:12px">
+            序列数量与名称自定义（1 个不嫌少、5 个不嫌多）· 前端解包 · 单视图 ≤ 300 张 / 单张 ≤ 5 MB / 仅 jpg·png
+          </span>
         </div>
-        <SeriesUploader v-model="form.seriesFrames" />
+        <SeriesUploader v-model="form.seriesFrames" v-model:views="form.views" />
       </section>
 
       <!-- ② 脱敏信息 -->

@@ -1,50 +1,93 @@
 <template>
-  <div class="is-series">
-    <div v-for="v in VIEW_KEYS" :key="v.key" class="is-series-view">
-      <div class="is-series-head">
-        <span class="is-series-name">{{ v.zh }} <span class="text-secondary">{{ v.en }}</span></span>
-        <span class="text-secondary" style="font-size:12px">
-          {{ list(v.key).length }} / {{ MAX_FRAMES }} 帧
-        </span>
-      </div>
+  <div>
+    <div class="is-series">
+      <div v-for="(view, vi) in views" :key="view.key" class="is-series-view">
+        <!-- 视图头：名称可改、顺序可调、可删除 —— 视图集合由用户自主掌握 -->
+        <div class="is-series-head">
+          <input class="is-view-name" :value="view.name" placeholder="视图名称"
+                 @input="rename(vi, $event.target.value)" @blur="normalizeName(vi, $event.target.value)">
+          <span class="is-view-en">{{ view.en }}</span>
+          <div class="is-view-ops">
+            <button class="is-view-btn" title="前移" :disabled="vi === 0" @click="move(vi, -1)">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <button class="is-view-btn" title="后移" :disabled="vi === views.length - 1" @click="move(vi, 1)">
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="is-view-btn is-view-del" title="删除该视图"
+                    :disabled="views.length <= 1" @click="remove(vi)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="is-view-count">{{ framesOf(view.key).length }} / {{ MAX_FRAMES }} 帧</div>
 
-      <div class="is-drop" :class="{ 'is-drop-over': dragOver === v.key }"
-           @dragover.prevent="dragOver = v.key"
-           @dragleave="dragOver = ''"
-           @drop.prevent="onDrop($event, v.key)">
-        <template v-if="list(v.key).length">
-          <div class="is-strip">
-            <div v-for="(f, i) in list(v.key)" :key="f.name + i" class="is-frame"
-                 draggable="true"
-                 :title="f.name + (f.order != null ? '（原序 ' + f.order + '）' : '')"
-                 @dragstart="dragFrom = { view: v.key, index: i }"
-                 @dragover.prevent
-                 @drop.stop.prevent="onReorder(v.key, i)">
-              <img v-if="f.url" :src="f.url" :alt="f.name">
-              <i v-else class="fa-solid fa-film"></i>
-              <span class="is-frame-no">{{ i + 1 }}</span>
+        <div class="is-drop" :class="{ 'is-drop-over': dragOver === view.key }"
+             @dragover.prevent="dragOver = view.key"
+             @dragleave="dragOver = ''"
+             @drop.prevent="onDrop($event, view.key)">
+          <template v-if="framesOf(view.key).length">
+            <div class="is-strip">
+              <div v-for="(f, i) in framesOf(view.key)" :key="f.name + i" class="is-frame"
+                   draggable="true"
+                   :title="f.name + (f.order != null ? '（原序 ' + f.order + '）' : '')"
+                   @dragstart="dragFrom = { view: view.key, index: i }"
+                   @dragover.prevent
+                   @drop.stop.prevent="onReorder(view.key, i)">
+                <img v-if="f.url" :src="f.url" :alt="f.name">
+                <i v-else class="fa-solid fa-film"></i>
+                <span class="is-frame-no">{{ i + 1 }}</span>
+              </div>
             </div>
-          </div>
-          <div class="is-series-foot">
-            <span class="text-secondary" style="font-size:12px">拖拽缩略图可微调层面顺序，顺序即层面序号</span>
-            <button class="btn btn-sm" @click="clear(v.key)">清空</button>
-          </div>
-        </template>
-        <template v-else>
-          <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:#c0c4cc"></i>
-          <div style="font-size:13px;margin:6px 0">拖入 {{ v.zh }} 压缩包，或</div>
-          <div class="flex gap-2">
-            <button class="btn btn-sm" @click="pick(v.key)">选择 zip 文件</button>
-            <button class="btn btn-sm" @click="useBuiltin(v.key)">使用内置样例序列</button>
-          </div>
-          <div class="text-secondary" style="font-size:11px;margin-top:8px;text-align:center">
-            仅收 JPG / PNG 图片序列（老师先从 PACS 导出为图片再打包），本期不解析 DICOM
-          </div>
-        </template>
+            <div class="is-series-foot">
+              <span class="text-secondary" style="font-size:12px">
+                {{ framesOf(view.key).length === 1 ? '单帧（如 DR 平片的体位）' : '拖拽缩略图可微调层面顺序，顺序即层面序号' }}
+              </span>
+              <button class="btn btn-sm" @click="clear(view.key)">清空</button>
+            </div>
+          </template>
+          <template v-else>
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:#c0c4cc"></i>
+            <div style="font-size:13px;margin:6px 0">拖入「{{ view.name }}」压缩包，或</div>
+            <div class="flex gap-2">
+              <button class="btn btn-sm" @click="pick(view.key)">选择 zip 文件</button>
+              <button class="btn btn-sm" @click="useBuiltin(view.key)">使用内置样例序列</button>
+            </div>
+            <div class="text-secondary" style="font-size:11px;margin-top:8px;text-align:center">
+              仅收 JPG / PNG 图片序列（老师先从 PACS 导出为图片再打包），本期不解析 DICOM
+            </div>
+          </template>
+        </div>
+
+        <input :ref="el => setInputRef(view.key, el)" type="file" accept=".zip,application/zip" style="display:none"
+               @change="onPick($event, view.key)">
       </div>
 
-      <input :ref="el => setInputRef(v.key, el)" type="file" accept=".zip,application/zip" style="display:none"
-             @change="onPick($event, v.key)">
+      <!-- 添加视图 -->
+      <div class="is-add">
+        <button class="btn btn-sm" @click="addOpen = !addOpen">
+          <i class="fa-solid fa-plus"></i> 添加视图
+        </button>
+        <span class="text-secondary" style="font-size:11.5px;display:block;margin-top:8px;line-height:1.8">
+          本病例有几个序列/方位就建几个，名称也可自己改——<b>没有"必须三视图"的要求</b>。
+          多序列 MR 按 DWI/ADC/T2WI… 分，增强 CT 按期相分，DR 平片按正/侧位分（每体位通常 1 帧）。
+        </span>
+
+        <div v-if="addOpen" class="is-add-panel">
+          <div class="is-add-row">
+            <input class="input" v-model.trim="customName" placeholder="自定义视图名称，如 T2WI 脂肪抑制"
+                   style="flex:1" @keyup.enter="addCustom">
+            <button class="btn btn-sm btn-primary" :disabled="!customName" @click="addCustom">添加</button>
+          </div>
+          <div class="is-add-hint">或从常用项选择：</div>
+          <div class="is-add-chips">
+            <div v-for="c in availableCandidates" :key="c.key" class="is-add-item" @click="addCandidate(c)">
+              {{ c.name }}<span class="text-secondary" style="font-size:11px">{{ c.en }}</span>
+            </div>
+            <div v-if="!availableCandidates.length" class="text-secondary" style="font-size:12px">候选已全部添加</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="errors.length" class="is-errors">
@@ -56,7 +99,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import JSZip from 'jszip'
-import { VIEW_KEYS } from '@ai-sp/shared/imaging'
+import { VIEW_CANDIDATES } from '@ai-sp/shared/imaging'
 
 /** 校验上限（PRD §5.12.3）：单视图 ≤ 300 张；单张 ≤ 5 MB；格式仅 jpg/jpeg/png */
 const MAX_FRAMES = 300
@@ -64,22 +107,93 @@ const MAX_BYTES = 5 * 1024 * 1024
 const OK_EXT = /\.(jpe?g|png)$/i
 
 const props = defineProps({
-  /** { axial: Frame[], coronal: Frame[], sagittal: Frame[] }，Frame = { name, size, url? } */
+  /** 视图声明 `[{key,name,en}]`——数量、名称、顺序都由用户定 */
+  views: { type: Array, required: true },
+  /** 帧 `{ [viewKey]: Frame[] }` */
   modelValue: { type: Object, required: true }
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:views', 'update:modelValue'])
 
 const errors = ref([])
 const dragOver = ref('')
 const dragFrom = ref(null)
+const addOpen = ref(false)
+const customName = ref('')
 const inputEls = {}
 
 const setInputRef = (key, el) => { if (el) inputEls[key] = el }
+const framesOf = key => props.modelValue[key] || []
 
-const list = key => props.modelValue[key] || []
+const availableCandidates = computed(() =>
+  VIEW_CANDIDATES.filter(c => !props.views.some(v => v.key === c.key))
+)
 
-const total = computed(() => VIEW_KEYS.reduce((a, v) => a + list(v.key).length, 0))
+const total = computed(() => props.views.reduce((a, v) => a + framesOf(v.key).length, 0))
 defineExpose({ total })
+
+/* ── 视图集合：增 / 删 / 改名 / 排序 ── */
+
+/** 生成不冲突的视图 key：自定义名称走 customN，候选走其固定 key */
+function uniqueKey(base) {
+  const used = new Set(props.views.map(v => v.key))
+  if (base && !used.has(base)) return base
+  let n = 1
+  while (used.has(`custom${n}`)) n += 1
+  return `custom${n}`
+}
+
+function setViews(list) {
+  emit('update:views', list)
+}
+
+function addCandidate(c) {
+  errors.value = []
+  addOpen.value = false
+  setViews([...props.views, { key: uniqueKey(c.key), name: c.name, en: c.en }])
+}
+
+function addCustom() {
+  const name = customName.value.trim()
+  if (!name) return
+  errors.value = []
+  addOpen.value = false
+  customName.value = ''
+  setViews([...props.views, { key: uniqueKey(''), name, en: 'CUSTOM' }])
+}
+
+function rename(vi, name) {
+  const list = props.views.map((v, i) => i === vi ? { ...v, name } : v)
+  setViews(list)
+}
+
+/** 名称留空则回退为原 key 的展示名，避免出现无名视图 */
+function normalizeName(vi, name) {
+  if (String(name || '').trim()) return
+  const list = props.views.map((v, i) => i === vi ? { ...v, name: v.key, en: v.en } : v)
+  setViews(list)
+}
+
+function move(vi, delta) {
+  const to = vi + delta
+  if (to < 0 || to >= props.views.length) return
+  const list = props.views.slice()
+  const [moved] = list.splice(vi, 1)
+  list.splice(to, 0, moved)
+  setViews(list)
+}
+
+function remove(vi) {
+  if (props.views.length <= 1) { errors.value = ['至少要保留一个视图']; return }
+  errors.value = []
+  const view = props.views[vi]
+  const list = props.views.filter((_, i) => i !== vi)
+  const frames = { ...props.modelValue }
+  delete frames[view.key]
+  emit('update:modelValue', frames)
+  setViews(list)
+}
+
+/* ── 帧：上传 / 解包 / 排序 ── */
 
 function setList(key, arr) {
   emit('update:modelValue', { ...props.modelValue, [key]: arr })
@@ -112,10 +226,10 @@ function onDrop(e, key) {
  */
 async function ingest(file, key) {
   errors.value = []
-  const before = list(key).slice()
+  const name = (props.views.find(v => v.key === key) || {}).name || key
 
   if (!/\.zip$/i.test(file.name)) {
-    errors.value.push(`「${file.name}」不是 .zip 压缩包，${VIEW_KEYS.find(v => v.key === key).zh}序列未改动`)
+    errors.value.push(`「${file.name}」不是 .zip 压缩包，「${name}」序列未改动`)
     return
   }
 
@@ -152,15 +266,15 @@ async function ingest(file, key) {
 
   const byName = Object.fromEntries(frames.map(f => [f.name, f]))
   const sorted = naturalSort(frames.map(f => f.name)).map((n, i) => ({ ...byName[n], order: i + 1 }))
-  // 超限只警告不阻断（上面的 oversized 已剔除）；长度校验兜底
   setList(key, sorted)
-  if (before.length) errors.value.push('已用新压缩包覆盖原序列（原序列已替换，保存后生效）')
 }
 
-/** Q2 未答复时的兜底：直接绑定系统内置样例序列（PRD §5.12.3「兜底」） */
+/** Q2 未答复时的兜底：绑定系统内置样例序列（PRD §5.12.3「兜底」） */
 function useBuiltin(key) {
   errors.value = []
-  const n = { axial: 24, coronal: 16, sagittal: 16 }[key] || 16
+  // 单帧体位（正/侧位）就只给 1 帧，别把 DR 也塞成层面序列
+  const single = ['pa', 'lateral'].includes(key)
+  const n = single ? 1 : ({ axial: 24, coronal: 16, sagittal: 16 }[key] || 16)
   const frames = Array.from({ length: n }, (_, i) => ({
     name: `${key}_${String(i + 1).padStart(3, '0')}.jpg`, size: 0, url: '', order: i + 1, builtin: true
   }))
@@ -177,7 +291,7 @@ function onReorder(key, target) {
   const from = dragFrom.value
   dragFrom.value = null
   if (!from || from.view !== key || from.index === target) return
-  const arr = list(key).slice()
+  const arr = framesOf(key).slice()
   const [moved] = arr.splice(from.index, 1)
   arr.splice(target, 0, moved)
   setList(key, arr)
@@ -185,21 +299,37 @@ function onReorder(key, target) {
 </script>
 
 <style scoped>
-.is-series { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.is-series { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
 .is-series-view { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .is-series-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; background: #FAFBFC; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; background: #FAFBFC; border-bottom: 1px solid var(--border);
 }
-.is-series-name { font-size: 13px; font-weight: 600; }
-.is-series-name .text-secondary { font-size: 11px; font-weight: 400; margin-left: 4px; }
+.is-view-name {
+  flex: 1; min-width: 0; font-size: 13px; font-weight: 600; font-family: inherit;
+  border: 1px solid transparent; background: transparent; border-radius: 5px;
+  padding: 3px 6px; color: var(--text-main); outline: none;
+}
+.is-view-name:hover { border-color: var(--border); background: #fff; }
+.is-view-name:focus { border-color: var(--primary); background: #fff; }
+.is-view-en { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; }
+.is-view-ops { display: flex; gap: 3px; flex-shrink: 0; }
+.is-view-btn {
+  width: 20px; height: 20px; border-radius: 5px; cursor: pointer; font-size: 10px;
+  border: 1px solid var(--border); background: #fff; color: #909399;
+  display: flex; align-items: center; justify-content: center;
+}
+.is-view-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.is-view-btn:disabled { opacity: .4; cursor: not-allowed; }
+.is-view-del:hover:not(:disabled) { border-color: var(--danger, #f56c6c); color: var(--danger, #f56c6c); }
+.is-view-count { font-size: 11px; color: var(--text-secondary); padding: 5px 12px 0; }
 .is-drop {
-  min-height: 168px; padding: 14px; display: flex; flex-direction: column;
+  min-height: 140px; padding: 10px 14px 14px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 2px;
   border: 1px dashed transparent; transition: all .15s;
 }
 .is-drop-over { border-color: var(--primary); background: var(--primary-light); }
-.is-strip { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; width: 100%; max-height: 200px; overflow-y: auto; }
+.is-strip { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; width: 100%; max-height: 190px; overflow-y: auto; }
 .is-frame {
   position: relative; width: 42px; height: 42px; border-radius: 6px; cursor: grab;
   background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 5px, #31353d, #31353d 10px);
@@ -212,8 +342,19 @@ function onReorder(key, target) {
   padding: 1px 3px; border-radius: 3px; background: rgba(0,0,0,.55); color: #fff;
 }
 .is-series-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; width: 100%; }
+.is-add { border: 1px dashed var(--border); border-radius: 8px; padding: 14px; background: #FAFBFC; }
+.is-add-panel { margin-top: 10px; }
+.is-add-row { display: flex; gap: 8px; }
+.is-add-hint { font-size: 11.5px; color: var(--text-secondary); margin: 10px 0 6px; }
+.is-add-chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto; }
+.is-add-item {
+  font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border); background: #fff; color: var(--text-main);
+  display: flex; align-items: baseline; gap: 5px;
+}
+.is-add-item:hover { border-color: var(--primary); color: var(--primary); }
 .is-errors {
-  grid-column: 1 / -1; background: #FFF7E6; border: 1px solid #FFE7BA; border-radius: 8px;
+  margin-top: 12px; background: #FFF7E6; border: 1px solid #FFE7BA; border-radius: 8px;
   padding: 10px 14px; font-size: 12.5px; color: #D46B08; line-height: 1.9;
 }
 </style>

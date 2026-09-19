@@ -17,12 +17,12 @@ export {
   CAPABILITIES, CAPABILITY_ITEMS, CAPABILITY_FIELDS, DEIDENTIFY_ITEMS,
   emptyCapabilities, scoreableOf, weightedScoreable, SCOREABLE_PUBLISH_FLOOR
 } from './capabilities.js'
-export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, VIEW_KEYS } from './samples.js'
+export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, DEFAULT_VIEWS, VIEW_CANDIDATES, viewMeta } from './samples.js'
 export {
   hintFor, hintBody, HINT_ELEMENTS, HINT_LEVELS, DEFAULT_QUOTA, HINT_COOLDOWN_MS
 } from './hint-library.js'
 
-import { IMAGING_SAMPLES } from './samples.js'
+import { IMAGING_SAMPLES, viewMeta } from './samples.js'
 import { SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
 import { scoreableOf } from './capabilities.js'
 
@@ -88,10 +88,24 @@ export function draftText(draft) {
     .join('\n\n')
 }
 
-/** 三视图总帧数（序列信息条展示用） */
+/**
+ * 序列总帧数（序列信息条展示用）。
+ * `series` 是**有序数组** `[{key,name,en,frames}]`——视图数量随样本变（1–5 个不等），
+ * 不是写死的"三视图"。兼容早期对象形状 `{axial:62,...}`，避免旧数据炸掉。
+ */
 export function seriesTotal(sample) {
-  const s = (sample && sample.series) || {}
-  return (s.axial || 0) + (s.coronal || 0) + (s.sagittal || 0)
+  const s = (sample && sample.series) || null
+  if (!s) return 0
+  if (Array.isArray(s)) return s.reduce((a, x) => a + (x.frames || 0), 0)
+  return Object.values(s).reduce((a, n) => a + (Number(n) || 0), 0)
+}
+
+/** 归一化序列列表（数组原样返回；对象形状转成列表，保证渲染侧只需处理一种形状） */
+export function seriesListOf(sample) {
+  const s = (sample && sample.series) || null
+  if (!s) return []
+  if (Array.isArray(s)) return s
+  return Object.entries(s).map(([key, frames]) => ({ key, ...viewMeta(key), frames: Number(frames) || 0 }))
 }
 
 /** 该样本的不可评条目清单（管理端能力位徽章点开 / 结果页条目级分色） */
@@ -117,6 +131,7 @@ export function trainingCardOf(sample, stat) {
     icon: sample.icon,
     clinical: sample.clinicalBrief,
     seriesTotal: seriesTotal(sample),
+    viewCount: seriesListOf(sample).length,
     scoreableMax: max,
     trainedRounds: s.completedRounds || 0,
     lastSelfReview: s.lastSelfReviewScore != null ? s.lastSelfReviewScore : null,

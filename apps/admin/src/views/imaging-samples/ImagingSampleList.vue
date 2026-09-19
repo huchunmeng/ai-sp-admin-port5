@@ -82,8 +82,9 @@
               <tr v-for="item in paginatedData" :key="item.id">
                 <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
                 <td class="sticky-left" style="left:40px">
-                  <div class="is-thumb" :title="'影像待接入 · 轴位首层'">
+                  <div class="is-thumb" :title="'影像待接入 · ' + (item.viewCount || 0) + ' 个序列 / 共 ' + (item.seriesTotal || 0) + ' 帧'">
                     <i class="fa-solid" :class="item.icon || 'fa-image'"></i>
+                    <span v-if="item.viewCount" class="is-thumb-n">{{ item.viewCount }}</span>
                   </div>
                 </td>
                 <td>
@@ -321,10 +322,14 @@ function batchSetStatus(status) {
 <style scoped>
 /* 仅本页专有形态；表格 / 筛选 / 徽章 / 按钮一律走 global.css 既有类 */
 .is-thumb {
-  width: 44px; height: 44px; border-radius: 8px;
+  width: 44px; height: 44px; border-radius: 8px; position: relative;
   background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 6px, #31353d, #31353d 12px);
   color: #8b93a1; font-size: 16px;
   display: flex; align-items: center; justify-content: center;
+}
+.is-thumb-n {
+  position: absolute; right: 2px; bottom: 1px; font-size: 9px; line-height: 1;
+  padding: 1px 4px; border-radius: 4px; background: rgba(0,0,0,.55); color: #fff;
 }
 .is-cap-list { display: inline-flex; gap: 3px; }
 .is-cap-list .badge { padding: 1px 5px; font-size: 10px; font-weight: 600; }
