@@ -12,7 +12,7 @@
         <span v-if="errors[f.key]" class="text-error" style="font-size:11.5px">{{ errors[f.key] }}</span>
       </div>
       <div class="filter-item" style="grid-column:span 4">
-        <label>临床主要信息及检查目的<span class="text-secondary" style="font-weight:400"> · 原样录入临床申请信息，对应 GEN-04（10 分）</span></label>
+        <label>临床主要信息及检查目的</label>
         <textarea class="input" v-model="clinicalModel" rows="3" style="width:100%;resize:vertical"
                   placeholder="如：咳嗽伴痰中带血 2 周。胸部 CT 平扫发现右肺上叶占位，请评估结节性质，并回答有无纵隔淋巴结肿大及胸腔积液。"></textarea>
       </div>

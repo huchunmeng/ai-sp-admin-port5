@@ -12,7 +12,7 @@
 //      原「三级提示阶梯 + 配额 + 冷却」整块去掉（不再需要按段发放配额）
 //   6. 提交报告后**自动发起 LLM 内容评分**（按要点集逐要点判定）
 
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { SEGMENTS } from '@ai-sp/shared/imaging'
 import { useReportCompanion } from './useReportCompanion'
 import { useReportScoring } from './useReportScoring'
@@ -50,11 +50,26 @@ export function readPracticeStats() {
 }
 
 /**
+ * 同一病例的会话**全局只建一份**。
+ * 工作台与成绩报告是两个路由、两个组件实例；若各自 `useReportSession`，
+ * 提交时在工作台实例上发起的评分结果永远传不到成绩页（成绩页停在"尚未评分"）。
+ * 这里按 caseId 缓存实例，两页共享同一份响应式状态；样本对象用 ref 持有，
+ * 后进入的页面可用更完整的样本对象覆盖它。
+ */
+const SESSIONS = new Map()
+
+/**
  * 一个样本的一次训练会话。
  * @param {string} caseId
  * @param {object} sample 题库样本（含影像序列、脱敏信息、能力位、可评分、金标准）
  */
 export function useReportSession(caseId, sample) {
+  const cached = SESSIONS.get(caseId)
+  if (cached) {
+    if (sample) cached.sampleRef.value = sample
+    return cached.api
+  }
+  const sampleRef = ref(sample)
   const saved = readJson(SESSION_KEY, {})[caseId] || {}
   const companion = useReportCompanion()
   const scorer = useReportScoring()
@@ -125,7 +140,7 @@ export function useReportSession(caseId, sample) {
     state.chatLoading = true
     try {
       const res = await companion.ask({
-        sample,
+        sample: sampleRef.value,
         reportText: { ...state.draft },
         segment: state.activeSegment,
         question: q,
@@ -159,7 +174,7 @@ export function useReportSession(caseId, sample) {
     state.scoringStatus = 'running'
     state.scoringError = ''
     state.scoringAttempts += 1
-    const res = await scorer.score({ sample, reportText: { ...state.draft } })
+    const res = await scorer.score({ sample: sampleRef.value, reportText: { ...state.draft } })
     if (res.ok) {
       state.scoringResult = res.result
       state.scoringStatus = 'done'
@@ -207,7 +222,7 @@ export function useReportSession(caseId, sample) {
     appeal: state.appeal
   }))
 
-  return {
+  const api = {
     state, inReview, phases: PHASES,
     segments, totalChars, totalOver, TOTAL_LIMIT,
     canSubmit, missingSegments, submitBlockReason,
@@ -216,6 +231,8 @@ export function useReportSession(caseId, sample) {
     scoring, scoringRunning: computed(() => state.scoringStatus === 'running'),
     runScoring, fileAppeal
   }
+  SESSIONS.set(caseId, { api, sampleRef })
+  return api
 }
 
 function nowStamp() {

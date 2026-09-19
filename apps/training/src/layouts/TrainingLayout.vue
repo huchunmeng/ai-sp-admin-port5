@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div class="training-container" style="position:relative;min-height:100vh;">
-    <header class="app-header" v-if="!isStationRoute">
+    <header class="app-header" v-if="!isChromeless">
       <div class="header-left">
         <span class="system-name" @click="goHome" title="回到首页">医路慧影（WiseImag）影像智思体</span>
         <div class="mode-badge" @click="openAdmin" v-if="false">管理端</div>
@@ -40,7 +40,7 @@
       </div>
     </header>
 
-    <div class="breadcrumb-bar" v-if="crumbs.length && !isStationRoute">
+    <div class="breadcrumb-bar" v-if="crumbs.length && !isChromeless">
       <span class="breadcrumb-item" v-for="(cr, i) in crumbs" :key="i">
         <span v-if="i > 0" class="breadcrumb-sep">/</span>
         <a v-if="cr.to" @click="handleCrumbClick(cr)">{{ cr.label }}</a>
@@ -133,8 +133,18 @@ function switchVersion(v) {
 
 const stationRoutes = ['historyTaking', 'physicalExam', 'ancillaryTests', 'diagnosis', 'treatmentPlan', 'medicalRecord', 'caseAnalysis', 'humanisticComm', 'mentalExam']
 
+// 「无壳页」：隐藏全局页头与面包屑，页面自带 TrainingTopBar（与病史采集/体格检查同一套框架）。
+// 影像报告书写的工作台与成绩报告页按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
+const reportWritingStationRoutes = ['reportWritingWorkbench', 'reportWritingResult']
+const chromelessRoutes = [...stationRoutes, ...reportWritingStationRoutes]
+
 const isStationRoute = computed(function() {
   return stationRoutes.includes(route.name)
+})
+
+/** 隐藏全局页头 + 面包屑（站内页 与 影像报告书写工作台/成绩报告页） */
+const isChromeless = computed(function() {
+  return chromelessRoutes.includes(route.name)
 })
 
 const crumbs = computed(function() {

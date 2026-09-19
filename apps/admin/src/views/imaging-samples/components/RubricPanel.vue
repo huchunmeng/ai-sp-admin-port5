@@ -2,30 +2,27 @@
   <div>
     <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px">
       <span class="text-secondary" style="font-size:12.5px">
-        共 {{ resolved.items.length }} 条 · <b class="text-primary">可评分 {{ resolved.scoreableMax }} / 100</b>
+        共 {{ resolved.items.length }} 条
       </span>
       <div class="flex gap-2">
         <button class="btn" :disabled="extracting || !goldReady" @click="extract">
           <i class="fa-solid" :class="extracting ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
-          {{ extracting ? '抽取中...' : 'AI 从金标准抽取' }}
+          {{ extracting ? '抽取中...' : 'AI 从标准报告抽取' }}
         </button>
         <button class="btn" :disabled="extracting" @click="resetAll">恢复内置</button>
       </div>
     </div>
 
     <div v-if="!goldReady" class="is-empty">
-      先在「金标准报告」填完三段，再来抽取要点集
+      先在「影像序列与标准报告」填完三段，再来抽取评分表
     </div>
     <div v-else-if="!hasRubric" class="is-empty">
-      还没有要点集 —— 点右上「AI 从金标准抽取」生成一版，再逐条校正
+      还没有评分表 —— 点右上「AI 从标准报告抽取」生成一版，再逐条校正
     </div>
 
     <div v-for="dim in dims" :key="dim.dim" class="is-dim">
       <div class="section-head">
         <span class="section-head-title">{{ dim.dim }}</span>
-        <span class="text-secondary" style="font-size:12px">
-          满分 {{ dim.full }} 分 · 可评 {{ dim.scoreableFull }} 分
-        </span>
       </div>
 
       <div v-for="item in dim.items" :key="item.code" class="is-item">

@@ -26,8 +26,8 @@ import { GOLD_SEGMENTS } from '@ai-sp/shared/imaging'
 
 const PLACEHOLDER = {
   technique: '如：胸部CT平扫。',
-  findings: '按部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象逐类描述。',
-  impression: '回应临床问题，给出定位与定性倾向、诊断依据及下一步建议。'
+  findings: '按部位、大小、形态、密度、强化与阴性征象逐项描述。',
+  impression: '给出定位与定性倾向、诊断依据与进一步建议。'
 }
 
 const props = defineProps({

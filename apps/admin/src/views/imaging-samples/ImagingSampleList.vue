@@ -20,12 +20,12 @@
           <select class="select" v-model="filters.level"><option value="">全部</option><option v-for="l in TRAINING_LEVELS" :key="l.value" :value="l.value">{{ l.value }} · {{ getCaseLevelLabel(l.value) }}</option></select>
         </div>
         <div class="filter-item">
-          <label>可评分区间</label>
-          <select class="select" v-model="filters.scoreBand"><option value="">全部</option><option value="full">可评满分（100）</option><option value="high">85 – 99</option><option value="low">低于 85（考不满）</option></select>
+          <label>可评满分</label>
+          <select class="select" v-model="filters.scoreBand"><option value="">全部</option><option value="full">满分（100）</option><option value="high">85 – 99</option><option value="low">低于 85</option></select>
         </div>
         <div class="filter-item">
-          <label>金标准</label>
-          <select class="select" v-model="filters.gold"><option value="">全部</option><option value="recorded">金标准已录</option><option value="missing">缺金标准</option></select>
+          <label>标准报告</label>
+          <select class="select" v-model="filters.gold"><option value="">全部</option><option value="recorded">已录入</option><option value="missing">未录入</option></select>
         </div>
         <div class="filter-item">
           <label>状态</label>
@@ -69,10 +69,10 @@
                 <th>部位 · 模态</th>
                 <th>难度</th>
                 <th style="cursor:pointer;white-space:nowrap" @click="toggleScoreSort">
-                  可评分 {{ filters.sort === 'scoreAsc' ? '↑' : '' }}
+                  可评满分 {{ filters.sort === 'scoreAsc' ? '↑' : '' }}
                 </th>
                 <th>能力位</th>
-                <th>金标准</th>
+                <th>标准报告</th>
                 <th>状态</th>
                 <th>最近更新</th>
                 <th class="sticky-right" style="right:0;min-width:230px">操作</th>
@@ -97,12 +97,12 @@
                 </td>
                 <td>{{ item.bodyPart }} · {{ item.modality }}</td>
                 <td><span class="badge" :class="CASE_LEVEL_BADGE_CLASS[levelKey(item.level)]">{{ getCaseLevelLabel(item.level) || '—' }}</span></td>
-                <td>
+                <td :title="'该病例能力位支持的最高得分'">
                   <span :class="item.scoreableMax >= 85 ? 'text-primary' : 'text-warning'" style="font-weight:600">{{ item.scoreableMax }}</span>
                   <span class="text-secondary"> / 100</span>
                 </td>
                 <td><span class="is-cap-list"><span v-for="f in CAPABILITY_FIELDS" :key="f.key" class="badge" :class="item.capabilities[f.key] ? 'badge-success' : 'badge-info'" :title="capTitle(f, item)">{{ f.short }}</span></span></td>
-                <td><span class="badge" :class="item.goldStandardRecorded ? 'badge-success' : 'badge-warning'">{{ item.goldStandardRecorded ? '金标准已录' : '缺金标准' }}</span></td>
+                <td><span class="badge" :class="item.goldStandardRecorded ? 'badge-success' : 'badge-warning'">{{ item.goldStandardRecorded ? '已录入' : '未录入' }}</span></td>
                 <td><span class="badge" :class="SAMPLE_STATUS[item.status].badge">{{ SAMPLE_STATUS[item.status].label }}</span></td>
                 <td>
                   <div>{{ item.updatedAt }}</div>
@@ -112,7 +112,7 @@
                   <div class="flex gap-2">
                     <button class="btn btn-sm" @click="editSample(item)">编辑</button>
                     <button class="btn btn-sm" @click="copySample(item)">复制</button>
-                    <button class="btn btn-sm" @click="showDerived(item)">查看派生</button>
+                    <button class="btn btn-sm" @click="showDerived(item)">不可评条目</button>
                     <button v-if="item.status !== 'disabled'" class="btn btn-sm btn-danger" @click="disableSample(item)">停用</button>
                     <button v-else class="btn btn-sm" @click="enableSample(item)">启用</button>
                   </div>
@@ -134,15 +134,12 @@
       </div>
     </template>
 
-    <!-- 查看派生：该样本落空的不可评条目（PRD §5.12.2 操作列） -->
+    <!-- 不可评条目：该样本缺失能力位而判不了的条目 -->
     <div v-if="derivedSample" class="modal-overlay" @click.self="derivedSample = null">
       <div class="modal-container" style="width:600px">
         <div class="modal-header">
-          <span style="font-weight:600">可评分 {{ derivedSample.scoreableMax }} / 100 — {{ derivedSample.title }}</span>
+          <span style="font-weight:600">{{ derivedSample.title }} · 不可评条目</span>
           <button class="modal-close" @click="derivedSample = null">✕</button>
-        </div>
-        <div class="text-secondary" style="font-size:12px;margin-bottom:12px">
-          不可评条目的分值已从分母中剔除、<b>不按 0 分计</b>；满分为 100 的归一后得分，跨卷不可比。
         </div>
         <table class="table">
           <thead>
@@ -156,7 +153,7 @@
               <td><span class="badge" :class="l.source === 'na' ? 'badge-info' : 'badge-warning'">{{ l.source === 'na' ? '不适用 N/A' : '能力位缺失' }}</span></td>
               <td class="text-secondary" style="font-size:12px">{{ l.why }}</td>
             </tr>
-            <tr v-if="!derivedSample.lost.length"><td colspan="5" style="text-align:center;padding:24px;color:var(--text-secondary)">本病例 23 条全部可评</td></tr>
+            <tr v-if="!derivedSample.lost.length"><td colspan="5" style="text-align:center;padding:24px;color:var(--text-secondary)">全部条目可评</td></tr>
           </tbody>
         </table>
         <div class="modal-footer">
@@ -211,7 +208,7 @@ function thumbOf(item) {
 
 function capTitle(field, item) {
   const on = item.capabilities[field.key]
-  const head = `${field.label}：${on ? '具备' : '不具备'} → ${field.hitCode}`
+  const head = `${field.label}：${on ? '具备' : '不具备'} → ${(field.affects || []).join(' · ')}`
   return field.derived ? `${head}（由影像控件能力决定，本期只读）` : head
 }
 
@@ -302,9 +299,9 @@ function disableSample(item) {
   toast.show('病例已停用', 'success')
 }
 
-/** 启用 = 回已发布，但「三段金标准皆非空」是发布前提（PRD §5.12.6） */
+/** 启用 = 回已发布，但「三段标准报告皆非空」是发布前提（PRD §5.12.6） */
 function enableSample(item) {
-  if (!item.goldStandardRecorded) { toast.show('缺金标准的病例不可发布，请先录入金标准报告', 'warning'); return }
+  if (!item.goldStandardRecorded) { toast.show('标准报告未录入的病例不可发布，请先录入标准报告', 'warning'); return }
   item.status = 'published'
   item.publishedAt = now()
   item.updatedAt = now()
@@ -317,7 +314,7 @@ function batchSetStatus(status) {
   if (status === 'published') {
     const blocked = picked.filter(r => !r.goldStandardRecorded)
     picked.filter(r => r.goldStandardRecorded).forEach(r => { r.status = 'published'; r.publishedAt = now(); r.updatedAt = now() })
-    if (blocked.length) toast.show(`${blocked.length} 条缺金标准，未启用`, 'warning')
+    if (blocked.length) toast.show(`${blocked.length} 条标准报告未录入，未启用`, 'warning')
     else toast.show('已批量启用', 'success')
   } else {
     picked.forEach(r => { r.status = 'disabled'; r.updatedAt = now() })

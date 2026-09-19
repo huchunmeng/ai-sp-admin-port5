@@ -8,33 +8,30 @@
           <span v-if="f.readonly" class="badge badge-info" style="margin-left:6px">🔒 只读</span>
         </label>
         <div class="text-secondary" style="font-size:11.5px;line-height:1.7">
-          影响 <code class="is-code">{{ f.hitCode }}</code>
+          影响 <code class="is-code">{{ (f.affects || []).join(' · ') }}</code>
         </div>
       </div>
     </div>
 
-    <div class="is-derived">
+    <div v-if="result.lost.length" class="is-derived">
       <div class="is-derived-head">
-        <span>本样本可评分</span>
-        <b :class="result.max >= 85 ? 'text-primary' : 'text-warning'">{{ result.max }}</b>
-        <span class="text-secondary"> / 100</span>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ result.lost.length }} 个条目不可评（共 {{ lostScore }} 分）
       </div>
-      <table v-if="result.lost.length" class="table">
-        <thead><tr><th>落空条目</th><th>名称</th><th>分值</th><th>来源</th><th>原因</th></tr></thead>
+      <table class="table">
+        <thead><tr><th>条目</th><th>名称</th><th>分值</th><th>原因</th></tr></thead>
         <tbody>
           <tr v-for="l in result.lost" :key="l.code">
             <td><code class="is-code">{{ l.code }}</code></td>
             <td>{{ l.label }}</td>
             <td>{{ l.score }}</td>
-            <td><span class="badge" :class="l.source === 'na' ? 'badge-info' : 'badge-warning'">{{ l.source === 'na' ? '不适用 N/A' : '能力位缺失' }}</span></td>
-            <td class="text-secondary" style="font-size:12px">{{ l.why }}</td>
+            <td class="text-secondary" style="font-size:12px">
+              <span class="badge" :class="l.source === 'na' ? 'badge-info' : 'badge-warning'">{{ l.source === 'na' ? '不适用' : '缺能力位' }}</span>
+              {{ l.why }}
+            </td>
           </tr>
         </tbody>
       </table>
-      <div v-else class="text-secondary" style="font-size:12.5px">本样本全部条目可评</div>
-      <div class="text-secondary" style="font-size:11.5px;margin-top:8px;line-height:1.8">
-        落空条目分值自分母剔除，不按 0 分计
-      </div>
     </div>
   </div>
 </template>
@@ -45,12 +42,15 @@ import { CAPABILITY_FIELDS, scoreableOf } from '@ai-sp/shared/imaging'
 
 const props = defineProps({
   /** { hasMeasurement, hasPriorExam, hasEnhancedPhase, isTumor, hasStagingInfo } */
-  modelValue: { type: Object, required: true }
+  modelValue: { type: Object, required: true },
+  /** 病例 ID：用来按该病例的评分表算「哪些条目不可评」 */
+  sampleId: { type: String, default: '' }
 })
 const emit = defineEmits(['update:modelValue'])
 
 const model = computed(() => props.modelValue)
-const result = computed(() => scoreableOf('', props.modelValue))
+const result = computed(() => scoreableOf(props.sampleId, props.modelValue))
+const lostScore = computed(() => Math.round(result.value.lost.reduce((a, l) => a + l.score, 0) * 10) / 10)
 
 /** hasMeasurement 由控件能力决定，界面不给开关（PRD §5.12.5） */
 function toggle(key, checked) {
@@ -71,6 +71,8 @@ function toggle(key, checked) {
 .is-check input { width: 15px; height: 15px; }
 .is-code { background: #F5F7FA; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
 .is-derived { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-.is-derived-head { display: flex; align-items: baseline; gap: 6px; font-size: 13px; margin-bottom: 10px; }
-.is-derived-head b { font-size: 20px; }
+.is-derived-head {
+  display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600;
+  color: #D46B08; margin-bottom: 10px;
+}
 </style>

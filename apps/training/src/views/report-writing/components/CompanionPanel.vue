@@ -31,20 +31,13 @@
           <i class="fa-solid fa-paper-plane"></i>
         </button>
       </div>
-
-      <div class="rwb-seg-tabs">
-        <button v-for="s in segments" :key="s.key" class="rwb-seg-tab"
-                :class="{ active: s.key === activeSegment }" @click="$emit('update:activeSegment', s.key)">
-          {{ s.name }}
-        </button>
-      </div>
     </div>
   </aside>
 </template>
 
 <script setup>
 import { nextTick, ref, watch } from 'vue'
-import { SEGMENT_GUIDE, SEGMENTS } from '@ai-sp/shared/imaging'
+import { SEGMENT_GUIDE } from '@ai-sp/shared/imaging'
 
 const QUICK = [
   '这一段该写哪几类内容？',
@@ -55,20 +48,15 @@ const QUICK = [
 const props = defineProps({
   /** 对话流水 `[{ role:'user'|'ai', text, blocked? }]` */
   messages: { type: Array, default: () => [] },
-  loading: { type: Boolean, default: false },
-  segments: { type: Array, default: () => SEGMENTS },
-  activeSegment: { type: String, default: 'findings' }
+  loading: { type: Boolean, default: false }
 })
-const emit = defineEmits(['ask', 'update:activeSegment'])
+const emit = defineEmits(['ask'])
 
 const draft = ref('')
 const listEl = ref(null)
 const askedCount = ref(0)
 
 const opening = ref(SEGMENT_GUIDE.findings)
-watch(() => props.activeSegment, k => {
-  opening.value = SEGMENT_GUIDE[k] || SEGMENT_GUIDE.findings
-}, { immediate: true })
 
 watch(() => props.messages.length, async () => {
   await nextTick()
@@ -131,12 +119,5 @@ function submit() {
 .rwb-chat-input:focus { border-color: var(--primary); }
 .rwb-chat-bar .btn { flex-shrink: 0; height: 32px; }
 
-.rwb-seg-tabs { display: flex; margin: 0 14px 12px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-.rwb-seg-tab {
-  flex: 1; font-family: inherit; font-size: 11.5px; padding: 5px 0; cursor: pointer;
-  border: none; background: #fff; color: #6b7280; border-right: 1px solid #e5e7eb;
-}
-.rwb-seg-tab:last-child { border-right: none; }
-.rwb-seg-tab.active { background: var(--primary); color: #fff; font-weight: 600; }
-@media (max-width: 1100px) { .rwb-aside { width: 100%; } }
+@media (max-width: 1100px) { .rwb-aside { width: 100%; } .rwb-chat { max-height: 300px; } }
 </style>
