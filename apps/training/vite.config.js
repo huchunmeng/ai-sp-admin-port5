@@ -475,6 +475,22 @@ export default defineConfig(({ mode }) => {
               console.log(`[copy-cases-build] 已复制 MDT 病例 ${mdtFiles.length} 个，索引 ${mdtIndex.length} 条`)
             }
 
+            // 影像题库样例图片一并复制，保证生产构建（preview）下真实影像可显示
+            const IMG_SAMPLES_DIR = path.join(ADMIN_DATA_DIR, 'imaging-samples')
+            if (fs.existsSync(IMG_SAMPLES_DIR)) {
+              const imgDest = path.join(outDir, 'data', 'imaging-samples')
+              fs.mkdirSync(imgDest, { recursive: true })
+              let n = 0
+              for (const d of fs.readdirSync(IMG_SAMPLES_DIR, { withFileTypes: true })) {
+                if (!d.isDirectory()) continue
+                const from = path.join(IMG_SAMPLES_DIR, d.name)
+                const to = path.join(imgDest, d.name)
+                fs.mkdirSync(to, { recursive: true })
+                for (const f of fs.readdirSync(from)) { fs.copyFileSync(path.join(from, f), path.join(to, f)); n++ }
+              }
+              console.log(`[copy-cases-build] 已复制影像样例图片 ${n} 张`)
+            }
+
             // 原始病历一并复制，保证生产构建（preview）下 MDT 原始病历抽屉可用
             const RAW_RECORDS_DIR = path.join(ADMIN_DATA_DIR, 'raw-records')
             if (fs.existsSync(RAW_RECORDS_DIR)) {

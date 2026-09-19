@@ -23,13 +23,16 @@
              @keydown.up.prevent="step(vi, -1)"
              @keydown.down.prevent="step(vi, 1)"
              @click="onCanvasClick(vi, $event)">
-          <!-- 演示占位图：随层面号可见地变化，否则翻页交互无从判断 -->
-          <div class="rwb-demo" :style="demoStyle(v.key, vi)">
-            <span class="rwb-demo-scan"></span>
-            <span class="rwb-demo-mark"></span>
-          </div>
-          <span class="rwb-demo-tag">演示占位 · 非真实影像</span>
-          <span class="rwb-layer">第 {{ layerOf(vi) }} / {{ framesOf(v.key) || 0 }} 层</span>
+          <!-- 真实影像：有图就渲染像素；无图才回退演示占位 -->
+          <img v-if="imgOf(v.key, vi)" class="rwb-pixel" :src="imgOf(v.key, vi)" :alt="v.name">
+          <template v-else>
+            <div class="rwb-demo" :style="demoStyle(v.key, vi)">
+              <span class="rwb-demo-scan"></span>
+              <span class="rwb-demo-mark"></span>
+            </div>
+            <span class="rwb-demo-tag">演示占位</span>
+          </template>
+          <span v-if="framesOf(v.key) > 1" class="rwb-layer">第 {{ layerOf(vi) }} / {{ framesOf(v.key) }} 层</span>
         </div>
 
         <div class="rwb-view-foot">
@@ -81,6 +84,15 @@ const layer = reactive({})
 function framesOf(key) {
   const v = views.value.find(x => x.key === key)
   return (v && v.frames) || 0
+}
+
+/** 该视图当前层面的真实图片地址（无真实图返回空，回退演示占位） */
+function imgOf(key, vi) {
+  const v = views.value.find(x => x.key === key)
+  const imgs = (v && v.images) || []
+  if (!imgs.length) return ''
+  const idx = Math.min(Math.max(0, layerOf(vi) - 1), imgs.length - 1)
+  return imgs[idx]
 }
 
 function ensureLayers() {
@@ -201,6 +213,11 @@ watch(() => props.sample.id, () => {
   background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 10px, #31353d, #31353d 20px);
 }
 .rwb-canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
+/* 真实影像：等比铺满、黑底、禁拖拽 */
+.rwb-pixel {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; background: #000; user-select: none; -webkit-user-drag: none;
+}
 .rwb-demo { position: absolute; inset: 0; }
 .rwb-demo-scan {
   position: absolute; left: 0; right: 0; top: var(--scan-top, 50%); height: 2px;

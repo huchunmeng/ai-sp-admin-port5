@@ -49,9 +49,17 @@ function framesOf(row, views) {
   const s = row.series
   views.forEach(v => {
     const declared = Array.isArray(s)
-      ? (s.find(x => x.key === v.key) || {}).frames
-      : (s && typeof s === 'object' ? s[v.key] : 0)
-    out[v.key] = placeholderFrames(v.key, declared)
+      ? (s.find(x => x.key === v.key) || {})
+      : (s && typeof s === 'object' ? { frames: s[v.key] } : {})
+    // 真实影像：按声明的图片地址建帧；无图才建占位帧
+    const imgs = declared.images || []
+    if (imgs.length) {
+      out[v.key] = imgs.map((url, i) => ({
+        name: url.split('/').pop(), size: 0, url, order: i + 1
+      }))
+    } else {
+      out[v.key] = placeholderFrames(v.key, declared.frames)
+    }
   })
   return out
 }
@@ -81,11 +89,18 @@ export function recompute(row) {
   row.scoreableMax = max
   row.lost = lost
   row.goldStandardRecorded = hasGoldStandard(row)
-  // 序列声明按帧数组现算，保证"共 N 帧"与编辑端一致
-  row.series = (row.views || []).map(v => ({
-    key: v.key, name: v.name, en: v.en,
-    frames: ((row.seriesFrames || {})[v.key] || []).length
-  }))
+  // 序列声明按帧数组现算，保证"共 N 帧"与编辑端一致；保留真实图片地址
+  const prevSeries = Array.isArray(row.series) ? row.series : []
+  row.series = (row.views || []).map(v => {
+    const frames = ((row.seriesFrames || {})[v.key] || [])
+    const images = frames.map(f => f.url).filter(u => u && !String(u).startsWith('blob:'))
+    const kept = prevSeries.find(x => x.key === v.key) || {}
+    return {
+      key: v.key, name: v.name, en: v.en,
+      frames: frames.length,
+      ...(images.length ? { images } : (kept.images ? { images: kept.images } : {}))
+    }
+  })
   row.viewCount = row.series.length
   row.seriesTotal = row.series.reduce((a, x) => a + x.frames, 0)
   return row

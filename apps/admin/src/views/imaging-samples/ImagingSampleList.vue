@@ -83,7 +83,8 @@
                 <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
                 <td class="sticky-left" style="left:40px">
                   <div class="is-thumb" :title="'影像待接入 · ' + (item.viewCount || 0) + ' 个序列 / 共 ' + (item.seriesTotal || 0) + ' 帧'">
-                    <i class="fa-solid" :class="item.icon || 'fa-image'"></i>
+                    <img v-if="thumbOf(item)" :src="thumbOf(item)" alt="">
+                    <template v-else><i class="fa-solid" :class="item.icon || 'fa-image'"></i></template>
                     <span v-if="item.viewCount" class="is-thumb-n">{{ item.viewCount }}</span>
                   </div>
                 </td>
@@ -200,6 +201,13 @@ const filters = reactive({
 })
 
 const levelKey = level => LEVEL_TO_CASE_LEVEL[level] || ''
+
+/** 缩略图：有真实影像就用第一张，否则回退图标 */
+function thumbOf(item) {
+  const s = Array.isArray(item.series) ? item.series : []
+  for (const v of s) if (v.images && v.images.length) return v.images[0]
+  return ''
+}
 
 function capTitle(field, item) {
   const on = item.capabilities[field.key]

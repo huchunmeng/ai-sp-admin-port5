@@ -20,6 +20,7 @@
 import { R1_TABLE, R1_ITEMS, SEGMENTS } from './r1-table.js'
 import { CAPABILITIES } from './capabilities.js'
 import { IMAGING_SAMPLES } from './samples.js'
+import { SEU_RUBRIC } from './samples-seu.js'
 
 /** 样单元数据表（本文件内自建，避免与 index.js 形成循环依赖） */
 const SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))
@@ -347,12 +348,21 @@ const CONTENT_ITEMS = {
    手写要点集数据（3 例有金标准的病例）
    ══════════════════════════════════════════════════════════════ */
 
-export const RUBRIC = Object.fromEntries(
-  Object.entries(CONTENT_ITEMS).map(([caseId, items]) => [
-    caseId,
-    { version: 1, updatedAt: '2026-09-19', updatedBy: '教研', items }
-  ])
-)
+export const RUBRIC = {
+  ...Object.fromEntries(
+    Object.entries(CONTENT_ITEMS).map(([caseId, items]) => [
+      caseId,
+      { version: 1, updatedAt: '2026-09-19', updatedBy: '教研', items }
+    ])
+  ),
+  // 院方素材样例：要点集由 AI 从金标准抽取，待教研校正（见 samples-seu.js 头部说明）
+  ...Object.fromEntries(
+    Object.entries(SEU_RUBRIC).map(([caseId, items]) => [
+      caseId,
+      { version: 1, updatedAt: '2026-09-19', updatedBy: '院方素材导入 · AI 抽取', items }
+    ])
+  )
+}
 
 /* ══════════════════════════════════════════════════════════════
    解析：把要点集 + 能力位解析成"每条要点是否可评"
