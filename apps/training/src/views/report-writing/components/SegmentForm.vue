@@ -3,13 +3,14 @@
     <div class="rwb-block-head">
       <i class="fa-solid fa-pen-to-square"></i> 学生报告
       <span class="rwb-tag">四段式</span>
-      <span class="rwb-count" :class="{ 'text-error': totalOver }">{{ totalChars }} / {{ TOTAL_LIMIT }}</span>
+      <span class="rwb-count" :class="{ 'text-error': totalOver }">{{ totalChars }} / {{ totalLimit }}</span>
     </div>
 
     <div class="rwb-segs">
       <div v-for="seg in segments" :key="seg.key" class="rwb-seg">
         <div class="rwb-seg-head">
           <span class="rwb-seg-name">{{ seg.name }}</span>
+          <span v-if="seg.hint" class="rwb-seg-hint">{{ seg.hint }}</span>
           <span v-if="seg.filled" class="rwb-seg-ok"><i class="fa-solid fa-check"></i></span>
           <span class="rwb-seg-count" :class="{ 'text-error': (draft[seg.key] || '').length >= seg.limit }">
             {{ (draft[seg.key] || '').length }} / {{ seg.limit }}
@@ -26,7 +27,7 @@
 
 <script setup>
 const PLACEHOLDER = {
-  general: '患者信息、检查号、检查时间；临床主要信息及检查目的',
+  general: '如：患者女，50–59 岁，呼吸内科。因咳嗽伴痰中带血 2 周行胸部 CT 检查，请评估右肺结节性质。',
   technique: '如：胸部CT平扫。',
   findings: '部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象',
   impression: '回应临床问题、定位与定性倾向、依据与建议'
@@ -37,7 +38,8 @@ defineProps({
   draft: { type: Object, required: true },
   totalChars: { type: Number, default: 0 },
   totalOver: { type: Boolean, default: false },
-  TOTAL_LIMIT: { type: Number, default: 5000 }
+  // 注意：属性名必须能被 `total-limit` 归一化到，写成 TOTAL_LIMIT 会导致绑定失效、永远用默认值
+  totalLimit: { type: Number, default: 6750 }
 })
 defineEmits(['update:segment'])
 </script>
@@ -57,6 +59,7 @@ defineEmits(['update:segment'])
 .rwb-seg:last-child { border-bottom: none; }
 .rwb-seg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
 .rwb-seg-name { font-size: 13px; font-weight: 700; color: #4b5563; }
+.rwb-seg-hint { font-size: 11.5px; color: #9ca3af; }
 .rwb-seg-ok { font-size: 11px; color: var(--success); display: inline-flex; align-items: center; gap: 3px; }
 .rwb-seg-todo { font-size: 11px; color: #c0c4cc; }
 .rwb-seg-count { margin-left: auto; font-size: 11.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }

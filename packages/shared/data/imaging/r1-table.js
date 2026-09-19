@@ -73,7 +73,9 @@ export const R1_ITEMS = R1_TABLE.flatMap(d =>
  * 已写进 `rubric.js` 的 `GEN-01/03/04` 要点里。故 `hasGoldStandard()` 不计它，发布门槛不受影响。
  */
 export const SEGMENTS = [
-  { key: 'general', name: '一般信息', limit: 800, trainingRequired: true, examRequired: false, inGold: false },
+  // 「一般信息」段是**报告抬头**，不是把上面的患者信息再抄一遍：上限 250 字
+  // （2026-09-20 批注：原 800 字与上方患者信息条观感重复，压到 250 并给一句极短的段头定位）
+  { key: 'general', name: '一般信息', hint: '报告抬头：患者信息 + 检查 + 临床目的', limit: 250, trainingRequired: true, examRequired: false, inGold: false },
   { key: 'technique', name: '检查技术', limit: 500, trainingRequired: true, examRequired: false, inGold: true },
   { key: 'findings', name: '影像所见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true },
   { key: 'impression', name: '诊断意见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true }
@@ -101,9 +103,10 @@ export const DEIDENTIFY_ROWS = [
 /**
  * 报告字数上限（四段合计的兜底值）。
  * 原为 5000，但三段各自上限相加已达 6500，5000 反而成了"合法输入也被拦"的假约束；
- * 补「一般信息」段后取 7000（≈ 各段上限之和），只作防滥用的兜底。
+ * 2026-09-20 「一般信息」段由 800 压到 250（报告抬头而非再抄一遍患者信息），
+ * 故合计上限同步取各段之和 6750，只作防滥用的兜底。
  */
-export const REPORT_TOTAL_LIMIT = 7000
+export const REPORT_TOTAL_LIMIT = 6750
 
 /** R1 表版本号——随评分表改动递增，评分记录须留痕以解释历史成绩（PRD §5.9） */
 export const R1_TABLE_VERSION = 'R1-2026.09'

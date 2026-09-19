@@ -21,8 +21,8 @@ const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
 const RECORDS_KEY = 'report_writing_records_v1'
 
-/** 四段合集字数上限（各段上限之和的兜底值） */
-const TOTAL_LIMIT = 7000
+/** 四段合集字数上限（各段上限之和的兜底值：250 + 500 + 3000 + 3000） */
+const TOTAL_LIMIT = 6750
 
 /** 两态：书写报告 → 评分与对照 */
 export const PHASES = [
