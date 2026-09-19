@@ -3786,3 +3786,44 @@ input:checked + .slider:before {
 .section-head-title::before {
   content: ''; width: 3px; height: 14px; background: var(--primary); border-radius: 2px;
 }
+
+/* ============================================================
+   编辑器通用外壳（续）：钉顶信息卡 + 标签栏 + 面板
+   这几条原先是 病例编辑器 / MDT / 原始病历 各写一份 scoped 同名规则，
+   新页面漏写就会"不钉顶、不换行、无内距、标签不像标签"。
+   提到全局，新编辑器（如影像题库编辑器）直接用即可；
+   各页原有 scoped 同名规则特异性更高，仍优先生效，既有页面观感不变。
+   ============================================================ */
+
+/* 钉顶信息卡：贴在固定头下方、不占步骤的元信息条（边到边、无圆角） */
+.common-info-card { margin: 0; padding: 16px 24px; border-radius: 0; }
+.common-info-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; align-items: end;
+}
+
+/* 编辑器标签栏 / 步骤条：与病例编辑器同一套观感（下划线激活、钉在固定头下方） */
+.editor-tab-bar {
+  display: flex; gap: 0; padding: 0 24px;
+  background: var(--card-bg); border-bottom: 1px solid var(--border);
+  position: sticky; top: 53px; z-index: 10;
+}
+.editor-tab-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 20px; background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  font-family: inherit; font-size: 14px; color: var(--text-secondary);
+  transition: all .15s; white-space: nowrap;
+}
+.editor-tab-btn:hover { color: var(--primary); }
+.editor-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.editor-tab-no {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+  background: #E4E7ED; color: #909399; font-size: 11px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.editor-tab-btn.active .editor-tab-no { background: var(--primary); color: #fff; }
+.editor-tab-btn.done .editor-tab-no { background: var(--success); color: #fff; }
+
+/* 标签页内容区 */
+.editor-panel { padding: 20px 24px; }

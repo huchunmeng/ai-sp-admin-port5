@@ -1,25 +1,25 @@
 <template>
-  <div class="case-editor is-editor">
-    <!-- 头部：动作按钮在顶部固定头 -->
+  <div class="case-editor">
+    <!-- 头部：与病例编辑器同一套固定头（返回 / 保存草稿 / 发布） -->
     <div class="editor-header">
       <div class="header-left">
-        <h2 class="editor-title">{{ isNew ? '新建病例' : '编辑病例' }}</h2>
-        <span v-if="form.id" class="case-id-badge">{{ form.id }}</span>
+        <h2 class="editor-title">影像题库编辑器</h2>
+        <span v-if="form.id" class="case-id-badge">ID: {{ form.id }}</span>
         <span class="badge" :class="SAMPLE_STATUS[form.status].badge">{{ SAMPLE_STATUS[form.status].label }}</span>
-        <span class="text-secondary" style="font-size:12px">v{{ form.version }}</span>
+        <span class="badge badge-info">v{{ form.version }}</span>
       </div>
       <div class="header-right">
         <button class="btn btn-outline" @click="router.push({ name: 'imagingSamples' })">返回</button>
-        <button class="btn" @click="save('draft')">保存草稿</button>
+        <button class="btn btn-outline" @click="save('draft')">保存草稿</button>
         <button class="btn btn-primary" :disabled="!canPublish" @click="save('published')">发布</button>
       </div>
     </div>
 
-    <!-- 基本信息：统一固定在最顶部，不作为步骤 -->
-    <div class="is-basic">
-      <div class="is-meta">
+    <!-- 基本信息：钉在固定头下方，不作为步骤（与病例编辑器的「钉顶信息卡」同形） -->
+    <div class="common-info-card card">
+      <div class="common-info-grid">
         <div class="filter-item" style="grid-column:span 2">
-          <label>病例标题<span>*</span></label>
+          <label>病例标题 <span style="color:var(--error)">*</span></label>
           <input class="input" v-model="form.title" placeholder="如：胸部CT · 右肺上叶结节" style="width:100%">
         </div>
         <div class="filter-item">
@@ -39,22 +39,22 @@
       </div>
     </div>
 
-    <!-- 步骤条 -->
-    <div class="is-steps">
-      <div v-for="(s, i) in STEPS" :key="s.key" class="is-step"
-           :class="{ active: i === step, done: i < step }" @click="go(i)">
-        <span class="is-step-no">
+    <!-- 步骤条：与病例编辑器的标签栏同一套观感 -->
+    <div class="editor-tab-bar">
+      <button v-for="(s, i) in STEPS" :key="s.key" class="editor-tab-btn"
+              :class="{ active: i === step, done: i < step }" @click="go(i)">
+        <span class="editor-tab-no">
           <i v-if="i < step" class="fa-solid fa-check"></i>
           <span v-else>{{ i + 1 }}</span>
         </span>
-        <span class="is-step-label">{{ s.label }}</span>
-      </div>
+        {{ s.label }}
+      </button>
     </div>
 
-    <div class="is-body">
+    <div class="editor-panel">
       <!-- ① 影像序列（图片 → 患者信息 → 标准报告） -->
       <template v-if="step === 0">
-        <div class="card mb-4" data-reviewable="影像序列">
+        <div class="card" data-reviewable="影像序列">
           <div class="is-sub">影像序列</div>
           <SeriesUploader v-model="form.seriesFrames" v-model:views="form.views" />
           <!-- 患者信息与影像同卡：放在图片下面、报告内容上面（2026-09-20 批注 9） -->
@@ -97,7 +97,6 @@ const STEPS = [
 ]
 
 const step = ref(0)
-const isNew = computed(() => !props.id)
 const form = ref(loadForm())
 const deidentifyRef = ref(null)
 
@@ -166,32 +165,8 @@ function commit(row, target, isRev) {
 </script>
 
 <style scoped>
-.is-basic {
-  padding: 14px 24px; background: var(--card-bg); border-bottom: 1px solid var(--border);
-}
-.is-meta { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px 16px; align-items: end; }
-
-.is-steps {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  padding: 12px 24px; background: #FAFBFC; border-bottom: 1px solid var(--border);
-}
-.is-step {
-  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
-  font-size: 12.5px; color: var(--text-secondary);
-  padding: 5px 12px 5px 7px; border-radius: 999px; transition: all .15s;
-}
-.is-step:hover { background: #F0F7FF; }
-.is-step.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
-.is-step.done { color: var(--success); }
-.is-step-no {
-  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-  background: #E4E7ED; color: #909399; font-size: 11px; font-weight: 600;
-  display: flex; align-items: center; justify-content: center;
-}
-.is-step.active .is-step-no { background: var(--primary); color: #fff; }
-.is-step.done .is-step-no { background: var(--success); color: #fff; }
-
-.is-body { padding: 16px 24px 24px; }
+/* 外壳（固定头 / 钉顶信息卡 / 标签栏 / 面板）一律走 global.css 的编辑器通用类，
+   本文件只留影像题库自己的小节样式，避免再次出现"各页各写一份、新页漏写"的老问题。 */
 .is-sub { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; }
 .is-sub::before {
   content: ''; display: inline-block; width: 3px; height: 13px; background: var(--primary);
@@ -201,4 +176,6 @@ function commit(row, target, isRev) {
 .is-patient {
   margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
 }
+/* 卡片之间留出与病例编辑器一致的间距（差异点：这里一屏内是多张卡） */
+.editor-panel .card + .card { margin-top: 16px; }
 </style>

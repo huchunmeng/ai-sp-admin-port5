@@ -19,6 +19,8 @@
           <label>难度</label>
           <select class="select" v-model="filters.level"><option value="">全部</option><option v-for="l in TRAINING_LEVELS" :key="l.value" :value="l.value">{{ l.value }} · {{ getCaseLevelLabel(l.value) }}</option></select>
         </div>
+      </div>
+      <div class="filter-row mt-4">
         <div class="filter-item">
           <label>可评满分</label>
           <select class="select" v-model="filters.scoreBand"><option value="">全部</option><option value="full">满分（100）</option><option value="high">85 – 99</option><option value="low">低于 85</option></select>
@@ -31,7 +33,7 @@
           <label>状态</label>
           <select class="select" v-model="filters.status"><option value="">全部</option><option v-for="(v, k) in SAMPLE_STATUS" :key="k" :value="k">{{ v.label }}</option></select>
         </div>
-        <div class="filter-item" style="flex:0 0 auto;min-width:0">
+        <div class="filter-item" style="flex:0 0 auto;min-width:0;margin-left:auto">
           <label>&nbsp;</label>
           <div class="flex gap-2"><button class="btn btn-primary" @click="currentPage = 1">搜索</button><button class="btn" @click="handleReset">重置</button></div>
         </div>
@@ -41,91 +43,91 @@
     <!-- 操作条 -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex gap-2">
-        <button class="btn" :disabled="!selectedRows.length" @click="batchSetStatus('published')">批量启用</button>
-        <button class="btn" :disabled="!selectedRows.length" @click="batchSetStatus('disabled')">批量停用</button>
+        <button class="btn" :disabled="!selectedRows.length" @click="batchSetStatus('published')" data-reviewable="批量启用">批量启用</button>
+        <button class="btn" :disabled="!selectedRows.length" @click="batchSetStatus('disabled')" data-reviewable="批量停用">批量停用</button>
       </div>
       <div class="flex gap-2">
         <button class="btn btn-primary" @click="createSample">+ 新建病例</button>
-        <button class="btn" @click="refresh">刷新列表</button>
+        <button class="btn" @click="refresh" :disabled="loading" data-reviewable="刷新列表">刷新列表</button>
       </div>
     </div>
 
     <!-- 列表 -->
-    <div v-if="!rows.length" class="empty-state">
-      <div style="margin-bottom:12px">题库暂无条目</div>
-      <button class="btn btn-primary" @click="createSample">+ 新建病例</button>
+    <div class="card" style="padding:0">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="sticky-left" style="left:0;width:40px"><input type="checkbox" :checked="selectAll" @change="toggleSelectAll"></th>
+              <th class="sticky-left" style="left:40px">病例标题</th>
+              <th>部位 · 模态</th>
+              <th>难度</th>
+              <th style="cursor:pointer;white-space:nowrap" @click="toggleScoreSort">
+                可评满分 {{ filters.sort === 'scoreAsc' ? '↑' : '' }}
+              </th>
+              <th>能力位</th>
+              <th>标准报告</th>
+              <th>最近更新</th>
+              <th class="sticky-right" style="right:268px;width:90px">状态</th>
+              <th class="sticky-right" style="right:0;min-width:268px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in paginatedData" :key="item.id">
+              <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
+              <td class="sticky-left" style="left:40px">
+                <a href="#" @click.prevent="editSample(item)" style="color:var(--primary);text-decoration:none">{{ item.title }}</a>
+                <div class="text-secondary" style="font-size:12px;margin-top:2px">
+                  <code style="background:#F5F7FA;padding:1px 6px;border-radius:4px">{{ item.id }}</code>
+                  <span style="margin-left:6px">v{{ item.version }}</span>
+                  <span v-if="item.viewCount" style="margin-left:6px">· {{ item.viewCount }} 序列 / {{ item.seriesTotal }} 帧</span>
+                </div>
+              </td>
+              <td>{{ item.bodyPart }} · {{ item.modality }}</td>
+              <td><span class="badge" :class="CASE_LEVEL_BADGE_CLASS[levelKey(item.level)]">{{ getCaseLevelLabel(item.level) || '—' }}</span></td>
+              <td :title="'该病例影像条件支持的最高得分'">
+                <span :class="item.scoreableMax >= 85 ? 'text-primary' : 'text-warning'" style="font-weight:600">{{ item.scoreableMax }}</span>
+                <span class="text-secondary"> / 100</span>
+              </td>
+              <td><span class="is-cap-list"><span v-for="f in CAPABILITY_FIELDS" :key="f.key" class="badge" :class="item.capabilities[f.key] ? 'badge-success' : 'badge-info'" :title="capTitle(f, item)">{{ f.short }}</span></span></td>
+              <td><span class="badge" :class="item.goldStandardRecorded ? 'badge-success' : 'badge-warning'">{{ item.goldStandardRecorded ? '已录入' : '未录入' }}</span></td>
+              <td>
+                <div>{{ item.updatedAt }}</div>
+                <div class="text-secondary" style="font-size:12px">{{ item.updatedBy }}</div>
+              </td>
+              <td class="sticky-right" style="right:268px"><span class="badge" :class="SAMPLE_STATUS[item.status].badge">{{ SAMPLE_STATUS[item.status].label }}</span></td>
+              <td class="sticky-right" style="right:0">
+                <div class="flex gap-2">
+                  <button class="btn btn-sm" @click="editSample(item)">编辑</button>
+                  <button class="btn btn-sm" @click="copySample(item)">复制</button>
+                  <button class="btn btn-sm" @click="showDerived(item)">不可评条目</button>
+                  <button v-if="item.status !== 'disabled'" class="btn btn-sm btn-danger" @click="disableSample(item)">停用</button>
+                  <button v-else class="btn btn-sm" @click="enableSample(item)">启用</button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!filtered.length">
+              <td colspan="10" style="text-align:center;padding:40px;color:var(--text-secondary)">
+                {{ rows.length ? '暂无匹配的影像病例' : '题库暂无条目' }}
+                <div v-if="!rows.length" style="margin-top:12px">
+                  <button class="btn btn-primary" @click="createSample">+ 新建病例</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div v-else-if="!filtered.length" class="empty-state">暂无匹配的影像病例</div>
 
-    <template v-else>
-      <div class="card" style="padding:0">
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th class="sticky-left" style="left:0;width:40px"><input type="checkbox" :checked="selectAll" @change="toggleSelectAll"></th>
-                <th>病例标题</th>
-                <th>部位 · 模态</th>
-                <th>难度</th>
-                <th style="cursor:pointer;white-space:nowrap" @click="toggleScoreSort">
-                  可评满分 {{ filters.sort === 'scoreAsc' ? '↑' : '' }}
-                </th>
-                <th>能力位</th>
-                <th>标准报告</th>
-                <th>状态</th>
-                <th>最近更新</th>
-                <th class="sticky-right" style="right:0;min-width:230px">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in paginatedData" :key="item.id">
-                <td class="sticky-left" style="left:0"><input type="checkbox" v-model="selectedRows" :value="item.id"></td>
-                <td>
-                  <a href="#" @click.prevent="editSample(item)" style="color:var(--primary);text-decoration:none">{{ item.title }}</a>
-                  <div class="text-secondary" style="font-size:12px;margin-top:2px">
-                    <code style="background:#F5F7FA;padding:1px 6px;border-radius:4px">{{ item.id }}</code>
-                    <span style="margin-left:6px">v{{ item.version }}</span>
-                    <span v-if="item.viewCount" style="margin-left:6px">· {{ item.viewCount }} 序列 / {{ item.seriesTotal }} 帧</span>
-                  </div>
-                </td>
-                <td>{{ item.bodyPart }} · {{ item.modality }}</td>
-                <td><span class="badge" :class="CASE_LEVEL_BADGE_CLASS[levelKey(item.level)]">{{ getCaseLevelLabel(item.level) || '—' }}</span></td>
-                <td :title="'该病例能力位支持的最高得分'">
-                  <span :class="item.scoreableMax >= 85 ? 'text-primary' : 'text-warning'" style="font-weight:600">{{ item.scoreableMax }}</span>
-                  <span class="text-secondary"> / 100</span>
-                </td>
-                <td><span class="is-cap-list"><span v-for="f in CAPABILITY_FIELDS" :key="f.key" class="badge" :class="item.capabilities[f.key] ? 'badge-success' : 'badge-info'" :title="capTitle(f, item)">{{ f.short }}</span></span></td>
-                <td><span class="badge" :class="item.goldStandardRecorded ? 'badge-success' : 'badge-warning'">{{ item.goldStandardRecorded ? '已录入' : '未录入' }}</span></td>
-                <td><span class="badge" :class="SAMPLE_STATUS[item.status].badge">{{ SAMPLE_STATUS[item.status].label }}</span></td>
-                <td>
-                  <div>{{ item.updatedAt }}</div>
-                  <div class="text-secondary" style="font-size:12px">{{ item.updatedBy }}</div>
-                </td>
-                <td class="sticky-right" style="right:0">
-                  <div class="flex gap-2">
-                    <button class="btn btn-sm" @click="editSample(item)">编辑</button>
-                    <button class="btn btn-sm" @click="copySample(item)">复制</button>
-                    <button class="btn btn-sm" @click="showDerived(item)">不可评条目</button>
-                    <button v-if="item.status !== 'disabled'" class="btn btn-sm btn-danger" @click="disableSample(item)">停用</button>
-                    <button v-else class="btn btn-sm" @click="enableSample(item)">启用</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div v-if="filtered.length" class="flex items-center justify-between mt-4">
+      <div class="text-secondary">共 {{ filtered.length }} 条记录</div>
+      <div class="flex gap-2">
+        <button class="btn btn-sm" :disabled="currentPage === 1" @click="currentPage--">上一页</button>
+        <span class="flex items-center px-3">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn btn-sm" :disabled="currentPage === totalPages" @click="currentPage++">下一页</button>
+        <select class="select" style="width:100px" v-model="pageSize"><option :value="10">10条/页</option><option :value="20">20条/页</option><option :value="50">50条/页</option></select>
       </div>
-
-      <div class="flex items-center justify-between mt-4">
-        <div class="text-secondary">共 {{ filtered.length }} 条记录</div>
-        <div class="flex gap-2">
-          <button class="btn btn-sm" :disabled="currentPage === 1" @click="currentPage--">上一页</button>
-          <span class="flex items-center px-3">{{ currentPage }} / {{ totalPages }}</span>
-          <button class="btn btn-sm" :disabled="currentPage === totalPages" @click="currentPage++">下一页</button>
-          <select class="select" style="width:100px" v-model="pageSize"><option :value="10">10条/页</option><option :value="20">20条/页</option><option :value="50">50条/页</option></select>
-        </div>
-      </div>
-    </template>
+    </div>
 
     <!-- 不可评条目：该样本缺失能力位而判不了的条目 -->
     <div v-if="derivedSample" class="modal-overlay" @click.self="derivedSample = null">
