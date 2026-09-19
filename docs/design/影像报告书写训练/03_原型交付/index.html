@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影像报告书写训练 · 高保真原型（Step 4）</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<!-- 顶栏（仿训练端 .app-header） -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="system-name">医路慧影（WiseImag）影像智思体</span>
+    <span class="proto-badge">训练端 · 高保真原型</span>
+    <span class="crumb" id="crumb"></span>
+  </div>
+  <div class="header-right">
+    <button class="panel-toggle" id="btnSide" type="button">左栏</button>
+    <button class="panel-toggle" id="btnReq" type="button">需求面板</button>
+    <button class="panel-toggle" id="btnEdit" type="button">编辑模式</button>
+    <span class="institution-selector" title="照训练端版式">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5"/></svg>
+      东南大学医学院
+    </span>
+    <span class="user-chip">
+      <span class="user-avatar">胡</span>
+      胡春蒙
+    </span>
+  </div>
+</header>
+
+<!-- 串讲编辑工具条（默认隐藏） -->
+<div class="edit-bar" id="editBar">
+  <span id="editState">编辑模式已开启</span>
+  <span class="edit-hint">直接点击带虚线框的文案即可修改；改动写入 localStorage 草稿（key: hi-fi-prototype:report-writing:draft）。</span>
+  <button class="btn sm" id="btnExport" type="button">导出全部</button>
+  <button class="btn sm" id="btnReset" type="button">恢复默认</button>
+</div>
+
+<!-- 外壳三列：原型侧栏 / 内容区 / ReqPanel -->
+<div class="shell">
+  <aside class="proto-sidebar" id="sidebar"></aside>
+  <main class="content" id="content"></main>
+  <aside class="req-panel" id="reqPanel"></aside>
+</div>
+
+<div id="modalRoot"></div>
+
+<script src="js/icons.js"></script>
+<script src="js/util.js"></script>
+<script src="js/seed.js"></script>
+<script src="js/req-panel.js"></script>
+<script src="js/pages/p1-home.js"></script>
+<script src="js/pages/p2-train-list.js"></script>
+<script src="js/pages/p3-train-workbench.js"></script>
+<script src="js/pages/p4-self-review.js"></script>
+<script src="js/pages/p5-exam-tasks.js"></script>
+<script src="js/pages/p6-exam-workbench.js"></script>
+<script src="js/pages/p7-result.js"></script>
+<script src="js/pages/p8-notes.js"></script>
+<script src="js/edit-mode.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

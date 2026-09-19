@@ -1,0 +1,51 @@
+/* 设计令牌 —— 逐值取自 apps/training/src/styles/variables.css（训练端既有令牌），
+   不套 skill 预设，保证本原型与训练端实机观感一致。 */
+:root {
+  /* 主色与语义色 */
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-lightest: #dbeafe;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --warning-border: #fde68a;
+  --error: #ef4444;
+  --error-light: #fef2f2;
+  --error-border: #fecaca;
+
+  /* 文本 */
+  --text-main: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #ffffff;
+
+  /* 面与线 */
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --background: #f8fafc;
+  --card-bg: #ffffff;
+
+  /* 形状 */
+  --card-radius: 12px;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --btn-radius: 8px;
+  --btn-height: 36px;
+  --input-radius: 8px;
+  --input-border: #e2e8f0;
+
+  /* 字体 */
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  --base-size: 14px;
+
+  /* 布局尺码（原型外壳，非训练端原生） */
+  --header-height: 60px;
+  --sidebar-width: 236px;
+  --sidebar-collapsed-width: 56px;
+  --reqpanel-width: 396px;
+  --content-padding: 24px;
+  --shell-min-width: 1280px;
+}
