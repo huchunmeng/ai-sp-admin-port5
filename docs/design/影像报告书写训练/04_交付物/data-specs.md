@@ -369,7 +369,7 @@ PRD §5.5 状态全集 **8 态**，其中 `已交卷` 是**独立态**（不等�
 
 > **⚠️ 字段名偏差（N15）**：PRD §5.5.1 ③ 的 `caseScores[]` 契约字段名为 `dimensions[]` / `missingItems[]` / `unassessableItems[]`，原型种子用 `items` / `dims` 简写。**实现期以 PRD 契约名为准**，已登记入差异清单序号 23。
 >
-> **⚠️ 展示面约束**：`scoreableMax` 与 `rawTotal` **不得出现在学生可见区**（§5.5.1）。原型已把三者收进标着「评审专用 · 学生端不展示」的「该例数据口径」卡。
+> **⚠️ 展示面约束**：`scoreableMax` 与 `rawTotal` **不得出现在学生可见区**（§5.5.1）。原型**不呈现**这两个量，界面只出归一后 `total` 与条目级分色清单（`unassessableItems[]`）——要核对某例折算是否合理，看分色清单即可（§5.14.4 已删折算说明区块）。
 
 ---
 
@@ -457,7 +457,7 @@ scoreableMax = 100 − Σ(乙类落空条满分)
 | `step` | number | 是 | 1–4 | 当前步骤（四步同页） | §5.13.2 |
 | `step1` | object | 是 | `{title, desc, durationMode, durationMinutes, evaluationTableVersion}` | 基本信息 | §5.13.2 |
 | `picked` | object | 是 | 键 = `caseId`，值 = **星级 1–5** | 勾选样本 + 权重星级；**勾选范围 1–20 例** | **§5.13.3** |
-| `step3` | object | 是 | `{assigneeType, classIds[], studentIds[], openFrom, openTo, maxAttempts, scorePolicy, excludeTrainedSamples, revealGoldStandardAfterSubmit, showScoreToStudent, showRankToStudent}` | 派发设置 + 4 个开关 | §5.13.4 |
+| `step3` | object | 是 | `{assigneeType, classIds[], studentIds[], openFrom, openTo, maxAttempts, scorePolicy, excludeTrainedSamples, revealGoldStandardAfterSubmit, showScoreToStudent, showRankToStudent}` | 发布设置 + 4 个开关 | §5.13.4 |
 | `gateReason` | string | 否 | ≤ 200 字 | **门禁覆盖发布原因**（走 `< 85` 路径时必填） | **§5.13.5** |
 
 **派生函数（必须现算，不得写死）**：
@@ -531,7 +531,7 @@ scoreableMax = 100 − Σ(乙类落空条满分)
 | `id` / `name` / `short` / `weight` | — | 是 | 同 `RESULT.cases` | 例标识与权重 | §5.14.4 |
 | `items[]` | array | 是 | `{code, mark, got, full, comment, source}` | 逐条得分；`source` 区分甲类/乙类不可评 | §5.14.4 |
 | `dims[]` | array | 是 | `{dim, got, full}` | 5 维度得分条 | §5.14.4 |
-| `scoreableMax` / `rawTotal` / `total` | number | 是 | **派生** | 折算与双存明细（**标「评审专用 · 学生端不展示」**） | **§5.14.4 · §5.10.2** |
+| `scoreableMax` / `rawTotal` / `total` | number | 是 | **派生** | 派生字段，**仅服务端持有**；界面只呈现归一后 `total`（§5.14.4） | **§5.14.4 · §5.10.2** |
 
 ### 12.10 `ADM_TASK_STATS` — 任务级汇总（§5.14.2）
 
@@ -609,7 +609,7 @@ scoreableMax = 100 − Σ(乙类落空条满分)
 | **部位** `bodyPart` | `颅脑` · `头颈` · `胸部` · `腹部` · `骨肌` · `其他` | §5.3 |
 | **难度** `level` / `levelName` | 三阶段七级 `U1 U2 R1 R2 R3 F1 F2` ＋ 双标签 `基础` / `进阶` / `疑难` | 难度双标签体系 |
 | **样本状态** `sample.status`（管理端） | `draft`（草稿 · 不可选）· `published`（已发布 · 可选）· `disabled`（已停用 · 不可选，**历史任务仍锁旧版**） | **§5.12.2** |
-| **组卷步骤** `ADM_DRAFT.step` | 1 基本信息 · 2 选样与权重 · 3 派发设置 · 4 确认发布 | **§5.13.2** |
+| **组卷步骤** `ADM_DRAFT.step` | 1 基本信息 · 2 选样与权重 · 3 发布设置 · 4 确认发布 | **§5.13.2** |
 | **派发对象类型** `assignee.type` | `class` · `student` | **§5.13.4** |
 | **审计动作** `action`（管理端） | `exam.publish` · **`exam.publish.overrideGate`** · `exam.revoke` · `score.export` · `sample.publish` | **§5.13.5 · §5.14.7** |
 | **学生作答状态**（管理端汇总读模型） | `已交卷` · `作答中` · `未交卷` · `未领取`（**4 态**，与任务 8 态不同维度） | **§5.14.3** |

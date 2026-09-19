@@ -38,6 +38,10 @@ body {
 }
 .crumb { font-size: 13px; color: var(--text-tertiary); white-space: nowrap; }
 .crumb b { color: var(--text-secondary); font-weight: 500; }
+.crumb .crumb-sep { margin: 0 6px; color: var(--text-tertiary); }
+.crumb .crumb-t { color: var(--text-secondary); }
+.crumb .crumb-t.cur { color: var(--text-main); font-weight: 600; }
+.crumb .crumb-t.proto { font-family: var(--font-mono); font-size: 12px; }
 
 .institution-selector {
   display: flex; align-items: center; gap: 6px;
@@ -104,6 +108,43 @@ body {
   font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);
 }
 .side-divider { height: 1px; background: var(--border-light); margin: 10px 20px; }
+
+/* 定位行：实机的原有节点，只读、不可点——用来标出本模块挂在哪一级 */
+.side-item.ghost { cursor: default; color: var(--text-tertiary); }
+.side-item.ghost:hover { background: none; }
+.side-item.lv1 { font-weight: 700; font-size: 12px; letter-spacing: .03em; padding-left: 16px; }
+.side-item.lv2 { padding-left: 26px; font-size: 12.5px; }
+.side-item.lv3 { padding-left: 38px; font-size: 13px; }
+.side-item.mount { color: var(--text-main); font-weight: 700; }
+.side-item.mount .side-flag { color: var(--primary); font-weight: 700; }
+.side-item.sub { padding-left: 52px; font-size: 12.5px; }
+.side-item.sub .side-idx { width: 22px; height: 22px; border-radius: 5px; }
+
+/* 训练端没有左侧菜单，改画面包屑路径 */
+.side-path { padding: 2px 16px 6px; display: flex; flex-direction: column; gap: 1px; }
+.side-path-row {
+  display: flex; align-items: baseline; gap: 7px;
+  font-size: 12.5px; color: var(--text-secondary);
+}
+.side-path-row .sp-sep { color: var(--text-tertiary); font-size: 11px; flex-shrink: 0; }
+.side-path-row.cur .sp-t { color: var(--primary-dark); font-weight: 700; }
+.side-path-row .sp-proto {
+  font-family: var(--font-mono); font-size: 11.5px;
+  background: var(--border-light); border-radius: 4px; padding: 1px 6px; color: var(--text-secondary);
+}
+.side-tip { font-size: 11.5px; line-height: 1.7; color: var(--text-tertiary); padding: 4px 20px 0; }
+
+/* 全部页面：一行页号药丸，跳页用，不占高度 */
+.side-pills { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 20px 4px; }
+.side-pill {
+  min-width: 30px; text-align: center; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  padding: 4px 6px; border-radius: 6px;
+  background: var(--border-light); color: var(--text-secondary);
+  border: 1px solid transparent; transition: background .12s, color .12s;
+}
+.side-pill:hover { background: var(--primary-light); color: var(--primary-dark); }
+.side-pill.active { background: var(--primary); color: #fff; }
 
 /* ── 内容区 ── */
 .content {
@@ -190,5 +231,8 @@ body.req-collapsed .req-panel { display: none; }
 body.side-collapsed .proto-sidebar { width: var(--sidebar-collapsed-width); }
 body.side-collapsed .proto-sidebar .side-label,
 body.side-collapsed .proto-sidebar .side-flag,
-body.side-collapsed .proto-sidebar .side-note { display: none; }
+body.side-collapsed .proto-sidebar .side-note,
+body.side-collapsed .proto-sidebar .side-path,
+body.side-collapsed .proto-sidebar .side-tip,
+body.side-collapsed .proto-sidebar .side-pills { display: none; }
 body.side-collapsed .proto-sidebar .side-item { justify-content: center; padding: 9px 0; }

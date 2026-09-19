@@ -75,7 +75,7 @@
           '<span class="view-wl">W 400 · L 40</span></div>' +
       '</div>';
     }).join('') + '</div>' +
-    '<div class="viewer-note">' + H.rich('三视图**互不联动**（各自独立翻层）；调窗、测量、MPR 归影像教学底座，本原型只呈现占位。') +
+    '<div class="viewer-note">' + H.rich('三视图**互不联动**，各自独立翻层。') +
       '<br>' + H.esc(wbNote()) + '</div>';
   }
 
@@ -163,8 +163,7 @@
 
       '<div class="req-section" style="padding:0 16px 14px">' +
         '<div class="tiny muted" style="line-height:1.75;padding-top:12px;border-top:1px solid var(--border-light)">' +
-          H.rich('配额**按「段 × 回合」发放**（段 = 三段式之一），用完不补；L3 每段每回合 1 次，同级提示间有 **10 秒冷却**。' +
-            '提示请求异步，受理即原子预扣配额、失败回滚（§5.7.2）。') +
+          H.rich('配额**按「段 × 回合」发放**（段 = 三段式之一），用完不补；L3 每段每回合 1 次，同级提示间有 **10 秒冷却**。') +
         '</div>' +
       '</div>' +
     '</div>';
@@ -185,7 +184,7 @@
         '<div class="wt-right">' +
           H.tag('训练模式', 'info') +
           '<button class="btn sm" type="button" data-act="go" data-page="p2">' +
-            H.icon('prev', { size: 13 }) + '返回样本列表</button>' +
+            H.icon('prev', { size: 13 }) + '返回病例列表</button>' +
         '</div>' +
       '</div>' +
 
@@ -197,7 +196,7 @@
           '<div class="card">' +
             '<div class="card-head">' + H.icon('user', { size: 15 }) +
               '<span>一般信息</span>' +
-              '<span class="card-tag">' + H.rich('**已去标识**，脱敏形态即评分基准（§5.2.2）') + '</span>' +
+              '<span class="card-tag">已去标识</span>' +
             '</div>' +
             '<div class="card-body tight">' + infoBar(wb) + '</div>' +
           '</div>' +
@@ -205,7 +204,7 @@
           '<div class="card">' +
             '<div class="card-head">' + H.icon('image', { size: 15 }) +
               '<span>影像浏览</span>' +
-              '<span class="card-tag">三视图 · 互不联动 · 占位影像</span>' +
+              '<span class="card-tag">三视图 · 互不联动</span>' +
             '</div>' +
             '<div class="card-body">' + viewer() + '</div>' +
           '</div>' +
@@ -213,7 +212,7 @@
           '<div class="card">' +
             '<div class="card-head">' + H.icon('pen', { size: 15 }) +
               '<span>报告书写</span>' +
-              '<span class="card-tag">' + H.rich('自动保存草稿 · 按段落覆盖写入（天然幂等）') + '</span>' +
+              '<span class="card-tag">自动保存草稿</span>' +
             '</div>' +
             '<div class="card-body">' + segList(wb) + '</div>' +
             '<div class="card-foot">' +
@@ -234,62 +233,6 @@
         '</div>' +
 
         '<div class="wb-side">' + tipPanel(wb) + '</div>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('warn', { size: 15 }) +
-          '<span>本页关键状态</span>' +
-          '<span class="card-tag">首访引导 · 提示用尽 · 冷却中 · 提示降级 · 一般信息缺失</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-
-          '<div class="section-title">' + H.icon('info', { size: 13 }) +
-            '<span>首次进入的一次性说明</span><span class="st-badge">点掉后不再出现</span></div>' +
-          '<div class="banner">' + H.icon('bulb', { size: 15 }) +
-            '<span>' + H.rich('**第 1 次**进入任一训练工作台时，给 3 步说明：**阅片 → 分段书写 → 对照自评**；在此之前 **T0 首屏只有三视图 + 一句话说明**，不铺开表单。') + '</span>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('lock', { size: 13 }) +
-            '<span>提示配额用尽</span><span class="st-badge">L2 / L3 按钮置灰</span></div>' +
-          '<div class="tip-btn-row" style="max-width:420px">' +
-            '<button class="tip-btn l1" type="button" data-act="noop">' + H.icon('info', { size: 13 }) + 'L1 体裁提示（不限次）</button>' +
-            '<button class="tip-btn" type="button" disabled>' + H.icon('flag', { size: 13 }) + 'L2 指向提示</button>' +
-            '<button class="tip-btn" type="button" disabled>' + H.icon('target', { size: 13 }) + 'L3 要点提示</button>' +
-          '</div>' +
-          '<div class="tiny muted mt8">' + H.rich('配额耗尽只是**按钮置灰**，不弹错误、不返回更浅内容；文案为"**本段要点提示已用完，先自己写写看**"（§5.2.3）。L1 始终可用（体裁提示不泄题）。') + '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('clock', { size: 13 }) +
-            '<span>同级提示 10 秒冷却中</span><span class="st-badge">冷却期内按钮带倒计时置灰</span></div>' +
-          '<div class="tip-btn-row" style="max-width:520px">' +
-            '<button class="tip-btn" type="button" disabled>' + H.icon('clock', { size: 13 }) + 'L2 指向提示 · 冷却 7s</button>' +
-            '<button class="tip-btn" type="button" disabled>' + H.icon('clock', { size: 13 }) + 'L3 要点提示 · 冷却 7s</button>' +
-          '</div>' +
-          '<div class="tiny muted mt8">' + H.rich('同级提示之间有 **10 秒冷却**（服务端记 `coolingUntil`）；冷却走的是与配额**两条独立**的闸门，越级请求（L1→L3）同样受冷却约束。冷却期结束按钮自动恢复。') + '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('warn', { size: 13 }) +
-            '<span>提示降级（模型侧失败）</span><span class="st-badge">不弹错误、不扣配额</span></div>' +
-          '<div class="banner warn">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('提示引擎超时 / 出站红线校验未过 → 返回**降级文案**："**暂时无法获取提示**，请稍后重试"（配置级失败）或"**这条提示没生成好，换个说法再试试**"（内容级失败）；**预扣的配额自动回滚**，不计入已用次数。') + '</span>' +
-          '</div>' +
-          '<div class="banner warn mb0" style="opacity:.72">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('降级形态示例：**暂时无法获取提示**，请稍后重试') + '</span>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('warn', { size: 13 }) +
-            '<span>一般信息条缺字段</span><span class="st-badge">不可评条目先标注</span></div>' +
-          '<div class="banner warn mb0">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('若某样本缺「检查时间」等字段，该项仍**计分**（属于学员应核对的一般信息），但若缺的是**病灶测量工具/增强序列/既往片/分期依据**等能力位，则对应条目在 T4 自评表与本页覆盖清单中标注**"本样本不可评"**并整体移出分母（§5.2.2 乙类）。') + '</span>' +
-          '</div>' +
-
-        '</div>' +
       '</div>' +
 
     '</div>';

@@ -1,11 +1,11 @@
-/* P12 组卷与派发（管理端）· PRD §5.13 / §6.1 路由 /imaging-exams/create/:id?
-   一页四步（基本信息 → 选样与权重 → 派发设置 → 确认发布），草稿只存本机、不落服务端。 */
+/* P12 组卷与发布（管理端）· PRD §5.13 / §6.1 路由 /imaging-exams/create/:id?
+   一页四步（基本信息 → 选样与权重 → 发布设置 → 确认发布），草稿只存本机、不落服务端。 */
 (function (w) {
   'use strict';
   var S = w.SEED, H = w.H;
   var U = w.ADMUI;
 
-  var STEPS = ['基本信息', '选样与权重', '派发设置', '确认发布'];
+  var STEPS = ['基本信息', '选样与权重', '发布设置', '确认发布'];
 
   function stepsBar(cur) {
     return '<div class="adm-steps">' + STEPS.map(function (label, i) {
@@ -26,8 +26,8 @@
       '<div class="field"><div class="field-label">任务名称<span class="req-star">*</span></div>' +
         '<input class="input" value="' + H.esc(s.title) + '" data-act="noop">' +
         '<div class="tiny muted" style="margin-top:5px">' +
-          H.rich('学生会看到这个名称（P5 列表卡片标题）。') + '</div></div>' +
-      '<div class="field"><div class="field-label">任务说明<span class="field-note">可选 · 学生可见</span></div>' +
+          H.rich('学员在「我的任务」列表里看到的就是这个名称。') + '</div></div>' +
+      '<div class="field"><div class="field-label">任务说明<span class="field-note">可选 · 学员可见</span></div>' +
         '<textarea class="textarea" rows="2" data-act="noop">' + H.esc(s.desc) + '</textarea></div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px">' +
         '<div class="field"><div class="field-label">计时方式<span class="req-star">*</span></div>' +
@@ -36,10 +36,10 @@
             '<option' + (s.durationMode === 'perCase' ? ' selected' : '') + '>单例计时（perCase）</option>' +
           '</select>' +
           '<div class="tiny muted" style="margin-top:5px">' +
-            H.rich('整卷：切例不停表；单例：本例锁定后不可再改（§5.6）。') + '</div></div>' +
+            H.rich('整卷：切例不停表；单例：本例锁定后不可再改。') + '</div></div>' +
         '<div class="field"><div class="field-label">时长（分钟）<span class="req-star">*</span></div>' +
           '<input class="input" value="' + s.durationMinutes + '" data-act="noop">' +
-          '<div class="tiny muted" style="margin-top:5px">默认 20 分钟，对齐 OSCE S03 站（§2.2 G2）。</div></div>' +
+          '<div class="tiny muted" style="margin-top:5px">默认 20 分钟。</div></div>' +
         '<div class="field"><div class="field-label">评价表版本<span class="field-note">只读</span></div>' +
           '<input class="input" value="' + H.esc(s.evaluationTableVersion) + '（R1 表 23 条 / 100 分）" disabled>' +
           '<div class="tiny muted" style="margin-top:5px">评价表版本化，改表不改历史成绩。</div></div>' +
@@ -115,8 +115,8 @@
       '</div>' +
 
       '<div class="banner muted" style="border-radius:0;border-left:0;border-right:0">' + H.icon('info', { size: 15 }) +
-        '<span>' + H.rich('部位 / 模态是**筛选器不是卷面字段**：只影响这个列表显示什么，不写进任务契约。' +
-          '**只有已发布且金标准已录**的样本可勾（草稿 / 停用样本置灰）。勾选范围 **1–20 例**。') + '</span>' +
+        '<span>' + H.rich('部位 / 模态只影响列表显示什么，不写进任务。' +
+          '**只有已发布且金标准已录**的病例可勾（草稿 / 已停用置灰）。勾选范围 **1–20 例**。') + '</span>' +
       '</div>' +
 
       '<div class="adm-samples">' + usable.map(function (s) { return pickRow(s, d); }).join('') + '</div>' +
@@ -136,10 +136,10 @@
 
       '<div class="card-body">' +
         '<div class="section-title">' + H.icon('sliders', { size: 13 }) +
-          '<span>权重怎么来的</span>' +
-          '<span class="st-badge">星级内部归一，不给学生看数字</span></div>' +
+          '<span>卷内病例与权重</span>' +
+          '<span class="st-badge">星级越高，该例在整卷得分里占比越大</span></div>' +
         (n ? '<table class="table table-compact">' +
-          '<thead><tr><th style="width:150px">样本</th><th style="width:110px">权重星级</th>' +
+          '<thead><tr><th style="width:150px">病例</th><th style="width:110px">权重星级</th>' +
             '<th style="width:100px">归一权重</th><th style="width:110px">本例可评分</th><th>落空条目</th></tr></thead>' +
           '<tbody>' + S.draftRefs().map(function (r) {
             var s = S.ADM_SAMPLES.filter(function (x) { return x.id === r.caseId; })[0];
@@ -148,17 +148,15 @@
               '<td>' + starRow(r.caseId, d.picked[r.caseId]) + '</td>' +
               '<td class="mono">' + r.weight + '%</td>' +
               '<td class="mono">' + sc.max + '</td>' +
-              '<td class="tiny">' + (sc.lost.length ? sc.lost.map(function (l) { return '`' + l.code + '`'; }).join(' ') : '—') + '</td></tr>';
+              '<td class="tiny">' + (sc.lost.length ? sc.lost.map(function (l) { return '<code>' + l.code + '</code>'; }).join(' ') : '—') + '</td></tr>';
           }).join('') + '</tbody></table>'
           : '<div class="empty"><div class="empty-ico">' + H.icon('layers', { size: 32 }) + '</div>' +
-            '<div class="empty-title">还没有勾选样本</div>' +
-            '<div class="empty-desc">' + H.rich('点上方样本卡勾选（至少 1 例）。星级越高，该例在整卷得分里的**权重占比越大**。') + '</div></div>') +
-        '<div class="tiny muted mt16">' + H.rich('权重算法：`caseWeights[i] = star[i] / Σstar × 100`，取 1 位小数；' +
-          '**星级只是输入方式，学生端不展示权重数字**。整卷可评分 = `Σ(本例可评分 × 权重) / Σ权重`（§5.9.2）。') + '</div>' +
+            '<div class="empty-title">还没有勾选病例</div>' +
+            '<div class="empty-desc">' + H.rich('点上方病例卡勾选（至少 1 例）。星级越高，该例在整卷得分里的**权重占比越大**。') + '</div></div>') +
       '</div>';
   }
 
-  /* ── 第 3 步：派发设置 ── */
+  /* ── 第 3 步：发布设置 ── */
   function sw(on, label, hint) {
     return '<div class="adm-sample" style="padding:10px 12px;cursor:default">' +
       '<span class="adm-cap ' + (on ? 'on' : 'off') + '" style="font-size:11px">' + (on ? 'ON' : 'OFF') + '</span>' +
@@ -171,12 +169,10 @@
     var s = d.step3;
     return '<div class="card-body">' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px">' +
-        '<div class="field"><div class="field-label">派发对象<span class="req-star">*</span></div>' +
+        '<div class="field"><div class="field-label">考核对象<span class="req-star">*</span></div>' +
           '<select class="select" data-act="noop">' +
-            '<option' + (s.assigneeType === 'class' ? ' selected' : '') + '>按班级派发</option>' +
-            '<option' + (s.assigneeType === 'student' ? ' selected' : '') + '>指定学员</option></select>' +
-          '<div class="tiny muted" style="margin-top:5px">' +
-            H.rich('班级隶属解析依赖权威名单（§9.3 / Q11，待院方确认数据源）。') + '</div></div>' +
+            '<option' + (s.assigneeType === 'class' ? ' selected' : '') + '>按班级</option>' +
+            '<option' + (s.assigneeType === 'student' ? ' selected' : '') + '>指定学员</option></select></div>' +
         '<div class="field"><div class="field-label">取分策略<span class="req-star">*</span></div>' +
           '<select class="select" data-act="noop">' +
             ['highest|取最高分', 'first|取首次成绩', 'latest|取最后一次'].map(function (o) {
@@ -184,7 +180,7 @@
               return '<option' + (s.scorePolicy === kv[0] ? ' selected' : '') + '>' + kv[1] + '（' + kv[0] + '）</option>';
             }).join('') + '</select>' +
           '<div class="tiny muted" style="margin-top:5px">' +
-            H.rich('多次作答时**成绩单只呈现被计入的那一次**（§5.14.3）。') + '</div></div>' +
+            H.rich('多次作答时**成绩单只呈现被计入的那一次**。') + '</div></div>' +
       '</div>' +
 
       '<div class="field"><div class="field-label">班级</div>' +
@@ -195,9 +191,6 @@
               H.esc(c.name) + '（' + c.studentCount + ' 人）' + (on ? ' ✓' : '') + '</span>';
           }).join('') +
         '</div>' +
-        '<div class="tiny muted" style="margin-top:6px">' +
-          H.rich('接口预留：`listClasses()` → `[{classId, name, studentCount}]`；`listStudents(classId)` → `[{studentId, name}]`。' +
-            '原型不接名单源，接口形状即契约。') + '</div>' +
       '</div>' +
 
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px">' +
@@ -212,14 +205,14 @@
       '<div class="section-title mt16">' + H.icon('sliders', { size: 13 }) +
         '<span>开关项</span><span class="st-badge">默认值即推荐值</span></div>' +
       '<div style="display:flex;flex-direction:column;gap:8px">' +
-        sw(s.excludeTrainedSamples, '排除学生已练过的样本',
-          '开启后，训练侧练过的样本不再派给该生；**默认关闭**——考核与训练的样本复用是设计前提（§9.1 硬约束 4）。') +
+        sw(s.excludeTrainedSamples, '排除学员已练过的病例',
+          '开启后，训练侧练过的病例不再下发给该学员；**默认关闭**。') +
         sw(s.revealGoldStandardAfterSubmit, '交卷后下发金标准原文',
-          '**默认关闭**。开启仅对已交卷学生可见（§5.8）；对需求 `E2-7` 的有条件偏离，见送审清单决策 3。') +
-        sw(s.showScoreToStudent, '学生可见成绩',
-          '关闭则学生侧只显示"已完成"，分数由老师线下公布（§5.14.3）。') +
-        sw(s.showRankToStudent, '学生可见排名',
-          '**默认关闭**；本期也**不做跨任务总榜**——单卷排名对教学无增益，且易引发攀比（§5.14.1）。') +
+          '**默认关闭**。开启后仅对已交卷学员可见。') +
+        sw(s.showScoreToStudent, '学员可见成绩',
+          '关闭则学员侧只显示「已完成」，分数由教师线下公布。') +
+        sw(s.showRankToStudent, '学员可见排名',
+          '**默认关闭**；本期不做跨任务总榜。') +
       '</div>' +
     '</div>';
   }
@@ -235,7 +228,7 @@
       ['计时', d.step1.durationMinutes + ' 分钟 · ' + (d.step1.durationMode === 'whole' ? '整卷计时' : '单例计时')],
       ['取分策略', { first: '取首次成绩', highest: '取最高分', latest: '取最后一次' }[d.step3.scorePolicy] || d.step3.scorePolicy],
       ['重考上限', d.step3.maxAttempts + ' 次'],
-      ['派发对象', d.step3.classIds.map(function (id) {
+      ['考核对象', d.step3.classIds.map(function (id) {
         var c = S.ADM_CLASSES.filter(function (x) { return x.id === id; })[0];
         return c ? c.name : id;
       }).join('、') || '（未选）'],
@@ -264,21 +257,16 @@
           '" style="width:' + cur.max + '%"></i><span class="adm-threshold" style="left:85%"></span></div>' +
         (ok ? '' : '<div class="tiny" style="margin-top:8px;color:#b91c1c">' + H.rich('本卷低于下限的原因：' +
           cur.refs.map(function (r) { return '`' + r.caseId + '`'; }).join(' ') +
-          ' 中部分样本的能力位未覆盖（缺失工具 / 序列 / 临床信息），详见第 2 步的落空条目。') + '</div>') +
+          ' 中部分病例的能力位未覆盖（缺失工具 / 序列 / 临床信息），详见第 2 步的落空条目。') + '</div>') +
       '</div>' +
 
       '<div class="banner ' + (ok ? 'ok' : 'error') + ' mt16">' +
         H.icon(ok ? 'check' : 'warn', { size: 15 }) +
         '<span>' + H.rich(ok
-          ? '可评分 **' + cur.max + ' ≥ 85**：点「确认发布」→ 二次确认弹窗 → 生成 `AT-…` 任务并派发。'
+          ? '可评分 **' + cur.max + ' ≥ 85**：点「确认发布」→ 二次确认弹窗 → 生成 `AT-…` 任务并发布。'
           : '可评分 **' + cur.max + ' < 85**：点「确认发布」会**强制**弹出覆盖门禁的二次确认，' +
             '**必填发布原因（≤ 200 字）**，按钮文案为「仍要发布」，并写审计 `exam.publish.overrideGate`。' +
             '门禁**不阻止发布**——它只保证"没人能悄悄发一张可评分不足的卷"。') + '</span>' +
-      '</div>' +
-
-      '<div class="banner mt16">' + H.icon('info', { size: 15 }) +
-        '<span>' + H.rich('发布后**不可改卷内病例、不可改权重**——要换题只能撤销后重派（§5.13.6）。' +
-          '样本后续改版走**新建版本**，本任务按 `caseRefs[].version` **锁在当前版本**（§5.12.8）。') + '</span>' +
       '</div>' +
     '</div>';
   }
@@ -288,16 +276,15 @@
     var cur = S.draftScoreable();
     var ok = cur.max >= 85;
     var body = d.step === 1 ? step1(d) : d.step === 2 ? step2(d) : d.step === 3 ? step3(d) : step4(d);
-    var titles = ['基本信息', '选样与权重', '派发设置', '确认发布'];
+    var titles = ['基本信息', '选样与权重', '发布设置', '确认发布'];
 
     return '<div class="content-inner">' +
 
       '<div class="page-head">' +
         '<div class="page-head-icon">' + H.icon('layers', { size: 21 }) + '</div>' +
         '<div class="page-head-text">' +
-          '<div class="page-head-title">组卷与派发</div>' +
-          '<div class="page-head-sub">' + H.rich('**管理端** · 从题库挑样本 → 赋权重 → 定派发 → 发布（§5.13）。' +
-            '四步**在同一页**完成，不走多页向导——组卷是"反复调参看结果"的活，跳页会把反馈打断。') + '</div>' +
+          '<div class="page-head-title">组卷与发布</div>' +
+          '<div class="page-head-sub">' + H.rich('从题库挑病例 → 赋权重 → 定考核对象与开放窗口 → 发布') + '</div>' +
         '</div>' +
         '<div class="page-head-extra">' +
           H.tag('草稿 · 第 ' + d.step + ' / 4 步', 'pending', true) +
@@ -306,28 +293,23 @@
         '</div>' +
       '</div>' +
 
-      '<div class="banner">' + H.icon('info', { size: 15 }) +
-        '<span>' + H.rich('`?id=` 为空是**新组卷**；带 `:id` 是**复制一份已有任务**做新卷（复用其卷面与派发设置，生成新任务 id）。' +
-          '草稿**只存本机 localStorage**，刷新不丢、也不落到服务端（§5.13.1）。') + '</span>' +
-      '</div>' +
-
       (d.gateReason ? '<div class="banner warn">' + H.icon('warn', { size: 15 }) +
         '<span>' + H.rich('本卷最近一次发布走了**门禁覆盖**，已记录原因：') +
-          '<span class="mono">' + H.esc(d.gateReason) + '</span></span></div>' : '') +
+          '<span class="mono">' + H.esc(d.gateReason) + '</span></span></div>'
+        : '<div class="banner">' + H.icon('info', { size: 15 }) +
+          '<span>' + H.rich('四步**在同一页**完成，草稿**只存本机**，刷新不丢。') + '</span></div>') +
 
       '<div class="card mt16">' +
         stepsBar(d.step) +
         '<div class="card-head" style="border-top:1px solid var(--border-light)">' +
           H.icon('sliders', { size: 15 }) +
           '<span>第 ' + d.step + ' 步 · ' + H.esc(titles[d.step - 1]) + '</span>' +
-          '<span class="card-tag">§5.13.' + (d.step + 1) + '</span>' +
         '</div>' +
         body +
       '</div>' +
 
       '<div class="adm-sticky-foot" style="border-radius:12px;border:1px solid var(--border);margin-top:16px">' +
-        '<span class="adm-foot-note">当前卷面整卷可评分 <b>' + cur.max + '</b> / 100' +
-          H.rich(ok ? '（≥ 85）' : '（`< 85` · 发布需二次确认）') + '</span>' +
+        '<span class="adm-foot-note">当前卷面整卷可评分 <b>' + cur.max + '</b> / 100' + H.esc(ok ? '（≥ 85）' : '（< 85 · 发布需二次确认）') + '</span>' +
         '<div class="adm-foot-right">' +
           '<button class="btn sm" type="button" data-act="noop">' + H.icon('copy', { size: 12 }) + '保存草稿</button>' +
           (d.step > 1 ? '<button class="btn sm" type="button" data-act="adm-prev">' +
@@ -339,7 +321,7 @@
               ? '<button class="btn primary sm" type="button" data-act="adm-publish">' +
                   H.icon('send', { size: 12 }) + '确认发布</button>'
               : '<button class="btn danger sm" type="button" data-act="adm-gate-confirm">' +
-                  H.icon('warn', { size: 12 }) + '确认发布（可评分 < 85）</button>')) +
+                  H.icon('warn', { size: 12 }) + '确认发布（可评分 &lt; 85）</button>')) +
         '</div>' +
       '</div>' +
 

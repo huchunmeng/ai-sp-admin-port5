@@ -103,17 +103,17 @@
     },
     {
       code: 'IMP-08', score: 4, label: '与以前检查比较',
-      why: '样本为静态单次检查，无既往片子',
+      why: '病例为静态单次检查，无既往片子',
       hit: function (c) { return !c.hasPriorExam; }
     },
     {
       code: 'FIND-06', score: 4, label: '强化程度准确分度',
-      why: '样本无增强期相序列（口径 Q2）',
+      why: '病例无增强期相序列（口径 Q2）',
       hit: function (c) { return !c.hasEnhancedPhase; }
     },
     {
       code: 'IMP-05', score: 4, label: '肿瘤分期',
-      why: '肿瘤样本且临床主要信息未给足分期依据（口径 Q2）',
+      why: '肿瘤病例且临床主要信息未给足分期依据（口径 Q2）',
       nA: function (c) { return !c.isTumor; },
       hit: function (c) { return c.isTumor && !c.hasStagingInfo; }
     }
@@ -126,7 +126,7 @@
     CAPABILITY_ITEMS.forEach(function (it) {
       if (it.nA && it.nA(c)) {
         max -= it.score;
-        lost.push({ code: it.code, source: 'na', score: it.score, why: '该条对本类样本不适用（N/A），结果页不标注折算' });
+        lost.push({ code: it.code, source: 'na', score: it.score, why: '该条对本类病例不适用（N/A），结果页不标注折算' });
       } else if (it.hit(c)) {
         max -= it.score;
         lost.push({ code: it.code, source: 'capability', score: it.score, why: it.why });
@@ -314,11 +314,11 @@
       openFrom: '2026-09-18 08:00', openTo: '2026-09-23 23:59',
       attemptsUsed: 1, maxAttempts: 1, scorePolicy: 'latest',
       score: null, actionable: true, actionLabel: '重试评分',
-      retryUsed: 1, retryMax: 3, reason: '评分引擎超时，已重试 1 / 3 次；3 次仍失败将提示"成绩稍后由老师核定"'
+      retryUsed: 1, retryMax: 3, reason: '评分引擎超时，已重试 1 / 3 次；3 次仍失败将提示"成绩稍后由教师核定"'
     },
     {
       id: 'ET-2026-0912', title: '胸部CT报告书写考核', state: '已截止',
-      desc: '学生未在开放窗口内领取。',
+      desc: '学员未在开放窗口内领取。',
       caseCount: 3, durationMinutes: 20, durationMode: 'whole',
       openFrom: '2026-09-08 08:00', openTo: '2026-09-12 23:59',
       attemptsUsed: 0, maxAttempts: 1, scorePolicy: 'latest',
@@ -326,11 +326,11 @@
     },
     {
       id: 'ET-2026-0910', title: '腹部MR报告书写考核', state: '已撤销',
-      desc: '管理端撤回（样本替换中）。',
+      desc: '管理端撤销（病例替换中）。',
       caseCount: 2, durationMinutes: 20, durationMode: 'whole',
       openFrom: '2026-09-10 08:00', openTo: '2026-09-18 23:59',
       attemptsUsed: 0, maxAttempts: 1, scorePolicy: 'latest',
-      score: null, actionable: false, reason: '管理端已撤回该任务'
+      score: null, actionable: false, reason: '管理端已撤销该任务'
     },
     {
       id: 'ET-2026-0950', title: '胸部CT报告书写考核（补考专用）', state: '待作答',
@@ -400,7 +400,7 @@
         weight: '各 1/3', scoreableMax: 84,
         items: [
           { code: 'GEN-01', mark: 'ok', got: 2, full: 2, comment: '' },
-          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定（检查号/影像号保留后 4 位）；住院/门诊号、就诊卡号因样本去标识不计入', source: 'deidentify' },
+          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定（检查号/影像号保留后 4 位）；住院/门诊号、就诊卡号因病例去标识不计入', source: 'deidentify' },
           { code: 'GEN-03', mark: 'ok', got: 1, full: 1, comment: '' },
           { code: 'GEN-04', mark: 'mid', got: 7, full: 10, comment: '临床主要信息基本完整，但接近照抄原文，未转述为规范写法' },
           { code: 'TECH-01', mark: 'ok', got: 3, full: 3, comment: '' },
@@ -409,18 +409,18 @@
           { code: 'FIND-01', mark: 'mid', got: 8, full: 10, comment: '未按器官顺序组织，层次不够清楚' },
           { code: 'FIND-02', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'FIND-03', mark: 'mid', got: 3, full: 4, comment: '部位准确，累及范围描述略欠' },
-          { code: 'FIND-04', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（影像控件不提供测量工具）', source: 'capability' },
+          { code: 'FIND-04', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（影像控件不提供测量工具）', source: 'capability' },
           { code: 'FIND-05', mark: 'ok', got: 4, full: 4, comment: '' },
-          { code: 'FIND-06', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（无增强期相序列）', source: 'capability' },
+          { code: 'FIND-06', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（无增强期相序列）', source: 'capability' },
           { code: 'FIND-07', mark: 'bad', got: 0, full: 4, comment: '该类征象未提及' },
           { code: 'IMP-01', mark: 'mid', got: 8, full: 10, comment: '未直接答复临床问题（有无纵隔淋巴结肿大及胸腔积液）' },
           { code: 'IMP-02', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'IMP-03', mark: 'mid', got: 3, full: 4, comment: '给出倾向性诊断，但依据表述不足' },
           { code: 'IMP-04', mark: 'ok', got: 4, full: 4, comment: '' },
-          { code: 'IMP-05', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（临床主要信息未给足分期依据）', source: 'capability' },
+          { code: 'IMP-05', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（临床主要信息未给足分期依据）', source: 'capability' },
           { code: 'IMP-06', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'IMP-07', mark: 'mid', got: 2.5, full: 4, comment: '建议不够明确，未写清下一步检查方式' },
-          { code: 'IMP-08', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（无既往检查影像）', source: 'capability' },
+          { code: 'IMP-08', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（无既往检查影像）', source: 'capability' },
           { code: 'LANG-01', mark: 'ok', got: 5, full: 5, comment: '' }
         ]
       },
@@ -429,7 +429,7 @@
         weight: '各 1/3', scoreableMax: 88,
         items: [
           { code: 'GEN-01', mark: 'ok', got: 2, full: 2, comment: '' },
-          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定；全掩字段因样本去标识不计入', source: 'deidentify' },
+          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定；全掩字段因病例去标识不计入', source: 'deidentify' },
           { code: 'GEN-03', mark: 'ok', got: 1, full: 1, comment: '' },
           { code: 'GEN-04', mark: 'mid', got: 6.5, full: 10, comment: '临床信息转述不完整' },
           { code: 'TECH-01', mark: 'ok', got: 3, full: 3, comment: '' },
@@ -440,16 +440,16 @@
           { code: 'FIND-03', mark: 'mid', got: 3, full: 4, comment: '位置尚可，范围描述不足' },
           { code: 'FIND-04', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'FIND-05', mark: 'mid', got: 2, full: 4, comment: '边界与形态描述不足' },
-          { code: 'FIND-06', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（无增强期相序列）', source: 'capability' },
+          { code: 'FIND-06', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（无增强期相序列）', source: 'capability' },
           { code: 'FIND-07', mark: 'bad', got: 0, full: 4, comment: '该类征象未提及' },
           { code: 'IMP-01', mark: 'ok', got: 8, full: 10, comment: '' },
           { code: 'IMP-02', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'IMP-03', mark: 'mid', got: 3, full: 4, comment: '诊断倾向性不足' },
           { code: 'IMP-04', mark: 'ok', got: 4, full: 4, comment: '' },
-          { code: 'IMP-05', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（临床主要信息未给足分期依据）', source: 'capability' },
+          { code: 'IMP-05', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（临床主要信息未给足分期依据）', source: 'capability' },
           { code: 'IMP-06', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'IMP-07', mark: 'mid', got: 3, full: 4, comment: '建议方向正确，表述可再明确' },
-          { code: 'IMP-08', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（无既往检查影像）', source: 'capability' },
+          { code: 'IMP-08', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（无既往检查影像）', source: 'capability' },
           { code: 'LANG-01', mark: 'mid', got: 4, full: 5, comment: '存在一处标点使用不规范' }
         ]
       },
@@ -458,7 +458,7 @@
         weight: '各 1/3', scoreableMax: 96,
         items: [
           { code: 'GEN-01', mark: 'ok', got: 2, full: 2, comment: '' },
-          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定；全掩字段因样本去标识不计入', source: 'deidentify' },
+          { code: 'GEN-02', mark: 'na', got: 0.5, full: 1, comment: '该条按可评部分判定；全掩字段因病例去标识不计入', source: 'deidentify' },
           { code: 'GEN-03', mark: 'ok', got: 1, full: 1, comment: '' },
           { code: 'GEN-04', mark: 'ok', got: 8.5, full: 10, comment: '信息完整，转述基本规范' },
           { code: 'TECH-01', mark: 'ok', got: 3, full: 3, comment: '' },
@@ -467,7 +467,7 @@
           { code: 'FIND-01', mark: 'ok', got: 8, full: 10, comment: '' },
           { code: 'FIND-02', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'FIND-03', mark: 'ok', got: 4, full: 4, comment: '' },
-          { code: 'FIND-04', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期样本/控件不具备相应能力不可评，已折算（影像控件不提供测量工具）', source: 'capability' },
+          { code: 'FIND-04', mark: 'unassessable', got: 0, full: 4, comment: '该项因本期病例/控件不具备相应能力不可评，已折算（影像控件不提供测量工具）', source: 'capability' },
           { code: 'FIND-05', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'FIND-06', mark: 'ok', got: 4, full: 4, comment: '' },
           { code: 'FIND-07', mark: 'mid', got: 2, full: 4, comment: '阴性征象不全' },
@@ -640,7 +640,7 @@
       openFrom: '2026-09-12 08:00', openTo: '2026-09-18 23:59',
       revealGoldStandardAfterSubmit: true, showScoreToStudent: true, showRankToStudent: false,
       publishedAt: '2026-09-11 18:22', createdBy: '胡春蒙',
-      overrideGate: { used: true, scoreableMax: 84, reason: '本批次样本尚未覆盖测量/既往/增强三类能力，临床带教要求本周内完成考核，先按 84 分口径发布，成绩单已标注可评分。' },
+      overrideGate: { used: true, scoreableMax: 84, reason: '本批次病例尚未覆盖测量/既往/增强三类能力，临床带教要求本周内完成考核，先按 84 分口径发布，成绩单已标注可评分。' },
       progress: { assigned: 32, claimed: 32, submitted: 32 }
     },
     {
@@ -652,7 +652,7 @@
       revealGoldStandardAfterSubmit: false, showScoreToStudent: true, showRankToStudent: false,
       publishedAt: '2026-09-12 16:00', revokedAt: '2026-09-14 10:26', createdBy: '胡春蒙',
       overrideGate: null, progress: { assigned: 32, claimed: 11, submitted: 11 },
-      revokeNote: '样本替换中：带教反馈该例影像序列不全，撤回后重派新任务（新任务 id）'
+      revokeNote: '病例替换中：带教反馈该例影像序列不全，撤销后重新发布新任务（新任务 id）'
     },
     {
       id: 'AT-2026-0996', title: '胸部CT报告书写考核（补考）', state: '评分失败',

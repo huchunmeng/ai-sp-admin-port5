@@ -275,8 +275,12 @@
 
 /* ════ 评审说明页 ════ */
 .doc-body { font-size: 13px; line-height: 1.95; color: #374151; }
-.doc-body h3 { font-size: 14px; font-weight: 700; color: var(--text-main); margin: 22px 0 9px; }
+.doc-body h3 {
+  font-size: 14px; font-weight: 700; color: var(--text-main);
+  margin: 30px 0 9px; padding-top: 14px; border-top: 1px solid var(--border);
+}
 .doc-body h3:first-child { margin-top: 0; }
+.doc-body h4 { font-size: 13px; font-weight: 700; color: #1f2937; margin: 18px 0 6px; }
 .doc-body ul { margin: 0; padding-left: 20px; }
 .doc-body li { margin-bottom: 5px; }
 .doc-body code {
@@ -296,3 +300,62 @@
 .doc-flag.must { background: var(--error-light); color: #b91c1c; }
 .doc-flag.should { background: var(--warning-light); color: #b45309; }
 .doc-flag.ok { background: var(--success-light); color: #047857; }
+
+/* 锚点条（hash 被路由占用，故用 span + data-act，不用 <a href="#s2">） */
+.doc-anchors {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  background: var(--bg-subtle, #f8fafc); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 20px;
+}
+.doc-anchor {
+  font-size: 12px; color: var(--primary); cursor: pointer;
+  border: 1px solid var(--border); background: #fff;
+  border-radius: 6px; padding: 3px 9px; user-select: none;
+}
+.doc-anchor:hover { background: var(--primary-light, #eff6ff); border-color: var(--primary); }
+
+/* 状态全集卡片 */
+.doc-state {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px 14px; margin-bottom: 10px; background: #fff;
+}
+.doc-state .ds-head {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 700; color: var(--text-main);
+  margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+}
+.doc-state .ds-page {
+  margin-left: auto; font-size: 11px; font-weight: 600;
+  color: var(--text-tertiary); background: var(--border-light);
+  border-radius: 4px; padding: 1px 7px;
+}
+.doc-state .ds-body { font-size: 12.5px; line-height: 1.85; color: #4b5563; }
+.doc-state .ds-body .ds-row { display: flex; gap: 8px; margin-bottom: 3px; }
+.doc-state .ds-body .ds-k {
+  flex: none; width: 76px; color: var(--text-tertiary); font-size: 11.5px; padding-top: 1px;
+}
+
+/* 口径提示块 */
+.doc-callout {
+  background: var(--error-light); border: 1px solid var(--error-border);
+  border-radius: 10px; padding: 12px 15px; margin: 10px 0;
+}
+.doc-callout .dc-title {
+  font-weight: 700; color: #b91c1c; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.doc-callout .dc-body { font-size: 12.5px; line-height: 1.85; color: #7f1d1d; }
+.doc-callout.ok { background: var(--success-light); border-color: #a7f3d0; }
+.doc-callout.ok .dc-title { color: #047857; }
+.doc-callout.ok .dc-body { color: #065f46; }
+
+/* 评审导航跳转卡 */
+.doc-jumps { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.doc-jump {
+  flex: 1; min-width: 210px; padding: 13px 15px; cursor: pointer;
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.doc-jump:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(37,99,235,.10); }
+.doc-jump .dj-t { font-size: 14px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
+.doc-jump .dj-s { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }

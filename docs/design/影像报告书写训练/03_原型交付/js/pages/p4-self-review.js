@@ -40,7 +40,7 @@
         var isNa = !!na[it.code];
         var m = marks[it.code] || 'unsure';
         var pills = isNa
-          ? '<span class="tiny" style="color:var(--text-tertiary)">本样本不可评</span>'
+          ? '<span class="tiny" style="color:var(--text-tertiary)">本病例不可评</span>'
           : '<span class="pill-group">' + ['wrote', 'missed', 'unsure'].map(function (k) {
               return '<span class="pill' + (m === k ? ' on-' + k : '') + '" ' +
                 'data-act="mark" data-code="' + it.code + '" data-mark="' + k + '">' +
@@ -89,6 +89,47 @@
     }).join('\n');
   }
 
+  /* 未提交：门禁挡板 */
+  function gateBody() {
+    return '<div class="gate-hold">' +
+      '<div class="gate-ico">' + H.icon('lock', { size: 32 }) + '</div>' +
+      '<div class="gate-title">提交自评后才能查看对照</div>' +
+      '<div class="gate-desc">' + H.rich('先把自评写完再看参考 —— 这是训练侧的收口动作，**不可跳过**。') + '</div>' +
+      '<button class="btn primary sm" type="button" data-act="toggle-submit">' +
+        H.icon('send', { size: 13 }) + '提交自评并解锁对照</button>' +
+    '</div>';
+  }
+
+  /* 已提交：对照双栏 + 下一步 */
+  function compareBody() {
+    return '<div class="compare-grid">' +
+        '<div class="compare-col">' +
+          '<div class="compare-head">' + H.icon('pen', { size: 14 }) + '<span>你的报告</span></div>' +
+          '<div class="compare-body">' + colBody(CMP.your) + '</div>' +
+        '</div>' +
+        '<div class="compare-col gold">' +
+          '<div class="compare-head">' + H.icon('check', { size: 14 }) + '<span>参考报告（金标准）</span></div>' +
+          '<div class="compare-body">' + colBody(CMP.gold) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="compare-legend">' +
+        '<span><span class="hl-ok">绿底</span> = 参考报告中你未覆盖的内容</span>' +
+      '</div>' +
+
+      '<div class="divider"></div>' +
+
+      '<div class="section-title">' + H.icon('redo', { size: 13 }) + '<span>下一步</span></div>' +
+      '<div class="row wrap">' +
+        '<button class="btn primary sm" type="button" data-act="go" data-page="p3">' +
+          H.icon('redo', { size: 13 }) + '重写本回合（回到 T1）</button>' +
+        '<button class="btn sm" type="button" data-act="noop">' +
+          H.icon('plus', { size: 13 }) + '重练（新回合，配额重置）</button>' +
+        '<button class="btn sm" type="button" data-act="go" data-page="p2">' +
+          H.icon('next', { size: 13 }) + '换一例病例</button>' +
+        '<span class="tiny muted" style="margin-left:auto">完成一例 = 提交 T4 自评；本回合已计入「已练 N 次」</span>' +
+      '</div>';
+  }
+
   function P4SelfReview() {
     var caseId = S.SELF_REVIEW.caseId;
     var c = S.CASE_BY_ID[caseId];
@@ -116,10 +157,10 @@
 
       (submitted
         ? '<div class="banner ok">' + H.icon('check', { size: 15 }) +
-            '<span>自评已提交（<b class="mono">14:41:20</b>）→ 对照区已解锁。' + H.rich('自评结果**不参与任何计算**，仅作学情信号与管理端可消费数据。') + '</span>' +
+            '<span>自评已提交（<b class="mono">14:41:20</b>）→ 对照区已解锁。' + H.rich('**自评结果不参与任何计算**，仅作学情参考。') + '</span>' +
           '</div>'
         : '<div class="banner">' + H.icon('info', { size: 15 }) +
-            '<span>' + H.rich('自评表按 **R1 表逐条（含分值）**；**不可评条目**显示为"本样本不可评"且不纳入自评总分，避免学生按用不了的工具给自己打低分。') + '</span>' +
+            '<span>' + H.rich('自评表按 **R1 表逐条（含分值）**；**不可评条目**显示为"本病例不可评"且不纳入自评总分，避免学员按用不了的工具给自己打低分。') + '</span>' +
           '</div>') +
 
       '<div class="card">' +
@@ -143,7 +184,7 @@
       '<div class="card">' +
         '<div class="card-head">' + H.icon('chart', { size: 15 }) +
           '<span>自评合计</span>' +
-          '<span class="card-tag">' + H.rich('口径：按"写了"的条目分值合计，按可评分归一') + '</span>' +
+          '<span class="card-tag">按可评分归一</span>' +
         '</div>' +
         '<div class="card-body">' +
           '<div class="row wrap" style="gap:22px">' +
@@ -164,9 +205,8 @@
                   (dev > 0 ? '+' : '') + dev + '</span></div>' +
               '</div>' +
               '<div class="tiny muted mt8" style="line-height:1.75">' +
-                H.rich('偏差为负 = 你**低估了自己**。分母为该样本**可评分 ' + t.pool +
-                  '**（已扣掉 ' + S.scoreableOf(caseId).lost.length + ' 条不可评，共 ' + (100 - t.pool) +
-                  ' 分；甲类去标识的 GEN-02 仅部分不可评，**仍留在分母内**）。') +
+                H.rich('偏差为负 = 你**低估了自己**。分母为该病例**可评分 ' + t.pool +
+                  '**（已扣掉 ' + S.scoreableOf(caseId).lost.length + ' 条不可评，共 ' + (100 - t.pool) + ' 分）。') +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -177,7 +217,7 @@
       '<div class="card">' +
         '<div class="card-head">' + H.icon('image', { size: 15 }) +
           '<span>T0 阅片笔记 · 回看</span>' +
-          '<span class="card-tag">' + H.rich('**不进入报告、不参与评分** · 随回合存 `round{n}.viewNotes`') + '</span>' +
+          '<span class="card-tag">不进入报告 · 不参与评分</span>' +
         '</div>' +
         '<div class="card-body">' +
           (S.WORKBENCH.viewNotes
@@ -189,61 +229,15 @@
         '</div>' +
       '</div>' +
 
-      /* ── A 态：门禁 ── */
+      /* ── 对照区：单态渲染，由 card-foot 的 `toggle-submit` 实时切换。
+            两态静态描述（门禁口径 / 金标准下发范围）已归入 P8 §状态全集 ── */
       '<div class="card">' +
-        '<div class="card-head">' + H.icon('lock', { size: 15 }) +
-          '<span>【状态 A】对照区 · 自评未提交</span>' +
-          '<span class="card-tag">' + H.rich('门禁在**服务端**，前端隐藏仅为体验') + '</span>' +
+        '<div class="card-head">' + H.icon(submitted ? 'eye' : 'lock', { size: 15 }) +
+          '<span>对照区</span>' +
+          '<span class="card-tag">' + (submitted ? '参考报告（金标准）' : '提交自评后解锁') + '</span>' +
         '</div>' +
         '<div class="card-body">' +
-          '<div class="gate-hold">' +
-            '<div class="gate-ico">' + H.icon('lock', { size: 32 }) + '</div>' +
-            '<div class="gate-title">提交自评后才能查看对照</div>' +
-            '<div class="gate-desc">' +
-              H.rich('对照接口**服务端**校验 `round{n}.selfReview` 已提交，未提交一律拒绝返回对照数据，返回 `409 SELF_REVIEW_REQUIRED`。' +
-                '前端隐藏**不作为门禁** —— 否则学生改请求即可绕过"先自评"。') +
-            '</div>' +
-            '<button class="btn primary sm" type="button" data-act="toggle-submit">' +
-              H.icon('send', { size: 13 }) + '提交自评并解锁对照</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-
-      /* ── B 态：对照 ── */
-      '<div class="card">' +
-        '<div class="card-head">' + H.icon('eye', { size: 15 }) +
-          '<span>【状态 B】对照差异 · 自评提交后</span>' +
-          '<span class="card-tag">' + H.rich('只下发**当例**金标准 · `Cache-Control: no-store`') + '</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="compare-grid">' +
-            '<div class="compare-col">' +
-              '<div class="compare-head">' + H.icon('pen', { size: 14 }) + '<span>你的报告</span></div>' +
-              '<div class="compare-body">' + colBody(CMP.your) + '</div>' +
-            '</div>' +
-            '<div class="compare-col gold">' +
-              '<div class="compare-head">' + H.icon('check', { size: 14 }) + '<span>参考报告（金标准）</span></div>' +
-              '<div class="compare-body">' + colBody(CMP.gold) + '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="compare-legend">' +
-            '<span><span class="hl-ok">绿底</span> = 参考报告中你未覆盖的内容</span>' +
-            '<span>' + H.rich('参考报告在**训练侧 T4**（自评提交后）必定下发；考核侧**默认不下发**，仅在任务配置 `revealGoldStandardAfterSubmit = true` 且已交卷时展示原文（§5.8 / §7.4）') + '</span>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('redo', { size: 13 }) +
-            '<span>下一步</span><span class="st-badge">重写不限次，但不是硬门槛</span></div>' +
-          '<div class="row wrap">' +
-            '<button class="btn primary sm" type="button" data-act="go" data-page="p3">' +
-              H.icon('redo', { size: 13 }) + '重写本回合（回到 T1）</button>' +
-            '<button class="btn sm" type="button" data-act="noop">' +
-              H.icon('plus', { size: 13 }) + '重练（新回合，配额重置）</button>' +
-            '<button class="btn sm" type="button" data-act="go" data-page="p2">' +
-              H.icon('next', { size: 13 }) + '换一例样本</button>' +
-            '<span class="tiny muted" style="margin-left:auto">完成一例 = 提交 T4 自评；本回合已计入「已练 N 次」</span>' +
-          '</div>' +
+          (submitted ? compareBody() : gateBody()) +
         '</div>' +
       '</div>' +
 

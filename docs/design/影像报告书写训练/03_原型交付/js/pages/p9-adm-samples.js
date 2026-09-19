@@ -1,5 +1,5 @@
 /* P9 影像报告题库（管理端）· PRD §5.12.2 题库列表页 / §6.1 路由 /imaging-samples
-   学生侧看不到本页：题库维护的界面归管理端承接（原方案归教师端，port5 无教师端）。 */
+   学员端看不到本页：题库维护的界面归管理端承接（原方案归教师端，port5 无教师端）。 */
 (function (w) {
   'use strict';
   var S = w.SEED, H = w.H;
@@ -20,7 +20,7 @@
       var cls = k === 'hasMeasurement' ? 'locked' : (on ? 'on' : 'off');
       var clickable = k === 'hasMeasurement' ? '' : ' data-act="adm-cap" data-id="' + H.esc(id) + '" data-cap="' + k + '"';
       return '<span class="adm-cap ' + cls + '"' + clickable +
-        ' title="' + H.esc(CAP_LABEL[k] + (k === 'hasMeasurement' ? '：由影像控件能力决定（§9.4 本期 ❌），只读' : '：样本声明位，可勾')) + '">' +
+        ' title="' + H.esc(CAP_LABEL[k] + (k === 'hasMeasurement' ? '：由影像控件能力决定（§9.4 本期 ❌），只读' : '：病例声明位，可勾')) + '">' +
         CAP_LABEL[k] + (k === 'hasMeasurement' ? ' 🔒' : '') + '</span>';
     }).join('') + '</div>';
   }
@@ -75,7 +75,6 @@
     var draft = all.filter(function (s) { return s.status === 'draft'; }).length;
     var off = all.filter(function (s) { return s.status === 'disabled'; }).length;
     var noGold = all.filter(function (s) { return !s.goldStandard; }).length;
-    var imp = S.SAMPLE_VER_IMPACT;
 
     return '<div class="content-inner">' +
 
@@ -83,8 +82,7 @@
         '<div class="page-head-icon">' + H.icon('folder', { size: 21 }) + '</div>' +
         '<div class="page-head-text">' +
           '<div class="page-head-title">影像报告题库</div>' +
-          '<div class="page-head-sub">' + H.rich('**管理端** · 影像样本入库、脱敏、能力位声明、金标准录制的唯一入口（§5.12）。' +
-            '样本是**独立于平台/机构/专家病例库**的新模块：本模块自建自用，不与专家病例库互通。') + '</div>' +
+          '<div class="page-head-sub">' + H.rich('影像报告病例的入库、脱敏、能力位声明与金标准录制') + '</div>' +
         '</div>' +
         '<div class="page-head-extra">' +
           H.tag('已发布 ' + pub, 'scored', true) +
@@ -93,15 +91,9 @@
         '</div>' +
       '</div>' +
 
-      '<div class="banner">' + H.icon('info', { size: 15 }) +
-        '<span>' + H.rich('题库存的是**样本**（影像序列 + 脱敏信息 + 能力位 + 金标准报告），不是"题目"。' +
-          '组卷时才从题库挑样本、赋权重，形成一张**考核卷**（§5.13）。样本改版走**新建版本**，' +
-          '已发布任务**锁旧版本**、不吃改动（§5.12.8）。') + '</span>' +
-      '</div>' +
-
       (noGold ? '<div class="banner warn">' + H.icon('warn', { size: 15 }) +
-        '<span>' + H.rich('有 **' + noGold + ' 份**样本**缺金标准报告**，状态只能是「草稿」、**不可发布**——' +
-          '金标准是评分依据（§5.12.6），也是学生对照自评（T4）的参考。') + '</span></div>' : '') +
+        '<span>' + H.rich('有 **' + noGold + ' 份**病例**缺金标准报告**，状态只能是「草稿」、**不可发布**——' +
+          '金标准是评分依据，也是学员对照自评的参考。') + '</span></div>' : '') +
 
       '<div class="card mt16">' +
         '<div class="adm-bar">' +
@@ -117,59 +109,12 @@
           '<div class="filter-item">' + H.icon('search', { size: 14 }) +
             '<input class="input" type="search" placeholder="搜索题号 / 名称 / 部位" data-act="noop"></div>' +
           '<div class="adm-bar-right">' +
-            '<span class="adm-count">共 <b>' + all.length + '</b> 份样本 · 其中 <b>' + noGold + '</b> 份待补金标准</span>' +
+            '<span class="adm-count">共 <b>' + all.length + '</b> 份病例 · 其中 <b>' + noGold + '</b> 份待补金标准</span>' +
             '<button class="btn primary sm" type="button" data-act="noop">' +
-              H.icon('upload', { size: 13 }) + '上传样本（zip）</button>' +
+              H.icon('upload', { size: 13 }) + '上传病例（zip）</button>' +
           '</div>' +
         '</div>' +
         '<div class="adm-samples">' + all.map(sampleRow).join('') + '</div>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('layers', { size: 15 }) +
-          '<span>样本改版的影响面</span>' +
-          '<span class="card-tag">§5.12.8 · 版本与发布</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="banner warn mb0">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('题库里改**已发布**的样本（`' + imp.id + '`）**不允许原地覆盖**，必须**新建版本** ' +
-              'v' + imp.from + ' → **v' + imp.to + '**。改版后：**新任务**取 v' + imp.to + '，' +
-              '**' + imp.openTasks + ' 个已发布任务**仍按 `caseRefs[].version` **锁在 v' + imp.from + '**，' +
-              '学生看到的影像与评分依据**不变**——这是`caseSnapshot[]` 快照与版本号的共同作用（§5.5.1）。') + '</span>' +
-          '</div>' +
-          '<table class="table table-compact mt16">' +
-            '<thead><tr><th style="width:120px">任务</th><th style="width:96px">状态</th><th style="width:150px">卷内版本</th><th>说明</th></tr></thead>' +
-            '<tbody>' +
-              S.ADM_TASKS.map(function (t) {
-                var hit = t.caseRefs.filter(function (r) { return r.caseId === imp.id; })[0];
-                if (!hit) return '';
-                var locked = hit.version === imp.from;
-                return '<tr><td class="mono">' + H.esc(t.id) + '</td>' +
-                  '<td>' + H.stateTag(t.state) + '</td>' +
-                  '<td class="mono">' + H.esc(hit.caseId) + ' @ v' + hit.version +
-                    (locked ? ' <span class="tag plain">锁旧版</span>' : '') + '</td>' +
-                  '<td class="tiny">' + H.rich(locked
-                    ? '已发布 → **吃不到** v' + imp.to + ' 的改动'
-                    : '新任务 → 取 v' + imp.to) + '</td></tr>';
-              }).join('') +
-            '</tbody>' +
-          '</table>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('target', { size: 15 }) +
-          '<span>可评分 <code>scoreableMax</code> 是怎么算出来的</span>' +
-          '<span class="card-tag">§5.9.2 · 上表数字由本页现算</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="banner mb0">' + H.icon('info', { size: 15 }) +
-            '<span>' + H.rich('`scoreableMax = 100 − Σ(落空条满分)`。落空分两类：' +
-              '**甲类 · 样本去标识**（`GEN-02` 属此类的**部分不可评**：检查号 / 影像号保留后 4 位仍可评，' +
-              '该条**整体仍计入分母**）+ **乙类 · 样本能力位 × 控件能力**。' +
-              '本页点样本卡上的**能力位徽章**可勾选/取消，右侧可评分会立刻变——门禁线的由来就一目了然。') + '</span>' +
-          '</div>' +
-        '</div>' +
       '</div>' +
 
     '</div>';

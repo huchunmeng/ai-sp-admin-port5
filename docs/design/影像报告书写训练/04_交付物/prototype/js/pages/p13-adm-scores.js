@@ -1,5 +1,5 @@
 /* P13 成绩汇总与学情（管理端）· PRD §5.14 / §6.1 路由 /imaging-exams/:id/scores
-   三层下钻：任务级 → 学生级 → 病例级；外加"学情视角"（条目级失分率）。 */
+   三层下钻：任务级 → 学员级 → 病例级；外加"学情视角"（条目级失分率）。 */
 (function (w) {
   'use strict';
   var S = w.SEED, H = w.H;
@@ -23,7 +23,7 @@
     if (!st) return '';
     var maxN = Math.max.apply(null, st.dist.map(function (d) { return d.n; }));
     var kv = [
-      ['派发人数', st.assigned + ' 人'],
+      ['考核人数', st.assigned + ' 人'],
       ['已领取', st.claimed + ' 人'],
       ['已交卷', st.submitted + ' 人'],
       ['未交卷', (st.assigned - st.submitted) + ' 人'],
@@ -33,7 +33,7 @@
     return '<div class="card">' +
       '<div class="card-head">' + H.icon('chart', { size: 15 }) +
         '<span>一、任务级汇总</span>' +
-        '<span class="card-tag">§5.14.2 · 均分只统计已交卷 attempt</span>' +
+        '<span class="card-tag">均分只统计已交卷的作答</span>' +
       '</div>' +
       '<div class="card-body">' +
         '<div class="kv-grid">' + kv.map(function (r) {
@@ -51,8 +51,7 @@
             '<span class="adm-loss-v">' + d.n + ' 人</span>' +
           '</div>';
         }).join('') + '</div>' +
-        '<div class="tiny muted mt16">' + H.rich('「未交卷」**不按 0 分计入均分**，也不显示为 0 分——' +
-          '这与"卷内某例未作答"是两回事：后者按 0 分计入该例、结果页明示（§5.14.2）。') + '</div>' +
+        '<div class="tiny muted mt16">' + H.rich('「未交卷」**不按 0 分计入均分**，也不显示为 0 分。') + '</div>' +
       '</div>' +
     '</div>';
   }
@@ -61,9 +60,9 @@
   function caseDetail(s, idx) {
     var c = s.cases[idx];
     if (!c) return '<div class="adm-detail"><div class="empty" style="padding:26px 0">' +
-      '<div class="empty-title">该生暂无可下钻的病例明细</div>' +
-      '<div class="empty-desc">' + H.rich('未交卷 / 未领取的学生没有病例级数据；' +
-        '交卷但评分失败的学生，明细按 `scoreFailed` 处理，不显示 0 分。') + '</div></div></div>';
+      '<div class="empty-title">该学员暂无可下钻的病例明细</div>' +
+      '<div class="empty-desc">' + H.rich('未交卷 / 未领取的学员没有病例级数据；' +
+        '交卷但评分失败的学员，明细按**评分失败**处理，不显示 0 分。') + '</div></div></div>';
 
     var unassess = c.items.filter(function (it) { return it.mark === 'unassessable' || it.mark === 'na'; });
 
@@ -129,16 +128,6 @@
             '</div>'
           : '') +
 
-        '<details class="adm-fold">' +
-          '<summary>折算与双存明细 <span class="adm-review-only">评审专用 · 学生端不展示</span></summary>' +
-          '<div class="adm-fold-body">' +
-            '本卷可评分 <span class="mono">scoreableMax = ' + c.scoreableMax + '</span>（= 100 − Σ落空条满分）<br>' +
-            '原始分 <span class="mono">rawTotal = ' + c.rawTotal + '</span> · ' +
-            '归一得分 <span class="mono">total = rawTotal / scoreableMax × 100 = ' + c.total + '</span><br>' +
-            H.rich('归一化对跨卷比较的影响与口径已写入送审清单决策 5；**本节内容学生端不展示**（§5.14.4，' +
-              '与 P7 学生成绩页的呈现边界一致）。') +
-          '</div>' +
-        '</details>' +
       '</div>' +
     '</div>';
   }
@@ -184,13 +173,12 @@
     return '<div class="card mt16">' +
       '<div class="card-head">' + H.icon('target', { size: 15 }) +
         '<span>三、学情视角 · 条目级失分率</span>' +
-        '<span class="card-tag">§5.14.5 · 不可评条目已踢出分母</span>' +
+        '<span class="card-tag">不可评条目已踢出分母</span>' +
       '</div>' +
       '<div class="card-body">' +
         '<div class="banner">' + H.icon('info', { size: 15 }) +
-          '<span>' + H.rich('口径：`Σ该条实际得分 / Σ该条可评满分`——**不可评条目直接从分母剔除**，' +
-            '否则"样本不具备的能力"会被读成"学生不会"。可评次数 < 5 的条目标「样本量不足」、**不参与排序**。' +
-            '本演示的样本池 = 张三 + 李四 两名学生 × 3 例 = 6 个 case-score。') + '</span>' +
+          '<span>' + H.rich('**不可评条目直接从分母剔除**，否则"病例不具备的能力"会被读成"学员不会"。' +
+            '可评次数 < 5 的条目标「例数不足」、**不参与排序**。') + '</span>' +
         '</div>' +
         '<div class="section-title">' + H.icon('warn', { size: 13 }) +
           '<span>失分率排行（前 8）</span>' +
@@ -204,7 +192,7 @@
             '<span class="adm-loss-v">' + r.lossRate + '%</span>' +
           '</div>';
         }).join('') +
-        '<div class="tiny muted mt16">' + H.rich('样本量不足（可评次数 < 5）的条目 **' + few + ' 条**已折叠不列出；' +
+        '<div class="tiny muted mt16">' + H.rich('例数不足（可评次数 < 5）的条目 **' + few + ' 条**已折叠不列出；' +
           '整卷中从未可评的条目 **' + outOfPool + ' 条**同样不出现在排行里（没有分母就没有失分率）。') + '</div>' +
       '</div>' +
     '</div>';
@@ -224,8 +212,7 @@
         '<div class="page-head-text">' +
           '<div class="page-head-title">成绩汇总与学情</div>' +
           '<div class="page-head-sub"><b>' + H.esc(t.title) + '</b> · <span class="mono">' + H.esc(t.id) +
-            '</span> · ' + t.caseCount + ' 例 · 整卷可评分 ' + t.scoreableMax + ' 分 · ' +
-            H.rich('三层下钻：**任务级 → 学生级 → 病例级**（§5.14）') + '</div>' +
+            '</span> · ' + t.caseCount + ' 例 · 整卷可评分 ' + t.scoreableMax + ' 分</div>' +
         '</div>' +
         '<div class="page-head-extra">' +
           H.stateTag(t.state) +
@@ -240,15 +227,15 @@
       (t.overrideGate && t.overrideGate.used
         ? '<div class="banner warn">' + H.icon('warn', { size: 15 }) +
             '<span>' + H.rich('本任务发布时**覆盖了门禁**（可评分 ' + t.overrideGate.scoreableMax + ' < 85）。' +
-              '成绩单须标注"本卷含不可评条目"，且**跨卷不可比**；发布原因与操作人见审计（§5.13.5）。') + '</span></div>'
+              '成绩单须标注"本卷含不可评条目"，且**跨卷不可比**；发布原因与操作人见审计。') + '</span></div>'
         : '') +
 
       '<div class="mt16">' + taskLevel(t, st) + '</div>' +
 
       '<div class="card mt16">' +
         '<div class="card-head">' + H.icon('users', { size: 15 }) +
-          '<span>二、学生级（按 `scorePolicy` 取值）</span>' +
-          '<span class="card-tag">' + H.rich('点行展开病例级下钻') + '</span>' +
+          '<span>二、学员级（按取分策略取值）</span>' +
+          '<span class="card-tag">点行展开病例级下钻</span>' +
         '</div>' +
         '<div class="adm-bar" style="border-top:1px solid var(--border-light)">' +
           '<div class="filter-item"><label>班级</label>' +
@@ -271,7 +258,7 @@
       '<div class="card mt16">' +
         '<div class="card-head">' + H.icon('flag', { size: 15 }) +
           '<span>四、成绩申诉（只读登记）</span>' +
-          '<span class="card-tag">§5.14.6 · 本期不设复核 / 改分</span>' +
+          '<span class="card-tag">本期不设复核 / 改分</span>' +
         '</div>' +
         '<div class="card-body">' +
           (S.ADM_STUDENTS.filter(function (s) { return s.appeal; }).length
@@ -283,16 +270,13 @@
                     '<span style="margin-left:auto">' + H.tag('待线下处置', 'pending', true) + '</span>' +
                   '</div>' +
                   '<div style="font-size:12.5px;line-height:1.8;white-space:pre-wrap">' + H.esc(s.appeal.reason) + '</div>' +
-                  '<div class="tiny muted" style="margin-top:8px">' +
-                    H.rich('申诉原因**原样纯文本渲染**（不解析 Markdown / 不执行 HTML），防 XSS。') + '</div>' +
                 '</div>';
               }).join('')
             : '<div class="empty"><div class="empty-title">暂无申诉</div>' +
               '<div class="empty-desc">' + H.rich('本期申诉**只落登记数据**，管理端不提供复核 / 改分按钮；' +
                 '处置在线下完成，线上仅留痕。') + '</div></div>') +
           '<div class="banner mb0 mt16">' + H.icon('info', { size: 15 }) +
-            '<span>' + H.rich('导出成绩单（CSV / PDF）**不含金标准原文**，且写审计 `score.export`（§5.14.7）；' +
-              '每页 50 条、同 §5.11 的性能口径。') + '</span>' +
+            '<span>' + H.rich('导出成绩单（CSV / PDF）**不含金标准原文**，并写审计 `score.export`；每页 50 条。') + '</span>' +
           '</div>' +
         '</div>' +
       '</div>' +

@@ -18,7 +18,7 @@ PAGES = {
     "p9":  ["题库", "能力位"],
     "p10": ["脱敏", "金标准"],
     "p11": ["任务"],
-    "p12": ["选样与权重", "派发设置", "确认发布"],
+    "p12": ["选样与权重", "发布设置", "确认发布"],
     "p13": ["成绩", "学情"],
 }
 
@@ -37,7 +37,9 @@ fails = []
 for pid in PAGES:
     html = dump(pid)
     ready = 'data-proto-ready="1"' in html
-    isadm = "end-admin" in html
+    # 必须锚在 <body> 的 class 上：P8 正文里就写着 body.end-admin 字样，
+    # 全文包含判断会让 P8 即使没挂上管理端外壳也判 True（关键词断言的形状缺陷）。
+    isadm = bool(re.search(r"<body[^>]*\bend-admin\b", html))
     render_fail = "本页渲染失败" in html
     hits = [k for k in PAGES[pid] if k in html]
     miss = [k for k in PAGES[pid] if k not in html]

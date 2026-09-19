@@ -100,7 +100,7 @@
             (ew.durationMode === 'perCase'
               ? '**单例计时**：每例各自倒计时，到点锁该例，**锁定后不可再改**；切走暂停、切回继续。'
               : '**整卷计时**：切例**不停表、不锁定**，各例自由来回；锁定只发生在**整卷提交**或**到时**。') +
-            '倒计时到点由服务端兜底**自动交卷**并提示"已自动交卷"。') + '</span>' +
+            '倒计时到点自动交卷。') + '</span>' +
         '</div>' +
       '</div>' +
 
@@ -118,7 +118,7 @@
           '<div class="card">' +
             '<div class="card-head">' + H.icon('user', { size: 15 }) +
               '<span>一般信息 · 例' + (idx + 1) + '</span>' +
-              '<span class="card-tag">已去标识，脱敏形态即评分基准</span>' +
+              '<span class="card-tag">已去标识</span>' +
             '</div>' +
             '<div class="card-body tight">' + infoBar() + '</div>' +
           '</div>' +
@@ -126,7 +126,7 @@
           '<div class="card">' +
             '<div class="card-head">' + H.icon('image', { size: 15 }) +
               '<span>影像浏览 · 例' + (idx + 1) + '</span>' +
-              '<span class="card-tag">' + H.rich('三视图互不联动；**仅锁进阶操作**，平移/翻层仍可用') + '</span>' +
+              '<span class="card-tag">三视图 · 互不联动</span>' +
             '</div>' +
             '<div class="card-body">' +
               '<div class="viewer">' +
@@ -142,7 +142,7 @@
                       '<span class="view-wl">W 400 · L 40</span></div></div>';
                   }).join('') +
               '</div>' +
-              '<div class="viewer-note">' + H.rich('考核期锁定**测量工具与调窗**（归影像教学底座，本期不交付 → 对应条目走不可评折算）；浏览与翻层不受限。') + '</div>' +
+              '<div class="viewer-note">' + H.rich('考核期锁定**测量工具与调窗**；浏览与翻层不受限。') + '</div>' +
             '</div>' +
           '</div>' +
 
@@ -196,7 +196,7 @@
               '<div class="lock-ico">' + H.icon('lock', { size: 30 }) + '</div>' +
               '<div class="lock-title">考核期不提供提示</div>' +
               '<div class="lock-desc">' + H.rich('三级提示阶梯（L1/L2/L3）**仅训练侧提供**。考核侧既不显示提示按钮，服务端也不接受提示请求 —— 这是**服务端**的判定，不是前端隐藏。') + '</div>' +
-              '<div class="lock-note">' + H.rich('同理，要素覆盖清单与参考报告在考核期**都不下发**（§5.8）。') + '</div>' +
+              '<div class="lock-note">' + H.rich('同理，要素覆盖清单与参考报告在考核期**都不下发**。') + '</div>' +
             '</div>' +
           '</div>' +
 
@@ -210,7 +210,7 @@
                   ew.caseIds.filter(function (id) { return ew.drafts[id].locked; }).length + ' / ' + ew.caseTotal +
                   '（' + (ew.durationMode === 'perCase' ? '单例锁定' : '整卷提交时统一锁定') + '）</span></div>' +
                 '<div class="kv"><span class="kv-k">未同步草稿</span><span class="kv-v" style="color:var(--warning)">1 例待同步</span></div>' +
-                '<div class="kv"><span class="kv-k">自动交卷</span><span class="kv-v">到点触发（submitType = autoTimeout）</span></div>' +
+                '<div class="kv"><span class="kv-k">自动交卷</span><span class="kv-v">到点触发</span></div>' +
               '</div>' +
               '<div class="banner warn mt12 mb0" style="padding:8px 11px;font-size:11.5px">' +
                 H.icon('refresh', { size: 13 }) +
@@ -218,55 +218,6 @@
               '</div>' +
             '</div>' +
           '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('warn', { size: 15 }) +
-          '<span>本页关键状态</span>' +
-          '<span class="card-tag">perCase 单例锁定 · 自动交卷 · 未同步</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-
-          '<div class="section-title">' + H.icon('lock', { size: 13 }) +
-            '<span>perCase 单例锁定（只读形态）</span><span class="st-badge">例' + ew.lockDemo.caseNo +
-              ' 于 ' + H.esc(ew.lockDemo.lockedAt) + ' 锁定 · caseLockReason = manual</span></div>' +
-          '<div class="seg-list" style="max-width:820px">' +
-            '<div class="seg">' +
-              '<div class="seg-head">' + H.icon('lock', { size: 13 }) +
-                '<span>' + H.esc(ew.lockDemo.segName) + '（例' + ew.lockDemo.caseNo + '）</span>' +
-                '<span class="seg-flag">已锁定只读</span>' +
-                '<span class="seg-count">' + ew.lockDemo.text.length + ' / 3000</span>' +
-              '</div>' +
-              '<textarea class="seg-textarea" rows="2" disabled>' + H.esc(ew.lockDemo.text) + '</textarea>' +
-            '</div>' +
-          '</div>' +
-          '<div class="tiny muted mt8">' + H.rich('**单例锁定只出现在 `perCase` 计时下**：该例到点或被学生「下一例」带锁。' +
-            '`whole` 模式下切例**不锁定**（§5.6.1「切例不改 startedAt」/ §7.2.1「前后切换自由来回」），' +
-            '本工作台跑的就是 `whole`，所以三例都没锁定。锁定是**单向**的：可继续看、可切例，但不能取消（避免"先看参考再改"）。' +
-            '锁定原因只取 `manual` | `timeout` 两值（§5.6.2）。') + '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('clock', { size: 13 }) +
-            '<span>自动交卷的两种来源</span><span class="st-badge">submitType = autoTimeout / autoDeadline</span></div>' +
-          '<div class="banner">' + H.icon('clock', { size: 15 }) +
-            '<span>' + H.rich('① **倒计时归零**（`autoTimeout`）：未锁定的例按**最后保存的草稿**提交，顶部提示"**已自动交卷**"，草稿区转只读。' +
-              '服务端兜底扫描命中后先等 `GRACE = 15s`，宽限期内收到前端自动交卷则以该请求为准。') + '</span>' +
-          '</div>' +
-          '<div class="banner mb0">' + H.icon('calendar', { size: 15 }) +
-            '<span>' + H.rich('② **`openTo` 到点**（`autoDeadline`）：已领取且草稿**非空** → 自动交卷，不销毁学生成果。' +
-              '若草稿为空则转 `已截止`（`已截止` 只覆盖无卷可结算的学生）。') + '</span>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('warn', { size: 13 }) +
-            '<span>离线未同步</span><span class="st-badge">不阻塞作答</span></div>' +
-          '<div class="banner error mb0">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('多端并发写同一例 → 以**最后一次保存**为准并提示"本机草稿更新，正在同步"。完全离线时草稿**暂存本机**，恢复后自动同步，**不阻断作答、不因离线丢卷**（§5.11 未同步提示）。') + '</span>' +
-          '</div>' +
-
         '</div>' +
       '</div>' +
 

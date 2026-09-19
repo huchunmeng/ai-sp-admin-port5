@@ -1,5 +1,5 @@
 /* P5 我的考核任务 · PRD §5.5 状态全集 / §6.1 路由 /report-writing/exam
-   只显示管理端派发的任务；学生不能自选病例。 */
+   只显示管理端发布的任务；学员不能自选病例。 */
 (function (w) {
   'use strict';
   var S = w.SEED, H = w.H;
@@ -45,7 +45,7 @@
             (t.retryUsed != null ? H.tag('已重试 ' + t.retryUsed + ' / ' + t.retryMax + ' 次', 'diff-bad', true) : '') +
             H.tag(t.id, 'plain', true) +
           '</div>' +
-          '<div class="task-desc">' + H.esc(t.desc) + '</div>' +
+          '<div class="task-desc">' + H.rich(t.desc) + '</div>' +
           '<div class="task-meta">' + meta + '</div>' +
           (t.reason ? '<div class="tiny" style="margin-top:9px;color:var(--text-tertiary)">' +
             H.icon('info', { size: 11 }) + ' ' + H.esc(t.reason) + '</div>' : '') +
@@ -86,7 +86,7 @@
         '<div class="page-head-icon exam">' + H.icon('clipboard-check', { size: 21 }) + '</div>' +
         '<div class="page-head-text">' +
           '<div class="page-head-title">我的考核任务</div>' +
-          '<div class="page-head-sub">' + H.rich('只显示**管理端派发**的考核任务；样本由管理端组卷，学生**不能自选病例**、不能指定例数') + '</div>' +
+          '<div class="page-head-sub">' + H.rich('考核任务由管理端**发布**，病例与例数都不能自选') + '</div>' +
         '</div>' +
         '<div class="page-head-extra">' +
           H.tag('待作答 ' + todo, 'pending', true) +
@@ -96,9 +96,7 @@
       '</div>' +
 
       '<div class="banner warn">' + H.icon('warn', { size: 15 }) +
-        '<span>' + H.rich('考核期内**无训练辅助**：三级提示全部关闭、覆盖清单不下发、参考报告**默认不下发**（仅当任务配置 `revealGoldStandardAfterSubmit = true` 且已交卷时展示原文，§5.8）。' +
-          '计时分两种：**整卷计时**切例不停表、锁定只由整卷提交或到时触发；**单例计时**（`perCase`）本例锁定后不可再改。' +
-          '到点由服务端兜底**自动交卷**（倒计时归零 `autoTimeout`；`openTo` 到点且草稿非空 `autoDeadline`）。') + '</span>' +
+        '<span>' + H.rich('考核期内**无训练辅助**：三级提示关闭、覆盖清单不下发、参考报告默认不下发。') + '</span>' +
       '</div>' +
 
       '<div class="filter-row card" style="padding:12px 18px">' +
@@ -122,45 +120,6 @@
         '<span class="pager-btn on">1</span>' +
         '<span class="pager-btn">2</span>' +
         '<span class="pager-btn">' + H.icon('next', { size: 12 }) + '</span>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('refresh', { size: 15 }) +
-          '<span>列表状态示例</span>' +
-          '<span class="card-tag">加载中 · 空态 · 评分轮询</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-
-          '<div class="section-title">' + H.icon('refresh', { size: 13 }) +
-            '<span>加载中（骨架屏）</span><span class="st-badge">进入页面 / 切筛选</span></div>' +
-          '<div class="stack">' +
-            [0, 1].map(function () {
-              return '<div class="sk-card" style="padding:15px 18px">' +
-                '<div class="sk-line w40" style="margin:0 0 12px"></div>' +
-                '<div class="sk-line" style="margin:0 0 8px"></div>' +
-                '<div class="sk-line w60" style="margin:0"></div></div>';
-            }).join('') +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('clipboard-check', { size: 13 }) +
-            '<span>空态</span><span class="st-badge">管理端尚未派发</span></div>' +
-          '<div class="empty">' +
-            '<div class="empty-ico">' + H.icon('clipboard-check', { size: 34 }) + '</div>' +
-            '<div class="empty-title">暂无考核任务</div>' +
-            '<div class="empty-desc">' + H.rich('考核任务由管理端在**题库与考核管理**里创建并派发后才出现在此处（P11 / P12）。学生侧**不能自建、不能自选样本**；任务开放窗口开始后才会显示「领取并作答」。') + '</div>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('clock', { size: 13 }) +
-            '<span>「评分中」的轮询形态</span><span class="st-badge">可离开页面</span></div>' +
-          '<div class="banner mb0">' + H.icon('clock', { size: 15 }) +
-            '<span>' + H.rich('评分中**不阻塞**页面：可离开、回来轮询。评分失败时按 `retryMax = 3` 自动重试；3 次仍失败则提示"**成绩稍后由老师核定**"，并允许学生**申请复核**。') + '</span>' +
-          '</div>' +
-
-        '</div>' +
       '</div>' +
 
     '</div>';

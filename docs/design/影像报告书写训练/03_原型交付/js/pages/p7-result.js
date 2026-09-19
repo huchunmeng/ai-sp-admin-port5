@@ -53,7 +53,6 @@
     var R = S.RESULT;
     var idx = w.appState.resCaseIdx || 0;
     var c = R.cases[idx];
-    var naCount = c.items.filter(function (i) { return i.mark === 'unassessable'; }).length;
 
     return '<div class="content-inner">' +
 
@@ -68,7 +67,7 @@
         '<div class="res-hero-meta">' +
           '<div class="rhm-title">' + H.esc(R.title) + '</div>' +
           '<div class="rhm-sub">' + H.esc(R.taskId) + ' · 第 ' + R.attemptIndex + ' / ' + R.attemptTotal + ' 次作答 · ' +
-            '提交方式 <span class="mono">' + (R.submitType === 'autoTimeout' ? 'autoTimeout（自动交卷）' : 'manual') + '</span></div>' +
+            '提交方式 <span class="mono">' + (R.submitType === 'autoTimeout' ? '自动交卷' : '手动交卷') + '</span></div>' +
           '<div class="rhm-sub">最后保存于 <span class="mono">' + H.esc(R.lastSavedAt) + '</span>' +
             (R.savedNotice ? ' · ' + H.icon('check', { size: 12 }) + ' 草稿已落库' : '') + '</div>' +
         '</div>' +
@@ -78,7 +77,7 @@
       '</div>' +
 
       '<div class="res-note">' + H.icon('info', { size: 14 }) +
-        '<span>' + H.rich('成绩按例给出并**透视到条目**。本期样本有 **4 条条目（共 16 分）**落在能力边界之外（测量工具 / 增强序列 / 既往片 / 分期依据），这些条目**整条移出分母**，成绩按可评分项**归一折算**。' +
+        '<span>' + H.rich('成绩按例给出并**透视到条目**。本期病例中有 **4 条条目（共 16 分）**落在能力边界之外（测量工具 / 增强序列 / 既往片 / 分期依据），这些条目**整条移出分母**，成绩按可评分项**归一折算**。' +
           '换句话说：这里的满分对应的是**"本卷实际能考到的量"**，不是扣分理由。') + '</span>' +
       '</div>' +
 
@@ -110,46 +109,20 @@
             '</div>' +
             '<div class="card-body">' +
               dimRows(c) +
-              '<div class="tiny muted mt8">' + H.rich('维度分是**整卷视角**的合成分（原始分，非归一）；该例归一后为 **' + c.total + '**。') + '</div>' +
+              '<div class="tiny muted mt8">' + H.rich('维度分为原始分（非归一）；该例归一后为 **' + c.total + '**。') + '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
         '<div class="wb-side">' +
-          '<div class="card" style="border-style:dashed">' +
-            '<div class="card-head">' + H.icon('flag', { size: 15 }) + '<span>该例数据口径</span>' +
-              H.tag('评审专用 · 学生端不展示', 'diff-mid', true) + '</div>' +
-            '<div class="card-body tight">' +
-              '<div class="banner mb12" style="padding:8px 11px;font-size:11.5px;background:var(--diff-mid-bg,#fffbeb);border-color:#fde68a">' +
-                H.icon('warn', { size: 13 }) +
-                '<span>' + H.rich('按 §5.5.1，**学生成绩单不展示 `scoreableMax`**（避免"这卷只考了 84 分"被误读为扣分理由）。' +
-                  '本卡片是**给评审看的口径核对窗**，不是学生可见界面；学生侧只看到成绩与条目级"该项已折算"标注。') + '</span>' +
-              '</div>' +
-              '<div class="kv-grid" style="grid-template-columns:1fr">' +
-                '<div class="kv"><span class="kv-k">`total`（成绩·归一）</span><span class="kv-v mono">' + c.total + ' / 100</span></div>' +
-                '<div class="kv"><span class="kv-k">`rawTotal`（原始分）</span><span class="kv-v mono">' + c.rawTotal + '</span></div>' +
-                '<div class="kv"><span class="kv-k">`scoreableMax`（归一分母）</span><span class="kv-v mono">' + c.scoreableMax + '</span></div>' +
-                '<div class="kv"><span class="kv-k">不可评条目数</span><span class="kv-v mono">' + naCount + ' 条（' + naCount * 4 + ' 分）</span></div>' +
-                '<div class="kv"><span class="kv-k">算式</span><span class="kv-v mono">' + c.rawTotal + ' ÷ ' + c.scoreableMax + ' × 100 = ' + c.total + '</span></div>' +
-              '</div>' +
-              '<div class="tiny muted mt12" style="line-height:1.8">' +
-                H.rich('三者**同时持久化**（§5.5.1 ③ raw / normalized 双存）——否则影像教学底座补齐测量工具后，**历史成绩无法重算**。') +
-              '</div>' +
-              '<div class="banner mt12 mb0" style="padding:8px 11px;font-size:11.5px">' + H.icon('info', { size: 13 }) +
-                '<span>' + H.rich('例外：若整卷 `scoreableMax < 85` 且组卷者**二次确认强行发布**，则该卷成绩单会标注"本卷可评分 X 分"（§5.5.1 门禁表）。') + '</span>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-
-          '<div class="card mt12">' +
+          '<div class="card">' +
             '<div class="card-head">' + H.icon('eye', { size: 15 }) + '<span>参考报告（金标准原文）</span>' +
               H.tag(R.goldStandardRevealed ? '本任务已开放' : '本任务未开放', R.goldStandardRevealed ? 'scored' : 'plain', true) + '</div>' +
             '<div class="card-body tight">' +
               '<div class="tip-locked-box" style="padding:22px 6px">' +
                 '<div class="lock-ico">' + H.icon('lock', { size: 28 }) + '</div>' +
                 '<div class="lock-title" style="font-size:13.5px">本任务未开放（由老师组卷时设置）</div>' +
-                '<div class="lock-desc">' + H.rich('考核结果页是否露金标准原文，由任务级配置开关 `revealGoldStandardAfterSubmit` 决定，**默认 false**（§5.5.1 / D9 / §7.4）。') + '</div>' +
-                '<div class="lock-note">' + H.rich('开为 true 时，此处展示**金标准报告全文**（BDD 场景 12）；为 false 时只给维度/条目级缺失清单，不含金标准原文与事实词。训练侧不受此开关影响——T4 自评提交后**必定下发**。') + '</div>' +
+                '<div class="lock-desc">' + H.rich('本任务未开放参考报告原文，你仍可看到**维度与条目级的缺失清单**。') + '</div>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -180,35 +153,7 @@
             H.icon('flag', { size: 13 }) + (R.appealFiled ? '已申请复核' : '申请复核') + '</button>' +
         '</div>' +
         '<div class="tiny muted" style="padding:0 20px 14px;line-height:1.8">' +
-          H.rich('重考粒度是**整卷**（不提供单例重考，§7.2 重考粒度），新起一次 `attempt`；成绩取值口径由组卷时的 `scorePolicy` 决定。已评分的 attempt 冻结不可改。') +
-        '</div>' +
-      '</div>' +
-
-      '<div class="card mt16">' +
-        '<div class="card-head">' + H.icon('warn', { size: 15 }) +
-          '<span>本页关键状态</span>' +
-          '<span class="card-tag">评分中 · 评分失败</span>' +
-        '</div>' +
-        '<div class="card-body">' +
-
-          '<div class="section-title">' + H.icon('clock', { size: 13 }) +
-            '<span>评分中</span><span class="st-badge">可离开页面，回来轮询</span></div>' +
-          '<div class="score-pending">' +
-            '<div class="spinner"></div>' +
-            '<div class="sp-title">评分进行中</div>' +
-            '<div class="sp-desc">' + H.rich('成绩生成中，通常数秒内完成。**可以离开页面**，回来时自动轮询；轮询不产生副作用。') + '</div>' +
-          '</div>' +
-
-          '<div class="divider"></div>' +
-
-          '<div class="section-title">' + H.icon('warn', { size: 13 }) +
-            '<span>评分失败</span><span class="st-badge">自动重试 3 次后转人工</span></div>' +
-          '<div class="banner error">' + H.icon('warn', { size: 15 }) +
-            '<span>' + H.rich('评分引擎超时，已自动重试 **1 / 3** 次。3 次仍失败则提示"**成绩稍后由老师核定**"，并保留「申请复核」入口；不把失败暴露成空白分数。') + '</span>' +
-            '<button class="btn sm" type="button" data-act="noop" style="margin-left:auto">' +
-              H.icon('refresh', { size: 13 }) + '重试评分</button>' +
-          '</div>' +
-
+          H.rich('重考粒度是**整卷**（不提供单例重考）；已评分的作答冻结不可改。') +
         '</div>' +
       '</div>' +
 

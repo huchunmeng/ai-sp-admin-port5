@@ -26,9 +26,9 @@
     { id: 'p7', no: 'P7', label: '评分结果页', flag: '/:taskId/result', req: 'result', render: w.P7Result },
 
     { id: 'p9', no: 'P9', label: '影像报告题库', flag: '/imaging-samples', req: 'admSamples', render: w.P9AdmSamples, end: true, note: '§5.12.2' },
-    { id: 'p10', no: 'P10', label: '样本编辑器', flag: '/imaging-samples/:id', req: 'admSampleEditor', render: w.P10AdmSampleEditor, end: true, note: '§5.12.3–5.12.6' },
+    { id: 'p10', no: 'P10', label: '病例编辑器', flag: '/imaging-samples/:id', req: 'admSampleEditor', render: w.P10AdmSampleEditor, end: true, note: '§5.12.3–5.12.6' },
     { id: 'p11', no: 'P11', label: '考核任务管理', flag: '/imaging-exams', req: 'admExamTasks', render: w.P11AdmExamTasks, end: true, note: '§5.14.1' },
-    { id: 'p12', no: 'P12', label: '组卷与派发四步', flag: '/imaging-exams/create/:id?', req: 'admExamCreate', render: w.P12AdmExamCreate, end: true, note: '§5.13' },
+    { id: 'p12', no: 'P12', label: '组卷与发布四步', flag: '/imaging-exams/create/:id?', req: 'admExamCreate', render: w.P12AdmExamCreate, end: true, note: '§5.13' },
     { id: 'p13', no: 'P13', label: '成绩汇总与学情', flag: '/imaging-exams/:id/scores', req: 'admScores', render: w.P13AdmScores, end: true, note: '§5.14' },
 
     { id: 'p8', no: 'P8', label: '评审说明', flag: '非产品界面', req: 'notes', render: w.P8Notes, note: '交付说明' }
@@ -38,33 +38,130 @@
   var PAGE_BY_ID = {};
   PAGES.forEach(function (p) { PAGE_BY_ID[p.id] = p; });
 
-  function sideRow(p) {
-    return '<div class="side-item' + (p.id === w.appState.current ? ' active' : '') + '" ' +
-      'data-act="go" data-page="' + p.id + '" title="' + H.esc(p.label) + '">' +
-      '<span class="side-idx">' + p.no + '</span>' +
-      '<span class="side-label">' + H.esc(p.label) + '</span>' +
-      (p.note ? '<span class="side-flag">' + H.esc(p.note) + '</span>' : '') +
-    '</div>';
+  /* 每页在实机 IA 里的位置。训练端取自 TrainingLayout.vue 的面包屑、
+     管理端取自 AdminLayout.vue 的 MENU_CONFIG——不是按页面新编的清单。
+     实机 `/report-writing/:mode` 是**一页装完**（列表 / 工作台 / 对照自评同页），
+     故工作台以下没有独立路由，叶子用 `P 编号` 兜住，**不虚构路径**。 */
+  var IA = {
+    p1:  ['首页', '影像报告书写训练'],
+    p2:  ['首页', '影像报告书写训练', 'P2 病例列表'],
+    p3:  ['首页', '影像报告书写训练', 'P3 工作台 T0–T4'],
+    p4:  ['首页', '影像报告书写训练', 'P4 对照自评'],
+    p5:  ['首页', '在线考试', '影像报告书写考核'],
+    p6:  ['首页', '在线考试', '影像报告书写考核', 'P6 工作台'],
+    p7:  ['首页', '在线考试', '影像报告书写考核', 'P7 评分结果'],
+    p9:  ['临床思维管理', '病例管理', '影像报告题库', 'P9 题库列表'],
+    p10: ['临床思维管理', '病例管理', '影像报告题库', 'P10 病例编辑器'],
+    p11: ['临床思维管理', '考核管理', '影像报告考核', 'P11 任务管理'],
+    p12: ['临床思维管理', '考核管理', '影像报告考核', 'P12 组卷与发布'],
+    p13: ['临床思维管理', '考核管理', '影像报告考核', 'P13 成绩汇总'],
+    p8:  ['评审说明']
+  };
+
+  /* port5 管理端真实菜单树（apps/admin/src/layouts/AdminLayout.vue ≡ MENU_CONFIG）。
+     原样列出全部原有节点，本模块新增的两处标 mount——点开就能看见它挂在哪一级。 */
+  var ADM_IA = [
+    { mod: '临床思维管理', groups: [
+      { mod: '病例管理', leaves: [
+        '平台病例库', '机构病例库', '专家病例库', '评分表管理', 'AI伴学病例库',
+        '原始病历素材库', 'MDT病例管理',
+        { label: '影像报告题库', mount: ['p9', 'p10'] }
+      ]},
+      { mod: '培训管理', leaves: ['训练记录'] },
+      { mod: '考核管理', leaves: [
+        '考核记录',
+        { label: '影像报告考核', mount: ['p11', 'p12', 'p13'] }
+      ]},
+      { mod: '系统管理', leaves: ['考站设置', '全流程评分配置', '系统设置'] }
+    ]},
+    { mod: '住培管理', ext: true },
+    { mod: '实习管理', ext: true },
+    { mod: '考试管理', ext: true }
+  ];
+
+  var isProtoLeaf = function (t) { return /^P\d/.test(t); };
+
+  /* 菜单树挂载点下的「屏级」行：只写屏幕名，不带 P 编号（编号已在左侧徽章上） */
+  function screenName(pid) {
+    var arr = IA[pid] || [], last = arr[arr.length - 1] || pid;
+    return last.replace(/^P\d+\s*/, '');
   }
 
-  function sideGroup(no, text) {
-    return '<div class="side-group"><span class="side-group-no">' + no + '</span>' + H.esc(text) + '</div>';
+  function trainPath() {
+    var path = IA[w.appState.current] || [];
+    return '<div class="side-path">' + path.map(function (t, i) {
+      var last = i === path.length - 1;
+      return '<div class="side-path-row' + (last ? ' cur' : '') + '">' +
+        '<span class="sp-sep">' + (i ? '›' : '·') + '</span>' +
+        '<span class="sp-t' + (isProtoLeaf(t) ? ' sp-proto' : '') + '">' + H.esc(t) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function admTree() {
+    var cur = w.appState.current;
+    return ADM_IA.map(function (m) {
+      if (m.ext) {
+        return '<div class="side-item ghost lv1"><span class="side-label">' + H.esc(m.mod) + '</span>' +
+          '<span class="side-flag">外部系统</span></div>';
+      }
+      return '<div class="side-item ghost lv1"><span class="side-label">' + H.esc(m.mod) + '</span></div>' +
+        m.groups.map(function (g) {
+          return '<div class="side-item ghost lv2"><span class="side-label">' + H.esc(g.mod) + '</span></div>' +
+            g.leaves.map(function (lf) {
+              if (typeof lf === 'string') {
+                return '<div class="side-item ghost lv3"><span class="side-label">' + H.esc(lf) + '</span></div>';
+              }
+              var inPath = lf.mount.indexOf(cur) >= 0;
+              return '<div class="side-item ' + (inPath ? 'mount' : 'ghost') + ' lv3" ' +
+                  'data-act="go" data-page="' + lf.mount[0] + '" title="本模块挂在这一级">' +
+                  '<span class="side-label">' + H.esc(lf.label) + '</span>' +
+                  '<span class="side-flag">' + lf.mount.map(function (pid) {
+                    return PAGE_BY_ID[pid].no;
+                  }).join(' ') + '</span></div>' +
+                lf.mount.map(function (pid) {
+                  return '<div class="side-item sub' + (pid === cur ? ' active' : '') + '" ' +
+                    'data-act="go" data-page="' + pid + '">' +
+                    '<span class="side-idx">' + PAGE_BY_ID[pid].no + '</span>' +
+                    '<span class="side-label">' + H.esc(screenName(pid)) + '</span></div>';
+                }).join('');
+            }).join('');
+        }).join('');
+    }).join('');
+  }
+
+  function pills() {
+    return '<div class="side-pills">' + PAGES.map(function (p) {
+      return '<span class="side-pill' + (p.id === w.appState.current ? ' active' : '') + '" ' +
+        'data-act="go" data-page="' + p.id + '" title="' + H.esc(p.no + ' ' + p.label) + '">' +
+        p.no + '</span>';
+    }).join('') + '</div>';
   }
 
   function renderSidebar() {
     var el = document.getElementById('sidebar');
     if (!el) return;
-    var stu = PAGES.filter(function (p) { return !p.end && p.id !== 'p8'; });
-    var adm = PAGES.filter(function (p) { return p.end; });
-    var misc = PAGES.filter(function (p) { return p.id === 'p8'; });
+    var p = PAGE_BY_ID[w.appState.current] || PAGE_BY_ID.p1;
+    var head, body;
+    if (p.end) {
+      head = '管理端 IA · apps/admin 菜单树';
+      body = admTree();
+    } else if (p.id === 'p8') {
+      head = '评审说明';
+      body = '<div class="side-path"><div class="side-path-row cur"><span class="sp-sep">·</span>' +
+        '<span class="sp-t">本页是交付说明，不挂产品 IA</span></div></div>' +
+        '<div class="side-tip">产品页挂在哪，切到任一带 P 编号的页面看左栏。</div>';
+    } else {
+      head = '训练端 IA · 面包屑';
+      body = trainPath() + '<div class="side-tip">' +
+        H.rich('实机 `/report-writing/:mode` **一页装完**；带 P 编号的层级是原型细分，实机无独立路由。') +
+        '</div>';
+    }
 
     el.innerHTML =
-      '<div class="side-note">影像报告书写训练</div>' +
-      sideGroup('P1–P7', '训练端 · 学生侧') + stu.map(sideRow).join('') +
-      sideGroup('P9–P13', '管理端 · 承接 §5.12–5.14') + adm.map(sideRow).join('') +
-      sideGroup('—', '说明') + misc.map(sideRow).join('') +
+      '<div class="side-note">' + H.esc(head) + '</div>' + body +
       '<div class="side-divider"></div>' +
-      '<div class="side-note">查看</div>' +
+      '<div class="side-note">全部页面</div>' + pills() +
+      '<div class="side-divider"></div>' +
       '<div class="side-item" data-act="toggle-req"><span class="side-idx">§</span>' +
         '<span class="side-label">折叠需求面板</span></div>' +
       '<div class="side-item" data-act="toggle-side"><span class="side-idx">⇤</span>' +
@@ -73,7 +170,14 @@
 
   function renderCrumb(p) {
     var el = document.getElementById('crumb');
-    if (el) el.innerHTML = '<b>' + H.esc(p.label) + '</b> · ' + H.esc(p.flag);
+    if (!el) return;
+    var path = IA[p.id] || [p.label];
+    el.innerHTML = path.map(function (t, i) {
+      var last = i === path.length - 1;
+      return (i ? '<span class="crumb-sep">›</span>' : '') +
+        '<span class="crumb-t' + (last ? ' cur' : '') + (isProtoLeaf(t) ? ' proto' : '') + '">' +
+          H.esc(t) + '</span>';
+    }).join('');
   }
 
   function renderContent(id) {
@@ -144,6 +248,14 @@
     }
 
     if (act === 'go') { go(t.getAttribute('data-page')); return; }
+
+    /* P8 内锚点：hash 被路由占用，故不用 <a href="#s2">，改在内容区内部滚动 */
+    if (act === 'anchor') {
+      var target = document.getElementById(t.getAttribute('data-target'));
+      var box = document.getElementById('content');
+      if (target && box) box.scrollTop = target.offsetTop - (box.offsetTop || 0) - 12;
+      return;
+    }
 
     /* §5.2.2：阶段单线推进，可回退到已完成阶段、**不可跳过未完成阶段**（BDD 场景 2）。
        T0–T4 阶段条里未解锁的段落在原型中仍可点，点给它一句解释而不是静默无响应。 */
@@ -396,7 +508,7 @@
         return;
       }
       if (target > 3 && !d.step3.classIds.length && !d.step3.studentIds.length) {
-        H.toast('请先在第 3 步选择派发对象（班级或指定学员）（§5.13.4）');
+        H.toast('请先在第 3 步选择考核对象（班级或指定学员）');
         return;
       }
       d.step = target;
