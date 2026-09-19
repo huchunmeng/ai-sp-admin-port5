@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <!-- 本卷条件：原来独立的「能力位」模块并入此处（2026-09-20 批注：不单独一个模块） -->
+  <div class="ss-root">
+    <!-- 本卷条件：原「能力位」并入此处（2026-09-20 批注：不单独一个模块） -->
     <div class="is-conds">
       <span class="is-conds-title">本卷条件</span>
       <label v-for="f in CAPABILITY_FIELDS" :key="f.key" class="is-cond">
@@ -15,118 +15,121 @@
       </label>
     </div>
 
-    <!-- 工具条 -->
-    <div class="flex items-center justify-between mb-4" style="flex-wrap:wrap;gap:12px">
-      <span class="text-secondary" style="font-size:12.5px">
-        共 {{ resolved.items.length }} 条
-      </span>
-      <div class="flex gap-2">
-        <button class="btn" :disabled="extracting || !goldReady" @click="extract">
+    <!-- 与病例编辑器的评分表同一套表头 -->
+    <div class="ss-header">
+      <h3>评分表</h3>
+      <div class="ss-header-right">
+        <span class="ss-total">共 <strong>{{ resolved.items.length }}</strong> 条</span>
+        <button class="btn btn-outline btn-sm" :disabled="extracting || !goldReady" @click="extract">
           <i class="fa-solid" :class="extracting ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
           {{ extracting ? '抽取中...' : 'AI 从标准报告抽取' }}
         </button>
-        <button class="btn" :disabled="extracting" @click="resetAll">恢复内置</button>
+        <button class="btn btn-outline btn-sm" :disabled="extracting" @click="resetAll">恢复内置</button>
       </div>
     </div>
 
-    <div v-if="!goldReady" class="is-empty">
-      先在「影像序列与标准报告」填完三段，再来抽取评分表
+    <div v-if="!goldReady" class="empty-state">
+      <i class="fa-solid fa-file-circle-exclamation"></i>
+      <p>先在「影像序列与标准报告」填完三段，再来抽取评分表</p>
     </div>
-    <div v-else-if="!hasRubric" class="is-empty">
-      还没有评分表 —— 点右上「AI 从标准报告抽取」生成一版，再逐条校正
+    <div v-else-if="!hasRubric" class="empty-state">
+      <i class="fa-solid fa-table-list"></i>
+      <p>还没有评分表，点右上「AI 从标准报告抽取」生成一版，再逐条校正</p>
     </div>
 
-    <!-- 每个维度一张标准表格 -->
-    <div v-for="dim in dims" :key="dim.dim" class="is-dim">
-      <div class="section-head">
-        <span class="section-head-title">{{ dim.dim }}</span>
-        <span class="text-secondary" style="font-size:12px">
-          {{ dim.items.length }} 个条目
-        </span>
-      </div>
+    <div v-else class="ss-table-wrap">
+      <table class="ss-table">
+        <thead>
+          <tr>
+            <th style="width:40px">序号</th>
+            <th style="width:92px">维度</th>
+            <th style="width:170px">条目</th>
+            <th style="width:76px">分值</th>
+            <th>要点</th>
+            <th style="width:230px">可接受表述</th>
+            <th style="width:200px">判定说明</th>
+            <th style="width:130px">可评条件</th>
+            <th style="width:58px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, idx) in tableRows" :key="row.item.code + '-' + row.p.id">
+            <td class="td-num">{{ idx + 1 }}</td>
 
-      <div class="card" style="padding:0">
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr>
-                <th style="width:190px">条目</th>
-                <th style="width:78px">分值</th>
-                <th>要点</th>
-                <th style="width:240px">可接受表述</th>
-                <th style="width:64px">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="item in dim.items" :key="item.code">
-                <tr v-for="(p, pi) in item.points" :key="item.code + '-' + p.id">
-                  <td v-if="pi === 0" :rowspan="item.points.length" class="is-item-cell">
-                    <code class="is-code">{{ item.code }}</code>
-                    <div class="is-item-name">{{ item.name }}</div>
-                    <span v-if="!editableCodes.includes(item.code)" class="badge badge-info">自动生成</span>
-                    <span v-else-if="item.wholeNA" class="badge badge-warning">不适用</span>
-                  </td>
+            <td v-if="row.dimSpan" :rowspan="row.dimSpan" class="td-merged">{{ shortDim(row.dim) }}</td>
 
-                  <td v-if="pi === 0" :rowspan="item.points.length">
-                    <span class="badge" :class="item.scoreableFull === item.full ? 'badge-success' : 'badge-warning'">
-                      {{ item.scoreableFull }} / {{ item.full }}
-                    </span>
-                  </td>
+            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-item" :title="row.item.code + ' ' + row.item.name">
+              <code class="is-code">{{ row.item.code }}</code>
+              <div class="td-item-name">{{ row.item.name }}</div>
+              <span v-if="!editableCodes.includes(row.item.code)" class="badge badge-info">自动生成</span>
+              <span v-else-if="row.item.wholeNA" class="badge badge-warning">不适用</span>
+            </td>
 
-                  <td>
-                    <div class="is-point">
-                      <input v-if="editableCodes.includes(item.code)" class="input" :value="p.text"
-                             placeholder="要点内容（要可判定）"
-                             @input="updatePoint(item.code, pi, 'text', $event.target.value)">
-                      <span v-else class="is-point-ro">{{ p.text }}</span>
-                      <span v-if="!p.assessable" class="badge" :class="p.nASource === 'na' ? 'badge-info' : 'badge-warning'">
-                        {{ p.nASource === 'na' ? '不适用' : '不可评' }}
-                      </span>
-                      <span v-else-if="p.assessLabel" class="badge badge-info">{{ p.assessLabel }}</span>
-                    </div>
-                    <div v-if="editableCodes.includes(item.code)" class="is-point-cond">
-                      <select class="select" :value="p.assess || ''"
-                              @change="updatePoint(item.code, pi, 'assess', $event.target.value)">
-                        <option value="">无条件可评</option>
-                        <option v-for="a in ASSESS_KINDS" :key="a.key" :value="a.key">{{ a.label }}</option>
-                      </select>
-                    </div>
-                  </td>
+            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged cell-num">
+              <span :class="row.item.scoreableFull === row.item.full ? '' : 'text-warning'" style="font-weight:600">
+                {{ row.item.scoreableFull }}
+              </span>
+              <span class="text-secondary"> / {{ row.item.full }}</span>
+            </td>
 
-                  <td>
-                    <input v-if="editableCodes.includes(item.code)" class="input" :value="(p.accept || []).join(' / ')"
-                           placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
-                           @change="updatePoint(item.code, pi, 'accept', $event.target.value)">
-                    <span v-else class="is-accept-ro">{{ (p.accept || []).join(' / ') || '—' }}</span>
-                  </td>
+            <td>
+              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
+                        :rows="rowsFor(row.p.text)" :value="row.p.text"
+                        placeholder="要点内容（要可判定）"
+                        @input="updatePoint(row.item.code, row.pi, 'text', $event.target.value)"></textarea>
+              <span v-else class="cell-ro">{{ row.p.text }}</span>
+            </td>
 
-                  <td>
-                    <button v-if="editableCodes.includes(item.code)" class="btn btn-sm btn-danger"
-                            title="删除该要点" @click="removePoint(item.code, pi)">
-                      <i class="fa-solid fa-xmark"></i>
-                    </button>
-                  </td>
-                </tr>
+            <td>
+              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
+                        :rows="rowsFor(acceptText(row.p))" :value="acceptText(row.p)"
+                        placeholder="用 / 分隔，如：右肺上叶尖段 / 右上叶尖段"
+                        @change="updatePoint(row.item.code, row.pi, 'accept', $event.target.value)"></textarea>
+              <span v-else class="cell-ro">{{ acceptText(row.p) || '—' }}</span>
+            </td>
 
-                <!-- 条目级：判定说明 + 加要点 -->
-                <tr v-if="editableCodes.includes(item.code)" :key="item.code + '-ops'" class="is-ops-row">
-                  <td colspan="5">
-                    <div class="is-ops">
-                      <button class="btn btn-sm" @click="addPoint(item.code)">+ 添加要点</button>
-                      <input class="input is-rules-input" :value="item.rules"
-                             placeholder="判定说明（可选）"
-                             @change="updateRules(item.code, $event.target.value)">
-                    </div>
-                  </td>
-                </tr>
-                <tr v-else-if="item.rules" :key="item.code + '-rules'" class="is-ops-row">
-                  <td colspan="5"><div class="is-rules">{{ item.rules }}</div></td>
-                </tr>
+            <td v-if="row.itemSpan" :rowspan="row.itemSpan" class="td-merged td-rules">
+              <textarea v-if="editableCodes.includes(row.item.code)" class="cell-input cell-textarea"
+                        :rows="rowsFor(row.item.rules)" :value="row.item.rules"
+                        placeholder="判定说明（可选）"
+                        @change="updateRules(row.item.code, $event.target.value)"></textarea>
+              <span v-else class="cell-ro">{{ row.item.rules || '—' }}</span>
+            </td>
+
+            <td>
+              <template v-if="editableCodes.includes(row.item.code)">
+                <select class="cell-input cell-select" :value="row.p.assess || ''"
+                        @change="updatePoint(row.item.code, row.pi, 'assess', $event.target.value)">
+                  <option value="">无条件可评</option>
+                  <option v-for="a in ASSESS_KINDS" :key="a.key" :value="a.key">{{ a.label }}</option>
+                </select>
+                <div v-if="!row.p.assessable" class="cell-na">{{ row.p.nAReason }}</div>
               </template>
-            </tbody>
-          </table>
-        </div>
-      </div>
+              <span v-else class="badge" :class="row.p.assessable ? 'badge-info' : (row.p.nASource === 'na' ? 'badge-info' : 'badge-warning')">
+                {{ row.p.assessable ? (row.p.assessLabel || '可评') : (row.p.nASource === 'na' ? '不适用' : '不可评') }}
+              </span>
+            </td>
+
+            <td style="white-space:nowrap;text-align:center">
+              <template v-if="editableCodes.includes(row.item.code)">
+                <button class="btn-add-row" title="在下方添加要点" @click="addPoint(row.item.code)">+</button>
+                <button class="btn-del" title="删除该要点" @click="removePoint(row.item.code, row.pi)">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </template>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="ss-total-row">
+            <td colspan="3" style="text-align:right;font-weight:600;font-size:12px">合计</td>
+            <td class="cell-num" style="font-weight:600">100</td>
+            <td colspan="3" style="font-size:12px;color:var(--text-secondary)">本卷可评</td>
+            <td class="cell-num" style="font-weight:600">{{ resolved.scoreableMax }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
 </template>
@@ -175,24 +178,48 @@ const goldReady = computed(() => {
   return !!(g && g.technique && g.findings && g.impression)
 })
 
-/** 解析后的完整评分表（含逐要点可评性与可评分） */
-const resolved = computed(() => resolveRubric(props.sample.id, props.sample.capabilities))
+/** 解析后的完整评分表（含逐要点可评性与可评分）
+ *  必须把**正在编辑的那份**传进去，否则表格渲染的是模块内置版、改什么都不体现 */
+const resolved = computed(() => resolveRubric(props.sample.id, props.sample.capabilities, rubric.value.items))
 
-const dims = computed(() => {
-  const map = new Map()
-  resolved.value.items.forEach(i => {
-    if (!map.has(i.dim)) map.set(i.dim, { dim: i.dim, full: 0, scoreableFull: 0, items: [] })
-    const d = map.get(i.dim)
-    d.full += i.full
-    d.scoreableFull += i.scoreableFull
-    d.items.push(i)
+/**
+ * 摊平成表格行：维度用 rowspan 合并在该维度的首行，条目/分值/判定说明合并在该条目的首行。
+ * 与病例编辑器 ScoreSheet 的 `类别 / 评分项 / 评分项分值` 合并单元格是同一套做法。
+ */
+const tableRows = computed(() => {
+  const rows = []
+  const dimMap = new Map()
+  resolved.value.items.forEach(it => {
+    if (!dimMap.has(it.dim)) dimMap.set(it.dim, [])
+    dimMap.get(it.dim).push(it)
   })
-  return [...map.values()].map(d => ({
-    ...d,
-    full: Math.round(d.full * 10) / 10,
-    scoreableFull: Math.round(d.scoreableFull * 10) / 10
-  }))
+  dimMap.forEach((items, dim) => {
+    const dimCount = items.reduce((a, it) => a + it.points.length, 0)
+    let firstOfDim = true
+    items.forEach(it => {
+      it.points.forEach((p, pi) => {
+        rows.push({
+          dim,
+          dimSpan: firstOfDim ? dimCount : 0,
+          item: it,
+          itemSpan: pi === 0 ? it.points.length : 0,
+          p,
+          pi
+        })
+        firstOfDim = false
+      })
+    })
+  })
+  return rows
 })
+
+/** 维度名去序号前缀：一、一般信息及报告及时性 → 一般信息及报告及时性 */
+const shortDim = d => String(d || '').replace(/^[一二三四五六七八九十]+、\s*/, '')
+
+const acceptText = p => (p.accept || []).join(' / ')
+
+/** 文本域行数按内容估算（不用 autoResize：面板在 v-show 下量不到高度，会塌成 0） */
+const rowsFor = t => Math.max(1, Math.min(6, Math.ceil(String(t || '').length / 20)))
 
 function emitItems(items, extra) {
   emit('update:modelValue', {
@@ -228,12 +255,11 @@ function updateRules(code, value) {
 
 function addPoint(code) {
   const items = JSON.parse(JSON.stringify(rubric.value.items || {}))
-  if (!items[code]) {
-    items[code] = { rules: '', points: [] }
-  }
+  if (!items[code]) items[code] = { rules: '', points: [] }
   const n = items[code].points.length + 1
   items[code].points.push({ id: `p${n}`, text: '', accept: [] })
   emitItems(items)
+  toast.show(`已为 ${code} 添加一个要点`, 'success')
 }
 
 function removePoint(code, pi) {
@@ -257,7 +283,6 @@ async function extract() {
     if (!res.ok) { toast.show('抽取失败：' + (res.content || '模型不可用'), 'error'); return }
     const parsed = parseRubricExtraction(res.content)
     if (!parsed.ok) { toast.show('抽取失败：' + parsed.reason, 'error'); return }
-    // 与既有评分表合并：模型产出的条目覆盖，未产出的保留
     const merged = { ...JSON.parse(JSON.stringify(rubric.value.items || {})), ...parsed.items }
     emitItems(merged, { extracted: true })
     toast.show(`已抽取 ${parsed.count} 条评分表，请逐条核对后再发布`, 'success')
@@ -268,10 +293,69 @@ async function extract() {
 </script>
 
 <style scoped>
-.is-empty {
-  font-size: 13px; color: #909399; text-align: center;
-  background: #FAFAFA; border-radius: 8px; padding: 32px 20px; margin-bottom: 16px;
+/* ── 以下表格样式与 case-editor/ScoreSheet.vue 保持一致（同源观感） ── */
+.ss-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.ss-header h3 { margin: 0; font-size: 16px; }
+.ss-header-right { display: flex; align-items: center; gap: 12px; }
+.ss-total { font-size: 13px; color: var(--text-secondary); }
+.ss-total strong { color: var(--primary); font-size: 17px; }
+
+.ss-table-wrap { overflow-x: auto; border: 1px solid #EBEEF5; border-radius: 8px; }
+.ss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ss-table th {
+  background: #F0F2F5; padding: 10px 8px; text-align: center; font-weight: 600;
+  color: #303133; border-bottom: 2px solid #EBEEF5; white-space: nowrap; font-size: 12px;
 }
+.ss-table td { padding: 4px 6px; border-bottom: 1px solid #F5F7FA; vertical-align: middle; }
+.ss-table tbody tr:last-child td { border-bottom: none; }
+
+.td-num { text-align: center; color: #909399; font-size: 12px; }
+.td-merged {
+  vertical-align: middle; text-align: center; font-size: 13px; color: #303133;
+  font-weight: 500; background: #FAFAFA; border-right: 1px solid #EBEEF5;
+  max-width: 190px; overflow: hidden;
+}
+.td-item { text-align: left; padding: 6px 8px; }
+.td-item-name { font-size: 12.5px; line-height: 1.5; margin: 4px 0 5px; }
+.td-rules { text-align: left; }
+.is-code { background: #fff; border: 1px solid #EBEEF5; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
+
+.cell-input {
+  width: 100%; border: 1px solid transparent; background: transparent;
+  padding: 6px 8px; font-size: 12.5px; color: #303133; border-radius: 4px;
+  outline: none; font-family: inherit; box-sizing: border-box;
+}
+.cell-input:hover { border-color: #D9D9D9; background: #FAFAFA; }
+.cell-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 2px #E6F7FF; }
+.cell-textarea { resize: vertical; line-height: 1.6; }
+.cell-select { padding: 5px 6px; }
+.cell-num { text-align: center; }
+.cell-ro { display: block; font-size: 12.5px; line-height: 1.6; color: #303133; padding: 2px 4px; }
+.cell-na { font-size: 11px; color: #D46B08; line-height: 1.5; margin-top: 3px; }
+
+.ss-total-row td { background: #E6F7FF; border-top: 2px solid #EBEEF5; }
+
+.btn-add-row {
+  width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: #909399; cursor: pointer;
+  border-radius: 4px; font-size: 16px; font-weight: 700; transition: all .15s;
+}
+.btn-add-row:hover { color: #52C41A; background: #F6FFED; }
+.btn-del {
+  width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: #C0C4CC; cursor: pointer;
+  border-radius: 4px; font-size: 13px; transition: all .15s;
+}
+.btn-del:hover { color: #F5222D; background: #FFF1F0; }
+.btn-outline { background: #fff; color: var(--text-secondary); border: 1px solid #D9D9D9; }
+.btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-outline:disabled { opacity: .5; cursor: not-allowed; }
+.btn-sm { padding: 4px 10px; font-size: 11.5px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+.empty-state i { font-size: 34px; color: var(--text-placeholder); margin-bottom: 10px; display: block; }
+.empty-state p { margin: 0; font-size: 13.5px; }
+
 /* 本卷条件（原「能力位」） */
 .is-conds {
   display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px;
@@ -283,18 +367,4 @@ async function extract() {
 .is-cond input { width: 15px; height: 15px; }
 .is-cond-affects { font-size: 11px; color: #9ca3af; }
 .is-cond-ro { cursor: not-allowed; color: #9ca3af; }
-.is-dim { margin-bottom: 18px; }
-.is-code { background: #F5F7FA; padding: 1px 6px; border-radius: 4px; font-size: 11.5px; color: #606266; }
-.is-item-cell { vertical-align: top; }
-.is-item-name { font-size: 13px; font-weight: 600; color: var(--text-main); margin: 4px 0 6px; }
-.is-point { display: flex; align-items: center; gap: 8px; }
-.is-point .input { flex: 1; min-width: 0; }
-.is-point-ro { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-main); }
-.is-point-cond { margin-top: 5px; }
-.is-point-cond .select { width: 170px; font-size: 12px; height: 28px; padding: 0 8px; }
-.is-accept-ro { font-size: 11.5px; color: #909399; }
-.is-ops-row > td { background: #FAFBFC; padding: 8px 12px; }
-.is-ops { display: flex; gap: 8px; align-items: center; }
-.is-rules-input { flex: 1; min-width: 200px; font-size: 12px; }
-.is-rules { font-size: 12px; color: #909399; }
 </style>

@@ -410,12 +410,21 @@ function rulesFor(code) {
 
 /**
  * 解析某病例的完整评分表：R1 表结构 + 要点集 + 逐要点可评性 + 可评分。
+ *
+ * ⚠️ `itemsOverride`：管理端**必须传正在编辑的那份** `rubric.items`。
+ * 不传时用的是模块内置的 `RUBRIC[caseId]`——那会让编辑器渲染的是"内置版"而不是"手上这份"，
+ * 于是改要点文字、加要点都不会在界面上体现（输入框是 DOM 自己留着的值，看着像生效，一重渲染就回退）。
+ * 训练端不传（用的是题库里的正式评分表）。
+ *
+ * @param {string} caseId
+ * @param {object} [capabilities]
+ * @param {object} [itemsOverride] `{ [code]: { points, rules } }`
  * @returns {{caseId, version, items: Array, itemByCode: Object, scoreableMax: number, unassessable: Array}}
  */
-export function resolveRubric(caseId, capabilities) {
+export function resolveRubric(caseId, capabilities, itemsOverride) {
   const sample = SAMPLE_BY_ID[caseId]
   const caps = capabilities || CAPABILITIES[caseId] || {}
-  const hand = (RUBRIC[caseId] && RUBRIC[caseId].items) || {}
+  const hand = itemsOverride || (RUBRIC[caseId] && RUBRIC[caseId].items) || {}
   const gen = sample ? genericItems(sample) : {}
 
   const items = R1_ITEMS.map(base => {
