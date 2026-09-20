@@ -23,6 +23,7 @@ import { IMAGING_SAMPLES } from './samples.js'
 import { SEU_RUBRIC } from './samples-seu.js'
 import { PUB_RUBRIC } from './samples-pub.js'
 import { AI_RULES } from './rubric-rules-ai.js'
+import { KNEE_RUBRIC } from './samples-knee.js'
 
 /** 样单元数据表（本文件内自建，避免与 index.js 形成循环依赖） */
 const SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))

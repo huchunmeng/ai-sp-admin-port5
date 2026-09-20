@@ -26,7 +26,9 @@
       </div>
       <div class="rwb-tool-sep"></div>
       <div class="rwb-tool-group">
-        <button class="rwb-tool-btn" disabled title="本期影像控件不具备测量工具">
+        <button class="rwb-tool-btn" :class="{ active: measuring }" :disabled="!canMeasure"
+                :title="canMeasure ? '在图上按住拖动即可量长度（按层内像素间距换算毫米）' : '本序列没有像素间距信息，无法换算毫米'"
+                @click="measuring = !measuring">
           <i class="fa-solid fa-ruler"></i> 测量
         </button>
         <button class="rwb-tool-btn" disabled title="本期影像控件不具备缩放/平移">
@@ -64,13 +66,27 @@
              @keydown.up.prevent="step(activeIndex, -1)"
              @keydown.down.prevent="step(activeIndex, 1)"
              @click="onCanvasClick(activeIndex, $event)">
-          <img v-if="currentImage" class="rwb-pixel" :src="currentImage" :alt="activeView.name">
+          <!-- 真实 DICOM 序列：16-bit 原始像素，窗宽窗位在 canvas 里实时算 -->
+          <canvas v-if="hasRaw" ref="canvasEl" class="rwb-pixel"
+                  :width="rawMeta.width" :height="rawMeta.height"
+                  @mousedown="measureStart" @mousemove="measureMove" @mouseup="measureEnd"
+                  @mouseleave="measureEnd"></canvas>
+          <img v-else-if="currentImage" class="rwb-pixel" :src="currentImage" :alt="activeView.name">
           <template v-else>
             <div class="rwb-demo" :style="demoStyle(activeView.key, activeIndex)">
               <span class="rwb-demo-scan"></span>
               <span class="rwb-demo-mark"></span>
             </div>
           </template>
+
+          <!-- 测量标注（有 PixelSpacing 才能出毫米值） -->
+          <svg v-if="hasRaw && measures.length" class="rwb-measure"
+               :viewBox="'0 0 ' + rawMeta.width + ' ' + rawMeta.height">
+            <g v-for="(m, i) in measures" :key="i">
+              <line :x1="m.x1" :y1="m.y1" :x2="m.x2" :y2="m.y2" />
+              <text :x="(m.x1 + m.x2) / 2 + 8" :y="(m.y1 + m.y2) / 2 - 8">{{ m.mm }} mm</text>
+            </g>
+          </svg>
 
           <!-- 四角叠加：真实阅片的信息布局 -->
           <div class="rwb-ov rwb-ov-tl">
@@ -91,7 +107,7 @@
             <div>层 {{ layerOf(activeIndex) }} / {{ frameCount }}</div>
             <div>缩放 100%</div>
           </div>
-          <span v-if="!currentImage" class="rwb-demo-tag">演示占位</span>
+          <span v-if="!currentImage && !hasRaw" class="rwb-demo-tag">演示占位</span>
         </div>
 
         <!-- ══ 底部：层面滑动条 ══ -->
@@ -147,8 +163,12 @@ const BUILTIN_WINDOWS = [
 const windowPresets = computed(() => {
   const own = (activeView.value && activeView.value.window) || null
   if (own) {
-    return [{ name: activeView.value.name || '默认窗', WW: own.WW, WL: own.WL },
-            ...BUILTIN_WINDOWS.filter(w => w.WW !== own.WW || w.WL !== own.WL)]
+    const extra = sample.value.modality === 'MR'
+      // MR 没有"骨窗/肺窗"这套解剖窗，给窄窗/宽窗两个对比档
+      ? [{ name: '窄窗（高对比）', WW: Math.round(own.WW * 0.55), WL: own.WL },
+         { name: '宽窗（低对比）', WW: Math.round(own.WW * 1.8), WL: own.WL }]
+      : BUILTIN_WINDOWS.filter(w => w.WW !== own.WW || w.WL !== own.WL)
+    return [{ name: activeView.value.name || '序列窗', WW: own.WW, WL: own.WL }, ...extra]
   }
   return BUILTIN_WINDOWS
 })
@@ -160,9 +180,128 @@ const isActiveWindow = w => currentWindow.value.WW === w.WW && currentWindow.val
 function applyWindow(w) {
   if (activeView.value) windowOverride[activeView.value.key] = { WW: w.WW, WL: w.WL }
 }
+/** 该序列是否带原始 16-bit 像素（带则走 canvas 真窗宽窗位） */
+const hasRaw = computed(() => !!(activeView.value && activeView.value.raw))
+/** canvas 尺寸用当前序列的原始像素尺寸 */
+const rawMeta = computed(() => {
+  const r = (activeView.value && activeView.value.raw) || {}
+  return { width: r.width || 512, height: r.height || 512 }
+})
+/** 有像素间距才能把像素长度换算成毫米 */
+const canMeasure = computed(() => {
+  const r = (activeView.value && activeView.value.raw) || null
+  return !!(r && r.pixelSpacing && r.pixelSpacing[0])
+})
+
+const canvasEl = ref(null)
+const measuring = ref(false)
+const measures = ref([])
+const dragFrom = ref(null)
+/** 原始像素缓存：`key:slice` → Int16Array */
+const rawCache = new Map()
+/** 已解出来的当前帧像素（供测量换算用，避免重复拉） */
+let currentPixels = null
+
+function rawUrlOf(vi) {
+  const v = views.value[vi]
+  const r = v && v.raw
+  if (!r) return ''
+  return r.pattern.replace('%03d', String(layerOf(vi)).padStart(3, '0'))
+}
+
+/** 取一帧原始像素：先查缓存，否则下载 .bin.gz 并解压 */
+async function fetchPixels(vi) {
+  const v = views.value[vi]
+  if (!v || !v.raw) return null
+  const ck = `${v.key}:${layerOf(vi)}`
+  if (rawCache.has(ck)) return rawCache.get(ck)
+  const resp = await fetch(rawUrlOf(vi))
+  if (!resp.ok) return null
+  let buf
+  if (typeof DecompressionStream === 'function') {
+    buf = await new Response(resp.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+  } else {
+    buf = await resp.arrayBuffer()   // 兜底：万一服务端已解压
+  }
+  const px = new Int16Array(buf)
+  rawCache.set(ck, px)
+  return px
+}
+
+/** 按当前窗宽窗位把 16-bit 像素画到 canvas */
+function drawCanvas(px) {
+  const el = canvasEl.value
+  if (!el || !px) return
+  const { width: w, height: h } = rawMeta.value
+  if (px.length < w * h) return
+  const ww = Number(currentWindow.value.WW) || 1
+  const wl = Number(currentWindow.value.WL) || 0
+  const lo = wl - ww / 2
+  const ctx = el.getContext('2d')
+  const imgData = ctx.createImageData(w, h)
+  const d = imgData.data
+  for (let i = 0, p = 0; i < w * h; i++, p += 4) {
+    let t = (px[i] - lo) / ww
+    t = t < 0 ? 0 : t > 1 ? 1 : t
+    const g = (t * 255) | 0
+    d[p] = g; d[p + 1] = g; d[p + 2] = g; d[p + 3] = 255
+  }
+  ctx.putImageData(imgData, 0, 0)
+  currentPixels = px
+}
+
+async function refreshRaw() {
+  if (!hasRaw.value) { currentPixels = null; return }
+  const px = await fetchPixels(activeIndex.value)
+  if (px) drawCanvas(px)
+}
+
+/** 测量：按住拖动 → 记录起止点与毫米长度（像素间距按行/列分别换算） */
+function canvasPoint(e) {
+  const el = canvasEl.value
+  if (!el) return null
+  const r = el.getBoundingClientRect()
+  return {
+    x: (e.clientX - r.left) / r.width * rawMeta.value.width,
+    y: (e.clientY - r.top) / r.height * rawMeta.value.height
+  }
+}
+function mmOf(a, b) {
+  const ps = activeView.value.raw.pixelSpacing || [1, 1]
+  const dx = (b.x - a.x) * ps[1]
+  const dy = (b.y - a.y) * ps[0]
+  return Math.round(Math.sqrt(dx * dx + dy * dy) * 10) / 10
+}
+function measureStart(e) {
+  if (!measuring.value || !canMeasure.value) return
+  const p = canvasPoint(e)
+  if (p) dragFrom.value = p
+}
+function measureMove(e) {
+  if (!measuring.value || !dragFrom.value) return
+  const p = canvasPoint(e)
+  if (!p) return
+  measures.value = [{ ...dragFrom.value, x2: p.x, y2: p.y, mm: mmOf(dragFrom.value, p) }]
+}
+function measureEnd() {
+  if (dragFrom.value && measures.value.length) {
+    // 保留最后一条测量结果，但清掉拖动中的临时态
+    const last = measures.value[measures.value.length - 1]
+    if (last.mm > 0.1) measures.value = [last]
+  }
+  dragFrom.value = null
+}
+
+/** 换序列 / 换层 / 改窗 → 重画 */
+watch([activeIndex, () => layer[activeView.value && activeView.value.key], currentWindow], () => {
+  measures.value = []
+  refreshRaw()
+}, { immediate: true })
+
 function resetView() {
   Object.keys(windowOverride).forEach(k => delete windowOverride[k])
   layer[activeView.value && activeView.value.key] = 1
+  measures.value = []
 }
 /** 视图列表——**不假设三视图**，按样本声明的序列渲染 */
 const views = computed(() => seriesListOf(props.sample))
@@ -268,6 +407,8 @@ function demoStyle(key, vi) {
 watch(() => props.sample.id, () => {
   Object.keys(layer).forEach(k => delete layer[k])
   activeIndex.value = 0
+  rawCache.clear()
+  measures.value = []
   ensureLayers()
 })
 </script>
@@ -343,6 +484,11 @@ watch(() => props.sample.id, () => {
 .rwb-ov-tr { top: 8px; right: 10px; text-align: right; }
 .rwb-ov-bl { bottom: 8px; left: 10px; }
 .rwb-ov-br { bottom: 8px; right: 10px; text-align: right; }
+
+/* ══ 测量标注 ══ */
+.rwb-measure { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.rwb-measure line { stroke: #22d3ee; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rwb-measure text { fill: #22d3ee; font-size: 16px; font-weight: 700; paint-order: stroke; stroke: #000; stroke-width: 3px; }
 
 /* 演示占位（无真实影像时） */
 .rwb-demo { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 45%, #1b2733, #05070a 70%); }

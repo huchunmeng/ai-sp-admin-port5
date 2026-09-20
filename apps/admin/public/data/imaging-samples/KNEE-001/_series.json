@@ -1,0 +1,179 @@
+{
+ "sample": "KNEE-001",
+ "series": [
+  {
+   "key": "scout",
+   "name": "定位像",
+   "en": "Scout",
+   "frames": 27,
+   "width": 226,
+   "height": 256,
+   "ww": 2226.0,
+   "wl": 1113.0,
+   "pixelSpacing": [
+    0.8594,
+    0.8594
+   ],
+   "sliceThickness": 8.0,
+   "orientation": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0,
+    1.0,
+    0.0
+   ],
+   "crop": [
+    0,
+    0
+   ],
+   "raw": "scout-%03d.bin.gz",
+   "description": "Loc (Right)"
+  },
+  {
+   "key": "pd_sag_fs",
+   "name": "矢状位 PD 脂肪抑制",
+   "en": "Sag PD FS",
+   "frames": 22,
+   "width": 512,
+   "height": 512,
+   "ww": 4005.0,
+   "wl": 2002.0,
+   "pixelSpacing": [
+    0.293,
+    0.293
+   ],
+   "sliceThickness": 4.0,
+   "orientation": [
+    -0.0,
+    1.0,
+    0.0,
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "crop": [
+    0,
+    0
+   ],
+   "raw": "pd_sag_fs-%03d.bin.gz",
+   "description": "Sag FRSE PD FS"
+  },
+  {
+   "key": "pd_cor",
+   "name": "冠状位 PD",
+   "en": "Cor PD",
+   "frames": 20,
+   "width": 512,
+   "height": 512,
+   "ww": 3873.0,
+   "wl": 1936.0,
+   "pixelSpacing": [
+    0.293,
+    0.293
+   ],
+   "sliceThickness": 4.0,
+   "orientation": [
+    0.999993,
+    -0.00369272,
+    0.0,
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "crop": [
+    0,
+    0
+   ],
+   "raw": "pd_cor-%03d.bin.gz",
+   "description": "Cor FSE PD"
+  },
+  {
+   "key": "pd_ax",
+   "name": "轴位 PD",
+   "en": "Ax PD",
+   "frames": 24,
+   "width": 505,
+   "height": 492,
+   "ww": 5145.0,
+   "wl": 2572.0,
+   "pixelSpacing": [
+    0.332,
+    0.332
+   ],
+   "sliceThickness": 4.0,
+   "orientation": [
+    0.999841,
+    0.000366209,
+    0.0178227,
+    -0.000427244,
+    0.999995,
+    0.00326545
+   ],
+   "crop": [
+    7,
+    20
+   ],
+   "raw": "pd_ax-%03d.bin.gz",
+   "description": "AX.  FSE PD"
+  },
+  {
+   "key": "t2_sag",
+   "name": "矢状位 T2",
+   "en": "Sag T2",
+   "frames": 22,
+   "width": 512,
+   "height": 512,
+   "ww": 5013.0,
+   "wl": 2506.0,
+   "pixelSpacing": [
+    0.293,
+    0.293
+   ],
+   "sliceThickness": 4.0,
+   "orientation": [
+    -0.0,
+    1.0,
+    0.0,
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "crop": [
+    0,
+    0
+   ],
+   "raw": "t2_sag-%03d.bin.gz",
+   "description": "Sag FSE T2"
+  },
+  {
+   "key": "t1_cor",
+   "name": "冠状位 T1",
+   "en": "Cor T1",
+   "frames": 20,
+   "width": 512,
+   "height": 512,
+   "ww": 7604.0,
+   "wl": 3802.0,
+   "pixelSpacing": [
+    0.293,
+    0.293
+   ],
+   "sliceThickness": 4.0,
+   "orientation": [
+    0.999993,
+    -0.00369272,
+    0.0,
+    -0.0,
+    -0.0,
+    -1.0
+   ],
+   "crop": [
+    0,
+    0
+   ],
+   "raw": "t1_cor-%03d.bin.gz",
+   "description": "Cor FSE T1"
+  }
+ ]
+}
