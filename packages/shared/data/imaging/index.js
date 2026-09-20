@@ -22,7 +22,7 @@ export {
   resolveRubric, hasHandRubric, scoreableOf, weightedScoreable
 } from './rubric.js'
 export {
-  buildScoringPrompt, parseScoringResult, composeScore, prepareScoring,
+  buildScoringPrompt, parseScoringResult, composeScore, prepareScoring, COMMENT_SCOPE,
   buildRubricExtractionPrompt, parseRubricExtraction,
   SCORING_FAILED_TEXT, NOT_COVERED_TEXT, PARTIAL_TEXT
 } from './scoring.js'

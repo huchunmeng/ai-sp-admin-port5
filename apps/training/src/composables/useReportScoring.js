@@ -8,7 +8,7 @@
 
 import { ref } from 'vue'
 import { useAIChat } from './useAIChat'
-import { prepareScoring } from '@ai-sp/shared/imaging'
+import { prepareScoring, COMMENT_SCOPE } from '@ai-sp/shared/imaging'
 
 const SCORING_MODEL = 'qwen-plus'
 
@@ -22,11 +22,12 @@ export function useReportScoring() {
    * @param {{sample:object, reportText:{technique,findings,impression}}} payload
    * @returns {Promise<{ok:boolean, result?:object, reason?:string}>}
    */
-  async function score({ sample, reportText }) {
+  async function score({ sample, reportText, scope = COMMENT_SCOPE.TRAINING }) {
     running.value = true
     error.value = ''
     try {
-      const prepared = prepareScoring({ sample, reportText })
+      // 训练侧默认放宽点评口径（考核侧不传 scope，取严）
+      const prepared = prepareScoring({ sample, reportText, scope })
       const res = await sendMessage(prepared.prompt.messages, prepared.prompt.system, {
         temperature: 0,          // 评分要稳，关掉随机性
         maxTokens: 4000,

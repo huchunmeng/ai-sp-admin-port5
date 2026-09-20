@@ -45,7 +45,16 @@ export const PARTIAL_TEXT = '有所涉及但不够具体'
  * 组装评分请求。
  * 只把**可评要点**交给模型判定；不可评要点在 compose 阶段直接排除，不让模型有机会给分。
  */
-export function buildScoringPrompt({ sample, rubric, reportText }) {
+/**
+ * 点评的**合规范围**（2026-09-20 产品拍板）：
+ *   · scope: 'exam'（默认）—— 考核侧，**严**：点评不得泄漏标准报告（LCS ≤ 8 + 词表拦截）
+ *   · scope: 'training'   —— 训练侧，**放宽**：允许点到"漏了哪一类/哪个具体内容"，
+ *                            让学员知道该补什么；仍不许把标准报告整句抄给他
+ * 默认取严，新增调用方不传 scope 就是安全的。
+ */
+export const COMMENT_SCOPE = { EXAM: 'exam', TRAINING: 'training' }
+
+export function buildScoringPrompt({ sample, rubric, reportText, scope = COMMENT_SCOPE.EXAM }) {
   const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.goldKey]) || '（未录入）'}`).join('\n')
 
   const assessable = rubric.items.filter(i => i.points.some(p => p.assessable))
@@ -73,7 +82,11 @@ export function buildScoringPrompt({ sample, rubric, reportText }) {
     '1. 每个要点给一个 score：1 = 明确写出且正确；0.5 = 提及但笼统、不完整或表述不规范；0 = 未提及或写错。',
     '2. **只依据要点表判定**，不要因为表述风格不同就扣分——要点表里的"可接受表述"命中任一即算 1。',
     '3. 学员写的内容若与参考报告的事实相矛盾（写错部位/写错征象），该要点给 0。',
-    '4. comment 用**通用改进话术**，只说明"哪一类没写到/写得不够"，**绝对不许**写参考报告里的具体事实（病灶名称、部位、大小、数值、密度、征象、诊断结论），也不许出现参考报告的任何连续 8 个字。每条 comment 不超过 40 字。',
+    scope === COMMENT_SCOPE.TRAINING
+      ? '4. comment 要**具体、可据以修改**：直接指出"漏了哪一类征象 / 哪个部位没写 / 哪个描述不规范或写错了"。'
+        + '例如"没写有无纵隔淋巴结肿大""密度描述缺失""部位只写到肺叶、没到肺段"。'
+        + '可以点到具体内容，但**不要把参考报告的句子整段抄给他**，每条 comment 不超过 60 字。'
+      : '4. comment 用**通用改进话术**，只说明"哪一类没写到/写得不够"，**绝对不许**写参考报告里的具体事实（病灶名称、部位、大小、数值、密度、征象、诊断结论），也不许出现参考报告的任何连续 8 个字。每条 comment 不超过 40 字。',
     '5. 只输出 JSON，不要 markdown 代码块，不要任何解释文字。'
   ].join('\n')
 
@@ -159,7 +172,7 @@ export function parseScoringResult(rawText, rubric) {
  * · 总分 = Σ条目得分；满分 = 该病例可评分（不折算到 100，避免"考一张更短的卷"却显示满分）
  * · 点评语逐条过红线，不过关置空
  */
-export function composeScore(parsed, rubric, sample) {
+export function composeScore(parsed, rubric, sample, scope = COMMENT_SCOPE.EXAM) {
   const gold = sample && sample.goldStandard
   const goldText = goldFullText(sample)
   const facts = extractFactWords(gold)
@@ -178,7 +191,8 @@ export function composeScore(parsed, rubric, sample) {
       // 出站安全：点评语不得泄漏标准报告（PRD §5.9.1 白名单 + §9.5 红线）
       let comment = p.comment
       let blocked = false
-      if (comment && goldText) {
+      // 考核侧严：点评泄漏标准报告就清空并标记；训练侧放宽：允许具体指出缺什么，不拦截
+      if (scope !== COMMENT_SCOPE.TRAINING && comment && goldText) {
         const r = checkRedline(comment, goldText, facts)
         if (!r.passed) { comment = ''; blocked = true }
       }
@@ -236,9 +250,9 @@ export function composeScore(parsed, rubric, sample) {
  * 由 UI 调用的完整评分请求组装：返回 prompt 与一个「用模型原始输出换成绩」的收口函数。
  * 这样 HTTP 放在 composable 里，纯逻辑留在 shared，便于单测。
  */
-export function prepareScoring({ sample, reportText }) {
+export function prepareScoring({ sample, reportText, scope = COMMENT_SCOPE.EXAM }) {
   const rubric = resolveRubric(sample.id, sample.capabilities)
-  const prompt = buildScoringPrompt({ sample, rubric, reportText })
+  const prompt = buildScoringPrompt({ sample, rubric, reportText, scope })
 
   return {
     rubric,
@@ -250,7 +264,7 @@ export function prepareScoring({ sample, reportText }) {
     settle(rawModelText) {
       const parsed = parseScoringResult(rawModelText, rubric)
       if (!parsed.ok) return { ok: false, reason: parsed.reason }
-      const result = composeScore(parsed, rubric, sample)
+      const result = composeScore(parsed, rubric, sample, scope)
       // 留痕（可复现性 / 申诉依据）
       const gt = goldFullText(sample)
       const maxLcs = Math.max(
@@ -260,6 +274,7 @@ export function prepareScoring({ sample, reportText }) {
       result.scoreTrace = {
         rubricVersion: rubric.version,
         scoreableMax: rubric.scoreableMax,
+        commentScope: scope,
         commentsBlocked: result.items.reduce((a, i) => a + i.points.filter(p => p.commentBlocked).length, 0),
         maxCommentLcs: maxLcs,
         gradedAt: new Date().toISOString()
