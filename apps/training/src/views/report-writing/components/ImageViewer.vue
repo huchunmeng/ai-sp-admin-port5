@@ -163,7 +163,7 @@ const BUILTIN_WINDOWS = [
 const windowPresets = computed(() => {
   const own = (activeView.value && activeView.value.window) || null
   if (own) {
-    const extra = sample.value.modality === 'MR'
+    const extra = props.sample.modality === 'MR'
       // MR 没有"骨窗/肺窗"这套解剖窗，给窄窗/宽窗两个对比档
       ? [{ name: '窄窗（高对比）', WW: Math.round(own.WW * 0.55), WL: own.WL },
          { name: '宽窗（低对比）', WW: Math.round(own.WW * 1.8), WL: own.WL }]
@@ -292,12 +292,6 @@ function measureEnd() {
   dragFrom.value = null
 }
 
-/** 换序列 / 换层 / 改窗 → 重画 */
-watch([activeIndex, () => layer[activeView.value && activeView.value.key], currentWindow], () => {
-  measures.value = []
-  refreshRaw()
-}, { immediate: true })
-
 function resetView() {
   Object.keys(windowOverride).forEach(k => delete windowOverride[k])
   layer[activeView.value && activeView.value.key] = 1
@@ -411,6 +405,16 @@ watch(() => props.sample.id, () => {
   measures.value = []
   ensureLayers()
 })
+
+/**
+ * 换序列 / 换层 / 改窗 → 用新窗重画原始像素。
+ * ⚠️ 必须放在**所有 ref/reactive 声明之后**：watch 的源数组在 setup 阶段就会求值，
+ * 放到前面会踩 `const activeIndex` 的暂时性死区（TDZ），整条序列直接白屏。
+ */
+watch([activeIndex, () => layer[activeView.value && activeView.value.key], currentWindow], () => {
+  measures.value = []
+  refreshRaw()
+}, { immediate: true, flush: 'post' })
 </script>
 
 <style scoped>

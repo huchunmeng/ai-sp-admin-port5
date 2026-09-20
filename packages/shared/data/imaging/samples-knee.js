@@ -20,9 +20,9 @@ const KNEE = {
   modality: 'MR',
   level: 'R1',
   icon: 'fa-bone',
-  status: 'draft',
+  status: 'published',   // 占位报告：仅为让 PACS 阅片器可预览；真报告到手后替换并复核
   version: 1,
-  publishedAt: null,
+  publishedAt: '2026-09-20',
   sampleNote: '院方自有素材（右膝 MR）。报告与临床信息为占位，待院方正式报告替换',
   sourceDataset: '东南大学医学院 / 医路慧影（院方自有）',
   sourceLicense: '院方自有素材，无需外部署名',
