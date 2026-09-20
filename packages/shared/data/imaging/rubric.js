@@ -600,3 +600,23 @@ export const RUBRIC_SEGMENTS = SEGMENTS
 
 /** R1 表结构（管理端要点集区块按维度分组展示用） */
 export const RUBRIC_TABLE = R1_TABLE
+
+/* ── 覆盖自检（2026-09-20） ──
+ * 为什么要有：数据映射是手写的 Object.fromEntries(...)，**漏一行不会报错、不影响构建**，
+ * 只会静默退回"自动生成的占位要点"（要点文本 = 条目名）。KNEE-001 就这样漏过一次。
+ * 这里在模块加载时自查一次，有问题直接 console.warn，别让它再悄悄发生。
+ */
+export function auditRubricCoverage() {
+  const missing = []
+  Object.keys(SAMPLE_BY_ID).forEach(id => {
+    const sample = SAMPLE_BY_ID[id]
+    const hasData = !!(sample && sample.rubric && sample.rubric.items && Object.keys(sample.rubric.items).length)
+    if (hasData && !RUBRIC[id]) missing.push(id)
+  })
+  if (missing.length && typeof console !== 'undefined') {
+    console.warn('[imaging] 以下样本自带评分表数据，但没有并进 RUBRIC 映射，正在用占位要点评分：', missing.join(', '))
+  }
+  return missing
+}
+
+auditRubricCoverage()

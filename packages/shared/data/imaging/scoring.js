@@ -239,7 +239,13 @@ export function composeScore(parsed, rubric, sample, scope = COMMENT_SCOPE.EXAM)
       points: i.nAPoints
     }))
 
-  return { items, dims, rawTotal, scoreableMax, missingItems, unassessableItems }
+  return {
+    items, dims, rawTotal, scoreableMax, missingItems, unassessableItems,
+    // 难度分层标定（来自 resolveRubric）：成绩报告据此显示"达标 / 未达标"
+    level: rubric.level || '',
+    passRate: rubric.passRate,
+    passLine: rubric.passLine
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════

@@ -17,6 +17,10 @@
           </div>
           <div class="sr-score-meta">
             <span class="sr-rate">得分率 {{ rate }}</span>
+            <span v-if="passInfo" class="sr-pass" :class="passInfo.ok ? 'is-ok' : 'is-no'">
+              <i class="fa-solid" :class="passInfo.ok ? 'fa-circle-check' : 'fa-circle-xmark'"></i>
+              {{ passInfo.ok ? '达标' : '未达标' }}（{{ passInfo.level }} 线 {{ passInfo.line }} 分）
+            </span>
             <button v-if="missingCount" class="sr-badge" title="在「得分明细」里看是哪几条"
                     @click="tab = 'points'">
               <i class="fa-solid fa-circle-exclamation"></i> 缺失 {{ missingCount }} 处
@@ -97,6 +101,16 @@ const rate = computed(() => {
   if (!r || !r.scoreableMax) return '—'
   return Math.round(r.rawTotal / r.scoreableMax * 100) + '%'
 })
+/** 达标线：难度分层标定给的 passLine（老记录没有这几个字段时不显示） */
+const passInfo = computed(() => {
+  const r = result.value
+  if (!r || typeof r.passLine !== 'number' || !r.scoreableMax) return null
+  return {
+    ok: r.rawTotal >= r.passLine,
+    line: Math.round(r.passLine * 10) / 10,
+    level: r.level || '本级'
+  }
+})
 const missingCount = computed(() => {
   const r = result.value
   return r ? r.missingItems.reduce((a, m) => a + m.missing.length, 0) : 0
@@ -141,6 +155,12 @@ const pct = (got, full) => (full ? Math.round(got / full * 100) : 0) + '%'
 .sr-score-num span { font-size: 13px; color: #9ca3af; font-variant-numeric: tabular-nums; }
 .sr-score-meta { display: flex; align-items: center; gap: 10px; margin-top: 3px; }
 .sr-rate { font-size: 12.5px; color: #6b7280; }
+.sr-pass {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px;
+  border-radius: 8px; padding: 2px 8px;
+}
+.sr-pass.is-ok { color: #15803d; background: #dcfce7; }
+.sr-pass.is-no { color: #b91c1c; background: #fee2e2; }
 .sr-divider { width: 1px; align-self: stretch; background: var(--border); }
 .sr-badge {
   display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 11.5px;

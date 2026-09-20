@@ -5,15 +5,7 @@
       <h3>评分表</h3>
       <div class="ss-header-right">
         <span class="ss-total">共 <strong>{{ resolved.items.length }}</strong> 条</span>
-        <select class="select btn-sm" style="width:190px;height:28px;padding:0 8px;font-size:12px"
-                v-model="genTemplate" title="生成前先选模板：评分表按所选模板的维度与条目生成">
-          <option value="">选择评分表模板…</option>
-          <option v-for="t in TEMPLATE_OPTIONS" :key="t.code" :value="t.code">
-            {{ t.name }}（{{ t.version }}）
-          </option>
-        </select>
-        <button class="btn btn-outline btn-sm" :disabled="extracting || !goldReady || !genTemplate" @click="extract"
-                :title="genTemplate ? '' : '请先选择评分表模板'">
+        <button class="btn btn-outline btn-sm" :disabled="extracting || !goldReady" @click="extract">
           <i class="fa-solid" :class="extracting ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
           {{ extracting ? '抽取中...' : 'AI 从标准报告抽取' }}
         </button>
@@ -129,7 +121,6 @@ import { toast } from '@ai-sp/shared'
 import {
   resolveRubric,
   RUBRIC as BUILD_IN_RUBRIC,
-  TEMPLATE_VERSION,
   buildRubricExtractionPrompt, parseRubricExtraction
 } from '@ai-sp/shared/imaging'
 import { useAIChat } from '@/composables/useAIChat'
@@ -159,16 +150,6 @@ const ALL_ITEM_CODES = [
   'IMP-01', 'IMP-02', 'IMP-03', 'IMP-04', 'IMP-05', 'IMP-06', 'IMP-07', 'IMP-08',
   'LANG-01'
 ]
-
-/**
- * 可选的评分表模板（2026-09-20 批注：每次生成评分表前先选模板）。
- * 目前只有一套「影像报告评分表模板」；将来按专业/模态族扩多套时，这里列出来即可。
- */
-const TEMPLATE_OPTIONS = [
-  { code: 'IMAGING', name: '影像报告评分表模板', version: TEMPLATE_VERSION }
-]
-/** 本次生成用哪个模板；**默认空 = 未选择**，抽取按钮保持禁用（强制先选） */
-const genTemplate = ref('')
 
 const rubric = computed(() => props.modelValue || { version: 0, items: {} })
 const editableCodes = computed(() => {
@@ -307,7 +288,6 @@ function resetAll() {
 }
 
 async function extract() {
-  if (!genTemplate.value) { toast.show('请先选择评分表模板', 'warning'); return }
   extracting.value = true
   try {
     const prompt = buildRubricExtractionPrompt({ sample: props.sample })
@@ -316,7 +296,7 @@ async function extract() {
     const parsed = parseRubricExtraction(res.content)
     if (!parsed.ok) { toast.show('抽取失败：' + parsed.reason, 'error'); return }
     const merged = { ...JSON.parse(JSON.stringify(rubric.value.items || {})), ...parsed.items }
-    emitItems(merged, { extracted: true, templateCode: genTemplate.value, templateVersion: TEMPLATE_VERSION })
+    emitItems(merged, { extracted: true })
     toast.show(`已抽取 ${parsed.count} 条评分表，请逐条核对后再发布`, 'success')
   } finally {
     extracting.value = false
