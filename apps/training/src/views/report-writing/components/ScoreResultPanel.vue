@@ -1,9 +1,5 @@
 <template>
   <section id="score-result" class="card rwb-block">
-    <div class="rwb-block-head">
-      <i class="fa-solid fa-clipboard-check"></i> AI 评阅结果
-      <span class="rwb-cap">仅供自检</span>
-    </div>
 
     <!-- 评阅中 -->
     <div v-if="scoring.status === 'running'" class="rwb-score-loading">
@@ -31,22 +27,6 @@
 
     <!-- 已评分 -->
     <template v-else>
-      <!-- 总分 -->
-      <div class="rwb-hero">
-        <div class="rwb-hero-main">
-          <div class="rwb-hero-score">
-            <b>{{ result.rawTotal }}</b>
-            <span>/ {{ result.scoreableMax }}</span>
-          </div>
-        </div>
-        <div class="rwb-hero-dims">
-          <div v-for="d in result.dims" :key="d.dim" class="rwb-dim">
-            <div class="rwb-dim-name">{{ shortDim(d.dim) }}</div>
-            <div class="rwb-dim-bar"><span :style="{ width: pct(d.got, d.full) }"></span></div>
-            <div class="rwb-dim-score">{{ d.got }} / {{ d.full }}</div>
-          </div>
-        </div>
-      </div>
 
       <!-- 逐条 -->
       <div class="rwb-items">

@@ -1,9 +1,5 @@
 <template>
   <section class="card rwb-block">
-    <div class="rwb-block-head">
-      <i class="fa-solid fa-code-compare"></i> 对照参考报告
-      <span class="rwb-cap">仅训练侧可见</span>
-    </div>
 
     <div class="rwb-cmp">
       <div class="rwb-cmp-col">

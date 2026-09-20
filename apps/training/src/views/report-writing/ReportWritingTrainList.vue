@@ -30,30 +30,28 @@
       <button class="btn btn-primary btn-sm" @click="open(unfinished.sample)">继续</button>
     </div>
 
-    <!-- 筛选栏 -->
-    <div class="filter-bar">
-      <div class="rwt-filter-left">
-        <button v-for="p in BODY_PART_FILTERS" :key="p"
-                class="rwt-filter-btn" :class="{ active: bodyPart === p }"
-                @click="bodyPart = p">{{ p === '全部' ? '全部' : p }}</button>
-      </div>
-      <div class="rwt-filter-right">
-        <select class="select" v-model="modality" style="width:110px">
-          <option value="">全部模态</option>
-          <option v-for="m in modalityOptions" :key="m" :value="m">{{ m }}</option>
-        </select>
-        <select class="select" v-model="level" style="width:150px">
-          <option value="">全部难度</option>
-          <option v-for="l in TRAINING_LEVELS" :key="l.value" :value="l.value">{{ l.value }} · {{ getCaseLevelLabel(l.value) }}</option>
-        </select>
-        <select class="select" v-model="practice" style="width:120px">
-          <option value="">全部状态</option>
-          <option value="untrained">未练过</option>
-          <option value="trained">已练过</option>
-        </select>
-        <input class="input" v-model.trim="keyword" placeholder="搜索病例名称" style="width:180px">
-        <span class="rwt-count">共 {{ grouped.length }} 例</span>
-      </div>
+    <!-- 筛选栏：四个下拉 + 搜索（搜索放最前），样式统一 -->
+    <div class="filter-bar rwt-filters">
+      <input class="input rwt-search" v-model.trim="keyword" placeholder="搜索病例" @keyup.esc="keyword = ''">
+      <select class="select" v-model="bodyPart">
+        <option value="全部">全部部位</option>
+        <option v-for="p in bodyPartOptions" :key="p" :value="p">{{ p }}</option>
+      </select>
+      <select class="select" v-model="modality">
+        <option value="">全部模态</option>
+        <option v-for="m in modalityOptions" :key="m" :value="m">{{ m }}</option>
+      </select>
+      <select class="select" v-model="level">
+        <option value="">全部难度</option>
+        <option v-for="l in TRAINING_LEVELS" :key="l.value" :value="l.value">{{ l.value }} · {{ getCaseLevelLabel(l.value) }}</option>
+      </select>
+      <select class="select" v-model="practice">
+        <option value="">全部状态</option>
+        <option value="untrained">未练过</option>
+        <option value="trained">已练过</option>
+      </select>
+      <span class="rwt-count">共 {{ filtered.length }} 例</span>
+      <button v-if="filteredOn" class="rwt-reset" @click="resetFilters">重置</button>
     </div>
 
     <!-- 按检查部位分组 -->
@@ -125,7 +123,8 @@ const level = ref('')
 const practice = ref('')
 const keyword = ref('')
 
-const BODY_PART_FILTERS = ['全部', ...BODY_PARTS]
+/** 部位下拉只列题库里真实存在的部位 */
+const bodyPartOptions = computed(() => [...new Set(TRAINING_CASES.map(s => s.bodyPart).filter(Boolean))])
 
 const cards = computed(() => {
   const stats = readPracticeStats()
@@ -148,6 +147,12 @@ const filtered = computed(() => {
 })
 
 /** 按检查部位分组（PRD §5.3：默认按部位分组，组内按难度递增） */
+/** 是否有任何筛选生效（用于显示「重置」） */
+const filteredOn = computed(() => bodyPart.value !== '全部' || modality.value || level.value || practice.value || keyword.value)
+function resetFilters() {
+  bodyPart.value = '全部'; modality.value = ''; level.value = ''; practice.value = ''; keyword.value = ''
+}
+
 const grouped = computed(() => {
   const order = BODY_PARTS
   const map = new Map()
@@ -218,6 +223,16 @@ function open(sample) {
 .rwt-tab:hover { color: var(--primary); }
 .rwt-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
+/* 筛选栏：搜索在最前，四个下拉统一宽度与节奏 */
+.rwt-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rwt-filters .select { width: 150px; }
+.rwt-search { width: 200px; }
+.rwt-count { font-size: 12px; color: #9ca3af; margin-left: auto; }
+.rwt-reset {
+  font-family: inherit; font-size: 12px; color: var(--primary); background: none;
+  border: none; cursor: pointer; padding: 2px 4px;
+}
+.rwt-reset:hover { text-decoration: underline; }
 .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 14px; }
 .rwt-filter-left { display: flex; gap: 6px; flex-wrap: wrap; }
 .rwt-filter-btn {
