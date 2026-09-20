@@ -4,17 +4,11 @@
       <div v-for="row in rows" :key="row.k" class="rwb-patient-item">
         <span class="rwb-patient-k">{{ row.k }}</span>
         <span class="rwb-patient-v">{{ row.v }}</span>
-        <button class="rwb-copy" title="复制到报告" @click="copy(row)">
-          <i class="fa-solid fa-copy"></i>
-        </button>
       </div>
 
       <div class="rwb-clinical" v-for="b in briefs" :key="b.k">
         <div class="rwb-patient-item">
           <span class="rwb-patient-k">{{ b.label }}</span>
-          <button class="rwb-copy" title="整段复制到报告" @click="copyBrief(b)">
-            <i class="fa-solid fa-copy"></i>
-          </button>
         </div>
         <div class="rwb-clinical-text">{{ b.v }}</div>
       </div>
@@ -24,7 +18,6 @@
 
 <script setup>
 import { computed } from 'vue'
-import { toast } from '@ai-sp/shared'
 import { DEIDENTIFY_ROWS } from '@ai-sp/shared/imaging'
 
 const props = defineProps({
@@ -41,16 +34,6 @@ const briefs = computed(() => [
   { k: 'history', label: '患者病史', v: props.sample.history || '' },
   { k: 'purpose', label: '检查目的', v: props.sample.purpose || '' }
 ].filter(b => String(b.v).trim()))
-
-function copy(row) {
-  emit('copy', `${row.k}：${row.v}`, 'general')
-  toast.show('已复制到「一般信息」段', 'success')
-}
-
-function copyBrief(b) {
-  emit('copy', `${b.label}：${b.v}`, 'general')
-  toast.show('已复制到「一般信息」段', 'success')
-}
 </script>
 
 <style scoped>

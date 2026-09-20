@@ -13,7 +13,7 @@
 // ⚠️ 本期红线校验放在前端兜底（正式版在服务端出站层，PRD §9.5）。已实现红线 A（LCS）+ B2（测量值/征象词）；
 //   B1 结论短语自动抽取未实现，靠红线 A 兜底，**改写措辞复述结论仍可绕过**（已知缺口）。
 
-import { GOLD_SEGMENTS, SEGMENTS } from './r1-table.js'
+import { GOLD_SEGMENTS, SEGMENTS, WRITABLE_SEGMENTS } from './r1-table.js'
 
 const SEGMENT_NAME = Object.fromEntries(SEGMENTS.map(s => [s.key, s.name]))
 
@@ -31,7 +31,7 @@ const MEASURE_RE = /\d+(?:\.\d+)?\s*(?:mm|cm|毫米|厘米)/gi
 /** 金标准全文（红线比对基准） */
 export function goldFullTextOf(goldStandard) {
   if (!goldStandard) return ''
-  return GOLD_SEGMENTS.map(s => goldStandard[s.key] || '').filter(Boolean).join('\n')
+  return GOLD_SEGMENTS.map(s => goldStandard[s.goldKey] || '').filter(Boolean).join('\n')
 }
 
 /** 从金标准抽取事实词（B2）。正式版由服务端在入库时抽取，此处为可解释的近似实现 */
@@ -89,7 +89,7 @@ export const GUIDE_FALLBACK = '这个方向我不方便直接说。你先按「�
 
 /** 对话开场白（按段给，不带任何病例信息） */
 export const SEGMENT_GUIDE = {
-  general: '一般信息段按申请单与上方信息条写就行。想问哪一类可以问我。',
+  purpose: '第二段要交代临床目的与检查方法（部位、类型、扫描方式）。想问哪一类可以问我。',
   technique: '检查技术段要交代检查部位、检查类型与扫描方式。有拿不准的可以问我。',
   findings: '影像所见建议按「部位与范围 / 数目与大小 / 形态与边界 / 密度或信号或强化程度 / 重要阴性征象」逐类过一遍。哪一类不确定就问我。',
   impression: '诊断意见要正面回应临床所问，并给出建议。想不清楚怎么收口可以问我。'
@@ -104,7 +104,7 @@ export const SEGMENT_GUIDE = {
  * @param {{sample:object, reportText:object, segment:string, question:string, history:Array}} p
  */
 export function buildCompanionPrompt({ sample, reportText, segment, question, history }) {
-  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.key]) || '（未录入）'}`).join('\n')
+  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.goldKey]) || '（未录入）'}`).join('\n')
   const segName = SEGMENT_NAME[segment] || '报告'
 
   const system = [
@@ -126,7 +126,7 @@ export function buildCompanionPrompt({ sample, reportText, segment, question, hi
     '· 只输出回答正文，不要 markdown、不要编号标题、不要解释你在做什么。'
   ].join('\n')
 
-  const studentReport = SEGMENTS
+  const studentReport = WRITABLE_SEGMENTS
     .map(s => `${s.name}：${String(reportText[s.key] || '').trim() || '（还没写）'}`)
     .join('\n')
 

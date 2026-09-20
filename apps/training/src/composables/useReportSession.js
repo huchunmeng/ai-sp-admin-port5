@@ -13,7 +13,7 @@
 //   6. 提交报告后**自动发起 LLM 内容评分**（按要点集逐要点判定）
 
 import { computed, reactive, ref, watch } from 'vue'
-import { SEGMENTS } from '@ai-sp/shared/imaging'
+import { SEGMENTS, WRITABLE_SEGMENTS } from '@ai-sp/shared/imaging'
 import { useReportCompanion } from './useReportCompanion'
 import { useReportScoring } from './useReportScoring'
 
@@ -21,8 +21,8 @@ const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
 const RECORDS_KEY = 'report_writing_records_v1'
 
-/** 四段合集字数上限（各段上限之和的兜底值：250 + 500 + 3000 + 3000） */
-const TOTAL_LIMIT = 6750
+/** 学员可写三段合计上限（500 + 3000 + 3000） */
+const TOTAL_LIMIT = 6500
 
 /** 两态：书写报告 → 评分与对照 */
 export const PHASES = [
@@ -42,8 +42,8 @@ function writeJson(key, val) {
 }
 
 function emptyDraft() {
-  // 四段：一般信息 / 检查技术 / 影像所见 / 诊断意见
-  return { general: '', technique: '', findings: '', impression: '' }
+  // 学员写三段：临床目的与检查方法 / 影像所见 / 诊断意见（第一段患者临床信息由系统给出）
+  return { purpose: '', findings: '', impression: '' }
 }
 
 export function readPracticeStats() {
@@ -141,13 +141,13 @@ export function useReportSession(caseId, sample) {
 
   const inReview = computed(() => state.phase === 'review')
 
-  const segments = computed(() => SEGMENTS.map(s => ({
+  const segments = computed(() => WRITABLE_SEGMENTS.map(s => ({
     ...s,
     value: state.draft[s.key] || '',
     filled: String(state.draft[s.key] || '').trim().length > 0
   })))
 
-  const totalChars = computed(() => SEGMENTS.reduce((a, s) => a + String(state.draft[s.key] || '').length, 0))
+  const totalChars = computed(() => WRITABLE_SEGMENTS.reduce((a, s) => a + String(state.draft[s.key] || '').length, 0))
   const totalOver = computed(() => totalChars.value > TOTAL_LIMIT)
 
   /** 提交前提：四段都非空 */
@@ -157,7 +157,7 @@ export function useReportSession(caseId, sample) {
     canSubmit.value ? '' : `${missingSegments.value.join('、')}还没写`)
 
   function setActiveSegment(key) {
-    if (SEGMENTS.some(s => s.key === key)) state.activeSegment = key
+    if (WRITABLE_SEGMENTS.some(s => s.key === key)) state.activeSegment = key
   }
 
   /** 问 AI伴学一句（对话式；模型只引导，不给答案；出站过红线） */

@@ -20,7 +20,7 @@
         <div class="rwb-cmp-body">
           <template v-for="seg in GOLD_SEGMENTS" :key="seg.key">
             <span class="rwb-cmp-seg">{{ seg.name }}</span>
-            <span class="rwb-cmp-text">{{ (sample.goldStandard || {})[seg.key] }}</span>
+            <span class="rwb-cmp-text">{{ goldSegmentText(sample, seg) }}</span>
           </template>
         </div>
       </div>
@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { SEGMENTS, GOLD_SEGMENTS } from '@ai-sp/shared/imaging'
+import { WRITABLE_SEGMENTS as SEGMENTS, GOLD_SEGMENTS, goldSegmentText } from '@ai-sp/shared/imaging'
 
 defineProps({
   draft: { type: Object, default: () => ({}) },

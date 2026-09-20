@@ -12,7 +12,7 @@
 //   · **不接入**影像控件——全仓无 DICOM / 序列浏览 / 调窗 / 测量 组件（实证：零命中）。
 //     本期三视图为占位，界面明写「影像待接入」，待院方样本与影像教学底座到位后按 §9.4 黑盒接入。
 
-export { R1_TABLE, R1_ITEMS, SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
+export { R1_TABLE, R1_ITEMS, SEGMENTS, WRITABLE_SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
 export {
   CAPABILITIES, CAPABILITY_FIELDS, CAPABILITY_KEYS, DERIVED_CAPABILITY, emptyCapabilities, SCOREABLE_PUBLISH_FLOOR
 } from './capabilities.js'
@@ -35,6 +35,14 @@ export {
 
 import { IMAGING_SAMPLES, viewMeta } from './samples.js'
 import { SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
+
+/** 某一段的参考报告文本：段二 = 题面给的检查目的 + 金标准里的检查方法 */
+export function goldSegmentText(sample, seg) {
+  const g = (sample && sample.goldStandard) || {}
+  const base = seg.goldKey ? String(g[seg.goldKey] || '') : ''
+  if (seg.key === 'purpose') return [sample && sample.purpose, base].filter(Boolean).join('；')
+  return base
+}
 import { scoreableOf } from './rubric.js'
 
 /** 运行时索引（样本元数据回取，避免各处重复造 title / modality） */
@@ -48,7 +56,7 @@ export function getImagingSample(id) {
 export function hasGoldStandard(sample) {
   const g = sample && sample.goldStandard
   if (!g) return false
-  return GOLD_SEGMENTS.every(seg => String(g[seg.key] || '').trim().length > 0)
+  return GOLD_SEGMENTS.every(seg => String(g[seg.goldKey] || '').trim().length > 0)
 }
 
 /**
@@ -85,7 +93,7 @@ export function infoRowsOf(sample) {
 export function goldStandardText(gold) {
   if (!gold) return ''
   return GOLD_SEGMENTS
-    .filter(seg => String(gold[seg.key] || '').trim())
+    .filter(seg => String(gold[seg.goldKey] || '').trim())
     .map(seg => `${seg.name}：\n${gold[seg.key]}`)
     .join('\n\n')
 }

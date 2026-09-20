@@ -109,6 +109,17 @@ export const POINT_RULES = [
     code: 'GEN-02', whole: true, source: 'na',
     when: () => true,
     why: '各类号码字段已从样本中去除，本模块不适用'
+  },
+  // 段一「患者临床信息」自 2026-09-20 起由系统直接给出（临床情境引导），学员不书写 → 整条不计分
+  {
+    code: 'GEN-01', whole: true, source: 'na',
+    when: () => true,
+    why: '患者临床信息由系统直接给出，学员不书写，本条不评'
+  },
+  {
+    code: 'GEN-03', whole: true, source: 'na',
+    when: () => true,
+    why: '患者临床信息由系统直接给出，学员不书写，本条不评'
   }
 ]
 
@@ -157,9 +168,9 @@ function genericItems(sample) {
       ]
     },
     'GEN-04': {
-      rules: '整段照抄临床申请信息不得满分，须规范转述并回应临床所问',
+      rules: '整段照抄申请信息不得满分，须规范转述临床目的并落到检查方法上',
       points: [
-        { id: 'p1', text: `规范转述患者病史与检查目的（${[sample.history, sample.purpose].filter(Boolean).join("；")}）`, accept: [] },
+        { id: 'p1', text: `规范转述临床目的与检查方法（${sample.purpose || sample.history}）`, accept: [] },
         { id: 'p2', text: '写出检查目的（申请单想知道什么）', accept: [] }
       ]
     }

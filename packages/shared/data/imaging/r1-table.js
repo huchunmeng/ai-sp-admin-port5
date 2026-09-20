@@ -72,17 +72,29 @@ export const R1_ITEMS = R1_TABLE.flatMap(d =>
  * `inGold: false` 表示该段**没有独立金标准**：它的"答案"就是样单元数据本身（脱敏值 + 临床主要信息），
  * 已写进 `rubric.js` 的 `GEN-01/03/04` 要点里。故 `hasGoldStandard()` 不计它，发布门槛不受影响。
  */
+/**
+ * 报告分段（2026-09-20 批注：「四段式报告填写：**临床情境引导 + 三阶段影像报告训练**」）
+ *
+ *   第一段 患者临床信息 —— **系统直接给出**（题面情境，学员不写）→ 这就是「临床情境引导」
+ *   第二段 临床目的与检查方法 —— 学员写（原「检查技术」并入本段）
+ *   第三段 影像所见
+ *   第四段 诊断意见
+ *
+ * 学员实际写 3 段 = 「三阶段影像报告训练」。`given: true` 的段只展示、不给输入框、不计分。
+ * `goldKey` 指向 `goldStandard` 里的字段名（金标准结构没变：technique / findings / impression）。
+ */
 export const SEGMENTS = [
-  // 「一般信息」段是**报告抬头**，不是把上面的患者信息再抄一遍：上限 250 字
-  // （2026-09-20 批注：原 800 字与上方患者信息条观感重复，压到 250 并给一句极短的段头定位）
-  { key: 'general', name: '一般信息', hint: '报告抬头：患者信息 + 检查 + 临床目的', limit: 250, trainingRequired: true, examRequired: false, inGold: false },
-  { key: 'technique', name: '检查技术', limit: 500, trainingRequired: true, examRequired: false, inGold: true },
-  { key: 'findings', name: '影像所见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true },
-  { key: 'impression', name: '诊断意见', limit: 3000, trainingRequired: true, examRequired: false, inGold: true }
+  { key: 'context', name: '患者临床信息', given: true, limit: 0, inGold: false, goldKey: null },
+  { key: 'purpose', name: '临床目的与检查方法', limit: 500, inGold: true, goldKey: 'technique' },
+  { key: 'findings', name: '影像所见', limit: 3000, inGold: true, goldKey: 'findings' },
+  { key: 'impression', name: '诊断意见', limit: 3000, inGold: true, goldKey: 'impression' }
 ]
 
+/** 学员要写的段（三阶段） */
+export const WRITABLE_SEGMENTS = SEGMENTS.filter(s => !s.given)
+
 /** 有独立金标准的段（发布门槛 / 金标准对照只看这三段） */
-export const GOLD_SEGMENTS = SEGMENTS.filter(s => s.inGold !== false)
+export const GOLD_SEGMENTS = SEGMENTS.filter(s => s.goldKey)
 
 /**
  * 一般信息条的字段顺序与脱敏展示规则（PRD §5.2.2 / §5.12.4）。

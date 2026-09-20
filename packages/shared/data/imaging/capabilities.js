@@ -64,4 +64,5 @@ export const CAPABILITIES = {
 }
 
 /** 组卷发布门禁下限（PRD §5.13.5）：可评分 < 85 需走覆盖确认。训练侧不用 */
-export const SCOREABLE_PUBLISH_FLOOR = 85
+// A 方案（段一由系统给出，GEN-01/GEN-03 转不可评）后可评满分普遍 84–88，门槛从 85 下调到 80
+export const SCOREABLE_PUBLISH_FLOOR = 80

@@ -7,9 +7,9 @@
         <span class="is-seg-count" :class="{ 'text-error': over(seg) }">{{ (text(seg) || '').length }} / {{ seg.limit }}</span>
       </div>
       <textarea class="input is-seg-area" :value="text(seg)" :maxlength="seg.limit"
-                :rows="seg.key === 'technique' ? 3 : 7"
-                :placeholder="PLACEHOLDER[seg.key]"
-                @input="onInput(seg.key, $event.target.value)"></textarea>
+                :rows="seg.key === 'purpose' ? 3 : 7"
+                :placeholder="PLACEHOLDER[seg.goldKey]"
+                @input="onInput(seg.goldKey, $event.target.value)"></textarea>
     </div>
 
     <div class="is-gate" :class="allFilled ? 'is-gate-ok' : ''">
@@ -37,7 +37,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const gold = computed(() => props.modelValue || { technique: '', findings: '', impression: '' })
-const text = seg => gold.value[seg.key] || ''
+const text = seg => gold.value[seg.goldKey] || ''
 const over = seg => (text(seg) || '').length >= seg.limit
 const allFilled = computed(() => GOLD_SEGMENTS.every(s => String(text(s)).trim().length > 0))
 

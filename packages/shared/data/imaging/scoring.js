@@ -19,13 +19,14 @@
 
 import { resolveRubric } from './rubric.js'
 import { checkRedline, extractFactWords, longestCommonSubstring } from './companion.js'
-import { SEGMENTS, GOLD_SEGMENTS, R1_ITEMS } from './r1-table.js'
+import { SEGMENTS, WRITABLE_SEGMENTS, GOLD_SEGMENTS, R1_ITEMS } from './r1-table.js'
 
 /** 金标准全文（红线比对基准） */
 function goldFullText(sample) {
   const g = sample && sample.goldStandard
   if (!g) return ''
-  return GOLD_SEGMENTS.map(s => g[s.key]).filter(Boolean).join('\n')
+  // 红线也覆盖题面给的检查目的：段二的金标准 = 检查目的 + 检查方法
+  return [...GOLD_SEGMENTS.map(s => g[s.goldKey]), sample && sample.purpose].filter(Boolean).join('\n')
 }
 
 /** 单条点评的字数上限（防止模型把整段答案写进点评） */
@@ -45,7 +46,7 @@ export const PARTIAL_TEXT = '有所涉及但不够具体'
  * 只把**可评要点**交给模型判定；不可评要点在 compose 阶段直接排除，不让模型有机会给分。
  */
 export function buildScoringPrompt({ sample, rubric, reportText }) {
-  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.key]) || '（未录入）'}`).join('\n')
+  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.goldKey]) || '（未录入）'}`).join('\n')
 
   const assessable = rubric.items.filter(i => i.points.some(p => p.assessable))
 
@@ -283,7 +284,7 @@ const EXTRACT_CODES = [
 ]
 
 export function buildRubricExtractionPrompt({ sample }) {
-  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.key]) || '（未录入）'}`).join('\n')
+  const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.goldKey]) || '（未录入）'}`).join('\n')
   const clinical = [sample.history, sample.purpose].filter(Boolean).join('；')
   const itemList = EXTRACT_CODES
     .map(code => {

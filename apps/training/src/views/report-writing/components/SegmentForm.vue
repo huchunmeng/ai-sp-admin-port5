@@ -2,10 +2,14 @@
   <section class="card rwb-block">
     <div class="rwb-block-head">
       <i class="fa-solid fa-pen-to-square"></i> 学生报告
-      <span class="rwb-tag">四段式</span>
+      <span class="rwb-tag">临床情境引导 + 三阶段</span>
       <span class="rwb-count" :class="{ 'text-error': totalOver }">{{ totalChars }} / {{ totalLimit }}</span>
     </div>
 
+    <div v-if="given" class="rwb-given">
+      <div class="rwb-given-head"><i class="fa-solid fa-circle-info"></i> {{ given.name }}<span class="rwb-given-tag">系统给出</span></div>
+      <div class="rwb-given-text">{{ given.text }}</div>
+    </div>
     <div class="rwb-segs">
       <div v-for="seg in segments" :key="seg.key" class="rwb-seg">
         <div class="rwb-seg-head">
@@ -17,7 +21,7 @@
           </span>
         </div>
         <textarea class="rwb-seg-area" :value="draft[seg.key]" :maxlength="seg.limit"
-                  :rows="seg.key === 'general' ? 3 : seg.key === 'technique' ? 2 : 6"
+                  :rows="seg.key === 'purpose' ? 3 : 6"
                   :placeholder="PLACEHOLDER[seg.key]"
                   @input="$emit('update:segment', seg.key, $event.target.value)"></textarea>
       </div>
@@ -27,8 +31,7 @@
 
 <script setup>
 const PLACEHOLDER = {
-  general: '如：患者女，50–59 岁，呼吸内科。因咳嗽伴痰中带血 2 周行胸部 CT 检查，请评估右肺结节性质。',
-  technique: '如：胸部CT平扫。',
+  purpose: '如：胸部CT平扫。为明确右肺上叶结节性质，请评估有无纵隔淋巴结肿大及胸腔积液。',
   findings: '部位与范围、数目与大小、形态与边界、密度/信号/强化程度、重要阴性征象',
   impression: '回应临床问题、定位与定性倾向、依据与建议'
 }
@@ -39,7 +42,9 @@ defineProps({
   totalChars: { type: Number, default: 0 },
   totalOver: { type: Boolean, default: false },
   // 注意：属性名必须能被 `total-limit` 归一化到，写成 TOTAL_LIMIT 会导致绑定失效、永远用默认值
-  totalLimit: { type: Number, default: 6750 }
+  totalLimit: { type: Number, default: 6500 },
+  /** 第一段「患者临床信息」由系统给出，只展示不给输入框 */
+  given: { type: Object, default: null }
 })
 defineEmits(['update:segment'])
 </script>
@@ -58,6 +63,12 @@ defineEmits(['update:segment'])
 .rwb-seg { padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
 .rwb-seg:last-child { border-bottom: none; }
 .rwb-seg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+/* 第一段：患者临床信息由系统给出（临床情境引导），只展示不给输入框 */
+.rwb-given { margin: 8px 18px 0; padding: 12px 14px; border-radius: 9px; background: #F0F7FF; border: 1px solid #DBEAFE; }
+.rwb-given-head { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #1f2937; }
+.rwb-given-head i { color: var(--primary); }
+.rwb-given-tag { margin-left: auto; font-size: 11px; font-weight: 400; color: #6b7280; background: #fff; padding: 2px 8px; border-radius: 8px; }
+.rwb-given-text { margin-top: 7px; font-size: 12.5px; line-height: 1.85; color: #374151; }
 .rwb-seg-name { font-size: 13px; font-weight: 700; color: #4b5563; }
 .rwb-seg-hint { font-size: 11.5px; color: #9ca3af; }
 .rwb-seg-ok { font-size: 11px; color: var(--success); display: inline-flex; align-items: center; gap: 3px; }

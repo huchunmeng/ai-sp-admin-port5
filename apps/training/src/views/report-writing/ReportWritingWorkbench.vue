@@ -13,7 +13,7 @@
     <div class="rww-body">
       <div class="rww-main">
         <ImagePanel :sample="sample" @copy="onCopy" />
-        <SegmentForm :segments="segments" :draft="state.draft"
+        <SegmentForm :segments="segments" :draft="state.draft" :given="givenSegment"
                      :total-chars="totalChars" :total-over="totalOver" :total-limit="TOTAL_LIMIT"
                      @update:segment="onSegmentInput" />
         <NotesPanel :notes="state.viewNotes" @update:notes="v => state.viewNotes = v" />
@@ -49,6 +49,7 @@ import { useReportSession } from '@/composables/useReportSession'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import ImagePanel from './components/ImagePanel.vue'
 import SegmentForm from './components/SegmentForm.vue'
+import { DEIDENTIFY_ROWS } from '@ai-sp/shared/imaging'
 import NotesPanel from './components/NotesPanel.vue'
 import CompanionPanel from './components/CompanionPanel.vue'
 import ScoreReportModal from './components/ScoreReportModal.vue'
@@ -85,8 +86,16 @@ function onSegmentInput(key, val) {
   state.draft[key] = val
 }
 
+/** 段一「患者临床信息」由系统给出（临床情境引导）：患者信息 + 病史拼成一段只读情境 */
+const givenSegment = computed(() => {
+  const d = sample.value.deidentify || {}
+  const info = DEIDENTIFY_ROWS.map(r => `${r.k}：${d[r.key] || ''}`).filter(s => s.split('：')[1]).join('，')
+  const text = [info + '。', sample.value.history].filter(Boolean).join('')
+  return { name: '患者临床信息', text: text || '（样本未录入患者信息）' }
+})
+
 function onCopy(text, segment) {
-  const key = segment || 'general'
+  const key = segment || 'purpose'
   const cur = state.draft[key] || ''
   state.draft[key] = cur ? `${cur}\n${text}` : text
 }
