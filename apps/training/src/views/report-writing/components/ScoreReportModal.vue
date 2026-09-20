@@ -9,22 +9,29 @@
         <button class="sr-close" title="关闭" @click="$emit('close')"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <!-- 总览条：总分 + 得分率 + 维度条，**一直可见**，不随页签切换 -->
+      <!-- 总览条：左「得分」右「维度得分」，两块用竖线分开，一直可见 -->
       <div v-if="result" class="sr-summary">
-        <div class="sr-total">
-          <b>{{ result.rawTotal }}</b><span>/ {{ result.scoreableMax }}</span>
-          <em v-if="result.scoreableMax < 100">本卷可评</em>
-        </div>
-        <div class="sr-rate">{{ rate }}<small>得分率</small></div>
-        <div class="sr-dims">
-          <div v-for="d in result.dims" :key="d.dim" class="sr-dim">
-            <span class="sr-dim-name">{{ shortDim(d.dim) }}</span>
-            <span class="sr-dim-bar"><i :style="{ width: pct(d.got, d.full) }"></i></span>
-            <span class="sr-dim-score">{{ d.got }} / {{ d.full }}</span>
+        <div class="sr-score">
+          <div class="sr-score-num">
+            <b>{{ result.rawTotal }}</b><span>/ {{ result.scoreableMax }}</span>
+          </div>
+          <div class="sr-score-meta">
+            <span class="sr-rate">得分率 {{ rate }}</span>
+            <button v-if="missingCount" class="sr-badge" title="在「得分明细」里看是哪几条"
+                    @click="tab = 'points'">
+              <i class="fa-solid fa-circle-exclamation"></i> 缺失 {{ missingCount }} 处
+            </button>
           </div>
         </div>
-        <div v-if="result.missingItems.length" class="sr-badge">
-          缺失 <b>{{ missingCount }}</b> 处
+
+        <div class="sr-divider"></div>
+
+        <div class="sr-dims">
+          <div v-for="d in result.dims" :key="d.dim" class="sr-dim">
+            <span class="sr-dim-name" :title="d.dim">{{ shortDim(d.dim) }}</span>
+            <span class="sr-dim-bar"><i :style="{ width: pct(d.got, d.full) }"></i></span>
+            <span class="sr-dim-score">{{ d.got }}<em>/ {{ d.full }}</em></span>
+          </div>
         </div>
       </div>
 
@@ -120,28 +127,42 @@ const pct = (got, full) => (full ? Math.round(got / full * 100) : 0) + '%'
 }
 .sr-close:hover { background: #f5f7fa; color: var(--error); }
 
-/* 总览条：横排四块，一直可见 */
+/* 总览条：左「得分」右「维度得分」，中间竖线分隔 */
 .sr-summary {
-  flex-shrink: 0; display: flex; align-items: center; gap: 26px;
-  padding: 14px 18px; background: #fff; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; gap: 20px;
+  padding: 13px 18px; background: #fff; border-bottom: 1px solid var(--border);
 }
-.sr-total { display: flex; align-items: baseline; gap: 4px; }
-.sr-total b { font-size: 30px; font-weight: 800; color: var(--primary); line-height: 1; font-variant-numeric: tabular-nums; }
-.sr-total span { font-size: 14px; color: #9ca3af; }
-.sr-total em { font-size: 10.5px; color: #9ca3af; font-style: normal; margin-left: 4px; }
-.sr-rate { font-size: 15px; font-weight: 700; color: #374151; display: flex; flex-direction: column; align-items: center; }
-.sr-rate small { font-size: 10.5px; font-weight: 400; color: #9ca3af; }
-.sr-dims { flex: 1; display: flex; flex-wrap: wrap; gap: 6px 20px; min-width: 0; }
-.sr-dim { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: #6b7280; }
-.sr-dim-name { white-space: nowrap; }
-.sr-dim-bar { width: 64px; height: 5px; border-radius: 3px; background: #eef1f5; overflow: hidden; display: inline-block; }
-.sr-dim-bar i { display: block; height: 100%; background: var(--primary); border-radius: 3px; }
-.sr-dim-score { font-variant-numeric: tabular-nums; }
+.sr-score { flex-shrink: 0; min-width: 168px; }
+.sr-score-num { display: flex; align-items: baseline; gap: 5px; }
+.sr-score-num b {
+  font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.sr-score-num span { font-size: 13px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+.sr-score-meta { display: flex; align-items: center; gap: 10px; margin-top: 3px; }
+.sr-rate { font-size: 12.5px; color: #6b7280; }
+.sr-divider { width: 1px; align-self: stretch; background: var(--border); }
 .sr-badge {
-  flex-shrink: 0; font-size: 12px; color: #b45309; background: #fffbeb;
-  border: 1px solid #fde68a; border-radius: 8px; padding: 4px 10px;
+  display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 11.5px;
+  color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+  padding: 2px 9px; cursor: pointer;
 }
-.sr-badge b { font-size: 14px; }
+.sr-badge:hover { background: #fef3c7; }
+
+/* 维度：两列网格，名称/条/分数三列定宽对齐，长名截断 */
+.sr-dims {
+  flex: 1; min-width: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 26px;
+}
+.sr-dim {
+  display: grid; grid-template-columns: minmax(0, 1fr) 62px 58px;
+  align-items: center; gap: 9px; font-size: 11.5px; color: #6b7280;
+}
+.sr-dim-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-dim-bar { height: 5px; border-radius: 3px; background: #eef1f5; overflow: hidden; }
+.sr-dim-bar i { display: block; height: 100%; background: var(--primary); border-radius: 3px; }
+.sr-dim-score { text-align: right; color: #374151; font-variant-numeric: tabular-nums; }
+.sr-dim-score em { font-style: normal; color: #c0c4cc; font-size: 10.5px; }
 
 /* 页签 */
 .sr-tabs { flex-shrink: 0; display: flex; gap: 0; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--border); }

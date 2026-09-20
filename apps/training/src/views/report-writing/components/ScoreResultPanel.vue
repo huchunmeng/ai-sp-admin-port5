@@ -28,11 +28,18 @@
     <!-- 已评分 -->
     <template v-else>
 
-      <!-- 逐条 -->
+      <!-- 逐条：先说清档位怎么判，再看每一条 -->
+      <div class="rwb-legend">
+        <span class="rwb-legend-title">判定档位</span>
+        <span class="rwb-legend-item"><b class="pt-full">已写到</b> 明确写出且正确</span>
+        <span class="rwb-legend-item"><b class="pt-part">部分写到</b> 提及但笼统、不完整或表述不规范</span>
+        <span class="rwb-legend-item"><b class="pt-none">未写到</b> 未提及或写错</span>
+      </div>
       <div class="rwb-items">
         <div v-for="dim in grouped" :key="dim.dim" class="rwb-dim-block">
           <div class="rwb-dim-head">
             <span class="rwb-dim-title">{{ dim.dim }}</span>
+            <span class="rwb-dim-hint">{{ dimHint(dim) }}</span>
             <span class="rwb-dim-total">{{ dim.got }} / {{ dim.full }}</span>
           </div>
           <div v-for="it in dim.items" :key="it.code" class="rwb-item" :class="markClass(it)">
@@ -44,14 +51,23 @@
             </div>
             <div v-show="open[it.code]" class="rwb-item-body">
               <div v-for="p in it.points" :key="p.id" class="rwb-point" :class="'pt-' + markOf(p.score)">
-                <span class="rwb-point-dot">{{ p.score === 1 ? '●' : p.score === 0.5 ? '?' : '○' }}</span>
-                <span class="rwb-point-text">{{ p.text }}</span>
-                <span v-if="p.comment" class="rwb-point-comment">{{ p.comment }}</span>
+                <span class="rwb-point-tag" :class="'pt-' + markOf(p.score)">{{ markLabel(p.score) }}</span>
+                <div class="rwb-point-main">
+                  <div class="rwb-point-line">
+                    <span class="rwb-point-text">{{ p.text }}</span>
+                    <span v-if="p.scoreWeight" class="rwb-point-weight">{{ p.scoreWeight }} 分</span>
+                  </div>
+                  <div v-if="p.comment" class="rwb-point-comment">
+                    <i class="fa-solid fa-lightbulb"></i> {{ p.comment }}
+                  </div>
+                </div>
               </div>
               <div v-for="p in it.nAPoints" :key="'na-' + p.text" class="rwb-point is-na">
-                <span class="rwb-point-dot">–</span>
-                <span class="rwb-point-text">{{ p.text }}</span>
-                <span class="rwb-point-comment">不评</span>
+                <span class="rwb-point-tag">不评</span>
+                <div class="rwb-point-main">
+                  <div class="rwb-point-line"><span class="rwb-point-text">{{ p.text }}</span></div>
+                  <div class="rwb-point-comment">{{ p.why || '本题条件不足，不计入总分' }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -133,6 +149,16 @@ const grouped = computed(() => {
   return [...map.values()].map(d => ({ ...d, got: Math.round(d.got * 10) / 10, full: Math.round(d.full * 10) / 10 }))
 })
 
+/** 档位的中文说法：给学员看得懂的判断，而不是 ●?○ 三个符号 */
+const markLabel = s => (s === 1 ? '已写到' : s === 0.5 ? '部分写到' : '未写到')
+
+/** 维度一句话点评：满分，或丢分最集中的那一条 */
+function dimHint(dim) {
+  const lost = Math.round((dim.full - dim.got) * 10) / 10
+  if (!lost) return '本维度满分'
+  const worst = (dim.items || []).slice().sort((a, b) => (b.scoreableFull - b.got) - (a.scoreableFull - a.got))[0]
+  return worst && worst.scoreableFull > worst.got ? `丢分 ${lost} 分，主要在「${worst.name}」` : `丢分 ${lost} 分`
+}
 function toggle(code) { open[code] = !open[code] }
 const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '0%')
 const shortDim = d => String(d).replace(/^[一二三四五六]、/, '')
@@ -254,4 +280,34 @@ function submitAppeal() {
 .rwb-trace { font-size: 11.5px; color: #9ca3af; line-height: 1.7; display: flex; gap: 12px; flex-wrap: wrap; }
 .rwb-appeal-done { color: #b45309; }
 .rwb-note { font-size: 12px; color: #9ca3af; line-height: 1.6; padding: 8px 18px 16px; }
+
+/* 档位图例 */
+.rwb-legend {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px;
+  padding: 9px 12px; margin-bottom: 12px; border-radius: 8px;
+  background: #f8fafc; border: 1px solid #eef1f5; font-size: 11.5px; color: #6b7280;
+}
+.rwb-legend-title { font-weight: 700; color: #374151; }
+.rwb-legend-item b { font-weight: 700; }
+.rwb-legend-item b.pt-full { color: #16a34a; }
+.rwb-legend-item b.pt-part { color: #d97706; }
+.rwb-legend-item b.pt-none { color: #dc2626; }
+
+/* 维度头 */
+.rwb-dim-hint { flex: 1; min-width: 0; font-size: 11.5px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 要点行：左档位标签 + 右内容 */
+.rwb-point { display: flex; align-items: flex-start; gap: 10px; }
+.rwb-point-tag {
+  flex-shrink: 0; min-width: 52px; text-align: center; font-size: 11px; font-weight: 700;
+  border-radius: 6px; padding: 2px 6px; background: #f3f4f6; color: #6b7280;
+}
+.rwb-point-tag.pt-full { background: #dcfce7; color: #15803d; }
+.rwb-point-tag.pt-part { background: #fef3c7; color: #b45309; }
+.rwb-point-tag.pt-none { background: #fee2e2; color: #b91c1c; }
+.rwb-point-main { flex: 1; min-width: 0; }
+.rwb-point-line { display: flex; align-items: baseline; gap: 8px; }
+.rwb-point-weight { flex-shrink: 0; font-size: 10.5px; color: #c0c4cc; }
+.rwb-point-comment { margin-top: 2px; font-size: 11.5px; color: #6b7280; line-height: 1.7; }
+.rwb-point-comment i { color: #f59e0b; margin-right: 3px; }
 </style>
