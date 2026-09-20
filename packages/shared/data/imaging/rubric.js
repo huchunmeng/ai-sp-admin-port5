@@ -425,6 +425,13 @@ export const RUBRIC = {
       caseId,
       { version: 1, updatedAt: '2026-09-20', updatedBy: '公开数据集导入 · AI 抽取', items: r.items }
     ])
+  ),
+  // 院方自有素材（膝关节 MR）：要点集人工写，占位报告（见 samples-knee.js 头部说明）
+  ...Object.fromEntries(
+    Object.entries(KNEE_RUBRIC).map(([caseId, r]) => [
+      caseId,
+      { version: r.version || 1, updatedAt: r.updatedAt || '2026-09-20', updatedBy: r.updatedBy || '素材接入', items: r.items }
+    ])
   )
 }
 
