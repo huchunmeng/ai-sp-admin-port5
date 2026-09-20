@@ -9,13 +9,15 @@
         </button>
       </div>
 
-      <div class="rwb-patient-item rwb-clinical">
-        <span class="rwb-patient-k">临床主要信息及检查目的</span>
-        <button class="rwb-copy" title="整段复制到报告" @click="copyClinical">
-          <i class="fa-solid fa-copy"></i>
-        </button>
+      <div class="rwb-clinical" v-for="b in briefs" :key="b.k">
+        <div class="rwb-patient-item">
+          <span class="rwb-patient-k">{{ b.label }}</span>
+          <button class="rwb-copy" title="整段复制到报告" @click="copyBrief(b)">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+        </div>
+        <div class="rwb-clinical-text">{{ b.v }}</div>
       </div>
-      <div class="rwb-clinical-text">{{ sample.clinicalBrief }}</div>
     </div>
   </div>
 </template>
@@ -34,13 +36,19 @@ const rows = computed(() => DEIDENTIFY_ROWS.map(r => ({
   k: r.k, v: (props.sample.deidentify || {})[r.key] || ''
 })))
 
+/** 患者病史 / 检查目的 两栏（2026-09-20 批注：原「临床主要信息及检查目的」拆成两栏） */
+const briefs = computed(() => [
+  { k: 'history', label: '患者病史', v: props.sample.history || '' },
+  { k: 'purpose', label: '检查目的', v: props.sample.purpose || '' }
+].filter(b => String(b.v).trim()))
+
 function copy(row) {
   emit('copy', `${row.k}：${row.v}`, 'general')
   toast.show('已复制到「一般信息」段', 'success')
 }
 
-function copyClinical() {
-  emit('copy', `临床主要信息及检查目的：${props.sample.clinicalBrief}`, 'general')
+function copyBrief(b) {
+  emit('copy', `${b.label}：${b.v}`, 'general')
   toast.show('已复制到「一般信息」段', 'success')
 }
 </script>

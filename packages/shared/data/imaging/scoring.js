@@ -284,7 +284,7 @@ const EXTRACT_CODES = [
 
 export function buildRubricExtractionPrompt({ sample }) {
   const gold = GOLD_SEGMENTS.map(s => `${s.name}：${(sample.goldStandard && sample.goldStandard[s.key]) || '（未录入）'}`).join('\n')
-  const clinical = (sample.deidentify && sample.deidentify.clinicalBrief) || sample.clinicalBrief || ''
+  const clinical = [sample.history, sample.purpose].filter(Boolean).join('；')
   const itemList = EXTRACT_CODES
     .map(code => {
       const it = R1_ITEMS.find(x => x.code === code)

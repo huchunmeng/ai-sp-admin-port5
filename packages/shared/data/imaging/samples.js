@@ -69,7 +69,8 @@ const RC_SAMPLES = [
     bodyPart: '胸部',
     level: 'R2',
     icon: 'fa-lungs',
-    clinicalBrief: '咳嗽伴痰中带血 2 周。胸部 CT 平扫发现右肺上叶占位。',
+    history: "咳嗽伴痰中带血2周；胸部CT平扫已发现右肺上叶占位",
+    purpose: "明确右肺上叶占位性质",
     series: [v('axial', 62), v('coronal', 48), v('sagittal', 48)],
     deidentify: {
       name: '张*', ageRange: '50–59 岁', sex: '女', dept: '呼吸内科',
@@ -96,7 +97,8 @@ const RC_SAMPLES = [
     bodyPart: '颅脑',
     level: 'R2',
     icon: 'fa-brain',
-    clinicalBrief: '突发左侧肢体无力 6 小时。',
+    history: "突发左侧肢体无力6小时",
+    purpose: "评估急性脑血管病（如脑梗死或脑出血）",
     // MR 病例：**不是三视图**，是按序列分（4 个序列）
     series: [v('dwi', 40), v('adc', 40), v('t2wi', 32), v('flair', 32)],
     deidentify: {
@@ -124,7 +126,8 @@ const RC_SAMPLES = [
     bodyPart: '腹部',
     level: 'R3',
     icon: 'fa-x-ray',
-    clinicalBrief: '肝细胞癌 TACE 术后 1 月复查。',
+    history: "肝细胞癌TACE术后1月",
+    purpose: "术后疗效评估及肿瘤复发/残留监测",
     // 增强 CT：按**期相**分（4 期），不是按方位
     series: [v('plain', 88), v('arterial', 88), v('portal', 88), v('delayed', 64)],
     deidentify: {
@@ -150,7 +153,8 @@ const RC_SAMPLES = [
     id: 'RC-004',
     title: '胸部CT · 纵隔淋巴结肿大',
     modality: 'CT', bodyPart: '胸部', level: 'F1', icon: 'fa-lungs',
-    clinicalBrief: '低热、盗汗 1 月余，胸片示纵隔增宽。',
+    history: "低热、盗汗1月余；胸片示纵隔增宽",
+    purpose: "进一步评估纵隔病变性质（如淋巴瘤、结核、胸腺瘤等）",
     // 只有两个方位（不做矢状位重建）
     series: [v('axial', 74), v('coronal', 56)],
     deidentify: {
@@ -168,7 +172,8 @@ const RC_SAMPLES = [
     id: 'RC-005',
     title: '腹部MR · 肝血管瘤',
     modality: 'MR', bodyPart: '腹部', level: 'U2', icon: 'fa-x-ray',
-    clinicalBrief: '体检发现肝内占位。',
+    history: "体检发现肝内占位",
+    purpose: "明确肝内占位性质（良恶性鉴别、来源判断）",
     // 最多的一例：5 个序列（T1WI / T2WI + 增强三期）
     series: [v('t1wi', 52), v('t2wi', 52), v('arterial', 52), v('portal', 52), v('delayed', 52)],
     deidentify: {
@@ -186,7 +191,8 @@ const RC_SAMPLES = [
     id: 'RC-006',
     title: '颅脑CT · 高血压性脑出血',
     modality: 'CT', bodyPart: '颅脑', level: 'U1', icon: 'fa-brain',
-    clinicalBrief: '突发头痛伴意识障碍 2 小时，高血压病史 10 年。',
+    history: "突发头痛伴意识障碍2小时；高血压病史10年",
+    purpose: "评估急性颅内病变（如脑出血、大面积脑梗死、蛛网膜下腔出血）",
     // 只有轴位一个序列
     series: [v('axial', 36)],
     deidentify: {
@@ -204,7 +210,8 @@ const RC_SAMPLES = [
     id: 'RC-007',
     title: '头颈CT · 鼻咽癌',
     modality: 'CT', bodyPart: '头颈', level: 'F2', icon: 'fa-user-doctor',
-    clinicalBrief: '回吸性血涕 3 月，颈部包块。',
+    history: "回吸性血涕3月，颈部包块",
+    purpose: "筛查鼻咽癌及颈部淋巴结转移",
     series: [v('axial', 96), v('coronal', 70), v('sagittal', 70)],
     deidentify: {
       name: '黄*', ageRange: '40–49 岁', sex: '男', dept: '耳鼻咽喉科',
@@ -221,7 +228,8 @@ const RC_SAMPLES = [
     id: 'RC-008',
     title: '骨肌DR · 胫骨平台骨折',
     modality: 'DR', bodyPart: '骨肌', level: 'U1', icon: 'fa-bone',
-    clinicalBrief: '摔伤后左膝关节肿痛、活动受限 1 天。',
+    history: "摔伤后左膝关节肿痛、活动受限1天",
+    purpose: "评估左膝关节骨折、韧带或半月板损伤",
     // DR 平片：两个体位、**每个体位 1 帧**（不是层面序列）—— 单帧边界
     series: [v('pa', 1), v('lateral', 1)],
     deidentify: {

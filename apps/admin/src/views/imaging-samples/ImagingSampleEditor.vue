@@ -60,7 +60,7 @@
           <!-- 患者信息与影像同卡：放在图片下面、报告内容上面（2026-09-20 批注 9） -->
           <div class="is-patient" data-reviewable="患者信息">
             <div class="is-sub">患者信息</div>
-            <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:clinicalBrief="form.clinicalBrief" />
+            <DeidentifyForm ref="deidentifyRef" v-model:deidentify="form.deidentify" v-model:history="form.history" v-model:purpose="form.purpose" />
           </div>
         </div>
         <div class="card" data-reviewable="标准报告">

@@ -21,7 +21,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "胸部",
     "level": "U2",
     "icon": "fa-lungs",
-    "clinicalBrief": "患者女，35岁，咳嗽、咳痰1年余，行胸部CT平扫+增强检查",
+    "history": "患者女，35岁，咳嗽、咳痰1年余",
+    "purpose": "胸部CT平扫+增强",
     "series": [
       {
         "key": "ct",
@@ -73,7 +74,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "胸部",
     "level": "R2",
     "icon": "fa-lungs",
-    "clinicalBrief": "患者，男，70岁，因有咳嗽、痰中带血3个月就诊。听诊无异常发现，痰查癌细胞阴性。胸部正侧位片",
+    "history": "患者男，70岁，咳嗽、痰中带血3个月；听诊无异常，痰查癌细胞阴性",
+    "purpose": "胸部正侧位片",
     "series": [
       {
         "key": "main",
@@ -125,7 +127,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "头颈",
     "level": "F2",
     "icon": "fa-head-side-cough",
-    "clinicalBrief": "患者，男，20岁。左耳流脓3年伴听力下降，头痛、发热2周。行颞骨CT及颅脑MRI检查，图像分别为轴位、冠状位CT和增强轴位、冠状位、矢状位MRI",
+    "history": "患者男，20岁，左耳流脓3年伴听力下降，头痛、发热2周",
+    "purpose": "颞骨CT及颅脑MRI检查，图像分别为轴位、冠状位CT和增强轴位、冠状位、矢状位MRI",
     "series": [
       {
         "key": "main",
@@ -177,7 +180,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "腹部",
     "level": "R3",
     "icon": "fa-x-ray",
-    "clinicalBrief": "患者，男，74岁。肝区偶感不适，腹胀、消瘦乏力伴皮肤瘙痒，查体皮肤巩膜黄染，行MRI检查",
+    "history": "患者男，74岁，肝区偶感不适，腹胀、消瘦乏力伴皮肤瘙痒；查体皮肤巩膜黄染",
+    "purpose": "MRI检查",
     "series": [
       {
         "key": "mri",
@@ -229,7 +233,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "胸部",
     "level": "R2",
     "icon": "fa-lungs",
-    "clinicalBrief": "患者，男，78岁，糖尿病17年，低热、右侧胸痛伴咳嗽2个月余，常规抗炎治疗症状改善不明显，痰培养结核菌（-），胸部CT平扫",
+    "history": "患者男，78岁，糖尿病17年；低热、右侧胸痛伴咳嗽2个月余；常规抗炎治疗效果不佳；痰培养结核菌阴性",
+    "purpose": "胸部CT平扫",
     "series": [
       {
         "key": "axial",
@@ -281,7 +286,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "腹部",
     "level": "R3",
     "icon": "fa-wave-square",
-    "clinicalBrief": "患者男，55岁，上腹胀满不适、隐痛，向腰背部放射，伴不规则低热4个月余。超声：腹主动脉左侧及前方自肾动脉水平至腹主动脉分叉上方可见14.2cm×10.0cm×5.8cm的低回声区，前缘边界清，后缘边界不清，肿物与左肾分界不清，左侧肾盂、肾盏扩张，左侧肾盂宽1.3cm",
+    "history": "患者男，55岁，上腹胀满不适、隐痛向腰背部放射，伴不规则低热4个月余；超声提示腹主动脉左侧及前方14.2cm×10.0cm×5.8cm低回声区，与左肾分界不清，左侧肾盂肾盏扩张",
+    "purpose": "进一步明确腹膜后肿物性质及与周围结构关系",
     "series": [
       {
         "key": "us",
@@ -333,7 +339,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "颅脑",
     "level": "R2",
     "icon": "fa-brain",
-    "clinicalBrief": "患者，女，56岁，头晕1个月，MRI平扫及增强扫描",
+    "history": "患者女，56岁，头晕1个月",
+    "purpose": "MRI平扫及增强扫描",
     "series": [
       {
         "key": "mri",
@@ -385,7 +392,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "颅脑",
     "level": "U1",
     "icon": "fa-brain",
-    "clinicalBrief": "女性，53岁，右侧肢体活动不灵1天余。查体：伸舌右偏，右上下肢肌力3～4级，右侧病理征（+）。MRI检查",
+    "history": "女性，53岁，右侧肢体活动不灵1天余；查体：伸舌右偏，右上下肢肌力3～4级，右侧病理征阳性",
+    "purpose": "MRI检查",
     "series": [
       {
         "key": "mri",
@@ -437,7 +445,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "骨肌",
     "level": "U1",
     "icon": "fa-bone",
-    "clinicalBrief": "男，17岁，左胫骨平台骨折术后半年余，左膝关节活动受限。左膝关节正侧位X线片",
+    "history": "男，17岁，左胫骨平台骨折术后半年余，左膝关节活动受限",
+    "purpose": "左膝关节正侧位X线片",
     "series": [
       {
         "key": "main",
@@ -489,7 +498,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "骨肌",
     "level": "R2",
     "icon": "fa-bone",
-    "clinicalBrief": "患者，女性，61岁，3年前腰椎手术史，术后开始左下肢感觉减退、麻木、无力，左足隐痛，无外伤史，左足拇趾曾不明原因窦道形成后自愈，现左足持续疼痛、肿胀加重半个月，左下肢跛行。左足X线及CT",
+    "history": "患者女，61岁，3年前腰椎手术史；术后出现左下肢感觉减退、麻木、无力，左足隐痛；左足拇趾曾有不明原因窦道形成后自愈；现左足持续疼痛、肿胀加重半个月，左下肢跛行",
+    "purpose": "左足X线及CT",
     "series": [
       {
         "key": "xr",
@@ -541,7 +551,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "骨肌",
     "level": "U2",
     "icon": "fa-hand",
-    "clinicalBrief": "患者，女，45岁，手足小关节红肿热痛，白细胞升高，红细胞沉降率加快。双手X线",
+    "history": "患者女，45岁，手足小关节红肿热痛；白细胞升高；红细胞沉降率加快",
+    "purpose": "双手X线",
     "series": [
       {
         "key": "hands",
@@ -593,7 +604,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "其他",
     "level": "U1",
     "icon": "fa-heart-pulse",
-    "clinicalBrief": "患儿男性，7岁，活动后心悸、乏力，发育情况好，胸骨左缘第2～3肋间可闻及收缩期杂音，肺动脉第二音亢进。超声心动图",
+    "history": "患儿男，7岁，活动后心悸、乏力；发育良好；胸骨左缘第2～3肋间可闻及收缩期杂音；肺动脉第二音亢进",
+    "purpose": "超声心动图",
     "series": [
       {
         "key": "echo1",
@@ -654,7 +666,8 @@ export const SEU_SAMPLES = [
     "bodyPart": "腹部",
     "level": "U1",
     "icon": "fa-wave-square",
-    "clinicalBrief": "患者男，56岁，近日感上腹不适来院就诊，行超声检查",
+    "history": "患者男，56岁，近日感上腹不适",
+    "purpose": "超声检查",
     "series": [
       {
         "key": "us",

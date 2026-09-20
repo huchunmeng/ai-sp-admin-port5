@@ -159,7 +159,7 @@ function genericItems(sample) {
     'GEN-04': {
       rules: '整段照抄临床申请信息不得满分，须规范转述并回应临床所问',
       points: [
-        { id: 'p1', text: `规范转述临床主要信息（${d.clinicalBrief || sample.clinicalBrief}）`, accept: [] },
+        { id: 'p1', text: `规范转述患者病史与检查目的（${[sample.history, sample.purpose].filter(Boolean).join("；")}）`, accept: [] },
         { id: 'p2', text: '写出检查目的（申请单想知道什么）', accept: [] }
       ]
     }

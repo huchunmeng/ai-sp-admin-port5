@@ -11,10 +11,15 @@
         <input v-else class="input" v-model="model[f.key]" :placeholder="f.placeholder" style="width:100%" @input="pushUp">
         <span v-if="errors[f.key]" class="text-error" style="font-size:11.5px">{{ errors[f.key] }}</span>
       </div>
-      <div class="filter-item is-w-clinical">
-        <label>临床主要信息及检查目的</label>
-        <textarea class="input" v-model="clinicalModel" rows="3" style="width:100%;resize:vertical"
-                  placeholder="如：咳嗽伴痰中带血 2 周。胸部 CT 平扫发现右肺上叶占位，请评估结节性质，并回答有无纵隔淋巴结肿大及胸腔积液。"></textarea>
+      <div class="filter-item is-w-history">
+        <label>患者病史</label>
+        <textarea class="input" v-model="historyModel" rows="4" style="width:100%;resize:vertical"
+                  placeholder="如：咳嗽伴痰中带血 2 周。胸部 CT 平扫发现右肺上叶占位。"></textarea>
+      </div>
+      <div class="filter-item is-w-purpose">
+        <label>检查目的</label>
+        <textarea class="input" v-model="purposeModel" rows="4" style="width:100%;resize:vertical"
+                  placeholder="如：请评估结节性质，并回答有无纵隔淋巴结肿大及胸腔积液。"></textarea>
       </div>
     </div>
 
@@ -52,14 +57,19 @@ function setTime(v) {
 
 const props = defineProps({
   deidentify: { type: Object, required: true },
-  clinicalBrief: { type: String, default: '' }
+  history: { type: String, default: '' },
+  purpose: { type: String, default: '' }
 })
-const emit = defineEmits(['update:deidentify', 'update:clinicalBrief'])
+const emit = defineEmits(['update:deidentify', 'update:history', 'update:purpose'])
 
 const model = reactive({ ...props.deidentify })
-const clinicalModel = computed({
-  get: () => props.clinicalBrief,
-  set: v => emit('update:clinicalBrief', v)
+const historyModel = computed({
+  get: () => props.history,
+  set: v => emit('update:history', v)
+})
+const purposeModel = computed({
+  get: () => props.purpose,
+  set: v => emit('update:purpose', v)
 })
 
 // 父组件替换样本时同步
@@ -100,7 +110,8 @@ function pushUp() {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr) minmax(0, .7fr) minmax(0, 1fr) minmax(0, 1.3fr);
   gap: 12px 16px; align-items: end;
 }
-.is-w-clinical { grid-column: 1 / -1; }
+.is-w-history { grid-column: 1 / span 3; }
+.is-w-purpose { grid-column: 4 / -1; }
 .is-tip {
   margin-top: 14px; padding: 10px 14px; border-radius: 8px;
   background: #F5F7FA; color: var(--text-secondary); font-size: 12px; line-height: 1.9;

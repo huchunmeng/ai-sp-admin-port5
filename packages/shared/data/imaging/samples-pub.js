@@ -29,7 +29,8 @@ export const PUB_SAMPLES = [
     "bodyPart": "胸部",
     "level": "U2",
     "icon": "fa-lungs",
-    "clinicalBrief": "体检发现右肺结节 1 周，行胸部 CT 平扫。",
+    "history": "体检发现右肺结节1周",
+    "purpose": "胸部CT平扫",
     "series": [
       {
         "key": "ax-lung",
@@ -277,7 +278,8 @@ export const PUB_SAMPLES = [
     "bodyPart": "胸部",
     "level": "R1",
     "icon": "fa-lungs",
-    "clinicalBrief": "咳嗽、痰中带血 2 个月，行胸部 CT 增强扫描。",
+    "history": "咳嗽、痰中带血2个月",
+    "purpose": "胸部CT增强扫描",
     "series": [
       {
         "key": "ax-lung",
@@ -545,7 +547,8 @@ export const PUB_SAMPLES = [
     "bodyPart": "胸部",
     "level": "R2",
     "icon": "fa-lungs",
-    "clinicalBrief": "胸痛、消瘦 3 个月，行胸部 CT 平扫。",
+    "history": "胸痛、消瘦3个月",
+    "purpose": "胸部CT平扫",
     "series": [
       {
         "key": "ax-lung",
@@ -777,7 +780,8 @@ export const PUB_SAMPLES = [
     "bodyPart": "胸部",
     "level": "R1",
     "icon": "fa-lungs",
-    "clinicalBrief": "体检发现右肺下叶占位，行胸部 CT 平扫。",
+    "history": "体检发现右肺下叶占位",
+    "purpose": "胸部CT平扫",
     "series": [
       {
         "key": "ax-lung",

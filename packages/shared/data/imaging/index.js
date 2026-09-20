@@ -140,7 +140,7 @@ export function trainingCardOf(sample, stat) {
     bodyPart: sample.bodyPart,
     level: sample.level,
     icon: sample.icon,
-    clinical: sample.clinicalBrief,
+    clinical: [sample.history, sample.purpose].filter(Boolean).join('；'),
     seriesTotal: seriesTotal(sample),
     viewCount: seriesListOf(sample).length,
     scoreableMax: max,

@@ -60,7 +60,7 @@ const raw = getImagingSample(route.params.caseId)
 const playable = raw && raw.status === 'published' && hasGoldStandard(raw)
 
 const sample = computed(() => {
-  if (!raw) return { id: '', title: '', lost: [], scoreableMax: 100, capabilities: {}, goldStandard: null, series: [], deidentify: {}, clinicalBrief: '', modality: '', bodyPart: '', level: '', icon: '' }
+  if (!raw) return { id: '', title: '', lost: [], scoreableMax: 100, capabilities: {}, goldStandard: null, series: [], deidentify: {}, history: '', purpose: '', modality: '', bodyPart: '', level: '', icon: '' }
   const { max, lost } = scoreableOf(raw.id, raw.capabilities)
   return { ...raw, scoreableMax: max, lost }
 })
