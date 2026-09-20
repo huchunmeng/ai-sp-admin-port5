@@ -2,6 +2,7 @@
   <div class="training-container" style="position:relative;min-height:100vh;">
     <header class="app-header" v-if="!isChromeless">
       <div class="header-left">
+        <img class="brand-emblem" src="/logo-seu.png" alt="东南大学医学院">
         <span class="system-name" @click="goHome" title="回到首页">医路慧影（WiseImag）影像智思体</span>
         <div class="mode-badge" @click="openAdmin" v-if="false">管理端</div>
         <div class="version-btns" v-if="store.showHiddenControls">
@@ -243,6 +244,8 @@ watch(() => route.name, (name) => {
 </script>
 
 <style scoped>
+/* 东南大学医学院校徽：放在产品名前面（2026-09-20 批注） */
+.brand-emblem { width: 28px; height: 28px; flex-shrink: 0; object-fit: contain; margin-right: 9px; }
 .fade-enter-active { transition: opacity .3s .15s, transform .3s .15s; }
 .fade-leave-active { transition: opacity .25s, transform .25s; }
 .fade-enter-from { opacity: 0; transform: translateY(8px); }

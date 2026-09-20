@@ -3,6 +3,7 @@
     <div class="app-body">
       <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
         <div class="sidebar-head">
+          <img class="brand-emblem" src="/logo-seu.png" alt="东南大学医学院">
           <span class="system-name">医路慧影（WiseImag）<br>影像智思体 · 管理端</span>
           <button class="collapse-btn" :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" @click="toggleSidebar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-if="sidebarCollapsed">
@@ -61,8 +62,6 @@
       <main class="app-main">
         <header class="app-header">
           <div class="header-left">
-            <img class="brand-logo" src="/logo-seu-medicine.png" alt="东南大学医学院">
-            <span class="brand-divider"></span>
             <div class="mode-badge" @click="openTraining">训练端</div>
           </div>
           <div class="header-right">
@@ -275,9 +274,6 @@ function openTraining() {
   flex-shrink: 0;
 }
 .header-left { display: flex; align-items: center; gap: 16px; }
-/* 东南大学医学院 logo（顶栏用，白底黑版） */
-.brand-logo { height: 26px; width: auto; display: block; }
-.brand-divider { width: 1px; height: 20px; background: var(--border); }
 .header-right { display: flex; align-items: center; gap: 16px; }
 .system-name { font-size: 13px; font-weight: 600; line-height: 1.35; flex: 1; }
 .mode-badge { background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.32); padding: 4px 16px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: background .15s; }
@@ -291,9 +287,10 @@ function openTraining() {
 /* 左侧栏：品牌头 + 菜单，整体一栏贯到底 */
 .app-sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; transition: width .2s; }
 .app-sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+.brand-emblem { width: 30px; height: 30px; flex-shrink: 0; object-fit: contain; }
 .sidebar-head { height: var(--header-height); display: flex; align-items: center; gap: 6px; padding: 0 10px; flex-shrink: 0; }
 .app-sidebar.collapsed .sidebar-head { justify-content: center; padding: 0; }
-.app-sidebar.collapsed .system-name, .app-sidebar.collapsed .sidebar-menu { display: none; }
+.app-sidebar.collapsed .system-name, .app-sidebar.collapsed .brand-emblem, .app-sidebar.collapsed .sidebar-menu { display: none; }
 .sidebar-menu { flex: 1; overflow-y: auto; }
 .module-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; font-weight: 500; color: var(--sidebar-text); transition: background .15s, color .15s; }
 .module-header:hover { background: rgba(255,255,255,0.06); color: #fff; }
