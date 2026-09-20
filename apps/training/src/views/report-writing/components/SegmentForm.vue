@@ -8,7 +8,25 @@
 
     <div v-if="given" class="rwb-given">
       <div class="rwb-given-head"><i class="fa-solid fa-circle-info"></i> {{ given.name }}<span class="rwb-given-tag">系统给出</span></div>
-      <div class="rwb-given-text">{{ given.text }}</div>
+
+      <!-- 一般项目：两列标签值，像申请单抬头 -->
+      <div class="rwb-given-grid">
+        <div v-for="it in given.items" :key="it.k" class="rwb-given-cell">
+          <span class="rwb-given-k">{{ it.k }}</span><span class="rwb-given-v">{{ it.v }}</span>
+        </div>
+      </div>
+
+      <div v-if="given.study && given.study.length" class="rwb-given-grid">
+        <div v-for="it in given.study" :key="it.k" class="rwb-given-cell">
+          <span class="rwb-given-k">{{ it.k }}</span><span class="rwb-given-v">{{ it.v }}</span>
+        </div>
+      </div>
+
+      <!-- 病史 / 检查目的：成段，各带小标题 -->
+      <div v-for="f in given.fields" :key="f.k" class="rwb-given-block">
+        <span class="rwb-given-k">{{ f.k }}</span>
+        <p class="rwb-given-p">{{ f.v }}</p>
+      </div>
     </div>
     <div class="rwb-segs">
       <div v-for="seg in segments" :key="seg.key" class="rwb-seg">
@@ -68,7 +86,12 @@ defineEmits(['update:segment'])
 .rwb-given-head { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #1f2937; }
 .rwb-given-head i { color: var(--primary); }
 .rwb-given-tag { margin-left: auto; font-size: 11px; font-weight: 400; color: #6b7280; background: #fff; padding: 2px 8px; border-radius: 8px; }
-.rwb-given-text { margin-top: 7px; font-size: 12.5px; line-height: 1.85; color: #374151; }
+.rwb-given-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px 18px; margin-top: 9px; }
+.rwb-given-cell { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.7; min-width: 0; }
+.rwb-given-k { flex-shrink: 0; color: #6b7280; }
+.rwb-given-v { color: #111827; font-weight: 600; }
+.rwb-given-block { margin-top: 9px; padding-top: 9px; border-top: 1px dashed #DBEAFE; }
+.rwb-given-p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.9; color: #1f2937; }
 .rwb-seg-name { font-size: 13px; font-weight: 700; color: #4b5563; }
 .rwb-seg-hint { font-size: 11.5px; color: #9ca3af; }
 .rwb-seg-ok { font-size: 11px; color: var(--success); display: inline-flex; align-items: center; gap: 3px; }

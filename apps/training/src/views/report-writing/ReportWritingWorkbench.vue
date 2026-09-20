@@ -12,7 +12,7 @@
 
     <div class="rww-body">
       <div class="rww-main">
-        <ImagePanel :sample="sample" @copy="onCopy" />
+        <ImagePanel :sample="sample" />
         <SegmentForm :segments="segments" :draft="state.draft" :given="givenSegment"
                      :total-chars="totalChars" :total-over="totalOver" :total-limit="TOTAL_LIMIT"
                      @update:segment="onSegmentInput" />
@@ -86,19 +86,23 @@ function onSegmentInput(key, val) {
   state.draft[key] = val
 }
 
-/** 段一「患者临床信息」由系统给出（临床情境引导）：患者信息 + 病史拼成一段只读情境 */
+/** 段一「患者临床信息」由系统给出（临床情境引导）：按真实申请单排版——一般项目表 + 病史/检查目的成段 */
 const givenSegment = computed(() => {
   const d = sample.value.deidentify || {}
-  const info = DEIDENTIFY_ROWS.map(r => `${r.k}：${d[r.key] || ''}`).filter(s => s.split('：')[1]).join('，')
-  const text = [info + '。', sample.value.history].filter(Boolean).join('')
-  return { name: '患者临床信息', text: text || '（样本未录入患者信息）' }
+  const items = DEIDENTIFY_ROWS.map(r => ({ k: r.k, v: d[r.key] || '' })).filter(x => x.v)
+  return {
+    name: '患者临床信息',
+    items,
+    fields: [
+      { k: '患者病史', v: sample.value.history || '' },
+      { k: '检查目的', v: sample.value.purpose || '' }
+    ].filter(x => x.v),
+    study: [
+      { k: '检查部位', v: sample.value.bodyPart || '' },
+      { k: '检查方法', v: [sample.value.modality, (sample.value.capabilities && sample.value.capabilities.hasEnhancedPhase) ? '增强扫描' : ''].filter(Boolean).join(' ') }
+    ].filter(x => x.v)
+  }
 })
-
-function onCopy(text, segment) {
-  const key = segment || 'purpose'
-  const cur = state.draft[key] || ''
-  state.draft[key] = cur ? `${cur}\n${text}` : text
-}
 
 /** 提交报告 → 立即发起评分，并弹出成绩报告 */
 function onSubmit() {
