@@ -1,13 +1,23 @@
-// R1 表 —— 《放射科-诊断报告书写质量评价表》100 分 / 5 维度 / 23 条目
+// 影像报告评分表（模板）——《放射科-诊断报告书写质量评价表》100 分 / 5 维度 / 23 条目
 //
 // 来源：PRD_影像报告书写训练.md 附录 E（条目编码表）。
 // 所有分数只在此处定义一次；结果页与自评页均由此归并（data-specs.md §三）。
+//
+// ⚠️ **不再叫「R1 表」**（2026-09-20 产品拍板）：
+//   · 这张表是**全难度共用的一套模板**，难度差异不走"多套模板"，走**难度分层标定**
+//     （`LEVEL_CALIBRATION`：及格线 + 按难度停用条目）；
+//   · "R1" 是住培一年级的**难度名**，用它命名模板会让 U1/U2 的样本显得名实不符；
+//   · 模板该按**专业/模态族**分（CT-MR 断面 / DR 平片 / 超声…），不按难度分。
+//   · 代码里 `R1_TABLE` / `R1_ITEMS` / `R1_TABLE_VERSION` 三个**旧名保留为别名**，不破坏既有引用。
+//
+// 模板可在管理端「评分表模板」页编辑（`setScoreTemplate`），改动只存在本地（本期无服务端）。
 // 注意：本表与 apps/admin 既有的「评分表管理」（score_sheets：{id, category, item, score}
 // 扁平数组）**不是同一套结构**——后者没有条目编码、没有维度满分、没有判定档位、也没有
 // 「不可评/归一」概念，R1 表的两条核心口径无处安放，故本模块自带此表，不改动既有评分表。
 
 /** 5 维度 / 23 条目 / 合计 100 分 */
-export const R1_TABLE = [
+export let SCORE_TEMPLATE = [
+  // 维度 / 条目 / 标称分值 —— 全库唯一来源（管理端模板页可编辑）
   {
     dim: '一、一般信息及报告及时性', full: 14,
     items: [
@@ -57,9 +67,65 @@ export const R1_TABLE = [
 ]
 
 /** 23 条扁平索引（code → { code, name, score, dim }），供逐条自评 / 结果页按 code 关联 */
-export const R1_ITEMS = R1_TABLE.flatMap(d =>
-  d.items.map(it => ({ ...it, dim: d.dim, dimFull: d.full }))
-)
+/** 扁平索引（code → { code, name, score, dim, dimFull, enabled }）—— 供逐条自评 / 结果页按 code 关联 */
+function flattenTemplate(tpl) {
+  return tpl.flatMap(d => (d.items || []).map(it => ({ ...it, dim: d.dim, dimFull: d.full })))
+}
+export let TEMPLATE_ITEMS = flattenTemplate(SCORE_TEMPLATE)
+
+/* ── 模板覆写（管理端「评分表模板」页用；本期无服务端，落在管理端 localStorage） ── */
+let _defaultTemplate = null
+
+/** 当前模板（默认 = 内置；被 setScoreTemplate 改过就是改过的） */
+export function getScoreTemplate() { return SCORE_TEMPLATE }
+
+/** 覆盖模板；传 null/undefined 表示恢复内置默认 */
+export function setScoreTemplate(tpl) {
+  if (!_defaultTemplate) _defaultTemplate = JSON.parse(JSON.stringify(SCORE_TEMPLATE))
+  SCORE_TEMPLATE = tpl ? JSON.parse(JSON.stringify(tpl)) : JSON.parse(JSON.stringify(_defaultTemplate))
+  TEMPLATE_ITEMS = flattenTemplate(SCORE_TEMPLATE)
+  return SCORE_TEMPLATE
+}
+
+/** 内置默认模板（「恢复默认」用） */
+export function defaultScoreTemplate() {
+  if (!_defaultTemplate) _defaultTemplate = JSON.parse(JSON.stringify(SCORE_TEMPLATE))
+  return JSON.parse(JSON.stringify(_defaultTemplate))
+}
+
+export function isTemplateCustomized() {
+  return JSON.stringify(SCORE_TEMPLATE) !== JSON.stringify(defaultScoreTemplate())
+}
+
+/* ── 难度分层标定（2026-09-20：难度差异在这里表达，不靠多套模板） ──
+ * · passRate：及格线（占**本卷可评满分**的比例）；成绩报告显示"达标 / 未达标"
+ * · disabledItems：该难度**停用**的条目编码 —— 停用的条目整条不计入分母（复用"不可评"机制）
+ * 默认只给及格线，disabledItems 全空（不改动现有评分）。
+ */
+export const LEVEL_CALIBRATION = {
+  U1: { passRate: 0.70, label: 'U1 基础病例', disabledItems: [] },
+  U2: { passRate: 0.75, label: 'U2 基础病例', disabledItems: [] },
+  R1: { passRate: 0.80, label: 'R1 高阶病例', disabledItems: [] },
+  R2: { passRate: 0.85, label: 'R2 高阶病例', disabledItems: [] },
+  R3: { passRate: 0.88, label: 'R3 高阶病例', disabledItems: [] },
+  F1: { passRate: 0.90, label: 'F1 疑难病例', disabledItems: [] },
+  F2: { passRate: 0.92, label: 'F2 疑难病例', disabledItems: [] }
+}
+let _defaultCalibration = null
+let _calibration = LEVEL_CALIBRATION
+export function getLevelCalibration() { return _calibration }
+export function setLevelCalibration(cfg) {
+  if (!_defaultCalibration) _defaultCalibration = JSON.parse(JSON.stringify(LEVEL_CALIBRATION))
+  _calibration = cfg ? JSON.parse(JSON.stringify(cfg)) : JSON.parse(JSON.stringify(_defaultCalibration))
+  return _calibration
+}
+export function defaultLevelCalibration() {
+  if (!_defaultCalibration) _defaultCalibration = JSON.parse(JSON.stringify(LEVEL_CALIBRATION))
+  return JSON.parse(JSON.stringify(_defaultCalibration))
+}
+export function calibrationOf(level) {
+  return _calibration[level] || { passRate: 0.8, disabledItems: [] }
+}
 
 /**
  * 报告字段规则（PRD §5.4.1，两侧同值同规则）。
@@ -121,4 +187,7 @@ export const DEIDENTIFY_ROWS = [
 export const REPORT_TOTAL_LIMIT = 6750
 
 /** R1 表版本号——随评分表改动递增，评分记录须留痕以解释历史成绩（PRD §5.9） */
-export const R1_TABLE_VERSION = 'R1-2026.09'
+export const TEMPLATE_VERSION = 'IMAGING-2026.09'
+
+/* ── 旧名别名（实时绑定；新代码请用 SCORE_TEMPLATE / TEMPLATE_ITEMS / TEMPLATE_VERSION） ── */
+export { SCORE_TEMPLATE as R1_TABLE, TEMPLATE_ITEMS as R1_ITEMS, TEMPLATE_VERSION as R1_TABLE_VERSION }

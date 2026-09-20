@@ -21,6 +21,7 @@ import { R1_TABLE, R1_ITEMS, SEGMENTS } from './r1-table.js'
 import { CAPABILITIES } from './capabilities.js'
 import { IMAGING_SAMPLES } from './samples.js'
 import { SEU_RUBRIC } from './samples-seu.js'
+import { calibrationOf } from './r1-table.js'
 import { PUB_RUBRIC } from './samples-pub.js'
 import { AI_RULES } from './rubric-rules-ai.js'
 import { KNEE_RUBRIC } from './samples-knee.js'
@@ -454,11 +455,20 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
   const hand = itemsOverride || (RUBRIC[caseId] && RUBRIC[caseId].items) || {}
   const gen = sample ? genericItems(sample) : {}
 
+  // 难度分层标定：及格线 + 该难度**停用**的条目（停用 = 整条不计入分母，复用"不可评"机制）
+  const level = (sample && sample.level) || ''
+  const cal = calibrationOf(level)
+  const disabledByLevel = new Set(cal.disabledItems || [])
+
   const items = R1_ITEMS.map(base => {
     const src = hand[base.code] || gen[base.code] || { points: [{ id: 'p1', text: base.name, accept: [] }] }
     const rules = rulesFor(base.code)
-    // 条目级规则（whole）若生效，该条所有要点都标成对应条件，界面上能看到原因
-    const wholeRule = rules.find(r => r.whole && r.when(caps)) || null
+    // 条目级规则（whole）若生效，该条所有要点都标成对应条件，界面上能看到原因；
+    // 难度停用优先级更高（按难度整体关掉这一条）
+    const levelRule = disabledByLevel.has(base.code)
+      ? { source: 'level', why: `本难度（${cal.label || level}）不评该条目` }
+      : null
+    const wholeRule = levelRule || rules.find(r => r.whole && r.when(caps)) || null
     // 要点分值：R1 条目满分按要点数**均分到 0.5**、余数给最后一个要点（保证 Σ = 条目满分）。
     // 老数据没有 `p.score` 时用这个默认值，管理端改过则以改的为准。
     const defaults = defaultPointScores(base.score, (src.points || []).length)
@@ -521,6 +531,9 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
   })
 
   const scoreableMax = Math.round(items.reduce((a, i) => a + i.scoreableFull, 0) * 10) / 10
+  // 及格线：占**本卷可评满分**的比例（难度分层标定，见 r1-table.js 的 LEVEL_CALIBRATION）
+  const passRate = typeof cal.passRate === 'number' ? cal.passRate : 0.8
+  const passLine = Math.round(scoreableMax * passRate * 10) / 10
 
   const unassessable = items
     .filter(i => i.scoreableFull < i.full)
@@ -533,6 +546,10 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
 
   return {
     caseId,
+    /** 难度分层标定（见 r1-table.js 的 LEVEL_CALIBRATION）：及格线按**本卷可评满分**的比例算 */
+    level,
+    passRate,
+    passLine,
     version: (RUBRIC[caseId] && RUBRIC[caseId].version) || 0,
     items,
     itemByCode: Object.fromEntries(items.map(i => [i.code, i])),

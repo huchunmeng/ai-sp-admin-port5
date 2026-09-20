@@ -31,6 +31,7 @@ const routes = [
       // 影像报告题库（影像报告书写训练 · 管理端承接侧；考核管理本期不做）
       { path: 'imaging-samples', name: 'imagingSamples', component: () => import('@/views/imaging-samples/ImagingSampleList.vue') },
       { path: 'imaging-samples/:id', name: 'imagingSampleEditor', props: true, component: () => import('@/views/imaging-samples/ImagingSampleEditor.vue') },
+      { path: 'score-template', name: 'scoreTemplate', component: () => import('@/views/imaging-samples/ScoreTemplateEditor.vue') },
 
     ]
   }

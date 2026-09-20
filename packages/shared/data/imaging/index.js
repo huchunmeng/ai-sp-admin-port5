@@ -12,7 +12,13 @@
 //   · **不接入**影像控件——全仓无 DICOM / 序列浏览 / 调窗 / 测量 组件（实证：零命中）。
 //     本期三视图为占位，界面明写「影像待接入」，待院方样本与影像教学底座到位后按 §9.4 黑盒接入。
 
-export { R1_TABLE, R1_ITEMS, SEGMENTS, WRITABLE_SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT, R1_TABLE_VERSION } from './r1-table.js'
+export {
+  SCORE_TEMPLATE, TEMPLATE_ITEMS, TEMPLATE_VERSION, getScoreTemplate, setScoreTemplate,
+  defaultScoreTemplate, isTemplateCustomized, LEVEL_CALIBRATION, getLevelCalibration,
+  setLevelCalibration, defaultLevelCalibration, calibrationOf,
+  SEGMENTS, WRITABLE_SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS, REPORT_TOTAL_LIMIT,
+  R1_TABLE, R1_ITEMS, R1_TABLE_VERSION
+} from './r1-table.js'
 export {
   CAPABILITIES, CAPABILITY_FIELDS, CAPABILITY_KEYS, DERIVED_CAPABILITY, emptyCapabilities, SCOREABLE_PUBLISH_FLOOR
 } from './capabilities.js'

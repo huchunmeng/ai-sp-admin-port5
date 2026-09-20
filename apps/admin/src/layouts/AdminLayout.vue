@@ -177,7 +177,8 @@ const MENU_CONFIG = [
         { id: 'case-level-list', label: 'AI伴学病例库', route: '/case-level-list', icon: 'ai' },
         { id: 'raw-records', label: '原始病历素材库', route: '/raw-records', icon: 'file' },
         { id: 'mdt-cases', label: 'MDT病例管理', route: '/mdt-cases', icon: 'users' },
-        { id: 'imaging-samples', label: '影像报告题库', route: '/imaging-samples', icon: 'imaging' }
+        { id: 'imaging-samples', label: '影像报告题库', route: '/imaging-samples', icon: 'imaging' },
+        { id: 'score-template', label: '评分表模板', route: '/score-template', icon: 'clipboard' }
     ]},
     { module: '培训管理', icon: 'training', pages: [
         { id: 'training-records', label: '训练记录', route: '/training-records', icon: 'trend' }
