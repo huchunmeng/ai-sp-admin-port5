@@ -93,7 +93,7 @@ const RC_SAMPLES = [
   },
   {
     id: 'RC-002',
-    title: '颅脑MR · 急性脑梗死',
+    title: '颅脑MR · 脑内异常信号待查',
     modality: 'MR',
     bodyPart: '颅脑',
     level: 'R2',
@@ -122,7 +122,7 @@ const RC_SAMPLES = [
   },
   {
     id: 'RC-003',
-    title: '腹部CT · 肝细胞癌（TACE术后）',
+    title: '腹部CT · 肝内占位治疗后复查',
     modality: 'CT',
     bodyPart: '腹部',
     level: 'R3',
@@ -171,7 +171,7 @@ const RC_SAMPLES = [
   },
   {
     id: 'RC-005',
-    title: '腹部MR · 肝血管瘤',
+    title: '腹部MR · 肝内占位待查',
     modality: 'MR', bodyPart: '腹部', level: 'U2', icon: 'fa-x-ray',
     history: "体检发现肝内占位",
     purpose: "明确肝内占位性质（良恶性鉴别、来源判断）",
@@ -190,7 +190,7 @@ const RC_SAMPLES = [
   },
   {
     id: 'RC-006',
-    title: '颅脑CT · 高血压性脑出血',
+    title: '颅脑CT · 颅内高密度灶待查',
     modality: 'CT', bodyPart: '颅脑', level: 'U1', icon: 'fa-brain',
     history: "突发头痛伴意识障碍2小时；高血压病史10年",
     purpose: "评估急性颅内病变（如脑出血、大面积脑梗死、蛛网膜下腔出血）",
@@ -209,7 +209,7 @@ const RC_SAMPLES = [
   },
   {
     id: 'RC-007',
-    title: '头颈CT · 鼻咽癌',
+    title: '鼻咽CT · 鼻咽部占位待查',
     modality: 'CT', bodyPart: '头颈', level: 'F2', icon: 'fa-user-doctor',
     history: "回吸性血涕3月，颈部包块",
     purpose: "筛查鼻咽癌及颈部淋巴结转移",

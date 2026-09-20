@@ -2,7 +2,7 @@
   <section class="card rwb-block">
     <div class="rwb-block-head">
       <i class="fa-solid fa-pen-to-square"></i> 学生报告
-      <span class="rwb-tag">临床情境引导 + 三阶段</span>
+      <span class="rwb-tag">临床情境引导</span>
       <span class="rwb-count" :class="{ 'text-error': totalOver }">{{ totalChars }} / {{ totalLimit }}</span>
     </div>
 

@@ -93,10 +93,8 @@ const givenSegment = computed(() => {
   return {
     name: '患者临床信息',
     items,
-    fields: [
-      { k: '患者病史', v: sample.value.history || '' },
-      { k: '检查目的', v: sample.value.purpose || '' }
-    ].filter(x => x.v),
+    // 只给「患者病史」：检查目的是第二段要学员自己提炼的内容，给了就等于送答案
+    fields: [{ k: '患者病史', v: sample.value.history || '' }].filter(x => x.v),
     study: [
       { k: '检查部位', v: sample.value.bodyPart || '' },
       { k: '检查方法', v: [sample.value.modality, (sample.value.capabilities && sample.value.capabilities.hasEnhancedPhase) ? '增强扫描' : ''].filter(Boolean).join(' ') }

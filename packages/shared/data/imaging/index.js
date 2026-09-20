@@ -148,7 +148,8 @@ export function trainingCardOf(sample, stat) {
     bodyPart: sample.bodyPart,
     level: sample.level,
     icon: sample.icon,
-    clinical: [sample.history, sample.purpose].filter(Boolean).join('；'),
+    // 卡片只露病史：检查目的可能是答案的提示（学员要自己从病史提炼）
+    clinical: sample.history || '',
     seriesTotal: seriesTotal(sample),
     viewCount: seriesListOf(sample).length,
     scoreableMax: max,

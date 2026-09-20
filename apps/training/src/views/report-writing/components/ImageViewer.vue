@@ -119,6 +119,13 @@
 
         <!-- ══ 底部：层面滑动条 ══ -->
         <div class="rwb-slice">
+          <span v-if="measures.length" class="rwb-mres">
+            <i class="fa-solid fa-ruler"></i> <b>{{ measures[0].mm }}</b> mm
+            <button class="rwb-mres-x" title="清除测量" @click="measures = []">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </span>
+          <span v-else-if="measuring" class="rwb-mres-mute">按住拖动即可量长度</span>
           <span class="rwb-slice-no">{{ layerOf(activeIndex) }}</span>
           <input class="rwb-slice-range" type="range" min="1" :max="Math.max(1, frameCount)"
                  :value="layerOf(activeIndex)" :disabled="frameCount <= 1"
@@ -288,7 +295,13 @@ function measureMove(e) {
   if (!measuring.value || !dragFrom.value) return
   const p = canvasPoint(e)
   if (!p) return
-  measures.value = [{ ...dragFrom.value, x2: p.x, y2: p.y, mm: mmOf(dragFrom.value, p) }]
+  // ⚠️ dragFrom 里存的是 {x, y}，SVG 要 x1/y1 —— 直接展开会让 x1/y1 变 undefined，
+  // 线永远从左上角(0,0)起，看着就是「起点位置不对」
+  measures.value = [{
+    x1: dragFrom.value.x, y1: dragFrom.value.y,
+    x2: p.x, y2: p.y,
+    mm: mmOf(dragFrom.value, p)
+  }]
 }
 function measureEnd() {
   if (dragFrom.value && measures.value.length) {
@@ -591,6 +604,16 @@ watch([activeIndex, () => layer[activeView.value && activeView.value.key], curre
   display: flex; align-items: center; gap: 10px; padding: 7px 14px;
   background: #14181d; border-top: 1px solid #232931;
 }
+.rwb-mres {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #22d3ee;
+  background: #0e2f36; border: 1px solid #155e6b; border-radius: 6px; padding: 2px 6px 2px 9px;
+}
+.rwb-mres b { font-size: 13px; }
+.rwb-mres-x {
+  background: none; border: none; color: #67e8f9; cursor: pointer; padding: 0 2px; font-size: 11px;
+}
+.rwb-mres-x:hover { color: #fff; }
+.rwb-mres-mute { font-size: 11px; color: #4b5563; }
 .rwb-slice-no { font-size: 11px; color: #9ca3af; min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
 .rwb-slice-range { flex: 1; accent-color: var(--primary); cursor: pointer; }
 .rwb-slice-range:disabled { opacity: .4; cursor: default; }

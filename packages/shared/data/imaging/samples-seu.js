@@ -16,7 +16,7 @@
 export const SEU_SAMPLES = [
   {
     "id": "SEU-001",
-    "title": "CT · 肺隔离症",
+    "title": "胸部CT · 右下肺囊性病变待查",
     "modality": "CT",
     "bodyPart": "胸部",
     "level": "U2",
@@ -69,7 +69,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-002",
-    "title": "DR · 右上肺中央型肺癌",
+    "title": "胸部DR · 右肺门区占位待查",
     "modality": "DR",
     "bodyPart": "胸部",
     "level": "R2",
@@ -122,7 +122,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-003",
-    "title": "CT · 左颞骨胆脂瘤（继发颅内感染：左侧小脑半球脑脓肿、左侧脑膜炎）",
+    "title": "颞骨CT · 左中耳乳突病变待查",
     "modality": "CT",
     "bodyPart": "头颈",
     "level": "F2",
@@ -175,7 +175,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-004",
-    "title": "MR · 肝门区胆管癌",
+    "title": "腹部MR · 肝门区占位待查",
     "modality": "MR",
     "bodyPart": "腹部",
     "level": "R3",
@@ -228,7 +228,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-005",
-    "title": "CT · 肺曲菌病",
+    "title": "胸部CT · 肺内结节伴空洞待查",
     "modality": "CT",
     "bodyPart": "胸部",
     "level": "R2",
@@ -281,7 +281,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-006",
-    "title": "超声 · 特发性腹膜后纤维化",
+    "title": "腹部超声 · 腹膜后低回声区待查",
     "modality": "超声",
     "bodyPart": "腹部",
     "level": "R3",
@@ -334,7 +334,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-007",
-    "title": "MR · 血管母细胞瘤",
+    "title": "颅脑MR · 小脑占位待查",
     "modality": "MR",
     "bodyPart": "颅脑",
     "level": "R2",
@@ -387,7 +387,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-008",
-    "title": "MR · 脑梗死",
+    "title": "颅脑MR · 脑内异常信号待查",
     "modality": "MR",
     "bodyPart": "颅脑",
     "level": "U1",
@@ -440,7 +440,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-009",
-    "title": "DR · 骨化性肌炎",
+    "title": "大腿DR · 软组织钙化待查",
     "modality": "DR",
     "bodyPart": "骨肌",
     "level": "U1",
@@ -493,7 +493,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-010",
-    "title": "DR · Charcot 关节（神经性关节病）",
+    "title": "足踝DR · 关节结构破坏待查",
     "modality": "DR",
     "bodyPart": "骨肌",
     "level": "R2",
@@ -546,7 +546,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-011",
-    "title": "DR · 类风湿关节炎",
+    "title": "双手DR · 小关节病变待查",
     "modality": "DR",
     "bodyPart": "骨肌",
     "level": "U2",
@@ -599,7 +599,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-012",
-    "title": "超声 · 先天性心脏病 · 房间隔缺损",
+    "title": "心脏超声 · 心脏结构异常待查",
     "modality": "超声",
     "bodyPart": "其他",
     "level": "U1",
@@ -661,7 +661,7 @@ export const SEU_SAMPLES = [
   },
   {
     "id": "SEU-013",
-    "title": "超声 · 超声声像图表现（后方回声衰减）",
+    "title": "腹部超声 · 后方回声衰减待查",
     "modality": "超声",
     "bodyPart": "腹部",
     "level": "U1",
