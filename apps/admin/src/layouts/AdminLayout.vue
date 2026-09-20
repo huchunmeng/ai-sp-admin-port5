@@ -4,7 +4,7 @@
       <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
         <div class="sidebar-head">
           <img class="brand-emblem" src="/logo-seu.png" alt="东南大学医学院">
-          <span class="system-name">医路慧影（WiseImag）<br>影像智思体 · 管理端</span>
+          <span class="system-name">医路慧影·管理端</span>
           <button class="collapse-btn" :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'" @click="toggleSidebar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-if="sidebarCollapsed">
               <polyline points="15 18 9 12 15 6"/>
@@ -275,7 +275,7 @@ function openTraining() {
 }
 .header-left { display: flex; align-items: center; gap: 16px; }
 .header-right { display: flex; align-items: center; gap: 16px; }
-.system-name { font-size: 13px; font-weight: 600; line-height: 1.35; flex: 1; }
+.system-name { font-size: 14px; font-weight: 600; line-height: 1.35; flex: 1; white-space: nowrap; }
 .mode-badge { background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.32); padding: 4px 16px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: background .15s; }
 .mode-badge:hover { background: rgba(255,255,255,0.28); }
 .collapse-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; transition: background .15s; }
