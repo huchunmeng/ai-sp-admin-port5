@@ -1,8 +1,5 @@
 <template>
   <div class="content-container">
-    <!-- 影像报告评分表模板（2026-09-20 合并进来：原先它是侧栏的独立页） -->
-    <ScoreTemplateEditor />
-
     <!-- 所有评分表（考站版 + 临床思维全流程版）统一在此维护 -->
     <div class="card mb-4" style="padding:12px 20px">
       <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">
@@ -189,7 +186,9 @@
             <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">描述</label>
             <textarea class="input" v-model="editMeta.description" rows="2" style="width:100%;resize:vertical;"></textarea>
           </div>
-          <div class="ss-table-wrap" v-if="detailItems.length > 0 || detailEditMode">
+          <!-- 影像报告模板是分层结构 + 难度标定，用它的专用编辑器；下面那张扁平条目表对它不适用 -->
+        <ScoreTemplateEditor v-if="detailTarget?.category === '影像版'" />
+        <div class="ss-table-wrap" v-if="detailTarget?.category !== '影像版' && (detailItems.length > 0 || detailEditMode)">
             <table class="ss-table">
               <thead>
                 <tr>
@@ -235,6 +234,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { confirm, toast, flowScoreTables } from '@ai-sp/shared'
+import { getScoreTemplate, TEMPLATE_VERSION } from '@ai-sp/shared/imaging'
 import ScoreTemplateEditor from './imaging-samples/ScoreTemplateEditor.vue'
 import { SCORE_SHEET_TEMPLATES } from '@/data/templates/index.js'
 
@@ -272,6 +272,34 @@ const allData = ref(mockData())
 // 临床思维全流程版评分表资产（持久化于 flow-score-tables.json）
 const flowData = ref({ tables: {} })
 
+/**
+ * 影像报告评分表模板 —— **作为这张列表里的一行**（2026-09-20 合并）。
+ * 它是**分层**模板（维度 → 条目）且带难度标定，与考站/全流程的扁平 items 不同构，
+ * 所以：列表行把 items 拉平用于显示与计数，编辑则走它自己的编辑器（见模板里的 detailTarget.category 分支）。
+ */
+function imagingRows() {
+  const tpl = getScoreTemplate()
+  const items = tpl.flatMap(d => (d.items || []).map(it => ({ ...it, dim: d.dim })))
+  const id = 900 + 1   // 与考站(1..N)、全流程(从 N+1 起)错开，避免 id 冲突
+  return [{
+    id,
+    template_code: 'IMAGING',
+    template_name: '影像报告评分表模板',
+    specialty: '影像',
+    status: '已发布',
+    creator_name: '系统',
+    created_at: '2026-09-20 00:00',
+    updated_at: '2026-09-20 00:00',
+    enabled: true,
+    items,
+    is_system: true,
+    version: TEMPLATE_VERSION,
+    description: `${tpl.length} 个维度 / ${items.length} 个条目；含难度分层标定（及格线 + 按难度停用条目）`,
+    total_score: items.reduce((a, i) => a + (Number(i.score) || 0), 0),
+    category: '影像版'
+  }]
+}
+
 function flowRows() {
   const baseId = SCORE_SHEET_TEMPLATES.length
   return Object.values(flowData.value.tables || {}).map((tpl, i) => ({
@@ -298,7 +326,7 @@ onMounted(async () => {
     const data = await flowScoreTables.load()
     if (data?.tables) flowData.value = data
   } catch (e) { /* 降级到考站版 */ }
-  allData.value = [...mockData(), ...flowRows()]
+  allData.value = [...mockData(), ...flowRows(), ...imagingRows()]
 })
 const selectedRows = ref([])
 const currentPage = ref(1)
