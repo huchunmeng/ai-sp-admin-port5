@@ -76,7 +76,7 @@ export function readPracticeRecords() {
 
   // ② 只有演示记录（或没有）：版本一致就照旧，版本变了就整体换成新版演示数据
   //    —— 之前用布尔标记"只播种一次"，导致演示数据更新后老浏览器永远看不到新版
-  if (seen === MOCK_SEED_VERSION && arr.length) return arr
+  if (seen === MOCK_SEED_VERSION) return arr   // 版本已是最新：列表空着就空着（尊重「清空」）
   writeJson(SEED_FLAG_KEY, MOCK_SEED_VERSION)
   writeJson(RECORDS_KEY, MOCK_PRACTICE_RECORDS)
   return MOCK_PRACTICE_RECORDS.slice()

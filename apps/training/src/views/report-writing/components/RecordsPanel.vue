@@ -22,7 +22,6 @@
       </div>
       <div class="rwr-filter-right">
         <span class="rwr-count">共 {{ filtered.length }} 条</span>
-        <button class="btn btn-sm" @click="goTrain">去训练</button>
       </div>
     </div>
 
@@ -76,7 +75,6 @@
       <i class="fa-solid fa-inbox"></i>
       <p>{{ records.length ? '暂无匹配的训练记录' : '还没有训练记录，去写一份报告吧' }}</p>
       <div v-if="!records.length" style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <button class="btn btn-primary" @click="goTrain">去训练</button>
         <button class="btn" @click="loadMock">载入演示记录</button>
       </div>
     </div>
@@ -158,7 +156,6 @@ const activeSample = computed(() => {
 
 function openRecord(r) { active.value = r }
 
-function goTrain() { router.push({ name: 'reportWritingTrain' }) }
 
 function editActive() {
   const id = active.value.caseId
