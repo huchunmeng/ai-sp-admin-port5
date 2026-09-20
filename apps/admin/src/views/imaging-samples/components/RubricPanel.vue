@@ -136,14 +136,26 @@ const emit = defineEmits(['update:modelValue'])
 const { sendMessage } = useAIChat()
 const extracting = ref(false)
 
-/** 内容条目（可编辑）；通用条目由样单元数据自动生成，不给改 */
-const CONTENT_CODES = [
+/**
+ * 可编辑范围 = 评分表里的**全部条目**（2026-09-20 批注：所有字段都要可以编辑）。
+ *
+ * 通用条目（GEN-* / TECH-* / LANG-*）原本由样单元数据自动生成、不给改，导致这些行
+ * 既没有输入框也没有操作按钮。现在一视同仁：**第一次编辑某条通用条目时，把"当前生成出来的
+ * 那一份"固化进 rubric.items**（见 ensureItem），此后由老师完全接管。
+ */
+const ALL_ITEM_CODES = [
+  'GEN-01', 'GEN-02', 'GEN-03', 'GEN-04',
+  'TECH-01', 'TECH-02', 'TECH-03',
   'FIND-01', 'FIND-02', 'FIND-03', 'FIND-04', 'FIND-05', 'FIND-06', 'FIND-07',
-  'IMP-01', 'IMP-02', 'IMP-03', 'IMP-04', 'IMP-05', 'IMP-06', 'IMP-07', 'IMP-08'
+  'IMP-01', 'IMP-02', 'IMP-03', 'IMP-04', 'IMP-05', 'IMP-06', 'IMP-07', 'IMP-08',
+  'LANG-01'
 ]
 
 const rubric = computed(() => props.modelValue || { version: 0, items: {} })
-const editableCodes = CONTENT_CODES
+const editableCodes = computed(() => {
+  const codes = resolved.value.items.map(i => i.code)
+  return codes.length ? codes : ALL_ITEM_CODES
+})
 const hasRubric = computed(() => Object.keys(rubric.value.items || {}).length > 0)
 const goldReady = computed(() => {
   const g = props.sample.goldStandard
@@ -203,9 +215,32 @@ function emitItems(items, extra) {
   })
 }
 
+/**
+ * 确保 items[code] 存在。通用条目第一次被编辑时，把**当前解析出来的那份**（要点文本 /
+ * 可接受表述 / 判定规则 / 可评条件）固化进 rubric.items —— 否则 updatePoint 里的
+ * `if (!items[code]) return` 会让编辑静默失效。
+ * 要点分值只在老师显式设过时才固化，没设过就继续走"按 R1 满分均分"的默认值。
+ */
+function ensureItem(items, code) {
+  if (items[code]) return items[code]
+  const it = resolved.value.items.find(i => i.code === code)
+  items[code] = {
+    rules: (it && it.rules) || '',
+    points: ((it && it.points) || []).map(p => ({
+      id: p.id,
+      text: p.text,
+      ...(p.accept && p.accept.length ? { accept: p.accept } : {}),
+      ...(p.rule ? { rule: p.rule } : {}),
+      ...(p.scoreDeclared ? { score: p.score } : {}),
+      ...(p.assess ? { assess: p.assess } : {})
+    }))
+  }
+  return items[code]
+}
+
 function updatePoint(code, pi, field, value) {
   const items = JSON.parse(JSON.stringify(rubric.value.items || {}))
-  if (!items[code]) return
+  ensureItem(items, code)
   if (field === 'accept') {
     items[code].points[pi].accept = String(value || '').split('/').map(s => s.trim()).filter(Boolean)
   } else if (field === 'assess') {
@@ -225,14 +260,14 @@ function setAssessable(code, pi) {
 
 function updateRules(code, value) {
   const items = JSON.parse(JSON.stringify(rubric.value.items || {}))
-  if (!items[code]) return
+  ensureItem(items, code)
   items[code].rules = String(value || '').trim()
   emitItems(items)
 }
 
 function addPoint(code) {
   const items = JSON.parse(JSON.stringify(rubric.value.items || {}))
-  if (!items[code]) items[code] = { rules: '', points: [] }
+  ensureItem(items, code)
   const n = items[code].points.length + 1
   items[code].points.push({ id: `p${n}`, text: '', accept: [] })
   emitItems(items)
@@ -241,7 +276,7 @@ function addPoint(code) {
 
 function removePoint(code, pi) {
   const items = JSON.parse(JSON.stringify(rubric.value.items || {}))
-  if (!items[code]) return
+  ensureItem(items, code)
   items[code].points.splice(pi, 1)
   emitItems(items)
 }
