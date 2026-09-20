@@ -23,6 +23,8 @@ const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
 const RECORDS_KEY = 'report_writing_records_v1'
 const SEED_FLAG_KEY = 'report_writing_records_seeded_v1'
+/** 演示数据版本号：改了 mockPracticeRecords.js 就把它 +1，老浏览器下次进入会自动换成新版 */
+const MOCK_SEED_VERSION = 'demo-4'
 
 /** 学员可写三段合计上限（500 + 3000 + 3000） */
 const TOTAL_LIMIT = 6500
@@ -66,13 +68,18 @@ export function readPracticeStats() {
  */
 export function readPracticeRecords() {
   const list = readJson(RECORDS_KEY, [])
-  if (Array.isArray(list) && list.length) return list
-  if (!readJson(SEED_FLAG_KEY, false)) {
-    writeJson(SEED_FLAG_KEY, true)
-    writeJson(RECORDS_KEY, MOCK_PRACTICE_RECORDS)
-    return MOCK_PRACTICE_RECORDS.slice()
-  }
-  return []
+  const arr = Array.isArray(list) ? list : []
+  const seen = readJson(SEED_FLAG_KEY, '')
+
+  // ① 有**真实**记录：以学员自己的为准，演示数据不插手
+  if (arr.some(r => !r.mock)) return arr
+
+  // ② 只有演示记录（或没有）：版本一致就照旧，版本变了就整体换成新版演示数据
+  //    —— 之前用布尔标记"只播种一次"，导致演示数据更新后老浏览器永远看不到新版
+  if (seen === MOCK_SEED_VERSION && arr.length) return arr
+  writeJson(SEED_FLAG_KEY, MOCK_SEED_VERSION)
+  writeJson(RECORDS_KEY, MOCK_PRACTICE_RECORDS)
+  return MOCK_PRACTICE_RECORDS.slice()
 }
 
 /** 手动把演示记录再装回来（空态里的「载入演示记录」按钮用） */
