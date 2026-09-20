@@ -1,9 +1,12 @@
 <template>
   <div class="content-container">
+    <!-- 影像报告评分表模板（2026-09-20 合并进来：原先它是侧栏的独立页） -->
+    <ScoreTemplateEditor />
+
     <!-- 所有评分表（考站版 + 临床思维全流程版）统一在此维护 -->
     <div class="card mb-4" style="padding:12px 20px">
       <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">
-        所有评分表（考站版 + 临床思维全流程版）统一在此维护；全流程评分方案请在「系统管理 → 全流程评分配置」页面配置（每个模块一张评分表，按权重汇总总分）。
+        所有评分表（考站版 + 临床思维全流程版 + **影像报告评分表模板**）统一在此维护；全流程评分方案请在「系统管理 → 全流程评分配置」页面配置（每个模块一张评分表，按权重汇总总分）。
       </div>
     </div>
     <div class="card mb-4" style="padding:16px 20px">
@@ -232,6 +235,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { confirm, toast, flowScoreTables } from '@ai-sp/shared'
+import ScoreTemplateEditor from './imaging-samples/ScoreTemplateEditor.vue'
 import { SCORE_SHEET_TEMPLATES } from '@/data/templates/index.js'
 
 const filters = reactive({

@@ -1,5 +1,6 @@
 <template>
-  <div class="content-container">
+  <!-- 可内嵌：宿主（「评分表管理」）负责页面外壳，本组件只出一块卡 -->
+  <div class="tpl-embed">
     <div class="card mb-4">
       <div class="flex justify-between items-center mb-4">
         <div>
@@ -164,6 +165,7 @@ function onReset() {
 </script>
 
 <style scoped>
+.tpl-embed { }
 .tpl-warn {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 10px 14px; margin-bottom: 16px; border-radius: 8px;
