@@ -92,7 +92,7 @@
     </template>
 
     <!-- 训练记录（原独立页面并入） -->
-    <RecordsPanel v-else />
+    <RecordsPanel v-else :key="recKey" />
   </div>
 </template>
 
@@ -108,8 +108,15 @@ const router = useRouter()
 const route = useRoute()
 
 /** 训练病例 / 训练记录 两个页签；支持 ?tab=records 直接进记录 */
+/** 每次切到「训练记录」就 +1，作为 RecordsPanel 的 key -> 强制重新挂载、重新读记录
+ *  （它只在挂载时读一次；不换 key 的话，提交或清空后切回来列表不会刷新） */
+const recordsKey = ref(route.query.tab === 'records' ? 1 : 0)
+const recKey = computed(() => 'rec-' + recordsKey.value)
+
 const tab = ref(route.query.tab === 'records' ? 'records' : 'cases')
 watch(tab, v => {
+  // 切到记录页签就换 key -> RecordsPanel 重新挂载并重新读 localStorage
+  if (v === 'records') recordsKey.value += 1
   router.replace({ query: v === 'records' ? { tab: 'records' } : {} })
   if (v === 'cases') { router.replace({ query: {} }) }
 })
