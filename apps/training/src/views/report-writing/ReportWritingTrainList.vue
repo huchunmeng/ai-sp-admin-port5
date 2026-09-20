@@ -40,7 +40,7 @@
       <div class="rwt-filter-right">
         <select class="select" v-model="modality" style="width:110px">
           <option value="">全部模态</option>
-          <option v-for="m in MODALITIES" :key="m" :value="m">{{ m }}</option>
+          <option v-for="m in modalityOptions" :key="m" :value="m">{{ m }}</option>
         </select>
         <select class="select" v-model="level" style="width:150px">
           <option value="">全部难度</option>
@@ -65,16 +65,14 @@
         </div>
         <div class="case-grid">
           <div v-for="c in g.items" :key="c.id" class="rwt-card" @click="open(c.sample)">
-            <div class="rwt-card-canvas">
-              <i class="fa-solid" :class="c.sample.icon || 'fa-film'"></i>
-              <span class="rwt-card-series">{{ c.seriesTotal }} 帧</span>
-            </div>
             <div class="rwt-card-body">
               <div class="rwt-card-row1">
                 <span class="rwt-card-title">{{ c.title }}</span>
                 <span class="rwt-card-diff" :class="CASE_LEVEL_BADGE_CLASS[levelKey(c.level)]">{{ getCaseLevelLabel(c.level) }}</span>
               </div>
-              <div class="rwt-card-meta">{{ c.bodyPart }} · {{ c.modality }} · {{ c.level }}</div>
+              <div class="rwt-card-meta">
+                <span v-for="m in [c.bodyPart, c.modality, c.level, c.seriesTotal + ' 帧']" :key="m" class="rwt-card-chip">{{ m }}</span>
+              </div>
               <div class="rwt-card-clinical">{{ c.clinical }}</div>
               <div class="rwt-card-foot">
                 <span class="rwt-card-practice">
@@ -104,7 +102,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { TRAINING_LEVELS, getCaseLevelLabel, LEVEL_TO_CASE_LEVEL, CASE_LEVEL_BADGE_CLASS } from '@ai-sp/shared'
-import { TRAINING_CASES, MODALITIES, BODY_PARTS, trainingCardOf } from '@ai-sp/shared/imaging'
+import { TRAINING_CASES, BODY_PARTS, trainingCardOf } from '@ai-sp/shared/imaging'
 import { readPracticeStats } from '@/composables/useReportSession'
 import RecordsPanel from './components/RecordsPanel.vue'
 
@@ -117,6 +115,9 @@ watch(tab, v => {
   router.replace({ query: v === 'records' ? { tab: 'records' } : {} })
   if (v === 'cases') { router.replace({ query: {} }) }
 })
+
+/** 筛选项只列题库里真实存在的模态（下架科室不留空选项） */
+const modalityOptions = computed(() => [...new Set(TRAINING_CASES.map(s => s.modality).filter(Boolean))])
 
 const bodyPart = ref('全部')
 const modality = ref('')
@@ -243,21 +244,15 @@ function open(sample) {
   display: flex; flex-direction: column;
 }
 .rwt-card:hover { border-color: var(--primary); box-shadow: 0 6px 20px rgba(37,99,235,.1); transform: translateY(-2px); }
-.rwt-card-canvas {
-  height: 104px; position: relative;
-  background: repeating-linear-gradient(45deg, #2b2f36, #2b2f36 10px, #31353d, #31353d 20px);
-  color: #8b93a1; font-size: 26px;
-  display: flex; align-items: center; justify-content: center;
-}
-.rwt-card-series {
-  position: absolute; right: 8px; bottom: 8px; font-size: 10.5px; color: #cbd5e1;
-  background: rgba(0,0,0,.4); padding: 2px 7px; border-radius: 6px;
-}
 .rwt-card-body { padding: 12px 14px 0; display: flex; flex-direction: column; flex: 1; }
 .rwt-card-row1 { display: flex; align-items: flex-start; gap: 8px; }
 .rwt-card-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; color: #111827; line-height: 1.5; }
 .rwt-card-diff { flex-shrink: 0; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-.rwt-card-meta { font-size: 11.5px; color: #9ca3af; margin-top: 3px; }
+.rwt-card-chip {
+  font-size: 11px; color: #6b7280; background: #f3f4f6; border-radius: 6px; padding: 2px 8px;
+}
+.rwt-card-meta {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .rwt-card-clinical {
   font-size: 12px; color: #6b7280; line-height: 1.75; margin-top: 7px; min-height: 42px;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
