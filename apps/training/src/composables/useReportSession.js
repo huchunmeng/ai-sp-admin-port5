@@ -1,6 +1,8 @@
 // 影像报告书写训练 —— 会话状态（书写报告 → 评分与对照 / 四段草稿 / AI伴学对话 / AI 评分）
 //
 // 契约依据：PRD §5.4.1（字段规则）· §5.2.5（回合）· §5.10（持久化）· §5.7（提示引擎）· §5.9（评分引擎）。
+import { MOCK_PRACTICE_RECORDS } from '@/data/mockPracticeRecords.js'
+
 // 本期无服务端：草稿与对话落 localStorage；AI伴学与评分都走 `useAIChat` → `/api/llm`。
 //
 // 已按 2026-09-19 评审批注调整（与最初封版的 PRD 不一致，需回写）：
@@ -20,6 +22,7 @@ import { useReportScoring } from './useReportScoring'
 const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'
 const RECORDS_KEY = 'report_writing_records_v1'
+const SEED_FLAG_KEY = 'report_writing_records_seeded_v1'
 
 /** 学员可写三段合计上限（500 + 3000 + 3000） */
 const TOTAL_LIMIT = 6500
@@ -55,9 +58,27 @@ export function readPracticeStats() {
  * 每条 = 一次「提交报告」，含报告快照与评分结果；评分未回来时 `status: 'pending'`。
  * @returns {Array<{id,caseId,title,bodyPart,modality,level,round,submittedAt,status,score,scoreableMax} & object>}
  */
+/**
+ * 读训练记录。
+ * 空的时候**播种一条演示记录**（只播一次，清空后不再回填）——
+ * 本期无服务端、记录只在 localStorage，换台机器记录页就是空的，没法演示「成绩报告」。
+ * 演示记录带 `mock: true`，列表里会标「演示数据」。
+ */
 export function readPracticeRecords() {
   const list = readJson(RECORDS_KEY, [])
-  return Array.isArray(list) ? list : []
+  if (Array.isArray(list) && list.length) return list
+  if (!readJson(SEED_FLAG_KEY, false)) {
+    writeJson(SEED_FLAG_KEY, true)
+    writeJson(RECORDS_KEY, MOCK_PRACTICE_RECORDS)
+    return MOCK_PRACTICE_RECORDS.slice()
+  }
+  return []
+}
+
+/** 手动把演示记录再装回来（空态里的「载入演示记录」按钮用） */
+export function loadMockRecords() {
+  writeJson(RECORDS_KEY, MOCK_PRACTICE_RECORDS)
+  return MOCK_PRACTICE_RECORDS.slice()
 }
 
 export function readPracticeRecord(id) {

@@ -75,7 +75,10 @@
     <div v-else class="empty-state">
       <i class="fa-solid fa-inbox"></i>
       <p>{{ records.length ? '暂无匹配的训练记录' : '还没有训练记录，去写一份报告吧' }}</p>
-      <button v-if="!records.length" class="btn btn-primary" style="margin-top:12px" @click="goTrain">去训练</button>
+      <div v-if="!records.length" style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-primary" @click="goTrain">去训练</button>
+        <button class="btn" @click="loadMock">载入演示记录</button>
+      </div>
     </div>
 
     <ScoreReportModal v-if="active"
@@ -95,10 +98,16 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { confirm } from '@ai-sp/shared'
 import { getImagingSample } from '@ai-sp/shared/imaging'
-import { readPracticeRecords } from '@/composables/useReportSession'
+import { readPracticeRecords, loadMockRecords } from '@/composables/useReportSession'
 import ScoreReportModal from './ScoreReportModal.vue'
 
 const router = useRouter()
+
+/** 演示用：把 mock 记录装回来 */
+function loadMock() {
+  records.value = loadMockRecords()
+}
+
 
 /** 记录在提交时落盘；本页每次进入重新读，保证刚提交的那条能看到 */
 const records = ref(readPracticeRecords())
