@@ -23,7 +23,8 @@ const KNEE = {
   status: 'published',   // 占位报告：仅为让 PACS 阅片器可预览；真报告到手后替换并复核
   version: 1,
   publishedAt: '2026-09-20',
-  sampleNote: '院方自有素材（右膝 MR）。报告与临床信息为占位，待院方正式报告替换',
+  // ⚠️ 本样本已 published（会进训练列表）。报告是占位：**不得用于正式考核**，真报告到手即替换
+  sampleNote: '⚠️ 占位报告：标准报告与临床信息由 PM 照影像起草、未经放射科医师复核，仅用于功能演示，不得用于正式考核；待院方正式报告替换',
   sourceDataset: '东南大学医学院 / 医路慧影（院方自有）',
   sourceLicense: '院方自有素材，无需外部署名',
   capabilities: {

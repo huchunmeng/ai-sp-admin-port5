@@ -1336,6 +1336,19 @@ export const bottomBar = {
   _bars: {},
   _init: false,
 
+  /**
+   * 显隐开关（2026-09-20 补）。
+   * 之前没有这对 API，调用方（管理端）只好自己 querySelectorAll('.sp-floating-bar') 设 display ——
+   * 那是绕过接口走捷径。DOM 细节留在模块内部，对外只暴露 show/hide。
+   */
+  show: function() {
+    document.querySelectorAll('.sp-floating-bar').forEach(el => { el.style.display = '' })
+  },
+  hide: function() {
+    document.querySelectorAll('.sp-floating-bar').forEach(el => { el.style.display = 'none' })
+  },
+
+
   _ensureStyles: function() {
     if (this._init) return
     this._init = true

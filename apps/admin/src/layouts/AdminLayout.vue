@@ -246,14 +246,13 @@ watch(() => route.path, (path) => {
  * 评审 / 需求那一坨浮动工具（shared 的 `.sp-floating-bar` + 需求抽屉）**默认隐藏**，
  * 点顶栏的机构名称切换显示（2026-09-20 批注）。
  *
- * 为什么用 DOM 兜底而不是调 bottomBar 的 API：那套浮动栏是 shared 里用原生 DOM 建的，
- * 对外只暴露 render/destroy，没有可见性开关；直接操作它生成出来的元素最省事也最稳。
+ * 走 shared 的 bottomBar.show()/hide()（2026-09-20 给 bottomBar 补的 API），
+ * 不再由调用方直接操作它生成出来的 DOM。
  */
 const toolsVisible = ref(false)
 
 function applyToolsVisibility() {
-  document.querySelectorAll('.sp-floating-bar')
-    .forEach(el => { el.style.display = toolsVisible.value ? '' : 'none' })
+  toolsVisible.value ? bottomBar.show() : bottomBar.hide()
   // 隐藏时顺手把需求抽屉收起来，避免"抽屉还开着、入口按钮却没了"
   if (!toolsVisible.value && requirement && typeof requirement.hide === 'function') requirement.hide()
 }
