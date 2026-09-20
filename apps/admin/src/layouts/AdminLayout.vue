@@ -61,6 +61,8 @@
       <main class="app-main">
         <header class="app-header">
           <div class="header-left">
+            <img class="brand-logo" src="/logo-seu-medicine.png" alt="东南大学医学院">
+            <span class="brand-divider"></span>
             <div class="mode-badge" @click="openTraining">训练端</div>
           </div>
           <div class="header-right">
@@ -273,6 +275,9 @@ function openTraining() {
   flex-shrink: 0;
 }
 .header-left { display: flex; align-items: center; gap: 16px; }
+/* 东南大学医学院 logo（顶栏用，白底黑版） */
+.brand-logo { height: 26px; width: auto; display: block; }
+.brand-divider { width: 1px; height: 20px; background: var(--border); }
 .header-right { display: flex; align-items: center; gap: 16px; }
 .system-name { font-size: 13px; font-weight: 600; line-height: 1.35; flex: 1; }
 .mode-badge { background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.32); padding: 4px 16px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: background .15s; }

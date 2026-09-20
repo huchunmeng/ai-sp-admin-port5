@@ -1,5 +1,5 @@
 <template>
-  <div class="case-editor">
+  <div class="case-editor is-flush">
     <!-- 头部：与病例编辑器同一套固定头（返回 / 保存草稿 / 发布） -->
     <div class="editor-header">
       <div class="header-left">
@@ -180,4 +180,10 @@ function commit(row, target, isRev) {
 .editor-panel .card + .card { margin-top: 16px; }
 /* 基本信息四个字段排一行：标题略宽，三个下拉等宽（批注：宽度收窄、四字段同行） */
 .is-basic-grid { grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); }
+
+/* 与顶部齐平：.app-content 有 24px 内距，粘性头会浮在它下面露出一条缝（2026-09-20 批注） */
+.case-editor.is-flush { margin-top: calc(-1 * var(--content-padding)); }
+/* sticky 的 top 是相对**滚动容器的 padding box** 算的，不减掉那 24px 会永远钉在内距下方 */
+.case-editor.is-flush .editor-header { top: calc(-1 * var(--content-padding)); }
+.case-editor.is-flush .editor-tab-bar { top: calc(61px - var(--content-padding)); }
 </style>
