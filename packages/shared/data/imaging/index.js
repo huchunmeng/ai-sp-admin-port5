@@ -36,6 +36,20 @@ export {
 import { IMAGING_SAMPLES, viewMeta } from './samples.js'
 import { SEGMENTS, GOLD_SEGMENTS, DEIDENTIFY_ROWS as DEIDENTIFY_ROW_TEMPLATE } from './r1-table.js'
 
+/* ── 学员侧标题：**不带任何征象**，只留「部位+模态 病例 N」 ──
+ * 为什么两套标题：`title` 是**老师侧**用的（管理端列表/编辑器要能一眼认出是哪一例），
+ * 学员侧不能出现"右肺上叶结节"这类提示，否则等于告诉他重点看哪里。
+ * 诊断与征象仍在 `goldStandard` 里，老师照旧看得到。
+ * 编号按题库顺序全局唯一、稳定（新增样本追加在末尾即不影响既有编号）。
+ */
+const STUDENT_SEQ = new Map(IMAGING_SAMPLES.map((s, i) => [s.id, i + 1]))
+
+export function studentTitleOf(sample) {
+  if (!sample) return ''
+  const n = STUDENT_SEQ.get(sample.id)
+  return `${sample.bodyPart || ''}${sample.modality || ''} 病例 ${n || ''}`.trim()
+}
+
 /** 某一段的参考报告文本：段二 = 题面给的检查目的 + 金标准里的检查方法 */
 export function goldSegmentText(sample, seg) {
   const g = (sample && sample.goldStandard) || {}
@@ -143,7 +157,8 @@ export function trainingCardOf(sample, stat) {
   const s = stat || {}
   return {
     id: sample.id,
-    title: sample.title,
+    // 学员侧标题：纯编号，不带征象
+    title: studentTitleOf(sample),
     modality: sample.modality,
     bodyPart: sample.bodyPart,
     level: sample.level,

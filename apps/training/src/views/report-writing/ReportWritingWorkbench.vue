@@ -30,7 +30,7 @@
                       :scoring="scoring"
                       :draft="state.draft"
                       :sample="sample"
-                      :title="sample.title"
+                      :title="studentTitle"
                       :submitted-at="submittedAt"
                       @close="onCloseReport"
                       @score="onScore"
@@ -49,7 +49,7 @@ import { useReportSession } from '@/composables/useReportSession'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import ImagePanel from './components/ImagePanel.vue'
 import SegmentForm from './components/SegmentForm.vue'
-import { DEIDENTIFY_ROWS } from '@ai-sp/shared/imaging'
+import { DEIDENTIFY_ROWS, studentTitleOf } from '@ai-sp/shared/imaging'
 import NotesPanel from './components/NotesPanel.vue'
 import CompanionPanel from './components/CompanionPanel.vue'
 import ScoreReportModal from './components/ScoreReportModal.vue'
@@ -85,6 +85,9 @@ onMounted(() => {
 function onSegmentInput(key, val) {
   state.draft[key] = val
 }
+
+/** 学员侧标题（纯编号，不带征象） */
+const studentTitle = computed(() => studentTitleOf(sample.value))
 
 /** 段一「患者临床信息」由系统给出（临床情境引导）：按真实申请单排版——一般项目表 + 病史/检查目的成段 */
 const givenSegment = computed(() => {

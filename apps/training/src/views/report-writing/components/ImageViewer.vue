@@ -104,7 +104,7 @@
           <div class="rwb-ov rwb-ov-tr">
             <div class="rwb-ov-strong">{{ sample.bodyPart || '' }} {{ sample.modality || '' }}</div>
             <div>{{ activeView.name }}</div>
-            <div>{{ sample.title }}</div>
+            <div>{{ studentTitle }}</div>
           </div>
           <div class="rwb-ov rwb-ov-bl">
             <div>W: {{ currentWindow.WW }} L: {{ currentWindow.WL }}</div>
@@ -141,7 +141,7 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { seriesListOf } from '@ai-sp/shared/imaging'
+import { seriesListOf, studentTitleOf } from '@ai-sp/shared/imaging'
 
 const props = defineProps({
   /** 题库样本（`series` 为有序数组，数量随病例变） */
@@ -160,6 +160,9 @@ function thumbOf(v) {
   if (!n) return ''
   return imgOf(v.key, Math.max(0, Math.floor(n / 2)))
 }
+/** 学员侧标题（纯编号，不带征象） */
+const studentTitle = computed(() => studentTitleOf(props.sample))
+
 /** 性别/年龄一行显示 */
 const sexAge = computed(() => {
   const d = props.sample.deidentify || {}
