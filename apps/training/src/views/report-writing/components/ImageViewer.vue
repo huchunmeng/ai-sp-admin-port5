@@ -28,10 +28,12 @@
       <div class="rwb-tool-group">
         <button class="rwb-tool-btn" :class="{ active: measuring }" :disabled="!canMeasure"
                 :title="canMeasure ? '在图上按住拖动即可量长度（按层内像素间距换算毫米）' : '本序列没有像素间距信息，无法换算毫米'"
-                @click="measuring = !measuring">
+                @click="toggleMeasure">
           <i class="fa-solid fa-ruler"></i> 测量
         </button>
-        <button class="rwb-tool-btn" disabled title="本期影像控件不具备缩放/平移">
+        <button class="rwb-tool-btn" :class="{ active: zooming }" :disabled="!canZoom"
+                :title="canZoom ? '开启后：滚轮缩放（以画面中心为锚点）、按住拖动平移' : '本序列暂无可缩放的影像'"
+                @click="toggleZoom">
           <i class="fa-solid fa-magnifying-glass-plus"></i> 缩放
         </button>
         <button class="rwb-tool-btn" @click="resetView" title="回到首帧并恢复默认窗">
@@ -60,33 +62,38 @@
 
       <!-- ══ 右：影像区 ══ -->
       <div class="rwb-viewport">
-        <div v-if="activeView" class="rwb-canvas" tabindex="0"
-             :title="frameCount > 1 ? '滚轮翻层面 / ↑↓ 键；点左半屏上一张、右半屏下一张' : '单帧图像'"
-             @wheel.prevent="onWheel(activeIndex, $event)"
+        <div v-if="activeView" class="rwb-canvas" :class="{ 'is-zoom': zooming, 'is-measure': measuring }"
+             tabindex="0" :title="canvasTitle"
+             @wheel.prevent="onCanvasWheel($event)"
              @keydown.up.prevent="step(activeIndex, -1)"
              @keydown.down.prevent="step(activeIndex, 1)"
+             @mousedown="onCanvasDown"
+             @mousemove="onCanvasMove"
+             @mouseup="onCanvasUp"
+             @mouseleave="onCanvasUp"
              @click="onCanvasClick(activeIndex, $event)">
-          <!-- 真实 DICOM 序列：16-bit 原始像素，窗宽窗位在 canvas 里实时算 -->
-          <canvas v-if="hasRaw" ref="canvasEl" class="rwb-pixel"
-                  :width="rawMeta.width" :height="rawMeta.height"
-                  @mousedown="measureStart" @mousemove="measureMove" @mouseup="measureEnd"
-                  @mouseleave="measureEnd"></canvas>
-          <img v-else-if="currentImage" class="rwb-pixel" :src="currentImage" :alt="activeView.name">
+          <!-- 缩放/平移只作用在这一层；四角信息与工具栏不跟着缩 -->
+          <div v-if="hasRaw || currentImage" class="rwb-stage" :style="{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }">
+            <!-- 真实 DICOM 序列：16-bit 原始像素，窗宽窗位在 canvas 里实时算 -->
+            <canvas v-if="hasRaw" ref="canvasEl" class="rwb-pixel"
+                    :width="rawMeta.width" :height="rawMeta.height"></canvas>
+            <img v-else class="rwb-pixel" :src="currentImage" :alt="activeView.name">
+
+            <!-- 测量标注（有 PixelSpacing 才能出毫米值）；随影像一起缩放 -->
+            <svg v-if="hasRaw && measures.length" class="rwb-measure"
+                 :viewBox="'0 0 ' + rawMeta.width + ' ' + rawMeta.height">
+              <g v-for="(m, i) in measures" :key="i">
+                <line :x1="m.x1" :y1="m.y1" :x2="m.x2" :y2="m.y2" />
+                <text :x="(m.x1 + m.x2) / 2 + 8" :y="(m.y1 + m.y2) / 2 - 8">{{ m.mm }} mm</text>
+              </g>
+            </svg>
+          </div>
           <template v-else>
             <div class="rwb-demo" :style="demoStyle(activeView.key, activeIndex)">
               <span class="rwb-demo-scan"></span>
               <span class="rwb-demo-mark"></span>
             </div>
           </template>
-
-          <!-- 测量标注（有 PixelSpacing 才能出毫米值） -->
-          <svg v-if="hasRaw && measures.length" class="rwb-measure"
-               :viewBox="'0 0 ' + rawMeta.width + ' ' + rawMeta.height">
-            <g v-for="(m, i) in measures" :key="i">
-              <line :x1="m.x1" :y1="m.y1" :x2="m.x2" :y2="m.y2" />
-              <text :x="(m.x1 + m.x2) / 2 + 8" :y="(m.y1 + m.y2) / 2 - 8">{{ m.mm }} mm</text>
-            </g>
-          </svg>
 
           <!-- 四角叠加：真实阅片的信息布局 -->
           <div class="rwb-ov rwb-ov-tl">
@@ -105,7 +112,7 @@
           </div>
           <div class="rwb-ov rwb-ov-br">
             <div>层 {{ layerOf(activeIndex) }} / {{ frameCount }}</div>
-            <div>缩放 100%</div>
+            <div>缩放 {{ Math.round(zoom * 100) }}%</div>
           </div>
           <span v-if="!currentImage && !hasRaw" class="rwb-demo-tag">演示占位</span>
         </div>
@@ -296,6 +303,7 @@ function resetView() {
   Object.keys(windowOverride).forEach(k => delete windowOverride[k])
   layer[activeView.value && activeView.value.key] = 1
   measures.value = []
+  resetZoom()
 }
 /** 视图列表——**不假设三视图**，按样本声明的序列渲染 */
 const views = computed(() => seriesListOf(props.sample))
@@ -374,10 +382,74 @@ function onWheel(vi, e) {
   step(vi, e.deltaY > 0 ? 1 : -1)
 }
 
-/** 点画布左半 = 上一张、右半 = 下一张（没有滚轮时的等价操作） */
+/** 点画布左半 = 上一张、右半 = 下一张（没有滚轮时的等价操作）；
+ *  缩放/测量模式下不翻层，拖动过也不算点击 */
 function onCanvasClick(vi, e) {
+  if (zooming.value || measuring.value || dragMoved.value) { dragMoved.value = false; return }
   const rect = e.currentTarget.getBoundingClientRect()
   step(vi, e.clientX - rect.left < rect.width / 2 ? -1 : 1)
+}
+
+/* ══ 缩放 / 平移 ══ */
+const zoom = ref(1)
+const pan = reactive({ x: 0, y: 0 })
+const zooming = ref(false)
+const panFrom = ref(null)
+/** 拖动过就不算"点击"，避免平移完顺手翻了一层 */
+const dragMoved = ref(false)
+const canZoom = computed(() => !!(hasRaw.value || currentImage.value))
+
+const canvasTitle = computed(() => {
+  if (zooming.value) return '滚轮缩放（以画面中心为锚点）· 按住拖动平移'
+  if (measuring.value) return '按住拖动即可量长度'
+  return frameCount.value > 1 ? '滚轮翻层面 / ↑↓ 键；点左半屏上一张、右半屏下一张' : '单帧图像'
+})
+
+const clampZoom = z => Math.min(8, Math.max(0.25, Math.round(z * 100) / 100))
+function resetZoom() { zoom.value = 1; pan.x = 0; pan.y = 0 }
+
+/** 测量与缩放是互斥工具（一次只用一种鼠标行为） */
+function toggleZoom() {
+  zooming.value = !zooming.value
+  resetZoom()
+  if (zooming.value) { measuring.value = false; measures.value = [] }
+}
+function toggleMeasure() {
+  measuring.value = !measuring.value
+  if (measuring.value) { zooming.value = false; resetZoom() }
+}
+
+/** 滚轮：缩放模式下缩放，否则翻层 */
+function onCanvasWheel(e) {
+  if (zooming.value) {
+    const next = clampZoom(zoom.value * (e.deltaY < 0 ? 1.12 : 1 / 1.12))
+    const k = next / zoom.value
+    pan.x *= k; pan.y *= k   // 以画面中心为锚点：中心不动
+    zoom.value = next
+    return
+  }
+  onWheel(activeIndex.value, e)
+}
+
+function onCanvasDown(e) {
+  dragMoved.value = false
+  if (measuring.value) { measureStart(e); return }
+  if (zooming.value) panFrom.value = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y }
+}
+function onCanvasMove(e) {
+  if (panFrom.value) {
+    const dx = e.clientX - panFrom.value.x
+    const dy = e.clientY - panFrom.value.y
+    if (Math.abs(dx) + Math.abs(dy) > 3) dragMoved.value = true
+    pan.x = panFrom.value.px + dx
+    pan.y = panFrom.value.py + dy
+    return
+  }
+  if (measuring.value) measureMove(e)
+}
+function onCanvasUp() {
+  panFrom.value = null
+  if (measuring.value) measureEnd()
 }
 
 /**
@@ -473,9 +545,13 @@ watch([activeIndex, () => layer[activeView.value && activeView.value.key], curre
 .rwb-viewport { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 .rwb-canvas {
-  position: relative; flex: 1; min-height: 300px; background: #000;
+  position: relative; flex: 1; min-height: 300px; background: #000; overflow: hidden;
   display: flex; align-items: center; justify-content: center; outline: none; cursor: crosshair;
 }
+.rwb-canvas.is-zoom { cursor: grab; }
+.rwb-canvas.is-zoom:active { cursor: grabbing; }
+/* 缩放 / 平移层：以画面中心为锚点，四角信息与工具栏不受影响 */
+.rwb-stage { position: relative; transform-origin: center center; will-change: transform; }
 .rwb-pixel { max-width: 100%; max-height: 460px; object-fit: contain; display: block; }
 
 /* 四角叠加信息（真实阅片的固定位置） */
