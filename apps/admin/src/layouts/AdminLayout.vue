@@ -65,7 +65,9 @@
             <div class="mode-badge" @click="openTraining">训练端</div>
           </div>
           <div class="header-right">
-            <div class="institution-selector">
+            <div class="institution-selector" :class="{ 'is-on': toolsVisible }"
+                 :title="toolsVisible ? '点击隐藏评审 / 需求工具' : '点击显示评审 / 需求工具'"
+                 @click="toggleTools">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 21h16"/>
                 <path d="M6 21V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v15"/>
@@ -241,7 +243,29 @@ watch(() => route.path, (path) => {
   }
 })
 
+/**
+ * 评审 / 需求那一坨浮动工具（shared 的 `.sp-floating-bar` + 需求抽屉）**默认隐藏**，
+ * 点顶栏的机构名称切换显示（2026-09-20 批注）。
+ *
+ * 为什么用 DOM 兜底而不是调 bottomBar 的 API：那套浮动栏是 shared 里用原生 DOM 建的，
+ * 对外只暴露 render/destroy，没有可见性开关；直接操作它生成出来的元素最省事也最稳。
+ */
+const toolsVisible = ref(false)
+
+function applyToolsVisibility() {
+  document.querySelectorAll('.sp-floating-bar')
+    .forEach(el => { el.style.display = toolsVisible.value ? '' : 'none' })
+  // 隐藏时顺手把需求抽屉收起来，避免"抽屉还开着、入口按钮却没了"
+  if (!toolsVisible.value && requirement && typeof requirement.hide === 'function') requirement.hide()
+}
+
+function toggleTools() {
+  toolsVisible.value = !toolsVisible.value
+  applyToolsVisibility()
+}
+
 const actions = createDefaultActions(route, {
+  /** 评审 / 需求工具默认隐藏（2026-09-20 批注）：点顶栏机构名称才显示 */
   reviewAction: () => { review.toggle() },
   requirementAction: () => { requirement.toggle(route.name || 'home') },
   btns: [
@@ -252,6 +276,7 @@ const actions = createDefaultActions(route, {
 onMounted(() => {
   requirement.load()
   bottomBar.render(actions)
+  applyToolsVisibility()
 })
 
 onUnmounted(() => {
@@ -281,7 +306,10 @@ function openTraining() {
 .mode-badge:hover { background: rgba(255,255,255,0.28); }
 .collapse-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; transition: background .15s; }
 .collapse-btn:hover { background: rgba(255,255,255,0.12); }
-.institution-selector { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 12px; border-radius: 8px; }
+.institution-selector { cursor: pointer; border-radius: 6px; transition: background .15s; }
+.institution-selector:hover { background: rgba(255,255,255,.12); }
+.institution-selector.is-on { background: rgba(255,255,255,.18); }
+.institution-selector-origin { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 12px; border-radius: 8px; }
 .user-menu { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 
 .app-body { display: flex; flex: 1; overflow: hidden; }
