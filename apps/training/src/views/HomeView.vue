@@ -459,7 +459,7 @@ function goExamCenter() {
 }
 
 function goReportWriting() {
-  router.push({ name: 'reportWriting' })
+  router.push({ name: 'reportWritingTrain' })
 }
 
 // 角标 = 各分类下导师病例示例总数

@@ -1,14 +1,9 @@
 <template>
-  <div class="rwr-page">
-    <div class="rwr-hero">
-      <div class="rwr-hero-left">
-        <h2><i class="fa-solid fa-clock-rotate-left"></i> 训练记录</h2>
-      </div>
-      <div class="rwr-hero-stats">
-        <div class="rwr-stat"><strong>{{ records.length }}</strong><span>提交次数</span></div>
-        <div class="rwr-stat"><strong>{{ caseCount }}</strong><span>练过病例</span></div>
-        <div class="rwr-stat"><strong>{{ avgScore }}</strong><span>平均得分</span></div>
-      </div>
+  <div class="rwr-records">
+    <div class="rwr-summary">
+      <span>提交 <b>{{ records.length }}</b> 次</span>
+      <span>练过 <b>{{ caseCount }}</b> 例</span>
+      <span>平均 <b>{{ avgScore }}</b> 分</span>
     </div>
 
     <div class="filter-bar">
@@ -101,7 +96,7 @@ import { useRouter } from 'vue-router'
 import { confirm } from '@ai-sp/shared'
 import { getImagingSample } from '@ai-sp/shared/imaging'
 import { readPracticeRecords } from '@/composables/useReportSession'
-import ScoreReportModal from './components/ScoreReportModal.vue'
+import ScoreReportModal from './ScoreReportModal.vue'
 
 const router = useRouter()
 
@@ -194,7 +189,7 @@ function redo(r) {
 </script>
 
 <style scoped>
-.rwr-page { max-width: 1240px; margin: 0 auto; padding: 20px 24px 48px; }
+.rwr-records { }
 .rwr-hero {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);

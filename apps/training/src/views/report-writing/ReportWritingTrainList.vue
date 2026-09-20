@@ -1,6 +1,6 @@
 <template>
   <div class="rwt-page">
-    <!-- 顶部横幅 -->
+    <!-- 顶部横幅（模块首页与列表页已合并，这里就是本模块的首页） -->
     <div class="rwt-hero">
       <div class="rwt-hero-left">
         <h2><i class="fa-solid fa-graduation-cap"></i> 影像报告书写训练</h2>
@@ -12,6 +12,17 @@
       </div>
     </div>
 
+    <!-- 训练病例 / 训练记录（原独立的训练记录页并入此处） -->
+    <div class="rwt-tabs">
+      <button class="rwt-tab" :class="{ active: tab === 'cases' }" @click="tab = 'cases'">
+        <i class="fa-solid fa-graduation-cap"></i> 训练病例
+      </button>
+      <button class="rwt-tab" :class="{ active: tab === 'records' }" @click="tab = 'records'">
+        <i class="fa-solid fa-clock-rotate-left"></i> 训练记录
+      </button>
+    </div>
+
+    <template v-if="tab === 'cases'">
     <!-- 继续上次 -->
     <div v-if="unfinished" class="rwt-resume">
       <i class="fa-solid fa-clock-rotate-left"></i>
@@ -42,9 +53,6 @@
         </select>
         <input class="input" v-model.trim="keyword" placeholder="搜索病例名称" style="width:180px">
         <span class="rwt-count">共 {{ grouped.length }} 例</span>
-        <button class="btn btn-sm" @click="goRecords">
-          <i class="fa-solid fa-clock-rotate-left"></i> 训练记录
-        </button>
       </div>
     </div>
 
@@ -85,17 +93,30 @@
       <i class="fa-solid fa-inbox"></i>
       <p>{{ cards.length ? '暂无匹配的影像病例' : '影像样本待院方提供' }}</p>
     </div>
+    </template>
+
+    <!-- 训练记录（原独立页面并入） -->
+    <RecordsPanel v-else />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { TRAINING_LEVELS, getCaseLevelLabel, LEVEL_TO_CASE_LEVEL, CASE_LEVEL_BADGE_CLASS } from '@ai-sp/shared'
 import { TRAINING_CASES, MODALITIES, BODY_PARTS, trainingCardOf } from '@ai-sp/shared/imaging'
 import { readPracticeStats } from '@/composables/useReportSession'
+import RecordsPanel from './components/RecordsPanel.vue'
 
 const router = useRouter()
+const route = useRoute()
+
+/** 训练病例 / 训练记录 两个页签；支持 ?tab=records 直接进记录 */
+const tab = ref(route.query.tab === 'records' ? 'records' : 'cases')
+watch(tab, v => {
+  router.replace({ query: v === 'records' ? { tab: 'records' } : {} })
+  if (v === 'cases') { router.replace({ query: {} }) }
+})
 
 const bodyPart = ref('全部')
 const modality = ref('')
@@ -162,10 +183,6 @@ const unfinished = computed(() => {
 function open(sample) {
   router.push({ name: 'reportWritingWorkbench', params: { caseId: sample.id } })
 }
-
-function goRecords() {
-  router.push({ name: 'reportWritingRecords' })
-}
 </script>
 
 <style scoped>
@@ -190,6 +207,15 @@ function goRecords() {
   background: #fffbeb; border: 1px solid #fef3c7; font-size: 12.5px; color: #92400e;
 }
 .rwt-resume .btn { margin-left: auto; }
+
+.rwt-tabs { display: flex; gap: 0; margin-top: 14px; border-bottom: 1px solid #e5e7eb; }
+.rwt-tab {
+  display: inline-flex; align-items: center; gap: 7px; font-family: inherit; font-size: 14px;
+  padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; color: #6b7280; transition: all .15s;
+}
+.rwt-tab:hover { color: var(--primary); }
+.rwt-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 
 .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 14px; }
 .rwt-filter-left { display: flex; gap: 6px; flex-wrap: wrap; }

@@ -185,16 +185,11 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '学习画像' : 'Learning Profile', to: null })
   } else if (name === 'vrLab') {
     items.push({ label: lang === 'zh' ? 'VR研习空间' : 'VR Lab', to: null })
-  } else if (name === 'reportWriting') {
-    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
   } else if (name === 'reportWritingTrain') {
-    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: null })
-  } else if (name === 'reportWritingRecords') {
-    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
-    items.push({ label: lang === 'zh' ? '训练记录' : 'Records', to: null })
   } else if (name === 'reportWritingWorkbench') {
-    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: { name: 'reportWriting' } })
+    items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'reportWritingTrain' } })
     items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
   } else if (name === 'reportWritingExam') {

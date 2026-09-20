@@ -32,10 +32,12 @@ const routes = [
       { path: 'vr-lab', name: 'vrLab', component: () => import('@/views/VRLab.vue') },
       { path: 'mentor/:category', name: 'mentorCases', component: () => import('@/views/MentorCaseView.vue') },
       // 影像报告书写训练（E2）—— 遵 PRD §6.1 学生侧页面清单拆为独立路由
-      { path: 'report-writing', name: 'reportWriting', component: () => import('@/views/report-writing/ReportWritingHome.vue') },
+      // 模块首页与训练列表页已合并：入口直接进列表页；训练记录也并进该页
+      { path: 'report-writing', redirect: { name: 'reportWritingTrain' } },
       { path: 'report-writing/train', name: 'reportWritingTrain', component: () => import('@/views/report-writing/ReportWritingTrainList.vue') },
       { path: 'report-writing/train/:caseId', name: 'reportWritingWorkbench', component: () => import('@/views/report-writing/ReportWritingWorkbench.vue') },
-      { path: 'report-writing/records', name: 'reportWritingRecords', component: () => import('@/views/report-writing/ReportWritingRecords.vue') },
+      // 训练记录已并入列表页，旧深链重定向过去
+      { path: 'report-writing/records', redirect: { name: 'reportWritingTrain', query: { tab: 'records' } } },
       // 考核侧本期未实现，保留可达的占位骨架（避免首页与在线考试页的入口 404）
       { path: 'report-writing/exam', name: 'reportWritingExam', component: () => import('@/views/report-writing/ReportWritingExam.vue') },
       { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },

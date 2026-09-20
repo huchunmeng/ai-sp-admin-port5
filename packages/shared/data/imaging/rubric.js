@@ -22,6 +22,7 @@ import { CAPABILITIES } from './capabilities.js'
 import { IMAGING_SAMPLES } from './samples.js'
 import { SEU_RUBRIC } from './samples-seu.js'
 import { PUB_RUBRIC } from './samples-pub.js'
+import { AI_RULES } from './rubric-rules-ai.js'
 
 /** 样单元数据表（本文件内自建，避免与 index.js 形成循环依赖） */
 const SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))
@@ -467,8 +468,9 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
         id: p.id,
         text: p.text,
         accept: p.accept || [],
-        /** 逐要点判定规则（LLM 生成 / 人工校正），评分时随要点一起交给模型 */
-        rule: p.rule || '',
+        /** 逐要点判定规则（LLM 生成 / 人工校正），评分时随要点一起交给模型；
+         *  要点自身没有时用 rubric-rules-ai.js 里 AI 补写的那份（老数据缺这个字段） */
+        rule: p.rule || (AI_RULES[caseId] && AI_RULES[caseId][base.code] && AI_RULES[caseId][base.code][p.id]) || '',
         /** 要点分值（未设置时用均分默认值） */
         score: Number.isFinite(p.score) ? p.score : defaults[pi],
         scoreDeclared: Number.isFinite(p.score),
