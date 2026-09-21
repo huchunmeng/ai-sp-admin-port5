@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import annoPlugin from '../../scripts/anno-plugin.mjs'
 import stationSchemesPersist from '../../scripts/station-schemes-persist.mjs'
+import createdExamsPersist from '../../scripts/created-exams-persist.mjs'
 import flowScoreTablesPersist from '../../scripts/flow-score-tables-persist.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -49,6 +50,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       annoPlugin(),
       stationSchemesPersist(),
+      createdExamsPersist(),
       flowScoreTablesPersist(),
       vue(),
       {
@@ -530,6 +532,7 @@ export default defineConfig(({ mode }) => {
         '@ai-sp/shared/score-tables': fileURLToPath(new URL('../../packages/shared/data/score-tables/index.js', import.meta.url)),
         '@ai-sp/shared/imaging': fileURLToPath(new URL('../../packages/shared/data/imaging/index.js', import.meta.url)),
         '@ai-sp/shared/imaging-ui': fileURLToPath(new URL('../../packages/shared/imaging-ui/index.js', import.meta.url)),
+        '@ai-sp/shared/created-exams': fileURLToPath(new URL('../../packages/shared/data/created-exams.js', import.meta.url)),
         '@ai-sp/shared/physical-exam-engine': fileURLToPath(new URL('../../packages/shared/src/physical-exam-engine.js', import.meta.url)),
         '@ai-sp/shared/test-selection-engine': fileURLToPath(new URL('../../packages/shared/src/test-selection-engine.js', import.meta.url)),
         '@ai-sp/shared/diagnosis-engine': fileURLToPath(new URL('../../packages/shared/src/diagnosis-engine.js', import.meta.url)),

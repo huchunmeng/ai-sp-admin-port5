@@ -128,6 +128,7 @@ import { ImagePanel, SegmentForm, ScoreReportModal, useReportScoring } from '@ai
 import { useRoute, useRouter } from 'vue-router'
 import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
 import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, EXAM_SERVER } from '@ai-sp/shared/imaging-ui'
+import { createdExamsStore } from '@ai-sp/shared/created-exams'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -153,6 +154,19 @@ const router = useRouter()
 const task = ref(taskById(route.query.task))
 const PRACTICE_SIZE = 1
 const PRACTICE_MIN = 30            // 练习考预设时长；正式考核对齐 S03 = 20 分钟（写在任务配置里）
+
+/**
+ * 管理端创建的考核**不在静态清单里**（`taskById` 只查内置演示任务），需要异步补查。
+ * 任务形状与静态任务完全一致，所以下面所有 computed 不用改。
+ */
+async function ensureTaskLoaded() {
+  if (task.value || !route.query.task) return
+  try {
+    const list = await createdExamsStore.load()
+    const found = (Array.isArray(list) ? list : []).find(t => t.id === route.query.task)
+    if (found) task.value = found
+  } catch (e) { /* 读不到就按练习考处理 */ }
+}
 
 const durationMin = computed(() => (task.value ? task.value.durationMin : PRACTICE_MIN))
 const paperSize = computed(() => (task.value ? task.value.caseIds.length : PRACTICE_SIZE))
@@ -394,7 +408,8 @@ function restart() {
   buildPaper()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await ensureTaskLoaded()
   if (!restoreSession()) buildPaper()
   document.addEventListener('visibilitychange', onVisible)
   window.addEventListener('blur', onBlur)

@@ -62,6 +62,7 @@
     <div class="et-foot">
       <span>没有派发的考核任务？</span>
       <button class="et-link" @click="goPractice">去做练习考（不计成绩）</button>
+      <span class="et-source">{{ dataSource === 'created' ? '已接入考核配置' : '示例数据' }}</span>
     </div>
   </div>
 </template>
@@ -72,9 +73,13 @@ import { useRouter } from 'vue-router'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf } from '@ai-sp/shared/imaging'
 import { loadSession, sessionStateOf } from '@ai-sp/shared/imaging-ui'
+import { createdExamsStore } from '@ai-sp/shared/created-exams'
 
 const router = useRouter()
 const sessions = ref({})
+/** 任务列表：管理端创建的考核优先，读不到才用演示数据兜底 */
+const tasks = ref(EXAM_TASKS)
+const dataSource = ref('demo')
 
 function modeLabel(m) { return EXAM_MODE_LABEL[m] || m }
 
@@ -91,7 +96,8 @@ function scoreOf(task, session) {
   const cfg = task.scoreVisible || { when: 'afterSubmit', content: 'total' }
   const win = windowStateOf(task)
   const open = cfg.when === 'afterSubmit' || (cfg.when === 'afterWindow' && win === 'expired')
-  const r = session && session.result
+  // 考试室按 `results`（caseId → 评分结果）存，这里取第一份；兼容旧的单数 `result`
+  const r = session && (session.result || (session.results && Object.values(session.results)[0]))
   if (!open) return { visible: false, reason: cfg.when === 'afterPublish' ? '成绩由教师发布后可见' : '成绩将于考试窗口结束后公布' }
   if (!r) return { visible: false, reason: '答卷已提交，等待评阅完成' }
   const detail = cfg.content !== 'total'
@@ -104,7 +110,7 @@ function scoreOf(task, session) {
   }
 }
 
-const rows = computed(() => EXAM_TASKS.map(task => {
+const rows = computed(() => tasks.value.map(task => {
   const session = sessions.value[task.id] || null
   const win = windowStateOf(task)
   const ss = sessionStateOf(task, session)
@@ -124,13 +130,27 @@ const rows = computed(() => EXAM_TASKS.map(task => {
 
 function refresh() {
   const m = {}
-  EXAM_TASKS.forEach(t => { const s = loadSession(t.id); if (s) m[t.id] = s })
+  tasks.value.forEach(t => { const s = loadSession(t.id); if (s) m[t.id] = s })
   sessions.value = m
 }
 function enter(task) { router.push({ name: 'reportWritingExam', query: { task: task.id } }) }
 function goPractice() { router.push({ name: 'reportWritingExam' }) }
 
-onMounted(refresh)
+/** 管理端创建的考核优先；读不到（或为空）时保持演示数据 */
+async function loadTasks() {
+  try {
+    const created = await createdExamsStore.load()
+    if (Array.isArray(created) && created.length) {
+      tasks.value = created
+      dataSource.value = 'created'
+    }
+  } catch (e) { /* 存储不可用则用示例数据 */ }
+}
+
+onMounted(async () => {
+  await loadTasks()
+  refresh()
+})
 </script>
 
 <style scoped>
@@ -172,4 +192,5 @@ onMounted(refresh)
 
 .et-foot { max-width: 980px; margin: 18px auto 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
 .et-link { background: none; border: none; padding: 0; color: var(--primary); font-size: 12.5px; cursor: pointer; text-decoration: underline; }
+.et-source { margin-left: auto; font-size: 11.5px; color: var(--text-tertiary); }
 </style>

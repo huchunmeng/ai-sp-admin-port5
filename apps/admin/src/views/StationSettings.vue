@@ -375,6 +375,15 @@
               {{ name }}
             </span>
           </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+            <span style="font-size: 11px; color: var(--text-tertiary); align-self: center;">影像：</span>
+            <span style="padding: 2px 10px; background: #E6F7FF; border: 1px solid #BAE7FF; border-radius: 12px; font-size: 12px; color: #096DD9; cursor: pointer; transition: all .15s;"
+                  @click="applyImagingStationPreset"
+                  @mouseenter="$event.target.style.background='#BAE7FF'"
+                  @mouseleave="$event.target.style.background='#E6F7FF'">
+              影像报告书写站
+            </span>
+          </div>
         </div>
         <div class="filter-item mb-3">
           <label>考试时长 *</label>
@@ -625,6 +634,12 @@ const availableMajors = computed(() => {
 })
 
 const commonStationNames = ['接诊病人站', '病历书写站', '病例分析站', '技能操作站', '体格检查站', '急救技能站', '辅助检查站', '临床思维站', '交流沟通站', '病史采集站', '接诊和沟通站', '精神检查站']
+
+/* 影像报告书写站（S03：住培结业实践技能考核 · 放射科 报告书写站，20 分钟 / 100 分） */
+const IMAGING_STATION_NAME = '影像报告书写站'
+const IMAGING_STATION_KEY = '影像报告书写'
+const IMAGING_STATION_DURATION = 20
+const IMAGING_PROJECT_NAME = '影像报告书写'
 
 const availableStationPresets = computed(() => {
   if (!editingScheme.value || currentMajorIndex.value === null) return []
@@ -983,11 +998,34 @@ function openAddStationModal(majorIndex) {
   showAddStationModal.value = true
 }
 
+/** 影像报告书写站：一键带出名称与考试时长（S03 官方口径 20 分钟） */
+function applyImagingStationPreset() {
+  newStationName.value = IMAGING_STATION_NAME
+  newStationDuration.value = IMAGING_STATION_DURATION
+}
+
 function addStation() {
   if (!editingScheme.value) return
   if (!newStationName.value.trim()) { toast.show('请输入考站名称', 'warning'); return }
   const major = editingScheme.value.majors[currentMajorIndex.value]
   if (major.stations.some(s => s.name === newStationName.value)) { toast.show('该考站名称已存在', 'warning'); return }
+  // 影像报告书写站：自动带上考核项目与影像评分表绑定，老师不用再手动配一遍
+  if (newStationName.value.includes(IMAGING_STATION_KEY)) {
+    major.stations.push({
+      name: newStationName.value,
+      duration: IMAGING_STATION_DURATION,
+      collapsed: false,
+      projects: [{ name: IMAGING_PROJECT_NAME }],
+      scoreTables: [{
+        name: '影像报告评分表模板',
+        templateCode: 'IMAGING',
+        bindProjects: [IMAGING_PROJECT_NAME],
+        weight: 100
+      }]
+    })
+    showAddStationModal.value = false
+    return
+  }
   major.stations.push({ name: newStationName.value, duration: newStationDuration.value, collapsed: false, projects: [], scoreTables: [] })
   showAddStationModal.value = false
 }

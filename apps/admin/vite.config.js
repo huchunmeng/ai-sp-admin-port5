@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
 import annoPlugin from '../../scripts/anno-plugin.mjs'
 import stationSchemesPersist from '../../scripts/station-schemes-persist.mjs'
+import createdExamsPersist from '../../scripts/created-exams-persist.mjs'
 import flowScoreTablesPersist from '../../scripts/flow-score-tables-persist.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -412,12 +413,13 @@ export default defineConfig(({ mode }) => {
   return {
     base: '/',
     root: __dirname,
-    plugins: [annoPlugin(), stationSchemesPersist(), flowScoreTablesPersist(), settingsPlugin(), rawRecordsApi(), mdtCasesPersist(), resolveGenPlugin(env), llmProxyPlugin(env), buildCasesIndexPlugin(), vue()],
+    plugins: [annoPlugin(), stationSchemesPersist(), createdExamsPersist(), flowScoreTablesPersist(), settingsPlugin(), rawRecordsApi(), mdtCasesPersist(), resolveGenPlugin(env), llmProxyPlugin(env), buildCasesIndexPlugin(), vue()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@ai-sp/shared/score-tables': fileURLToPath(new URL('../../packages/shared/data/score-tables/index.js', import.meta.url)),
         '@ai-sp/shared/imaging': fileURLToPath(new URL('../../packages/shared/data/imaging/index.js', import.meta.url)),
+        '@ai-sp/shared/created-exams': fileURLToPath(new URL('../../packages/shared/data/created-exams.js', import.meta.url)),
         '@ai-sp/shared': fileURLToPath(new URL('../../packages/shared', import.meta.url))
       }
     },

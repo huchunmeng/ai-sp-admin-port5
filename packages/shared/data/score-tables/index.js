@@ -34,6 +34,9 @@ import imReceptionJson from './score-sheet-im-reception.json' with { type: 'json
 // 旧版历史模板（生成器兼容）
 import templateV1Json from './score-sheet-v1.json' with { type: 'json' }
 
+// 影像报告评分表 —— 权威数据源在 imaging/r1-table.js（该文件无任何 import，不会循环引用）
+import { SCORE_TEMPLATE as IMAGING_SCORE_TEMPLATE } from '../imaging/r1-table.js'
+
 // ===== 通用评分等级 =====
 
 const UNIVERSAL_GRADING = {
@@ -362,6 +365,37 @@ function buildTPL_STD_7() {
 
 // ===== 合并注册表：JSON 规范数据优先，JS 构建为回退 =====
 
+/**
+ * 影像报告评分表（影像报告书写站专用）
+ * 由 `packages/shared/data/imaging/r1-table.js` 的 SCORE_TEMPLATE 映射而来：
+ *   维度 → category（维度名 dim → name，维度满分 full → maxScore 与 weight）
+ *   条目 → item（条目名 name → name，条目满分 score → maxScore）
+ * 5 维度 / 23 条目 / 合计 100 分。
+ */
+function buildTPL_IMAGING() {
+  const categories = IMAGING_SCORE_TEMPLATE.map(dim => {
+    const full = dim.full || 0
+    return {
+      name: dim.dim || dim.name || '',
+      maxScore: full,
+      weight: full,
+      items: (dim.items || []).map(it => ({
+        name: it.name,
+        maxScore: typeof it.score === 'number' ? it.score : (it.full || 0)
+      })),
+      grading: { ...UNIVERSAL_GRADING, scores: { excellent: full, good: Math.round(full * 0.8), pass: Math.round(full * 0.6), fail: Math.round(full * 0.3) } }
+    }
+  })
+  return {
+    code: 'IMAGING',
+    name: '影像报告评分表模板',
+    description: '适用于影像报告书写站考核，评估报告的一般信息、检查技术、影像描述、影像诊断与文字描述五个维度。',
+    specialty: '影像',
+    totalScore: 100,
+    categories
+  }
+}
+
 const JS_TEMPLATES = {
   'TPL-STD': buildTPL_STD(),
   'TPL-STD-2': buildTPL_STD_2(),
@@ -369,7 +403,8 @@ const JS_TEMPLATES = {
   'TPL-STD-4': buildTPL_STD_4(),
   'TPL-STD-5': buildTPL_STD_5(),
   'TPL-STD-6': buildTPL_STD_6(),
-  'TPL-STD-7': buildTPL_STD_7()
+  'TPL-STD-7': buildTPL_STD_7(),
+  'IMAGING': buildTPL_IMAGING()
 }
 
 const JSON_TEMPLATES = {

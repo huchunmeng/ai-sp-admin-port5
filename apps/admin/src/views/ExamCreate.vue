@@ -68,6 +68,72 @@
           </label>
         </div>
       </div>
+
+      <!-- 影像报告书写站：组卷配置（发布后写入派发任务，学员端按这些字段呈现） -->
+      <div v-if="hasImagingStation" class="form-item mb-4" data-reviewable="影像报告书写考核配置" style="border-top:1px solid var(--border-light);padding-top:16px;">
+        <label class="font-semibold">影像报告书写考核配置</label>
+        <div class="flex items-center gap-2 mb-3" style="flex-wrap:wrap;">
+          <span style="font-size:13px;color:var(--text-secondary);">预设</span>
+          <button v-for="p in IMAGING_PRESETS" :key="p.key" class="btn btn-sm"
+                  :class="{ 'btn-primary': imagingCfg.preset === p.key }"
+                  @click="applyImagingPreset(p.key)">{{ p.label }}</button>
+        </div>
+        <div class="flex gap-4 mb-3" style="flex-wrap:wrap;">
+          <div class="form-item" style="margin-bottom:0;">
+            <label>考试方式</label>
+            <select v-model="imagingCfg.examMode" class="select-field" style="width:210px;">
+              <option value="online">在线考试（自有设备）</option>
+              <option value="onsite">现场考站机</option>
+            </select>
+          </div>
+          <div class="form-item" style="margin-bottom:0;">
+            <label>题量</label>
+            <input type="number" class="input-field" style="width:90px;" min="1" v-model.number="imagingCfg.questionCount">
+          </div>
+          <div class="form-item" style="margin-bottom:0;">
+            <label>达标线</label>
+            <input type="number" class="input-field" style="width:110px;" min="0" max="100"
+                   v-model.number="imagingCfg.passLine"
+                   :placeholder="suggestedPassLine !== null ? String(suggestedPassLine) : '留空按难度标定'">
+          </div>
+          <div class="form-item" style="margin-bottom:0;">
+            <label>满分口径</label>
+            <select v-model="imagingCfg.scoreScale" class="select-field" style="width:190px;">
+              <option value="normalize">按可评满分归一化</option>
+              <option value="raw">原始分</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-4 mb-2" style="flex-wrap:wrap;">
+          <div class="form-item" style="margin-bottom:0;">
+            <label>出分时机</label>
+            <select v-model="imagingCfg.visibleWhen" class="select-field" style="width:190px;">
+              <option value="afterSubmit">交卷后</option>
+              <option value="afterWindow">考试窗口结束后</option>
+              <option value="afterPublish">教师发布后</option>
+            </select>
+          </div>
+          <div class="form-item" style="margin-bottom:0;">
+            <label>成绩可见内容</label>
+            <select v-model="imagingCfg.visibleContent" class="select-field" style="width:190px;">
+              <option value="total">仅总分与达标</option>
+              <option value="detail">总分 + 逐要点明细</option>
+            </select>
+          </div>
+          <div class="form-item" style="margin-bottom:0;">
+            <label>重考策略</label>
+            <select v-model="imagingCfg.retake" class="select-field" style="width:160px;">
+              <option value="single">不允许</option>
+              <option value="latest">取最近一次</option>
+              <option value="best">取最高分</option>
+              <option value="capped">限 N 次</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-tertiary);">
+          影像题库可选 {{ imagingCaseRows.length }} 例 · 本场影像场次 {{ imagingSessions.length }} 个
+        </div>
+      </div>
     </div>
 
     <div v-if="currentStep===2" style="width:100%">
@@ -229,7 +295,7 @@
             <label class="case-filter-label">搜索</label>
             <input v-model="caseKeyword" placeholder="病例名称/编码" class="input-field">
           </div>
-          <div class="case-filter-item">
+          <div v-if="!caseSelectorImaging" class="case-filter-item">
             <label class="case-filter-label">阶段</label>
             <select v-model="caseFilterPhase" class="select" @change="onCasePhaseChange">
               <option value="">全部</option>
@@ -238,21 +304,21 @@
               </optgroup>
             </select>
           </div>
-          <div class="case-filter-item">
+          <div v-if="!caseSelectorImaging" class="case-filter-item">
             <label class="case-filter-label">专业</label>
             <select v-model="caseFilterSpecialty" class="select" @change="onCaseSpecialtyChange">
               <option value="">全部</option>
               <option v-for="s in caseSpecialtyOptions" :key="s" :value="s">{{ s }}</option>
             </select>
           </div>
-          <div class="case-filter-item">
+          <div v-if="!caseSelectorImaging" class="case-filter-item">
             <label class="case-filter-label">分类</label>
             <select v-model="caseFilterCategory" class="select" @change="onCaseCategoryChange">
               <option value="">全部</option>
               <option v-for="c in caseCategoryOptions" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
-          <div class="case-filter-item">
+          <div v-if="!caseSelectorImaging" class="case-filter-item">
             <label class="case-filter-label">病种</label>
             <select v-model="caseFilterDisease" class="select">
               <option value="">全部</option>
@@ -329,10 +395,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, inject } from 'vue'
+import { ref, computed, reactive, watch, onMounted, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import { confirm, toast, getCaseLevelLabel } from '@ai-sp/shared'
 import { loadAllSchemes } from '@/data/station-schemes/index.js'
+import { EXAM_IMAGING_CASES, scoreableOf, calibrationOf } from '@ai-sp/shared/imaging'
+import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useAdminStore } from '@/stores/admin'
 import { dict } from '@/views/case-editor/shared.js'
 
@@ -430,6 +498,82 @@ const scoreSettingsTargetSession = ref(null)
 
 const schemeOptions = ref([])
 const schemesLoading = ref(true)
+
+/* ══ 影像报告书写考核：病例来源 + 考核配置 ══
+ * 组卷时老师在这里配一次，发布后落进派发任务；学员端「我的考核任务」按这些字段呈现。 */
+const IMAGING_STATION_KEY = '影像报告书写'
+const isImagingStation = (session) => !!session && String(session.stationName || '').includes(IMAGING_STATION_KEY)
+
+/** 影像题库 → 病例选择弹窗的行（沿用现有表格列：编码/标题/阶段/专业/分类/病种/来源） */
+const imagingCaseRows = computed(() => EXAM_IMAGING_CASES.map(s => ({
+  id: s.id,
+  code: s.id,
+  title: s.title,
+  difficulty: s.level || '',
+  specialty: '影像',
+  category: s.modality || '',
+  disease: s.bodyPart || '',
+  source: s.sourceDataset || '内置影像题库',
+  sample: s
+})))
+
+/** 当前病例弹窗是否处于影像模式（决定可选病例来源与筛选区） */
+const caseSelectorImaging = ref(false)
+
+/** 三套预设：一键把下面各字段写成一套常用口径 */
+const IMAGING_PRESETS = [
+  { key: 'formal', label: '正式考核', examMode: 'online', questionCount: 1, visibleWhen: 'afterWindow', visibleContent: 'total', retake: 'single', scoreScale: 'normalize' },
+  { key: 'quiz', label: '随堂测验', examMode: 'online', questionCount: 1, visibleWhen: 'afterSubmit', visibleContent: 'detail', retake: 'latest', scoreScale: 'normalize' },
+  { key: 'practice', label: '课后练习', examMode: 'online', questionCount: 1, visibleWhen: 'afterSubmit', visibleContent: 'detail', retake: 'best', scoreScale: 'raw' }
+]
+
+const imagingCfg = reactive({
+  preset: 'formal',
+  examMode: 'online',
+  questionCount: 1,
+  passLine: null,
+  visibleWhen: 'afterWindow',
+  visibleContent: 'total',
+  retake: 'single',
+  scoreScale: 'normalize'
+})
+
+const hasImagingStation = computed(() => form.value.selectedMajors.some(m =>
+  (selectedStations.value[m] || []).some(s => String(s).includes(IMAGING_STATION_KEY))))
+
+const imagingSessions = computed(() => allSessions.value.filter(isImagingStation))
+
+function applyImagingPreset(key) {
+  const p = IMAGING_PRESETS.find(x => x.key === key)
+  if (!p) return
+  imagingCfg.preset = key
+  imagingCfg.examMode = p.examMode
+  imagingCfg.questionCount = p.questionCount
+  imagingCfg.visibleWhen = p.visibleWhen
+  imagingCfg.visibleContent = p.visibleContent
+  imagingCfg.retake = p.retake
+  imagingCfg.scoreScale = p.scoreScale
+}
+
+/**
+ * 达标线推荐值：按已选病例的难度分层标定折算（拿不到就留空，允许手填）
+ * ⚠️ 取单个难度用 `calibrationOf(level)`；`getLevelCalibration()` 返回的是**整张标定表**，不是单条。
+ */
+const suggestedPassLine = computed(() => {
+  const sess = imagingSessions.value.find(s => s.case)
+  if (!sess) return null
+  const sample = EXAM_IMAGING_CASES.find(x => x.id === sess.case.id)
+  if (!sample) return null
+  const cal = calibrationOf(sample.level)
+  const max = scoreableOf(sample.id, sample.capabilities).max
+  if (!cal || !cal.passRate || !max) return null
+  return Math.round(cal.passRate * max * 10) / 10
+})
+
+// 选到影像病例后自动预填达标线（老师仍可手改；已有值不覆盖）
+watch(suggestedPassLine, v => {
+  if (v !== null && (imagingCfg.passLine === null || imagingCfg.passLine === '')) imagingCfg.passLine = v
+})
 
 function transformScheme(scheme) {
   const majors = scheme.majors.map(m => m.name)
@@ -587,6 +731,11 @@ function onCaseCategoryChange() { caseFilterDisease.value = ''; casePage.value =
 
 const filteredCases = computed(() => {
   const kw = caseKeyword.value.toLowerCase()
+  // 影像报告书写站：病例来自影像题库，只按关键字过滤（阶段/专业/分类/病种对影像样本无意义）
+  if (caseSelectorImaging.value) {
+    const list = imagingCaseRows.value
+    return kw ? list.filter(c => c.title.toLowerCase().includes(kw) || c.code.toLowerCase().includes(kw)) : list
+  }
   let list = mockCases.value.filter(c => c.enabled !== false)
   if (kw) list = list.filter(c => c.title.toLowerCase().includes(kw) || c.code.toLowerCase().includes(kw))
   if (caseFilterPhase.value) list = list.filter(c => c.difficulty === caseFilterPhase.value)
@@ -800,6 +949,7 @@ const restoreDefaultDuration = (session, itemId) => {
 
 const openCaseSelector = (session) => {
   tempSession = session
+  caseSelectorImaging.value = isImagingStation(session)
   caseSelectorVisible.value = true
   caseKeyword.value = ''
   caseFilterPhase.value = ''
@@ -807,7 +957,8 @@ const openCaseSelector = (session) => {
   caseFilterCategory.value = ''
   caseFilterDisease.value = ''
   casePage.value = 1
-  loadCases()
+  // 影像样本没有人文沟通场景，不需要拉病例库索引
+  if (!caseSelectorImaging.value) loadCases()
 }
 
 const selectCase = (c) => {
@@ -938,12 +1089,67 @@ const nextStep = () => {
 
 const prevStep = () => { if (currentStep.value > 0) currentStep.value-- }
 
-const submitExam = () => {
+/** 统一格式化成任务契约要的 `YYYY-MM-DD HH:mm`（Date 实例与字符串都支持） */
+const fmtDateTime = (v) => {
+  if (!v) return ''
+  const d = v instanceof Date ? v : new Date(String(v).replace(' ', 'T'))
+  if (isNaN(d.getTime())) return typeof v === 'string' ? v : ''
+  const p = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+const submitExam = async () => {
   for (const session of allSessions.value) {
     if (!session.case) { toast.show(`场次「${session.name}」未选择病例`, 'warning'); return }
     if (session.minHumanExaminers > 0 && session.examiners.length < session.minHumanExaminers) { toast.show(`场次「${session.name}」考官人数不足`, 'warning'); return }
   }
-  toast.show('考核创建成功（模拟）', 'success')
+
+  // 影像报告书写场次：各产出一条派发任务，写入跨端存储（学员端「我的考核任务」读它）
+  const imaging = allSessions.value.filter(isImagingStation)
+  if (!imaging.length) {
+    toast.show('考核创建成功（模拟）', 'success')
+    cancel()
+    return
+  }
+
+  const now = new Date()
+  const p = n => String(n).padStart(2, '0')
+  const examId = `EXAM-${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}`
+  const schemeName = (schemeOptions.value.find(s => s.id === form.value.schemeId) || {}).name
+  const passLine = (imagingCfg.passLine === null || imagingCfg.passLine === '')
+    ? suggestedPassLine.value
+    : Number(imagingCfg.passLine)
+
+  const tasks = imaging.map((session, idx) => {
+    const item = (session.items_duration || [])[0] || {}
+    return {
+      id: `TASK-${examId}-${idx + 1}`,
+      name: `${form.value.name} · ${session.name}`,
+      scheme: schemeName || session.stationName,
+      examMode: imagingCfg.examMode,
+      caseIds: [session.case.id],
+      durationMin: item.defaultDur || item.duration || 20,
+      passLine: typeof passLine === 'number' && !isNaN(passLine) ? passLine : 0,
+      questionCount: imagingCfg.questionCount,
+      scoreVisible: { when: imagingCfg.visibleWhen, content: imagingCfg.visibleContent },
+      retake: imagingCfg.retake,
+      scoreScale: imagingCfg.scoreScale,
+      windowStart: fmtDateTime(session.start_datetime),
+      windowEnd: fmtDateTime(session.end_datetime),
+      dispatchedBy: '考务管理员',
+      dispatchedAt: fmtDateTime(now)
+    }
+  })
+
+  try {
+    const existing = await createdExamsStore.load()
+    const list = Array.isArray(existing) ? existing.slice() : []
+    await createdExamsStore.save([...list, ...tasks])
+  } catch (e) {
+    toast.show(`考核创建失败：${e.message || '存储不可用'}`, 'error')
+    return
+  }
+  toast.show(`考核创建成功，已派发 ${tasks.length} 个影像报告书写任务`, 'success')
   cancel()
 }
 

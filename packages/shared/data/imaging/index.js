@@ -64,6 +64,7 @@ export function goldSegmentText(sample, seg) {
   return base
 }
 import { scoreableOf } from './rubric.js'
+import { SCOREABLE_PUBLISH_FLOOR } from './capabilities.js'
 
 /** 运行时索引（样本元数据回取，避免各处重复造 title / modality） */
 export const IMAGING_SAMPLE_BY_ID = Object.fromEntries(IMAGING_SAMPLES.map(s => [s.id, s]))
@@ -181,3 +182,15 @@ export function trainingCardOf(sample, stat) {
 
 // ── 考核侧：老师派发的考核任务（学员端与考试端共用同一份数据契约）──
 export { EXAM_TASKS, EXAM_MODE, EXAM_MODE_LABEL, WINDOW_LABEL, taskById, windowStateOf, onsiteTaskAt } from './examTasks.js'
+
+/**
+ * 组卷可选的影像题库 —— 管理端「新建考核」给影像报告书写站选病例时用这个列表。
+ * 门槛：已发布 + 有金标准（= TRAINING_CASES）+ **可评满分 ≥ SCOREABLE_PUBLISH_FLOOR(80)**。
+ * 低于门槛的样本可评满分不足，组进正式考核会与"满分 100"的口径冲突，故挡在组卷之外。
+ *
+ * ⚠️ `scoreableOf(caseId, capabilities)` 返回的是 `{ max, lost }` **对象**，不是数字，
+ *    比较要取 `.max`；capabilities 必须取自样本自身，否则按空能力位解析会算错可评满分。
+ */
+export const EXAM_IMAGING_CASES = TRAINING_CASES.filter(
+  s => scoreableOf(s.id, s.capabilities).max >= SCOREABLE_PUBLISH_FLOOR
+)
