@@ -19,7 +19,7 @@
 
         <div class="et-facts">
           <span class="et-fact"><i class="fa-solid fa-laptop-medical"></i> {{ modeLabel(r.task.examMode) }}</span>
-          <span class="et-fact"><i class="fa-solid fa-list-ol"></i> {{ r.task.caseIds.length }} 题 · 满分 100</span>
+          <span class="et-fact"><i class="fa-solid fa-list-ol"></i> {{ questionCountOf(r.task) }} 题 · {{ fullScoreLabel(r.task) }}</span>
           <span class="et-fact"><i class="fa-regular fa-clock"></i> {{ r.task.durationMin }} 分钟</span>
           <span class="et-fact"><i class="fa-solid fa-bullseye"></i> 达标线 {{ r.task.passLine }} 分</span>
         </div>
@@ -82,6 +82,17 @@ const tasks = ref(EXAM_TASKS)
 const dataSource = ref('demo')
 
 function modeLabel(m) { return EXAM_MODE_LABEL[m] || m }
+/** 实际题量：考务设定优先，缺省回落该场病例数 */
+function questionCountOf(task) { return Number(task.questionCount) || (task.caseIds || []).length }
+/** 满分口径：normalize 为百分制，raw 为本卷可评满分（不能都写"100 分"） */
+function fullScoreLabel(task) { return task.scoreScale === 'raw' ? '按本卷可评满分' : '满分 100' }
+/** 考务口径的分数（归一化/原始分），字段缺失时回落原始分以兼容老会话 */
+function finalOf(r) {
+  if (typeof r.finalScore === 'number' && typeof r.finalMax === 'number') return { score: r.finalScore, max: r.finalMax }
+  return { score: r.rawTotal, max: r.scoreableMax }
+}
+/** 达标线文案：考务设定 vs 难度标定 */
+function lineLabel(r) { return r.passLineSource === 'exam' ? '达标线' : `${r.level} 线` }
 
 const STATE = {
   notStarted: { key: 'notStarted', label: '未开始' },
@@ -101,12 +112,16 @@ function scoreOf(task, session) {
   if (!open) return { visible: false, reason: cfg.when === 'afterPublish' ? '成绩由教师发布后可见' : '成绩将于考试窗口结束后公布' }
   if (!r) return { visible: false, reason: '答卷已提交，等待评阅完成' }
   const detail = cfg.content !== 'total'
+  // 判定与文案走考务口径的新字段：passLine / passed / passLineSource（见 useReportScoring.withExamScale）
+  const line = typeof r.passLine === 'number' ? r.passLine : null
+  const fin = finalOf(r)
+  const passed = typeof r.passed === 'boolean' ? r.passed : (line === null ? null : fin.score >= line)
   return {
     visible: true,
     detail,
-    text: `${r.rawTotal} / ${r.scoreableMax}`,
-    passed: typeof r.passLine === 'number' ? r.rawTotal >= r.passLine : null,
-    pass: typeof r.passLine === 'number' ? `${r.rawTotal >= r.passLine ? '达标' : '未达标'}（${r.level} 线 ${Math.round(r.passLine * 10) / 10} 分）` : ''
+    text: `${fin.score} / ${fin.max}`,
+    passed,
+    pass: line === null ? '' : `${passed ? '达标' : '未达标'}（${lineLabel(r)} ${Math.round(line * 10) / 10} 分）`
   }
 }
 

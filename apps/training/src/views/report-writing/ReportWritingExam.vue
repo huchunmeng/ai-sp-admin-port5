@@ -18,7 +18,7 @@
           <li v-if="task"><b>考核方案</b>：{{ task.scheme }}</li>
           <li><b>题量</b>：{{ paper.length || paperSize }} 题{{ task ? '' : '（从可练题库随机抽取）' }}</li>
           <li><b>时长</b>：{{ durationMin }} 分钟，到点自动交卷</li>
-          <li v-if="task"><b>满分 / 达标线</b>：100 分 / {{ task.passLine }} 分</li>
+          <li v-if="task"><b>满分 / 达标线</b>：{{ fullScoreText }} / {{ task.passLine }} 分</li>
           <li v-if="task"><b>成绩可见</b>：{{ scoreOpen ? '交卷后即可查看' : scoreHiddenText }}</li>
           <li><b>作答</b>：看影像写三段报告（临床目的与检查方法 / 影像所见 / 诊断意见）</li>
           <li><b>不提供</b>：AI伴学、参考报告对照</li>
@@ -82,11 +82,11 @@
               <span class="ex-score-title">{{ studentTitleOf(q.sample) }}</span>
               <span class="ex-score-val">
                 <i v-if="submitting && !resultOf(i)" class="fa-solid fa-spinner fa-spin"></i>
-                <template v-else-if="resultOf(i) && scoreOpen">{{ resultOf(i).rawTotal }} / {{ resultOf(i).scoreableMax }}</template>
+                <template v-else-if="resultOf(i) && scoreOpen">{{ scoreTextOf(i) }}</template>
                 <template v-else>—</template>
               </span>
               <span v-if="resultOf(i) && scoreOpen" class="ex-pass" :class="passed(i) ? 'is-ok' : 'is-no'">
-                {{ passed(i) ? '达标' : '未达标' }}（{{ resultOf(i).level }} 线 {{ round1(resultOf(i).passLine) }} 分）
+                {{ passed(i) ? '达标' : '未达标' }}（{{ passLineLabel(i) }}）
               </span>
               <span v-else-if="!scoreOpen" class="text-secondary" style="font-size:12px">—</span>
               <span v-else class="text-secondary" style="font-size:12px">{{ submitting ? '评阅中' : '评分失败' }}</span>
@@ -169,11 +169,20 @@ async function ensureTaskLoaded() {
 }
 
 const durationMin = computed(() => (task.value ? task.value.durationMin : PRACTICE_MIN))
-const paperSize = computed(() => (task.value ? task.value.caseIds.length : PRACTICE_SIZE))
+/** 实际出题数：考务设定的题量优先（且不超过该场病例数），缺省用全部病例 */
+const questionCount = computed(() => {
+  if (!task.value) return PRACTICE_SIZE
+  const total = (task.value.caseIds || []).length
+  const want = Number(task.value.questionCount) || total
+  return Math.max(1, Math.min(want, total || 1))
+})
+const paperSize = computed(() => (task.value ? questionCount.value : PRACTICE_SIZE))
 const scopeOf = computed(() => (task.value ? COMMENT_SCOPE.EXAM : COMMENT_SCOPE.TRAINING))
 const sessionKey = computed(() => (task.value ? task.value.id : '__practice__'))
 const modeLabel = computed(() => (task.value ? (EXAM_MODE_LABEL[task.value.examMode] || task.value.examMode) : '练习考（不计成绩）'))
 const pageTitle = computed(() => (task.value ? task.value.name : '影像报告书写 · 练习考'))
+/** 须知里的满分口径文案：normalize 是百分制，raw 是本卷可评满分 */
+const fullScoreText = computed(() => (task.value && task.value.scoreScale === 'raw' ? '按本卷可评满分' : '100 分'))
 const TOTAL_LIMIT = 6500
 
 const { score } = useReportScoring()
@@ -207,9 +216,25 @@ const totalChars = computed(() => {
 })
 
 const round1 = n => Math.round(Number(n) * 10) / 10
+/** 达标判定：优先用评分层给出的 `passed`（已按考务设定的达标线算），缺失时回落原始分比较 */
 const passed = i => {
   const r = resultOf(i)
-  return !!(r && typeof r.passLine === 'number' && r.rawTotal >= r.passLine)
+  if (!r) return false
+  if (typeof r.passed === 'boolean') return r.passed
+  return typeof r.passLine === 'number' && r.rawTotal >= r.passLine
+}
+/** 考务口径的分数展示（字段缺失回落 rawTotal/scoreableMax，兼容老会话数据） */
+function scoreTextOf(i) {
+  const r = resultOf(i)
+  if (!r) return '—'
+  if (typeof r.finalScore === 'number' && typeof r.finalMax === 'number') return `${r.finalScore} / ${r.finalMax}`
+  return `${r.rawTotal} / ${r.scoreableMax}`
+}
+/** 达标线文案：考务设定 → 「达标线 X 分」；难度标定 → 「R1 线 X 分」 */
+function passLineLabel(i) {
+  const r = resultOf(i)
+  if (!r || typeof r.passLine !== 'number') return ''
+  return r.passLineSource === 'exam' ? `达标线 ${round1(r.passLine)} 分` : `${r.level} 线 ${round1(r.passLine)} 分`
 }
 
 function draftOf(i) {
@@ -289,10 +314,12 @@ function restoreSession() {
   return false
 }
 
-/** 出卷：派发任务按固定题序；练习考从可练题库随机抽 */
+/** 出卷：派发任务按固定题序取前 N 例（N = 考务设定题量）；练习考从可练题库随机抽 */
 function buildPaper() {
   if (task.value) {
-    const ids = task.value.caseIds.filter(id => TRAINING_CASES.some(c => c.id === id))
+    const ids = (task.value.caseIds || [])
+      .filter(id => TRAINING_CASES.some(c => c.id === id))
+      .slice(0, paperSize.value)
     paper.value = ids.map(id => {
       const sample = TRAINING_CASES.find(c => c.id === id)
       return { id, sample, title: studentTitleOf(sample) }
@@ -383,8 +410,15 @@ async function doSubmit() {
   const collected = {}
   for (let i = 0; i < paper.value.length; i++) {
     const q = paper.value[i]
-    // 考核口径取严（含红线校验）；练习考走训练口径
-    const res = await score({ sample: q.sample, reportText: { ...draftOf(i) }, scope: scopeOf.value })
+    // 考核口径取严（含红线校验）；练习考走训练口径。
+    // 达标线 / 满分口径取**考务设定**（练习考没有，传 null 走难度标定）。
+    const res = await score({
+      sample: q.sample,
+      reportText: { ...draftOf(i) },
+      scope: scopeOf.value,
+      passLine: task.value ? task.value.passLine : null,
+      scoreScale: task.value ? task.value.scoreScale : 'normalize'
+    })
     if (res.ok) { results[q.id] = res.result; collected[q.id] = res.result }
     else toast.show(`${studentTitleOf(q.sample)} 评分失败：${res.reason || ''}`, 'error', 3000)
   }

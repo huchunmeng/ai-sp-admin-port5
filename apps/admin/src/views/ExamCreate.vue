@@ -88,12 +88,14 @@
           </div>
           <div class="form-item" style="margin-bottom:0;">
             <label>题量</label>
-            <input type="number" class="input-field" style="width:90px;" min="1" v-model.number="imagingCfg.questionCount">
+            <input type="number" class="input-field" style="width:90px;" min="1" :max="imagingQuestionCap"
+                   v-model.number="imagingCfg.questionCount" @change="clampQuestionCount(true)">
           </div>
           <div class="form-item" style="margin-bottom:0;">
             <label>达标线</label>
-            <input type="number" class="input-field" style="width:110px;" min="0" max="100"
-                   v-model.number="imagingCfg.passLine"
+            <input type="number" class="input-field" style="width:110px;" min="0"
+                   :max="imagingCfg.scoreScale === 'raw' ? 1000 : 100"
+                   v-model.number="imagingCfg.passLine" @input="onPassLineInput"
                    :placeholder="suggestedPassLine !== null ? String(suggestedPassLine) : '留空按难度标定'">
           </div>
           <div class="form-item" style="margin-bottom:0;">
@@ -184,7 +186,18 @@
               </div>
               <div class="form-item" data-reviewable="考题区域">
                 <label class="font-semibold">设置考题</label>
-                <div class="flex items-center gap-2">
+                <!-- 影像报告书写站：多病例（题量决定实际出题数） -->
+                <template v-if="isImagingStation(session)">
+                  <div v-if="(session.imagingCases || []).length === 0" class="text-sm text-gray-500" style="margin-bottom:6px;">未选择</div>
+                  <div v-else style="margin-bottom:6px;">
+                    <div v-for="c in session.imagingCases" :key="c.id" class="text-sm" style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                      <span>{{ c.title }} ({{ c.code }})</span>
+                      <button class="text-primary text-sm" @click="removeImagingCase(session, c.id)" :class="{ 'review-disabled': reviewModeGlobal }" data-reviewable="'移除病例-'+c.code">移除</button>
+                    </div>
+                  </div>
+                  <button class="btn-default btn-sm" @click="openCaseSelector(session)" :class="{ 'review-disabled': reviewModeGlobal }" data-reviewable="选择考题按钮">选择病例</button>
+                </template>
+                <div v-else class="flex items-center gap-2">
                   <span v-if="session.case" class="text-sm">{{ session.case.title }} ({{ session.case.code }})</span>
                   <span v-else class="text-sm text-gray-500">未选择</span>
                   <button class="btn-default btn-sm" @click="openCaseSelector(session)" :class="{ 'review-disabled': reviewModeGlobal }" data-reviewable="选择考题按钮">选择病例</button>
@@ -343,11 +356,20 @@
               <td>{{ c.category }}</td>
               <td>{{ c.disease }}</td>
               <td>{{ c.source }}</td>
-              <td><button @click="selectCase(c)" class="btn-primary btn-sm" :data-reviewable="'选择病例按钮-'+c.code">选择</button></td>
+              <td>
+                <button v-if="!caseSelectorImaging" @click="selectCase(c)" class="btn-primary btn-sm" :data-reviewable="'选择病例按钮-'+c.code">选择</button>
+                <button v-else-if="imagingPicked(c.id)" class="btn btn-sm" disabled>已添加</button>
+                <button v-else @click="selectCase(c)" class="btn-primary btn-sm" :data-reviewable="'选择病例按钮-'+c.code">添加</button>
+              </td>
             </tr>
           </tbody>
         </table>
         <div v-if="filteredCases.length === 0" class="text-secondary text-center py-4">暂无匹配病例</div>
+        <!-- 影像场次：追加式选择，选完点「完成」关闭 -->
+        <div v-if="caseSelectorImaging" class="flex items-center justify-between mt-3">
+          <span class="text-secondary text-sm">已选 {{ imagingPickCount }} 例</span>
+          <button class="btn-primary btn-sm" @click="caseSelectorVisible = false">完成</button>
+        </div>
         <!-- 分页 -->
         <div class="case-pagination" v-if="totalCasePages > 1">
           <span class="text-secondary">共 {{ filteredCases.length }} 条</span>
@@ -555,8 +577,14 @@ function applyImagingPreset(key) {
   imagingCfg.scoreScale = p.scoreScale
 }
 
+/** 达标线是否被老师手改过（手改过就不再被建议值覆盖） */
+const passLineTouched = ref(false)
+function onPassLineInput() { passLineTouched.value = true }
+
 /**
- * 达标线推荐值：按已选病例的难度分层标定折算（拿不到就留空，允许手填）
+ * 达标线推荐值：按已选病例的难度分层标定折算，**量纲跟着满分口径走**
+ *   · normalize → 百分制（passRate × 100）
+ *   · raw       → 本卷可评满分量纲（passRate × scoreableMax）
  * ⚠️ 取单个难度用 `calibrationOf(level)`；`getLevelCalibration()` 返回的是**整张标定表**，不是单条。
  */
 const suggestedPassLine = computed(() => {
@@ -565,15 +593,71 @@ const suggestedPassLine = computed(() => {
   const sample = EXAM_IMAGING_CASES.find(x => x.id === sess.case.id)
   if (!sample) return null
   const cal = calibrationOf(sample.level)
-  const max = scoreableOf(sample.id, sample.capabilities).max
-  if (!cal || !cal.passRate || !max) return null
-  return Math.round(cal.passRate * max * 10) / 10
+  if (!cal || !cal.passRate) return null
+  if (imagingCfg.scoreScale === 'raw') {
+    const max = scoreableOf(sample.id, sample.capabilities).max
+    return max ? Math.round(cal.passRate * max * 10) / 10 : null
+  }
+  return Math.round(cal.passRate * 100 * 10) / 10
 })
 
-// 选到影像病例后自动预填达标线（老师仍可手改；已有值不覆盖）
+// 病例或满分口径变化 → 刷新建议值；老师手改过就不覆盖（清空视为未定，仍刷新）
 watch(suggestedPassLine, v => {
-  if (v !== null && (imagingCfg.passLine === null || imagingCfg.passLine === '')) imagingCfg.passLine = v
+  if (v === null) return
+  if (!passLineTouched.value || imagingCfg.passLine === null || imagingCfg.passLine === '') {
+    imagingCfg.passLine = v
+  }
 })
+
+/* ── 影像场次多病例：`imagingCases` 承载多选，`session.case` 始终 = 第一例 ──
+ * 这样既支持多题，又不破坏其它既有单值逻辑（场次表格、状态、快捷应用到同类考站）。 */
+function imagingCasesOf(session) {
+  if (!session.imagingCases) session.imagingCases = []
+  return session.imagingCases
+}
+function addImagingCase(session, c) {
+  const list = imagingCasesOf(session)
+  if (list.some(x => x.id === c.id)) return false
+  list.push(c)
+  session.case = list[0]
+  return true
+}
+function removeImagingCase(session, caseId) {
+  const list = imagingCasesOf(session)
+  const idx = list.findIndex(x => x.id === caseId)
+  if (idx >= 0) list.splice(idx, 1)
+  session.case = list[0] || null
+  syncPicked()
+}
+
+/** 弹窗内"已选"提示（用独立响应式量，避免依赖非响应式的 tempSession 变量） */
+const imagingPickCount = ref(0)
+const imagingPickedIds = ref([])
+function syncPicked() {
+  const list = tempSession ? (tempSession.imagingCases || []) : []
+  imagingPickCount.value = list.length
+  imagingPickedIds.value = list.map(x => x.id)
+}
+function imagingPicked(id) { return imagingPickedIds.value.includes(id) }
+
+/** 题量上限 = 各影像场次已选病例数的最小值（保证每个场次都出得满） */
+const imagingQuestionCap = computed(() => {
+  const counts = imagingSessions.value.map(s => (s.imagingCases || []).length).filter(n => n > 0)
+  return counts.length ? Math.min(...counts) : 1
+})
+
+/** 题量夹取到 [1, 上限]；超上限时提示 */
+function clampQuestionCount(notify) {
+  const cap = imagingQuestionCap.value
+  let v = Number(imagingCfg.questionCount)
+  if (!v || v < 1) v = 1
+  if (v > cap) {
+    v = cap
+    if (notify) toast.show(`题量不能超过本场已选病例数（${cap} 例）`, 'warning')
+  }
+  imagingCfg.questionCount = v
+}
+watch(imagingQuestionCap, () => clampQuestionCount(true))
 
 function transformScheme(scheme) {
   const majors = scheme.majors.map(m => m.name)
@@ -793,7 +877,9 @@ const generateSessions = () => {
           case: null,
           communicationScene: '',
           includeAiScore: true,
-          minHumanExaminers: 1,
+          // 影像报告书写站由 AI 逐要点评阅，**不要求真人考官**；
+          // 沿用默认 1 会让在线考试卡在"考官人数不足"提交不了
+          minHumanExaminers: String(station).includes(IMAGING_STATION_KEY) ? 0 : 1,
           scoreTables,
           examiners: [],
           candidates: []
@@ -957,11 +1043,19 @@ const openCaseSelector = (session) => {
   caseFilterCategory.value = ''
   caseFilterDisease.value = ''
   casePage.value = 1
+  syncPicked()
   // 影像样本没有人文沟通场景，不需要拉病例库索引
   if (!caseSelectorImaging.value) loadCases()
 }
 
 const selectCase = (c) => {
+  // 影像场次：**追加**语义，弹窗不关，可连续添加多例（题量由 imagingCfg.questionCount 决定）
+  if (tempSession && caseSelectorImaging.value) {
+    const added = addImagingCase(tempSession, c)
+    if (!added) toast.show('该病例已在本次考核中', 'warning')
+    syncPicked()
+    return
+  }
   if (tempSession) {
     tempSession.case = c
     const scenes = c.communicationScenes || []
@@ -1065,6 +1159,20 @@ const getStationStatus = (sessionId) => {
   return session ? getSessionStatus(session) : 'warning'
 }
 
+/** 影像报告书写场次的配置校验：至少 1 例病例、题量在 [1, 已选病例数] 内 */
+const validateImagingConfig = () => {
+  const imaging = allSessions.value.filter(isImagingStation)
+  if (!imaging.length) return true
+  for (const s of imaging) {
+    if (!(s.imagingCases || []).length) { toast.show(`场次「${s.name}」未选择病例`, 'warning'); return false }
+  }
+  const cap = imagingQuestionCap.value
+  const n = Number(imagingCfg.questionCount)
+  if (!n || n < 1) { toast.show('影像报告书写题量至少 1 题', 'warning'); return false }
+  if (n > cap) { toast.show(`题量不能超过本场已选病例数（${cap} 例）`, 'warning'); return false }
+  return true
+}
+
 const nextStep = () => {
   const step = currentStep.value
   if (step === 0) {
@@ -1083,6 +1191,7 @@ const nextStep = () => {
       if (!session.start_datetime || !session.end_datetime) { toast.show(`场次「${session.name}」未设置考试时间`, 'warning'); return }
       if (isCommunicationStation(session) && !session.stationName.includes('接诊') && !session.communicationScene) { toast.show(`场次「${session.name}」未选择沟通场景`, 'warning'); return }
     }
+    if (!validateImagingConfig()) return
   }
   if (currentStep.value < steps.value.length - 1) currentStep.value++
 }
@@ -1103,6 +1212,7 @@ const submitExam = async () => {
     if (!session.case) { toast.show(`场次「${session.name}」未选择病例`, 'warning'); return }
     if (session.minHumanExaminers > 0 && session.examiners.length < session.minHumanExaminers) { toast.show(`场次「${session.name}」考官人数不足`, 'warning'); return }
   }
+  if (!validateImagingConfig()) return
 
   // 影像报告书写场次：各产出一条派发任务，写入跨端存储（学员端「我的考核任务」读它）
   const imaging = allSessions.value.filter(isImagingStation)
@@ -1122,15 +1232,17 @@ const submitExam = async () => {
 
   const tasks = imaging.map((session, idx) => {
     const item = (session.items_duration || [])[0] || {}
+    const caseIds = (session.imagingCases || []).map(c => c.id)
+    const qCount = Math.max(1, Math.min(Number(imagingCfg.questionCount) || 1, caseIds.length || 1))
     return {
       id: `TASK-${examId}-${idx + 1}`,
       name: `${form.value.name} · ${session.name}`,
       scheme: schemeName || session.stationName,
       examMode: imagingCfg.examMode,
-      caseIds: [session.case.id],
+      caseIds,
       durationMin: item.defaultDur || item.duration || 20,
       passLine: typeof passLine === 'number' && !isNaN(passLine) ? passLine : 0,
-      questionCount: imagingCfg.questionCount,
+      questionCount: qCount,
       scoreVisible: { when: imagingCfg.visibleWhen, content: imagingCfg.visibleContent },
       retake: imagingCfg.retake,
       scoreScale: imagingCfg.scoreScale,

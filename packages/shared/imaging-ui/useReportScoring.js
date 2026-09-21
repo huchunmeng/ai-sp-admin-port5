@@ -15,16 +15,53 @@ import { sendLlm } from './llm.js'
 
 const SCORING_MODEL = 'qwen-plus'
 
+/**
+ * 给评分结果补上**考务口径**的分数与达标判定（两侧展示统一读这几个字段）。
+ *
+ * 量纲由 `scoreScale` 定死：
+ *   · `normalize` → 百分制：finalMax = 100，finalScore = rawTotal / scoreableMax × 100
+ *   · `raw`       → 本卷可评满分量纲：finalMax = scoreableMax，finalScore = rawTotal
+ * `scoreableMax` 为 0（不可评）时不做除法，直接回落 raw，避免除零。
+ *
+ * 达标线：有考务设定（`passLine` 传了数字）就用它，并把难度标定原值留在 `rubricPassLine`；
+ * 没传（练习考）保持难度标定值 —— 两种情况都写 `passLineSource`，便于界面区分文案。
+ */
+function withExamScale(result, passLine, scoreScale) {
+  if (!result || typeof result !== 'object') return result
+  const rawTotal = Number(result.rawTotal) || 0
+  const scoreableMax = Number(result.scoreableMax) || 0
+  let finalScore = rawTotal
+  let finalMax = scoreableMax
+  if (scoreScale === 'normalize' && scoreableMax > 0) {
+    finalMax = 100
+    finalScore = Math.round(rawTotal / scoreableMax * 1000) / 10
+  }
+  const hasExamLine = passLine !== null && passLine !== undefined && passLine !== '' && !isNaN(Number(passLine))
+  const rubricPassLine = typeof result.passLine === 'number' ? result.passLine : null
+  const line = hasExamLine ? Number(passLine) : rubricPassLine
+  return {
+    ...result,
+    finalScore,
+    finalMax,
+    rubricPassLine,
+    passLine: line,
+    passLineSource: hasExamLine ? 'exam' : 'rubric',
+    passed: typeof line === 'number' ? finalScore >= line : null
+  }
+}
+
 export function useReportScoring() {
   const running = ref(false)
   const error = ref('')
 
   /**
    * 给一份报告打分。
-   * @param {{sample:object, reportText:{technique,findings,impression}, scope?:string}} payload
+   * @param {{sample:object, reportText:{technique,findings,impression}, scope?:string,
+   *          passLine?:number|null, scoreScale?:'normalize'|'raw'}} payload
+   *        `passLine` / `scoreScale` 是**考务设定**（来自派发任务）；练习考不传，走难度标定口径。
    * @returns {Promise<{ok:boolean, result?:object, rubric?:object, reason?:string}>}
    */
-  async function score({ sample, reportText, scope = COMMENT_SCOPE.TRAINING }) {
+  async function score({ sample, reportText, scope = COMMENT_SCOPE.TRAINING, passLine = null, scoreScale = 'normalize' }) {
     running.value = true
     error.value = ''
     try {
@@ -45,7 +82,7 @@ export function useReportScoring() {
         error.value = settled.reason
         return { ok: false, reason: settled.reason }
       }
-      return { ok: true, result: settled.result, rubric: prepared.rubric }
+      return { ok: true, result: withExamScale(settled.result, passLine, scoreScale), rubric: prepared.rubric }
     } catch (e) {
       error.value = e.message
       return { ok: false, reason: e.message }

@@ -13,13 +13,13 @@
       <div v-if="result" class="sr-summary">
         <div class="sr-score">
           <div class="sr-score-num">
-            <b>{{ result.rawTotal }}</b><span>/ {{ result.scoreableMax }}</span>
+            <b>{{ finalScore }}</b><span>/ {{ finalMax }}</span>
           </div>
           <div class="sr-score-meta">
             <span class="sr-rate">得分率 {{ rate }}</span>
             <span v-if="passInfo" class="sr-pass" :class="passInfo.ok ? 'is-ok' : 'is-no'">
               <i class="fa-solid" :class="passInfo.ok ? 'fa-circle-check' : 'fa-circle-xmark'"></i>
-              {{ passInfo.ok ? '达标' : '未达标' }}（{{ passInfo.level }} 线 {{ passInfo.line }} 分）
+              {{ passInfo.ok ? '达标' : '未达标' }}（{{ passInfo.label }} {{ passInfo.line }} 分）
             </span>
             <button v-if="missingCount" class="sr-badge" title="在「得分明细」里看是哪几条"
                     @click="tab = 'points'">
@@ -99,19 +99,38 @@ const result = computed(() => props.scoring.result || null)
 /** 评阅中先停在明细页签，出分后再按有无缺失给个默认落点 */
 watch(() => props.scoring.status, s => { if (s !== 'done') tab.value = 'points' })
 
+/** 分数：走考务口径字段（finalScore/finalMax，见 useReportScoring.withExamScale）；
+ *  老记录没有这两个字段时回落原始分，保证历史成绩照常显示 */
+const finalScore = computed(() => {
+  const r = result.value
+  if (!r) return '—'
+  return typeof r.finalScore === 'number' ? r.finalScore : r.rawTotal
+})
+const finalMax = computed(() => {
+  const r = result.value
+  if (!r) return '—'
+  return typeof r.finalMax === 'number' ? r.finalMax : r.scoreableMax
+})
+
 const rate = computed(() => {
   const r = result.value
   if (!r || !r.scoreableMax) return '—'
   return Math.round(r.rawTotal / r.scoreableMax * 100) + '%'
 })
-/** 达标线：难度分层标定给的 passLine（老记录没有这几个字段时不显示） */
+/**
+ * 达标线：优先用评分层算好的 `passed`（已按量纲比对），量纲由 passLineSource 决定 ——
+ * 考务设定 → 「达标线」；难度分层标定 → 「R1 线」。
+ * 老记录没有这些字段时回落 rawTotal ≥ passLine（与过去行为一致）。
+ */
 const passInfo = computed(() => {
   const r = result.value
-  if (!r || typeof r.passLine !== 'number' || !r.scoreableMax) return null
+  if (!r || typeof r.passLine !== 'number') return null
+  const examSource = r.passLineSource === 'exam'
+  const ok = typeof r.passed === 'boolean' ? r.passed : (r.scoreableMax ? r.rawTotal >= r.passLine : false)
   return {
-    ok: r.rawTotal >= r.passLine,
+    ok,
     line: Math.round(r.passLine * 10) / 10,
-    level: r.level || '本级'
+    label: examSource ? '达标线' : `${r.level || '本级'} 线`
   }
 })
 const missingCount = computed(() => {
