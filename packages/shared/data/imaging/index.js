@@ -29,7 +29,7 @@ export {
 } from './rubric.js'
 export {
   buildScoringPrompt, parseScoringResult, composeScore, prepareScoring, COMMENT_SCOPE,
-  buildRubricExtractionPrompt, parseRubricExtraction,
+  buildRubricExtractionPrompt, parseRubricExtraction, applyExamScale,
   SCORING_FAILED_TEXT, NOT_COVERED_TEXT, PARTIAL_TEXT
 } from './scoring.js'
 export { IMAGING_SAMPLES, MODALITIES, BODY_PARTS, SAMPLE_STATUS, DEFAULT_VIEWS, VIEW_CANDIDATES, viewMeta } from './samples.js'

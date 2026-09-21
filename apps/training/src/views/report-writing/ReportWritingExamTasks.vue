@@ -62,7 +62,7 @@
     <div class="et-foot">
       <span>没有派发的考核任务？</span>
       <button class="et-link" @click="goPractice">去做练习考（不计成绩）</button>
-      <span class="et-source">{{ dataSource === 'created' ? '已接入考核配置' : '示例数据' }}</span>
+      <span class="et-source">{{ sourceLabel }}</span>
     </div>
   </div>
 </template>
@@ -72,7 +72,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf } from '@ai-sp/shared/imaging'
-import { loadSession, sessionStateOf } from '@ai-sp/shared/imaging-ui'
+import { loadSession, sessionStateOf, saveSession, examApi } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 
 const router = useRouter()
@@ -151,20 +151,62 @@ function refresh() {
 function enter(task) { router.push({ name: 'reportWritingExam', query: { task: task.id } }) }
 function goPractice() { router.push({ name: 'reportWritingExam' }) }
 
-/** 管理端创建的考核优先；读不到（或为空）时保持演示数据 */
+/**
+ * 任务来源优先级：**考核服务** → 管理端创建的考核配置 → 内置演示数据。
+ * 同时把服务端已有的会话与成绩并回本地视图 —— 这是"交卷后关页，回来还能看到成绩"的前端一侧：
+ * 换了设备或清了本地存储，也能从服务端拿回"这场我考过没有、出分没有"。
+ */
 async function loadTasks() {
+  // ① 考核服务（含服务端算好的 state 与成绩）
+  try {
+    const r = await examApi.tasks()
+    if (r.server && r.tasks.length) {
+      tasks.value = r.tasks
+      dataSource.value = 'server'
+      const m = {}
+      for (const t of r.tasks) {
+        const remote = await examApi.sessionOf(t.id, '')
+        if (remote && remote.session) {
+          const rs = remote.session
+          m[t.id] = {
+            server: true, serverSessionId: rs.sessionId, taskId: t.id,
+            startedAt: rs.startedAt, deadline: rs.deadline,
+            answers: rs.answers || {}, leaveCount: rs.leaveCount || 0, superseded: rs.superseded || 0,
+            submitted: !!rs.submitted, submittedAt: rs.submittedAt || '', status: rs.status,
+            results: (remote.score && remote.score.results) || undefined
+          }
+          saveSession(t.id, m[t.id])
+        }
+      }
+      sessions.value = m
+      return
+    }
+  } catch (e) { /* 服务不可达 → 继续回落 */ }
+
+  // ② 管理端创建（本地文件）
   try {
     const created = await createdExamsStore.load()
     if (Array.isArray(created) && created.length) {
       tasks.value = created
       dataSource.value = 'created'
+      return
     }
   } catch (e) { /* 存储不可用则用示例数据 */ }
+
+  // ③ 内置演示数据
+  dataSource.value = 'demo'
 }
+
+const SOURCE_LABEL = {
+  server: '已接入考核服务',
+  created: '已接入考核配置',
+  demo: '示例数据'
+}
+const sourceLabel = computed(() => SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo)
 
 onMounted(async () => {
   await loadTasks()
-  refresh()
+  if (dataSource.value !== 'server') refresh()
 })
 </script>
 

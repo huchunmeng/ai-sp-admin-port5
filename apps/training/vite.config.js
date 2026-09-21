@@ -564,6 +564,11 @@ export default defineConfig(({ mode }) => {
         '/api/training': {
           target: 'http://localhost:5100',
           changeOrigin: true
+        },
+        // 考核服务（services/exam-api，5110）：会话/计时/交卷/异步评阅
+        '/api/exam': {
+          target: 'http://localhost:5110',
+          changeOrigin: true
         }
       }
     }

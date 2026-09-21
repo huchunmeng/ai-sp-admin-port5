@@ -434,7 +434,9 @@ export default defineConfig(({ mode }) => {
       port: 5002,
       proxy: {
         '/api/training': 'http://localhost:5100',
-        '/api/score-report': 'http://localhost:5100'
+        '/api/score-report': 'http://localhost:5100',
+        // 考核服务（services/exam-api，5110）：管理端查成绩用
+        '/api/exam': { target: 'http://localhost:5110', changeOrigin: true }
       }
     }
   }

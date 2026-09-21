@@ -160,6 +160,11 @@ export default defineConfig(({ mode }) => ({
     'import.meta.env.VITE_APP_TRAINING_URL': JSON.stringify(process.env.VITE_APP_TRAINING_URL || ''),
   },
   server: {
-    port: 5003
+    port: 5003,
+    // 考核服务（services/exam-api，5110）：会话/计时/交卷/异步评阅。
+    // 目标用 localhost 而不是 127.0.0.1 —— 服务端是双栈监听，避免 Windows 上 IPv6/IPv4 解析不一致。
+    proxy: {
+      '/api/exam': { target: 'http://localhost:5110', changeOrigin: true }
+    }
   }
 }))

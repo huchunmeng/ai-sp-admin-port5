@@ -1,0 +1,10 @@
+{
+  "name": "ai-sp-exam-api",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "影像报告书写考核 · 服务端（限时可信 / 答卷入库 / 异步评阅 / 成绩入库）",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}

@@ -72,6 +72,11 @@
         <div class="card ex-card">
           <h2 class="ex-title"><i class="fa-solid fa-flag-checkered"></i> 已交卷</h2>
 
+          <div v-if="gradingState" class="ex-locked" :class="{ 'is-err': gradingState === 'failed' }">
+            <i class="fa-solid" :class="gradingState === 'failed' ? 'fa-circle-exclamation' : 'fa-spinner fa-spin'"></i>
+            {{ gradingState === 'failed' ? '评阅失败，请联系考务' : '答卷已提交，正在评阅…' }}
+          </div>
+
           <div v-if="!scoreOpen" class="ex-locked">
             <i class="fa-solid fa-lock"></i> {{ scoreHiddenText }}
           </div>
@@ -81,7 +86,7 @@
               <span class="ex-score-idx">{{ i + 1 }}</span>
               <span class="ex-score-title">{{ studentTitleOf(q.sample) }}</span>
               <span class="ex-score-val">
-                <i v-if="submitting && !resultOf(i)" class="fa-solid fa-spinner fa-spin"></i>
+                <i v-if="(submitting || gradingState === 'grading') && !resultOf(i)" class="fa-solid fa-spinner fa-spin"></i>
                 <template v-else-if="resultOf(i) && scoreOpen">{{ scoreTextOf(i) }}</template>
                 <template v-else>—</template>
               </span>
@@ -89,7 +94,7 @@
                 {{ passed(i) ? '达标' : '未达标' }}（{{ passLineLabel(i) }}）
               </span>
               <span v-else-if="!scoreOpen" class="text-secondary" style="font-size:12px">—</span>
-              <span v-else class="text-secondary" style="font-size:12px">{{ submitting ? '评阅中' : '评分失败' }}</span>
+              <span v-else class="text-secondary" style="font-size:12px">{{ (submitting || gradingState === 'grading') ? '评阅中' : '评分失败' }}</span>
               <button v-if="showDetail" class="btn btn-sm" :disabled="!resultOf(i)" @click="openReport(i)">成绩报告</button>
             </div>
           </div>
@@ -127,7 +132,7 @@ import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import { ImagePanel, SegmentForm, ScoreReportModal, useReportScoring } from '@ai-sp/shared/imaging-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
-import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, EXAM_SERVER } from '@ai-sp/shared/imaging-ui'
+import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, examApi } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 
 /**
@@ -156,14 +161,20 @@ const PRACTICE_SIZE = 1
 const PRACTICE_MIN = 30            // 练习考预设时长；正式考核对齐 S03 = 20 分钟（写在任务配置里）
 
 /**
- * 管理端创建的考核**不在静态清单里**（`taskById` 只查内置演示任务），需要异步补查。
- * 任务形状与静态任务完全一致，所以下面所有 computed 不用改。
+ * 任务可能不在内置清单里（管理端创建后写在 created-exams.json，或来自考核服务），需要异步补查。
+ * 顺序：考核服务 → 本地考核配置。任务形状一致，下面所有 computed 不用改。
  */
 async function ensureTaskLoaded() {
   if (task.value || !route.query.task) return
+  const id = route.query.task
+  try {
+    const r = await examApi.tasks()
+    const found = (r.tasks || []).find(t => t.id === id)
+    if (found) { task.value = found; return }
+  } catch (e) { /* 服务不可达 → 回落本地配置 */ }
   try {
     const list = await createdExamsStore.load()
-    const found = (Array.isArray(list) ? list : []).find(t => t.id === route.query.task)
+    const found = (Array.isArray(list) ? list : []).find(t => t.id === id)
     if (found) task.value = found
   } catch (e) { /* 读不到就按练习考处理 */ }
 }
@@ -201,7 +212,10 @@ const leaveCount = ref(0)
 const savedAt = ref(0)
 const superseded = ref(0)
 const resumeNotice = ref('')
+/** 服务端异步评阅状态：'' | 'grading' | 'failed' */
+const gradingState = ref('')
 let timer = null
+let pollTimer = null
 
 const segments = computed(() => WRITABLE_SEGMENTS)
 const currentSample = computed(() => paper.value[currentIndex.value]?.sample || {})
@@ -280,14 +294,52 @@ function exitFullscreenSafe() {
 /* ── 断线续答：会话落本地，deadline 开考时写入 → 刷新/重连不重置时钟（O2）── */
 function persist(patch = {}) {
   if (phase.value !== 'exam') return
+  // 服务端会话时，saveSession 内部会顺带把草稿 PATCH 上报（不阻塞作答）
   saveSession(sessionKey.value, {
     answers, deadline: deadline.value, leaveCount: leaveCount.value, ...patch
   })
   savedAt.value = Date.now()
-  EXAM_SERVER.save()   // 服务端契约占位（原型为空实现）
 }
 
-/** 恢复：已交卷 → 直接进成绩页；未到点 → 续答；否则返回 false 走新开考 */
+/**
+ * 服务端异步评阅：轮询出分。
+ * 这是"交卷后关页也不丢分"的前端一侧 —— 关页后成绩仍在服务端评阅并入库，
+ * 下次打开任务列表/考试室时再从服务端取回。
+ */
+function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null } }
+function pollServerScore(serverSessionId, { timeoutMs = 5 * 60 * 1000 } = {}) {
+  stopPoll()
+  gradingState.value = 'grading'
+  const startedAt = Date.now()
+  const tick = async () => {
+    const s = await examApi.score(serverSessionId)
+    if (s && s.results) {
+      Object.entries(s.results).forEach(([k, v]) => { results[k] = v })
+      saveSession(sessionKey.value, { results: { ...s.results } })
+    }
+    if (s && s.status === 'done') {
+      gradingState.value = ''
+      submitting.value = false
+      stopPoll()
+      return
+    }
+    if (s && s.status === 'failed') {
+      gradingState.value = 'failed'
+      submitting.value = false
+      stopPoll()
+      return
+    }
+    if (Date.now() - startedAt > timeoutMs) {
+      gradingState.value = 'failed'
+      submitting.value = false
+      stopPoll()
+    }
+  }
+  tick()
+  pollTimer = setInterval(tick, 2500)
+}
+
+/** 恢复：已交卷 → 直接进成绩页（必要时继续轮询服务端出分）；未到点 → 续答；否则返回 false 走新开考 */
 function restoreSession() {
   const s = loadSession(sessionKey.value)
   if (!s) return false
@@ -300,6 +352,12 @@ function restoreSession() {
     Object.entries(s.results || {}).forEach(([k, v]) => { results[k] = v })
     buildPaper()
     phase.value = 'done'
+    // 已交卷但本地没成绩 → 问服务端要（换设备/关页重进都靠这条）
+    if (!Object.keys(s.results || {}).length) {
+      submitting.value = true
+      if (s.serverSessionId) pollServerScore(s.serverSessionId)
+      else submitting.value = false
+    }
     return true
   }
   if (s.deadline > Date.now()) {
@@ -348,7 +406,13 @@ const showDetail = computed(() => scoreCfg.value.content !== 'total')
 
 async function startExam() {
   if (!paper.value.length) buildPaper()
-  const { session, adopted } = await startOrResume(sessionKey.value, durationMin.value, answers)
+  const { session, adopted, server, serverError } = await startOrResume(sessionKey.value, durationMin.value, answers, {
+    taskId: task.value ? task.value.id : '',
+    candidateId: ''
+  })
+  if (serverError) {
+    toast.show(serverError.message || '服务端拒绝了本次开考', 'warning', 3000)
+  }
   deadline.value = session.deadline
   leaveCount.value = session.leaveCount || 0
   superseded.value = session.superseded || 0
@@ -356,6 +420,14 @@ async function startExam() {
     Object.assign(answers, session.answers || {})   // 接管别处的作答内容（单点作答 O3）
     resumeNotice.value = '该考次已在别处继续作答，本页已接管（已留痕）'
     toast.show(resumeNotice.value, 'warning', 3000)
+  }
+  // 服务端说这份会话已交卷（比如别处已交/到点结算）→ 直接进成绩页并向服务端取分
+  if (session.submitted) {
+    phase.value = 'done'
+    submittedAt.value = String(session.submittedAt || '').slice(0, 16).replace('T', ' ')
+    submitting.value = true
+    if (session.serverSessionId) pollServerScore(session.serverSessionId)
+    return
   }
   phase.value = 'exam'
   now.value = Date.now()
@@ -401,12 +473,20 @@ async function doSubmit() {
   submitting.value = true
   submittedAt.value = new Date().toISOString().slice(0, 16).replace('T', ' ')
   exitFullscreenSafe()
-  // ① **先锁定答卷**：交卷即刻入库（服务端契约：POST /submit）。
+  // ① **先锁定答卷**：本地立刻记"已交卷"，同时上报服务端（服务端先落库再异步评阅）。
   //    评阅是异步的，评分失败/中途关页都不能让"已交卷"这件事本身丢掉。
-  submitSession(sessionKey.value, {
+  const submitted = await submitSession(sessionKey.value, {
     answers, leaveCount: leaveCount.value, deadline: deadline.value
   })
-  // ② 再逐题评分并回填成绩
+  // ②a 服务端可用 → 交给服务端评阅，前端只轮询出分（**关页也不丢分**）
+  if (submitted.server && submitted.serverSessionId) {
+    pollServerScore(submitted.serverSessionId)
+    return
+  }
+  // ②b 服务端不可达 → 回落前端评分（原路径，保证没起服务也能用）
+  if (submitted.serverError) {
+    toast.show('评阅服务不可达，已改用本机评分', 'warning', 3000)
+  }
   const collected = {}
   for (let i = 0; i < paper.value.length; i++) {
     const q = paper.value[i]
@@ -429,6 +509,8 @@ function openReport(i) { reportIndex.value = i }
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
 function restart() {
   clearSession(sessionKey.value)
+  stopPoll()
+  gradingState.value = ''
   paper.value = []
   Object.keys(answers).forEach(k => delete answers[k])
   Object.keys(results).forEach(k => delete results[k])
@@ -451,6 +533,7 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   stopTick()
+  stopPoll()
   document.removeEventListener('visibilitychange', onVisible)
   window.removeEventListener('blur', onBlur)
   try { exitFullscreenSafe() } catch (e) { /* ignore */ }
@@ -499,6 +582,8 @@ onUnmounted(() => {
   padding: 10px 14px; margin-bottom: 12px; border-radius: 8px;
   font-size: 12.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
 }
+/* 评阅失败：同一位置换警示色，避免考生以为是"还没出分" */
+.ex-locked.is-err { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
 .ex-bar .btn { margin-left: auto; }
 .ex-main { display: flex; flex-direction: column; gap: 16px; max-width: 1400px; margin: 0 auto; }
 

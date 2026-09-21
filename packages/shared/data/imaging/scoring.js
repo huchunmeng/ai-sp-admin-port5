@@ -294,6 +294,50 @@ export function prepareScoring({ sample, reportText, scope = COMMENT_SCOPE.EXAM 
 export const SCORING_FAILED_TEXT = '这次评分没跑成功，可以稍后重试'
 
 /* ══════════════════════════════════════════════════════════════
+   考务口径的分数与达标判定（**浏览器端与服务端共用同一份实现**）
+   —— 放在 shared 的纯逻辑层，服务端评阅与前端展示才不会各算一套。
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * 给评分结果补上**考务口径**的分数与达标判定（两侧展示统一读这几个字段）。
+ *
+ * 量纲由 `scoreScale` 定死：
+ *   · `normalize` → 百分制：finalMax = 100，finalScore = rawTotal / scoreableMax × 100
+ *   · `raw`       → 本卷可评满分量纲：finalMax = scoreableMax，finalScore = rawTotal
+ * `scoreableMax` 为 0（不可评）时不做除法，直接回落 raw，避免除零。
+ *
+ * 达标线：有考务设定（`passLine` 传了数字）就用它，并把难度标定原值留在 `rubricPassLine`；
+ * 没传（练习考）保持难度标定值 —— 两种情况都写 `passLineSource`，便于界面区分文案。
+ *
+ * @param {object} result composeScore 的结果
+ * @param {number|string|null} passLine 考务设定的达标线
+ * @param {'normalize'|'raw'} scoreScale 满分口径
+ */
+export function applyExamScale(result, passLine, scoreScale) {
+  if (!result || typeof result !== 'object') return result
+  const rawTotal = Number(result.rawTotal) || 0
+  const scoreableMax = Number(result.scoreableMax) || 0
+  let finalScore = rawTotal
+  let finalMax = scoreableMax
+  if (scoreScale === 'normalize' && scoreableMax > 0) {
+    finalMax = 100
+    finalScore = Math.round(rawTotal / scoreableMax * 1000) / 10
+  }
+  const hasExamLine = passLine !== null && passLine !== undefined && passLine !== '' && !isNaN(Number(passLine))
+  const rubricPassLine = typeof result.passLine === 'number' ? result.passLine : null
+  const line = hasExamLine ? Number(passLine) : rubricPassLine
+  return {
+    ...result,
+    finalScore,
+    finalMax,
+    rubricPassLine,
+    passLine: line,
+    passLineSource: hasExamLine ? 'exam' : 'rubric',
+    passed: typeof line === 'number' ? finalScore >= line : null
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
    要点集抽取（管理端「AI 从金标准抽取」用）
    —— 这是要点集的**产出工艺**：模型先抽一版，教研再改。
    ══════════════════════════════════════════════════════════════ */

@@ -19,5 +19,7 @@ export { sendLlm } from './llm.js'
 
 export {
   EXAM_SERVER, currentClientId, loadSession, saveSession, startOrResume, submitSession,
-  clearSession, remainingSec, sessionStateOf, useExamSession
+  clearSession, remainingSec, sessionStateOf, useExamSession,
+  // 考核服务（services/exam-api）客户端：任务列表 / 会话查询 / 评阅轮询 / 成绩
+  examApi, probeExamServer, invalidateExamServerProbe
 } from './useExamSession.js'

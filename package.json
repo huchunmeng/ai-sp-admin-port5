@@ -17,6 +17,7 @@
     "dev:exam": "npm run dev --workspace=ai-sp-exam",
     "dev:app-training": "npm run dev --workspace=ai-sp-app-training",
     "dev:ops": "npm run dev --workspace=ai-sp-ops",
+    "dev:exam-api": "node services/exam-api/src/index.js",
     "build:admin": "npm run build --workspace=ai-sp-admin",
     "build:training": "npm run build --workspace=ai-sp-training",
     "build:exam": "npm run build --workspace=ai-sp-exam",
