@@ -40,11 +40,12 @@
       </div>
 
       <!-- 页签：把「得分明细」与「报告对照」分开，不再一路往下堆 -->
+      <!-- ⚠️ 练习考/考核模式必须 hideCompare —— 交卷后给参考报告 = 泄题给下一批（见考核侧方案 §3.5） -->
       <div class="sr-tabs">
         <button class="sr-tab" :class="{ active: tab === 'points' }" @click="tab = 'points'">
           <i class="fa-solid fa-list-check"></i> 得分明细
         </button>
-        <button class="sr-tab" :class="{ active: tab === 'compare' }" @click="tab = 'compare'">
+        <button v-if="!hideCompare" class="sr-tab" :class="{ active: tab === 'compare' }" @click="tab = 'compare'">
           <i class="fa-solid fa-file-lines"></i> 报告对照
         </button>
       </div>
@@ -53,7 +54,7 @@
         <div v-show="tab === 'points'" class="sr-pane">
           <ScoreResultPanel :scoring="scoring" @score="$emit('score')" @retry="$emit('score')" @appeal="$emit('appeal', $event)" />
         </div>
-        <div v-show="tab === 'compare'" class="sr-pane">
+        <div v-if="!hideCompare" v-show="tab === 'compare'" class="sr-pane">
           <ComparePanel :draft="draft" :sample="sample" />
         </div>
       </div>
@@ -86,7 +87,9 @@ const props = defineProps({
   /** 样单元数据（对照区需要 goldStandard） */
   sample: { type: Object, required: true },
   title: { type: String, default: '' },
-  submittedAt: { type: String, default: '' }
+  submittedAt: { type: String, default: '' },
+  /** 练习考/考核模式：隐藏「报告对照」页签（交卷后给参考报告 = 泄题给下一批） */
+  hideCompare: { type: Boolean, default: false }
 })
 defineEmits(['close', 'score', 'appeal', 'edit', 'restart'])
 
@@ -192,6 +195,7 @@ const pct = (got, full) => (full ? Math.round(got / full * 100) : 0) + '%'
   cursor: pointer; color: #6b7280;
 }
 .sr-tab:hover { color: var(--primary); }
+.sr-tab.is-static { cursor: default; font-weight: 700; color: var(--primary); border-bottom-color: var(--primary); }
 .sr-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
 
 .sr-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 18px 18px; }
