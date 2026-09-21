@@ -1,6 +1,6 @@
 <template>
   <div class="et-page">
-    <TrainingTopBar station-name="我的考核任务" :hide-timer="true" />
+    <TrainingTopBar station-name="我的考核任务" hide-timer hide-end formatted-time="" />
 
     <div class="et-head">
       <h2 class="et-title"><i class="fa-solid fa-clipboard-list"></i> 我的考核任务</h2>

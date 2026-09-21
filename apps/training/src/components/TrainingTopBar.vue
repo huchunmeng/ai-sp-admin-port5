@@ -55,7 +55,7 @@
     </div>
     <div class="topbar-right">
       <span v-if="!hideTimer" class="timer" :class="timerClass">{{ formattedTime }}</span>
-      <button class="end-btn" :class="{ 'next-btn': endIcon === 'fa-arrow-right' }" @click="$emit('end')">
+      <button v-if="!hideEnd" class="end-btn" :class="{ 'next-btn': endIcon === 'fa-arrow-right' }" @click="$emit('end')">
         <i :class="'fa-solid ' + endIcon"></i> {{ endLabel }}
       </button>
     </div>
@@ -80,6 +80,8 @@ const props = defineProps({
   langLabel: { type: String, default: 'EN' },
   hideStepNumber: { type: Boolean, default: false },
   hideTimer: { type: Boolean, default: false },
+  /** 隐藏右上角结束按钮：考核类页面（我的考核任务 / 考试室）用它 —— 那些页面的主动作是「交卷」，不是「结束训练」 */
+  hideEnd: { type: Boolean, default: false },
   allowAdvance: { type: Boolean, default: true },
   flowSteps: { type: Array, default: null },
   flowStepIndex: { type: Number, default: 0 },

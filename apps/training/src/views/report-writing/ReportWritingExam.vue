@@ -1,6 +1,6 @@
 <template>
   <div class="ex-page">
-    <TrainingTopBar :station-name="phase === 'intro' ? pageTitle : (task ? '考核进行中' : '练习考进行中')" :hide-timer="true" />
+    <TrainingTopBar :station-name="phase === 'intro' ? pageTitle : (task ? '考核进行中' : '练习考进行中')" hide-timer hide-end formatted-time="" />
 
     <!-- ══ 开始前：考试须知 ══ -->
     <div v-if="phase === 'intro'" class="ex-intro">
@@ -428,6 +428,8 @@ onUnmounted(() => {
   padding: 10px 18px; margin-bottom: 14px; border-radius: 10px;
   background: #fff; border: 1px solid var(--border);
   position: sticky; top: 60px; z-index: 30;
+  /* 与训练工作台同一基准宽度，宽屏下不横满屏 */
+  max-width: 1400px; margin-left: auto; margin-right: auto;
 }
 .ex-timer { font-size: 16px; font-weight: 700; color: #1f2937; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 6px; }
 .ex-timer.is-urgent { color: #dc2626; }
@@ -438,7 +440,7 @@ onUnmounted(() => {
 .ex-mode i { color: #9ca3af; font-size: 11.5px; }
 .ex-saved { font-size: 11.5px; color: #15803d; display: inline-flex; align-items: center; gap: 5px; }
 .ex-takenover {
-  max-width: 980px; margin: 0 auto 12px;
+  max-width: 1400px; margin: 0 auto 12px;
   display: flex; align-items: center; gap: 8px;
   padding: 9px 14px; border-radius: 8px; font-size: 12.5px;
   color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
@@ -449,7 +451,7 @@ onUnmounted(() => {
   font-size: 12.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a;
 }
 .ex-bar .btn { margin-left: auto; }
-.ex-main { display: flex; flex-direction: column; gap: 16px; }
+.ex-main { display: flex; flex-direction: column; gap: 16px; max-width: 1400px; margin: 0 auto; }
 
 .ex-scores { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .ex-score-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #f5f7fa; font-size: 13px; }
