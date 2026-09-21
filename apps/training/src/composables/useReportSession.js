@@ -17,7 +17,7 @@ import { MOCK_PRACTICE_RECORDS } from '@/data/mockPracticeRecords.js'
 import { computed, reactive, ref, watch } from 'vue'
 import { SEGMENTS, WRITABLE_SEGMENTS } from '@ai-sp/shared/imaging'
 import { useReportCompanion } from './useReportCompanion'
-import { useReportScoring } from './useReportScoring'
+import { useReportScoring } from '@ai-sp/shared/imaging-ui'
 
 const SESSION_KEY = 'report_writing_session_v1'
 const STATS_KEY = 'report_writing_stats_v1'

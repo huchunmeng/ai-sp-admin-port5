@@ -97,7 +97,7 @@ import { useRouter } from 'vue-router'
 import { confirm } from '@ai-sp/shared'
 import { getImagingSample } from '@ai-sp/shared/imaging'
 import { readPracticeRecords, loadMockRecords } from '@/composables/useReportSession'
-import ScoreReportModal from './ScoreReportModal.vue'
+import { ScoreReportModal } from '@ai-sp/shared/imaging-ui'
 
 const router = useRouter()
 

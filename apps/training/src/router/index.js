@@ -38,7 +38,8 @@ const routes = [
       { path: 'report-writing/train/:caseId', name: 'reportWritingWorkbench', component: () => import('@/views/report-writing/ReportWritingWorkbench.vue') },
       // 训练记录已并入列表页，旧深链重定向过去
       { path: 'report-writing/records', redirect: { name: 'reportWritingTrain', query: { tab: 'records' } } },
-      // 考核侧本期未实现，保留可达的占位骨架（避免首页与在线考试页的入口 404）
+      // 考核侧：老师派发后学生在此看到「我的考核任务」，进入考试室作答
+      { path: 'report-writing/exam-tasks', name: 'reportWritingExamTasks', component: () => import('@/views/report-writing/ReportWritingExamTasks.vue') },
       { path: 'report-writing/exam', name: 'reportWritingExam', component: () => import('@/views/report-writing/ReportWritingExam.vue') },
       { path: 'mooc/:module', name: 'moocModule', component: () => import('@/views/MoocModuleView.vue') },
       { path: 'exam-center', name: 'examCenter', component: () => import('@/views/ExamCenter.vue') },

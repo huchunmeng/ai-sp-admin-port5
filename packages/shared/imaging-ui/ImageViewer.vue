@@ -5,7 +5,8 @@
       <div class="rwb-tool-group">
         <span class="rwb-tool-label">窗宽窗位</span>
         <button v-for="w in windowPresets" :key="w.WW + '-' + w.WL" class="rwb-tool-btn"
-                :class="{ active: isActiveWindow(w) }" :title="`W ${w.WW} · L ${w.WL}`"
+                :class="{ active: isActiveWindow(w) }" :disabled="rawUnsupported"
+                :title="rawUnsupported ? '当前浏览器不支持 16 位影像解码' : `W ${w.WW} · L ${w.WL}`"
                 @click="applyWindow(w)">{{ w.name }}</button>
       </div>
       <div class="rwb-tool-sep"></div>
@@ -94,6 +95,12 @@
               <span class="rwb-demo-mark"></span>
             </div>
           </template>
+
+          <!-- O5 降级：不能解码 16-bit 时明确告知，而不是把压缩字节当像素画成噪点 -->
+          <div v-if="rawUnsupported" class="rwb-rawfallback">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>当前浏览器不支持 16 位影像解码，本序列仅可浏览；窗宽窗位与测量不可用</span>
+          </div>
 
           <!-- 四角叠加：真实阅片的信息布局 -->
           <div class="rwb-ov rwb-ov-tl">
@@ -198,6 +205,8 @@ function applyWindow(w) {
   if (activeView.value) windowOverride[activeView.value.key] = { WW: w.WW, WL: w.WL }
 }
 /** 该序列是否带原始 16-bit 像素（带则走 canvas 真窗宽窗位） */
+/** 浏览器不支持 16-bit 解码时的降级标记（O5：在线考试无法约束浏览器） */
+const rawUnsupported = ref(false)
 const hasRaw = computed(() => !!(activeView.value && activeView.value.raw))
 /** canvas 尺寸用当前序列的原始像素尺寸 */
 const rawMeta = computed(() => {
@@ -206,6 +215,7 @@ const rawMeta = computed(() => {
 })
 /** 有像素间距才能把像素长度换算成毫米 */
 const canMeasure = computed(() => {
+  if (rawUnsupported.value) return false
   const r = (activeView.value && activeView.value.raw) || null
   return !!(r && r.pixelSpacing && r.pixelSpacing[0])
 })
@@ -226,6 +236,38 @@ function rawUrlOf(vi) {
   return r.pattern.replace('%03d', String(layerOf(vi)).padStart(3, '0'))
 }
 
+/**
+ * gzip 解压三级降级（O5）：
+ *   ① 浏览器原生 `DecompressionStream`（Chrome 80+ / Safari 16.4+ / Firefox 113+）
+ *   ② 原生不可用时按需加载 `pako`（不进主包，只在这类浏览器上多下一次请求）
+ *   ③ 都不可用返回 null —— 调用方转成"仅可浏览"的只读降级，**绝不把压缩字节当像素画**
+ */
+let pakoMod = null
+async function inflateGzip(u8) {
+  if (typeof DecompressionStream === 'function') {
+    try {
+      const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'))
+      return new Uint8Array(await new Response(stream).arrayBuffer())
+    } catch (e) { /* 落到 pako */ }
+  }
+  try {
+    if (!pakoMod) pakoMod = await import('pako')
+    const pako = pakoMod.default || pakoMod
+    return pako.inflate(u8)
+  } catch (e) {
+    return null
+  }
+}
+
+/** gzip 字节 → Int16Array 像素；无法解码时返回 null */
+async function decodeRaw(buf) {
+  const u8 = new Uint8Array(buf)
+  const isGzip = u8.length > 2 && u8[0] === 0x1f && u8[1] === 0x8b
+  const out = isGzip ? await inflateGzip(u8) : u8   // 服务端若已解压则直接按像素读
+  if (!out) return null
+  return new Int16Array(out.buffer, out.byteOffset, Math.floor(out.byteLength / 2))
+}
+
 /** 取一帧原始像素：先查缓存，否则下载 .bin.gz 并解压 */
 async function fetchPixels(vi) {
   const v = views.value[vi]
@@ -234,13 +276,8 @@ async function fetchPixels(vi) {
   if (rawCache.has(ck)) return rawCache.get(ck)
   const resp = await fetch(rawUrlOf(vi))
   if (!resp.ok) return null
-  let buf
-  if (typeof DecompressionStream === 'function') {
-    buf = await new Response(resp.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
-  } else {
-    buf = await resp.arrayBuffer()   // 兜底：万一服务端已解压
-  }
-  const px = new Int16Array(buf)
+  const px = await decodeRaw(await resp.arrayBuffer())
+  if (!px) { rawUnsupported.value = true; return null }
   rawCache.set(ck, px)
   return px
 }
@@ -317,6 +354,7 @@ function measureEnd() {
 
 function resetView() {
   Object.keys(windowOverride).forEach(k => delete windowOverride[k])
+  rawUnsupported.value = false
   layer[activeView.value && activeView.value.key] = 1
   measures.value = []
   resetZoom()
@@ -566,6 +604,16 @@ watch([activeIndex, () => layer[activeView.value && activeView.value.key], curre
 }
 .rwb-canvas.is-zoom { cursor: grab; }
 .rwb-canvas.is-zoom:active { cursor: grabbing; }
+/* O5：16-bit 解码不可用时的只读降级提示 */
+.rwb-rawfallback {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 3; max-width: 300px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 18px; border-radius: 8px;
+  background: rgba(15, 23, 42, 0.86); color: #fcd34d;
+  font-size: 12px; line-height: 1.6;
+}
+.rwb-rawfallback i { font-size: 18px; }
 /* 缩放 / 平移层：以画面中心为锚点，四角信息与工具栏不受影响 */
 .rwb-stage { position: relative; transform-origin: center center; will-change: transform; }
 .rwb-pixel { max-width: 100%; max-height: 460px; object-fit: contain; display: block; }

@@ -47,12 +47,10 @@ import { toast, confirm } from '@ai-sp/shared'
 import { getImagingSample, scoreableOf, hasGoldStandard } from '@ai-sp/shared/imaging'
 import { useReportSession } from '@/composables/useReportSession'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
-import ImagePanel from './components/ImagePanel.vue'
-import SegmentForm from './components/SegmentForm.vue'
+import { ImagePanel, SegmentForm, ScoreReportModal } from '@ai-sp/shared/imaging-ui'
 import { DEIDENTIFY_ROWS, studentTitleOf } from '@ai-sp/shared/imaging'
 import NotesPanel from './components/NotesPanel.vue'
 import CompanionPanel from './components/CompanionPanel.vue'
-import ScoreReportModal from './components/ScoreReportModal.vue'
 
 const route = useRoute()
 const router = useRouter()

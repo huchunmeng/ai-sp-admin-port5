@@ -178,3 +178,6 @@ export function trainingCardOf(sample, stat) {
     lastAt: s.lastPracticedAt || null
   }
 }
+
+// ── 考核侧：老师派发的考核任务（学员端与考试端共用同一份数据契约）──
+export { EXAM_TASKS, EXAM_MODE, EXAM_MODE_LABEL, WINDOW_LABEL, taskById, windowStateOf, onsiteTaskAt } from './examTasks.js'

@@ -61,7 +61,7 @@ const EXAM_ITEMS = [
   {
     key: 'report',
     title: '影像报告书写考核',
-    desc: '不给提示，按标准报告评定书写质量',
+    desc: '老师派发后作答，不给提示，按标准报告评定书写质量',
     platform: '本系统内置影像数据',
     icon: 'fa-clipboard-check',
     tint: '#eef2ff',
@@ -76,7 +76,8 @@ function open(item) {
     window.open(item.url, '_blank', 'noopener,noreferrer')
     return
   }
-  router.push({ name: 'reportWritingExam' })
+  // 考核由老师派发 → 先到「我的考核任务」，不直接进考试室
+  router.push({ name: 'reportWritingExamTasks' })
 }
 </script>
 

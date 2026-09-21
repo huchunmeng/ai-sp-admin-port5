@@ -21,7 +21,9 @@ const routes = [
       { path: 'scoring', name: 'scoring', component: () => import('@/views/Scoring.vue') },
       { path: 'ex-select', name: 'ex-select', component: () => import('@/views/ExSelect.vue') },
       { path: 'ex-pending', name: 'ex-pending', component: () => import('@/views/ExPending.vue') },
-      { path: 'load-fail', name: 'load-fail', component: () => import('@/views/LoadFail.vue') }
+      { path: 'load-fail', name: 'load-fail', component: () => import('@/views/LoadFail.vue') },
+      // 影像报告书写站（现场考站机）：学号/工号 + 考试码 → 须知 → 作答 → 交卷
+      { path: 'report-writing', name: 'report-writing', component: () => import('@/views/report-writing/ReportWritingStation.vue') }
     ]
   }
 ]
