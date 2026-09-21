@@ -135,8 +135,9 @@ function switchVersion(v) {
 const stationRoutes = ['historyTaking', 'physicalExam', 'ancillaryTests', 'diagnosis', 'treatmentPlan', 'medicalRecord', 'caseAnalysis', 'humanisticComm', 'mentalExam']
 
 // 「无壳页」：隐藏全局页头与面包屑，页面自带 TrainingTopBar（与病史采集/体格检查同一套框架）。
-// 影像报告书写的工作台按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
-const reportWritingStationRoutes = ['reportWritingWorkbench']
+// 影像报告书写的**作答与考核页**都按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
+// 考核侧同样无壳：我的考核任务 / 考试室都自带 TrainingTopBar，否则会出现"全局页头 + 页面 TopBar"双层头。
+const reportWritingStationRoutes = ['reportWritingWorkbench', 'reportWritingExamTasks', 'reportWritingExam']
 const chromelessRoutes = [...stationRoutes, ...reportWritingStationRoutes]
 
 const isStationRoute = computed(function() {
