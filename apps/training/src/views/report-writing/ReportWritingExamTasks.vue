@@ -6,17 +6,12 @@
         <h2 class="et-hero-title"><i class="fa-solid fa-clipboard-list"></i> 我的考核任务</h2>
         <p class="et-hero-sub">老师派发的考核 · 当前考生 {{ examNumber || '—' }}</p>
       </div>
-      <div class="et-hero-side">
-        <div class="et-stat"><strong>{{ stats.todo }}</strong><span>待完成</span></div>
-        <div class="et-stat"><strong>{{ stats.done }}</strong><span>已完成</span></div>
-        <button class="btn btn-primary et-practice" @click="goPractice">
-          <i class="fa-solid fa-dumbbell"></i>
-          <span class="et-practice-text">做练习考<em>不计成绩</em></span>
-        </button>
-      </div>
+      <button class="btn btn-primary et-practice" @click="goPractice">
+        <i class="fa-solid fa-pen-to-square"></i> 做练习考
+      </button>
     </div>
 
-    <!-- ══ 筛选 ══ -->
+    <!-- ══ 筛选：列表内**不再另起分组标题**（会和这里重复）══ -->
     <div class="et-tabs">
       <button v-for="t in TABS" :key="t.key" class="et-tab" :class="{ active: tab === t.key }" @click="tab = t.key">
         {{ t.label }}<span class="et-tab-n">{{ countOf(t.key) }}</span>
@@ -24,75 +19,63 @@
       <span class="et-source">{{ sourceLabel }}</span>
     </div>
 
-    <!-- ══ 列表：待完成在前，已完成可折叠（记录多了也不会把上面的入口顶下去）══ -->
-    <div v-if="listRows.length" class="et-list">
-      <template v-for="item in listRows" :key="item.key">
-        <button v-if="item.head && item.head.toggle" class="et-sec-head is-toggle" @click="showDone = !showDone">
-          <i class="fa-solid" :class="showDone ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-          已完成 <span class="et-sec-n">{{ item.head.n }}</span>
-          <span class="et-sec-tip">{{ showDone ? '收起' : '展开' }}</span>
-        </button>
-        <div v-else-if="item.head" class="et-sec-head">
-          <i class="fa-solid" :class="item.head.icon"></i>
-          {{ item.head.label }} <span class="et-sec-n">{{ item.head.n }}</span>
-        </div>
+    <div v-if="filteredRows.length" class="et-list">
+      <article v-for="r in filteredRows" :key="r.task.id" class="card et-card"
+               :class="{ 'is-done': r.state.key === 'submitted' }">
+        <div class="et-card-main">
+          <div class="et-card-title">{{ r.task.name }}</div>
+          <div class="et-scheme">{{ r.task.scheme }}</div>
 
-        <article v-else class="card et-card" :class="{ 'is-done': item.row.state.key === 'submitted' }">
-          <div class="et-card-main">
-            <div class="et-card-head">
-              <span class="et-card-title">{{ item.row.task.name }}</span>
-              <span class="et-state" :class="'is-' + item.row.state.key">{{ item.row.state.label }}</span>
-            </div>
-            <div class="et-scheme">{{ item.row.task.scheme }}</div>
-
-            <div class="et-facts">
-              <span class="et-fact"><i class="fa-solid fa-laptop-medical"></i> {{ modeLabel(item.row.task.examMode) }}</span>
-              <span class="et-fact"><i class="fa-solid fa-list-ol"></i> {{ questionCountOf(item.row.task) }} 题 · {{ fullScoreLabel(item.row.task) }}</span>
-              <span class="et-fact"><i class="fa-regular fa-clock"></i> {{ item.row.task.durationMin }} 分钟</span>
-              <span class="et-fact"><i class="fa-solid fa-bullseye"></i> 达标线 {{ item.row.task.passLine }} 分</span>
-              <span v-if="remainTip(item.row)" class="et-fact is-urgent">
-                <i class="fa-solid fa-hourglass-half"></i> {{ remainTip(item.row) }}
-              </span>
-            </div>
-
-            <div class="et-window">
-              考试窗口 {{ item.row.task.windowStart }} — {{ item.row.task.windowEnd }}
-              <span class="et-by">· {{ item.row.task.dispatchedBy }} 派发于 {{ item.row.task.dispatchedAt }}</span>
-            </div>
-          </div>
-
-          <div class="et-card-side">
-            <div v-if="item.row.session && item.row.session.submitted" class="et-score">
-              <template v-if="item.row.scoreVisible">
-                <span class="et-score-val">{{ item.row.scoreText }}</span>
-                <span v-if="item.row.passText" class="et-pass" :class="item.row.passed ? 'is-ok' : 'is-no'">
-                  {{ item.row.passText }}
-                </span>
-              </template>
-              <span v-else class="et-score-hidden">
-                <i class="fa-solid fa-lock"></i> {{ item.row.hiddenReason }}
-              </span>
-            </div>
-
-            <button v-if="item.row.state.key === 'inProgress'" class="btn btn-primary btn-sm" @click="enter(item.row.task)">
-              <i class="fa-solid fa-play"></i> 继续作答
-            </button>
-            <button v-else-if="item.row.state.key === 'pending'" class="btn btn-primary btn-sm" @click="enter(item.row.task)">
-              <i class="fa-solid fa-file-pen"></i> 进入考试
-            </button>
-            <button v-else-if="item.row.state.key === 'submitted'" class="btn btn-sm" @click="enter(item.row.task)">
-              <i class="fa-solid fa-flag-checkered"></i> 查看成绩
-            </button>
-            <button v-else class="btn btn-sm" disabled>
-              {{ item.row.state.key === 'notStarted' ? '未开始' : '已结束' }}
-            </button>
-
-            <span v-if="item.row.session && item.row.session.superseded" class="et-warn">
-              <i class="fa-solid fa-triangle-exclamation"></i> 该考次在别处继续过 {{ item.row.session.superseded }} 次
+          <div class="et-facts">
+            <span class="et-fact"><i class="fa-solid fa-laptop-medical"></i> {{ modeLabel(r.task.examMode) }}</span>
+            <span class="et-fact"><i class="fa-solid fa-list-ol"></i> {{ questionCountOf(r.task) }} 题 · {{ fullScoreLabel(r.task) }}</span>
+            <span class="et-fact"><i class="fa-regular fa-clock"></i> {{ r.task.durationMin }} 分钟</span>
+            <span class="et-fact"><i class="fa-solid fa-bullseye"></i> 达标线 {{ r.task.passLine }} 分</span>
+            <span v-if="remainTip(r)" class="et-fact is-urgent">
+              <i class="fa-solid fa-hourglass-half"></i> {{ remainTip(r) }}
             </span>
           </div>
-        </article>
-      </template>
+
+          <div class="et-window">
+            考试窗口 {{ r.task.windowStart }} — {{ r.task.windowEnd }}
+            <span class="et-by">· {{ r.task.dispatchedBy }} 派发于 {{ r.task.dispatchedAt }}</span>
+          </div>
+        </div>
+
+        <!-- 右侧一列：状态徽标 → 成绩 → 主动作（状态不再挤在标题行） -->
+        <div class="et-card-side">
+          <span class="et-state" :class="'is-' + r.state.key">{{ r.state.label }}</span>
+
+          <div v-if="r.session && r.session.submitted" class="et-score">
+            <template v-if="r.scoreVisible">
+              <span class="et-score-val">{{ r.scoreText }}</span>
+              <span v-if="r.passText" class="et-pass" :class="r.passed ? 'is-ok' : 'is-no'">
+                {{ r.passText }}
+              </span>
+            </template>
+            <span v-else class="et-score-hidden">
+              <i class="fa-solid fa-lock"></i> {{ r.hiddenReason }}
+            </span>
+          </div>
+
+          <button v-if="r.state.key === 'inProgress'" class="btn btn-primary btn-sm" @click="enter(r.task)">
+            <i class="fa-solid fa-play"></i> 继续作答
+          </button>
+          <button v-else-if="r.state.key === 'pending'" class="btn btn-primary btn-sm" @click="enter(r.task)">
+            <i class="fa-solid fa-file-pen"></i> 进入考试
+          </button>
+          <button v-else-if="r.state.key === 'submitted'" class="btn btn-sm" @click="enter(r.task)">
+            <i class="fa-solid fa-flag-checkered"></i> 查看成绩
+          </button>
+          <button v-else class="btn btn-sm" disabled>
+            {{ r.state.key === 'notStarted' ? '未开始' : '已结束' }}
+          </button>
+
+          <span v-if="r.session && r.session.superseded" class="et-warn">
+            <i class="fa-solid fa-triangle-exclamation"></i> 该考次在别处继续过 {{ r.session.superseded }} 次
+          </span>
+        </div>
+      </article>
     </div>
 
     <!-- ══ 空态 ══ -->
@@ -100,7 +83,7 @@
       <i class="fa-regular fa-folder-open"></i>
       <p>{{ emptyText }}</p>
       <button class="btn btn-primary" @click="goPractice">
-        <i class="fa-solid fa-dumbbell"></i> 去做练习考（不计成绩）
+        <i class="fa-solid fa-pen-to-square"></i> 去做练习考
       </button>
     </div>
   </div>
@@ -180,7 +163,8 @@ function scoreOf(task, session) {
   }
 }
 
-const rows = computed(() => visibleTasks.value.map(task => {  const session = sessions.value[task.id] || null
+const rows = computed(() => visibleTasks.value.map(task => {
+  const session = sessions.value[task.id] || null
   const win = windowStateOf(task)
   const ss = sessionStateOf(task, session)
   let state = STATE.pending
@@ -197,21 +181,19 @@ const rows = computed(() => visibleTasks.value.map(task => {  const session = se
   }
 }))
 
-/* ── 主界面交互：分段筛选 + 待完成/已完成分组 + 已完成可折叠 ──
-   设计意图：**练习考入口固定在页头**（见模板 .et-hero），所以任务再多也不会把它挤到看不见；
-   已完成属于历史，默认折叠（只有一两条时自动展开），避免列表越堆越长。 */
+/* ── 主界面交互：分段筛选 ──
+   练习考入口固定在页头（见模板 .et-hero），任务再多也不会把它挤下去；
+   列表内**不再另起分组标题**（"待考/已考/全部"已经由上面的页签表达，重复了）。 */
 const TABS = [
-  { key: 'todo', label: '待完成' },
-  { key: 'done', label: '已完成' },
+  { key: 'todo', label: '待考' },
+  { key: 'done', label: '已考' },
   { key: 'all', label: '全部' }
 ]
 const tab = ref('all')
-const showDone = ref(true)
 
 const isDone = r => r.state.key === 'submitted'
 const todoRows = computed(() => rows.value.filter(r => !isDone(r)))
 const doneRows = computed(() => rows.value.filter(isDone))
-const stats = computed(() => ({ todo: todoRows.value.length, done: doneRows.value.length }))
 
 function countOf(key) {
   if (key === 'todo') return todoRows.value.length
@@ -219,26 +201,13 @@ function countOf(key) {
   return rows.value.length
 }
 
+/** 排序：可操作的（作答中 / 待作答 / 未开始）在前，已交卷/已结束在后；组内保持原顺序 */
+const STATE_ORDER = { inProgress: 0, pending: 1, notStarted: 2, submitted: 3, expired: 4 }
 const filteredRows = computed(() => {
-  if (tab.value === 'todo') return todoRows.value
-  if (tab.value === 'done') return doneRows.value
-  return rows.value
-})
-
-/** 两组之间插一个分组标题；已完成组折叠时只留标题 */
-const listRows = computed(() => {
-  const out = []
-  const todo = filteredRows.value.filter(r => !isDone(r))
-  const done = filteredRows.value.filter(isDone)
-  if (todo.length) {
-    out.push({ key: '__h_todo', head: { icon: 'fa-hourglass-half', label: '待完成', n: todo.length, toggle: false } })
-    todo.forEach(r => out.push({ key: r.task.id, row: r }))
-  }
-  if (done.length) {
-    out.push({ key: '__h_done', head: { label: '已完成', n: done.length, toggle: tab.value !== 'done' } })
-    if (showDone.value || tab.value === 'done') done.forEach(r => out.push({ key: r.task.id, row: r }))
-  }
-  return out
+  let list = rows.value
+  if (tab.value === 'todo') list = todoRows.value
+  else if (tab.value === 'done') list = doneRows.value
+  return [...list].sort((a, b) => (STATE_ORDER[a.state.key] ?? 9) - (STATE_ORDER[b.state.key] ?? 9))
 })
 
 /** 作答中的场次给剩余时间，帮学员判断先做哪个 */
@@ -250,8 +219,8 @@ function remainTip(r) {
 }
 
 const emptyText = computed(() => {
-  if (tab.value === 'todo') return '没有待完成的考核'
-  if (tab.value === 'done') return '还没有已完成的考核'
+  if (tab.value === 'todo') return '没有待考的考核'
+  if (tab.value === 'done') return '还没有已考的考核'
   return '暂无考核任务'
 })
 function refresh() {
@@ -320,8 +289,6 @@ const sourceLabel = computed(() => `${SOURCE_LABEL[dataSource.value] || SOURCE_L
 onMounted(async () => {
   await loadTasks()
   if (dataSource.value !== 'server') refresh()
-  /* 已完成只有一两条时展开，多了就默认收起 —— 让"待完成"和页头入口始终在首屏 */
-  showDone.value = doneRows.value.length <= 2
 })
 </script>
 
@@ -337,19 +304,13 @@ onMounted(async () => {
 }
 .et-hero-title { margin: 0 0 4px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
 .et-hero-sub { margin: 0; font-size: 12.5px; opacity: .85; }
-.et-hero-side { display: flex; align-items: center; gap: 22px; }
-.et-stat { text-align: center; }
-.et-stat strong { display: block; font-size: 20px; font-weight: 700; line-height: 1.1; }
-.et-stat span { font-size: 11px; opacity: .8; }
 .et-practice {
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center; gap: 8px;
   background: #fff; color: #3730a3; border: none;
-  padding: 9px 18px; border-radius: 10px; font-weight: 600; cursor: pointer;
+  padding: 10px 20px; border-radius: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer;
   box-shadow: 0 2px 10px rgba(0,0,0,.15);
 }
 .et-practice:hover { background: #f5f3ff; }
-.et-practice-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
-.et-practice-text em { font-style: normal; font-size: 10.5px; font-weight: 400; color: #7c7fa1; }
 
 /* ── 分段筛选 ── */
 .et-tabs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -364,21 +325,7 @@ onMounted(async () => {
 .et-tab.active .et-tab-n { color: #6366f1; }
 .et-source { margin-left: auto; font-size: 11.5px; color: var(--text-tertiary); }
 
-/* ── 分组标题 ── */
-.et-sec-head {
-  display: flex; align-items: center; gap: 8px;
-  margin: 6px 0 2px; padding: 0 2px;
-  font-size: 12.5px; font-weight: 600; color: #6b7280;
-}
-.et-sec-head.is-toggle {
-  background: none; border: none; cursor: pointer; padding: 6px 2px;
-  font-family: inherit; text-align: left;
-}
-.et-sec-head.is-toggle:hover { color: var(--primary); }
-.et-sec-n { font-size: 11px; font-weight: 500; color: #9ca3af; background: #f1f5f9; border-radius: 8px; padding: 1px 7px; }
-.et-sec-tip { font-size: 11px; font-weight: 400; color: #b0b7c3; }
-
-/* ── 任务卡：左信息 + 右操作 ── */
+/* ── 任务卡：左信息 + 右操作（状态徽标在右列顶部）── */
 .et-list { display: flex; flex-direction: column; gap: 10px; }
 .et-card { padding: 16px 20px; display: flex; align-items: center; gap: 20px; }
 .et-card.is-done { background: #fcfcfd; }
@@ -387,7 +334,6 @@ onMounted(async () => {
   flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
   min-width: 180px;
 }
-.et-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .et-card-title { font-size: 15px; font-weight: 600; color: #1f2937; }
 .et-state { font-size: 11.5px; border-radius: 8px; padding: 3px 9px; white-space: nowrap; }
 .et-state.is-pending { color: #1d4ed8; background: #dbeafe; }
