@@ -74,12 +74,29 @@ import TrainingTopBar from '@/components/TrainingTopBar.vue'
 import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf } from '@ai-sp/shared/imaging'
 import { loadSession, sessionStateOf, saveSession, examApi } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const sessions = ref({})
 /** 任务列表：管理端创建的考核优先，读不到才用演示数据兜底 */
 const tasks = ref(EXAM_TASKS)
 const dataSource = ref('demo')
+/** 当前考生学号：名单过滤、服务端认人、按人取会话都用它 */
+const examNumber = computed(() => userStore.examNumber || '')
+
+/**
+ * **按名单过滤**：老师派发的考核只对名单内的考生可见。
+ * 名单为空 = 对所有人开放（兼容老数据与"不派发"的练习场景）。
+ */
+const visibleTasks = computed(() => {
+  const me = examNumber.value
+  return tasks.value.filter(t => {
+    const roster = Array.isArray(t.candidates) ? t.candidates : []
+    if (!roster.length) return true
+    return roster.some(c => String(c.examNumber || c.id || '') === String(me))
+  })
+})
 
 function modeLabel(m) { return EXAM_MODE_LABEL[m] || m }
 /** 实际题量：考务设定优先，缺省回落该场病例数 */
@@ -125,7 +142,7 @@ function scoreOf(task, session) {
   }
 }
 
-const rows = computed(() => tasks.value.map(task => {
+const rows = computed(() => visibleTasks.value.map(task => {
   const session = sessions.value[task.id] || null
   const win = windowStateOf(task)
   const ss = sessionStateOf(task, session)
@@ -145,7 +162,7 @@ const rows = computed(() => tasks.value.map(task => {
 
 function refresh() {
   const m = {}
-  tasks.value.forEach(t => { const s = loadSession(t.id); if (s) m[t.id] = s })
+  visibleTasks.value.forEach(t => { const s = loadSession(t.id); if (s) m[t.id] = s })
   sessions.value = m
 }
 function enter(task) { router.push({ name: 'reportWritingExam', query: { task: task.id } }) }
@@ -164,8 +181,10 @@ async function loadTasks() {
       tasks.value = r.tasks
       dataSource.value = 'server'
       const m = {}
-      for (const t of r.tasks) {
-        const remote = await examApi.sessionOf(t.id, '')
+      /* 按 (taskId, 学号) 取会话 —— 换设备/清本地存储后仍能拿回"这场我考过没有、出分没有"；
+         同时保证看到的是**自己**的状态，不是别人的 */
+      for (const t of visibleTasks.value) {
+        const remote = await examApi.sessionOf(t.id, examNumber.value)
         if (remote && remote.session) {
           const rs = remote.session
           m[t.id] = {
@@ -202,7 +221,7 @@ const SOURCE_LABEL = {
   created: '已接入考核配置',
   demo: '示例数据'
 }
-const sourceLabel = computed(() => SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo)
+const sourceLabel = computed(() => `${SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo} · 考生 ${examNumber.value || '—'}`)
 
 onMounted(async () => {
   await loadTasks()

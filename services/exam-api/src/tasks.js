@@ -17,7 +17,8 @@ const TASKS_FILE = path.resolve(__dirname, '../../../packages/shared/data/create
 const TASK_FIELDS = [
   'id', 'name', 'scheme', 'examMode', 'caseIds', 'durationMin', 'passLine',
   'questionCount', 'scoreVisible', 'retake', 'scoreScale',
-  'windowStart', 'windowEnd', 'dispatchedBy', 'dispatchedAt'
+  'windowStart', 'windowEnd', 'dispatchedBy', 'dispatchedAt',
+  'candidates'
 ]
 
 function parseTime(s) {
@@ -39,6 +40,16 @@ function sanitize(task) {
   const out = {}
   for (const k of TASK_FIELDS) if (task[k] !== undefined) out[k] = task[k]
   out.caseIds = Array.isArray(out.caseIds) ? out.caseIds.slice() : []
+  /* 派发名单：老师在第 4 步选的考生。名单为空 = 对所有人开放（老数据兼容） */
+  out.candidates = Array.isArray(out.candidates)
+    ? out.candidates
+        .map(c => ({
+          id: String((c && c.id) || ''),
+          name: String((c && c.name) || ''),
+          examNumber: String((c && (c.examNumber || c.exam_number)) || '')
+        }))
+        .filter(c => c.id || c.examNumber)
+    : []
   out.durationMin = Number(out.durationMin) || 0
   out.questionCount = Number(out.questionCount) || out.caseIds.length || 1
   out.state = windowStateOf(out)

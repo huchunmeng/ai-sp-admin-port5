@@ -419,6 +419,8 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@ai-sp/shared/score-tables': fileURLToPath(new URL('../../packages/shared/data/score-tables/index.js', import.meta.url)),
         '@ai-sp/shared/imaging': fileURLToPath(new URL('../../packages/shared/data/imaging/index.js', import.meta.url)),
+        // 成绩明细复用考核侧的成绩报告弹窗（与学员端同一套呈现，考核侧一律 hide-compare）
+        '@ai-sp/shared/imaging-ui': fileURLToPath(new URL('../../packages/shared/imaging-ui/index.js', import.meta.url)),
         '@ai-sp/shared/created-exams': fileURLToPath(new URL('../../packages/shared/data/created-exams.js', import.meta.url)),
         '@ai-sp/shared': fileURLToPath(new URL('../../packages/shared', import.meta.url))
       }

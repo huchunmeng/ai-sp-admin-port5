@@ -134,6 +134,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
 import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, examApi } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
+import { useUserStore } from '@/stores/user'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -156,6 +157,7 @@ import { createdExamsStore } from '@ai-sp/shared/created-exams'
 /* ── 配置：有任务取任务，无任务取练习考预设 ── */
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const task = ref(taskById(route.query.task))
 const PRACTICE_SIZE = 1
 const PRACTICE_MIN = 30            // 练习考预设时长；正式考核对齐 S03 = 20 分钟（写在任务配置里）
@@ -408,7 +410,8 @@ async function startExam() {
   if (!paper.value.length) buildPaper()
   const { session, adopted, server, serverError } = await startOrResume(sessionKey.value, durationMin.value, answers, {
     taskId: task.value ? task.value.id : '',
-    candidateId: ''
+    /* 学号 = 服务端认人的依据：名单校验与"同一场不同考生分会话"都靠它 */
+    candidateId: userStore.examNumber || ''
   })
   if (serverError) {
     toast.show(serverError.message || '服务端拒绝了本次开考', 'warning', 3000)

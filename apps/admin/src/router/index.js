@@ -15,6 +15,7 @@ const routes = [
       { path: 'station-settings', name: 'stationSettings', component: () => import('@/views/StationSettings.vue') },
       { path: 'system-settings', name: 'systemSettings', component: () => import('@/views/SystemSettings.vue') },
       { path: 'exam-records', name: 'examRecords', component: () => import('@/views/ExamRecords.vue') },
+      { path: 'exam-scores', name: 'examScores', component: () => import('@/views/ExamScores.vue') },
       { path: 'exam-create', name: 'examCreate', component: () => import('@/views/ExamCreate.vue') },
       { path: 'exam-monitor/:examId', name: 'examMonitor', component: () => import('@/views/ExamMonitor.vue') },
       { path: 'case-editor/:caseId?', name: 'caseEditor', props: true, component: () => import('@/views/case-editor/CaseEditor.vue') },

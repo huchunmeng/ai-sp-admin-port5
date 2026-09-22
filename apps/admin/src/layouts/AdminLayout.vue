@@ -185,7 +185,8 @@ const MENU_CONFIG = [
         { id: 'training-records', label: '训练记录', route: '/training-records', icon: 'trend' }
     ]},
     { module: '考核管理', icon: 'exam', pages: [
-        { id: 'exam-records', label: '考核记录', route: '/exam-records', icon: 'fileCheck' }
+        { id: 'exam-records', label: '考核记录', route: '/exam-records', icon: 'fileCheck' },
+        { id: 'exam-scores', label: '成绩管理', route: '/exam-scores', icon: 'fileCheck' }
     ]},
     { module: '系统管理', icon: 'system', pages: [
         { id: 'station-settings', label: '考站设置', route: '/station-settings', icon: 'layout' },

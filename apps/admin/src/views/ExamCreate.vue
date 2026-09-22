@@ -1222,6 +1222,15 @@ const submitExam = async () => {
     return
   }
 
+  /* 派发名单：影像场次必须至少选 1 名考生 —— "老师创建考试后派发"就是这个语义；
+     不选 = 没派发，学员端不该看到，服务端也会按名单拦住开考 */
+  for (const session of imaging) {
+    if (!(session.candidates || []).length) {
+      toast.show(`场次「${session.name}」未选择考生`, 'warning')
+      return
+    }
+  }
+
   const now = new Date()
   const p = n => String(n).padStart(2, '0')
   const examId = `EXAM-${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}`
@@ -1248,6 +1257,13 @@ const submitExam = async () => {
       scoreScale: imagingCfg.scoreScale,
       windowStart: fmtDateTime(session.start_datetime),
       windowEnd: fmtDateTime(session.end_datetime),
+      /* 派发名单：第 4 步选的考生（服务端据此校验开考资格，并按 candidateId 逐人分会话） */
+      candidates: (session.candidates || []).map(pid => {
+        const stu = studentPool.value.find(x => x.id === pid)
+        return stu
+          ? { id: stu.id, name: stu.name, examNumber: stu.exam_number }
+          : { id: pid, name: '', examNumber: '' }
+      }).filter(c => c.id || c.examNumber),
       dispatchedBy: '考务管理员',
       dispatchedAt: fmtDateTime(now)
     }

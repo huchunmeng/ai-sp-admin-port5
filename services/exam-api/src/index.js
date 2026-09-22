@@ -12,8 +12,9 @@
  *       → { sessionId, startedAt, deadline, resumed, superseded, submitted, status, answers, leaveCount }
  *       · deadline 只在**首次开考**签发；已有未交卷且未到点 → 返回原 deadline（续答不重置时钟）
  *       · 同一考次换 clientId 接管 → superseded +1
+ *       · **名单校验**：任务 candidates 非空时，只有名单内的考生能开考（学号或 id 任一匹配）
  *       · 404 TASK_NOT_FOUND / 409 OUT_OF_WINDOW / 409 RETAKE_NOT_ALLOWED
- *           / 400 BAD_REQUEST
+ *           / 403 NOT_IN_ROSTER（未派发给该考生）/ 400 BAD_REQUEST
  *  GET   /api/exam/sessions/:id                → 会话（含 answers/leaveCount/status）
  *  GET   /api/exam/sessions?taskId=&candidateId= → { session|null, score }
  *       · 任务列表页用：换设备/清了本地存储后，仍能从服务端拿回"这场我考过没有、出分没有"
@@ -27,7 +28,10 @@
  *       → { status: 'pending'|'grading'|'done'|'failed', results?, error?, gradedAt? }
  *       · results 是 `caseId → 评分结果`（字段口径与前端 applyExamScale 一致：
  *         finalScore / finalMax / passLine / rubricPassLine / passLineSource / passed）
- *  GET   /api/exam/scores?taskId=              → 成绩列表（管理端用）
+ *  GET   /api/exam/scores?taskId=              → 成绩扁平行（管理端「成绩管理」用）
+ *       · 一行 = 一份会话（**含未交卷**）；带 taskName / candidateName（从任务名单反查）/
+ *         status(inProgress|expired|grading|done|failed) / finalScore / finalMax / passLine / passed
+ *       · 「名单里但还没有会话的考生」由管理端页面 join 任务名单补成"未开始"，服务端不造行
  *  POST  /api/exam/sessions/expire             → 手动触发过期结算 { expired }
  *  POST  /api/exam/dev/reset                   → **仅开发用**：清空会话与成绩（生产删除）
  * ══════════════════════════════════════════════════════════════════
@@ -161,6 +165,17 @@ async function handle(req, res) {
     if (state === 'notStarted') return fail(res, 409, 'OUT_OF_WINDOW', '考试尚未开始')
     if (state === 'expired') return fail(res, 409, 'OUT_OF_WINDOW', '考试窗口已结束')
 
+    /* 名单校验：名单非空时只有名单内的考生能开考（"老师派发"的语义）。
+       学号或 id 任一匹配即可 —— 学员端传学号，考站机传登录学号。名单为空 = 全员开放。 */
+    const roster = Array.isArray(task.candidates) ? task.candidates : []
+    if (roster.length) {
+      const hit = roster.some(c =>
+        (c.examNumber && String(c.examNumber) === String(candidateId)) ||
+        (c.id && String(c.id) === String(candidateId))
+      )
+      if (!hit) return fail(res, 403, 'NOT_IN_ROSTER', '本场考核未派发给该考生')
+    }
+
     const sessionId = sessionIdOf(taskId, candidateId)
     const existing = getSession(sessionId)
     const now = Date.now()
@@ -222,28 +237,53 @@ async function handle(req, res) {
     return ok(res, { expired: sweepExpired() })
   }
 
-  /* 成绩列表（管理端用） */
+  /* 成绩列表（管理端「成绩管理」用）
+     出**扁平行**：一行 = 一份会话（含未交卷的），带上任务名与考生名（从任务名单反查）。
+     管理端再把「名单里但还没有会话的考生」补成"未开始"行 —— 那是页面 join 的职责，
+     服务端不替它造行（否则分不清"没人考"和"考了没交"）。
+     多题汇总沿用 summarize 的求和口径（单站单题是常态）。 */
   if (method === 'GET' && p === '/api/exam/scores') {
     const taskId = url.searchParams.get('taskId') || ''
+    const taskMap = new Map(loadTasks().map(t => [t.id, t]))
+    const now = Date.now()
     const rows = listSessions({ taskId: taskId || undefined })
-      .filter(s => s.submitted)
       .map(s => {
+        const t = taskMap.get(s.taskId) || null
+        const roster = (t && Array.isArray(t.candidates)) ? t.candidates : []
+        const cand = roster.find(c =>
+          (c.examNumber && String(c.examNumber) === String(s.candidateId)) ||
+          (c.id && String(c.id) === String(s.candidateId))
+        ) || null
         const { items, total } = summarize(s.results)
         return {
           sessionId: s.sessionId,
           taskId: s.taskId,
+          taskName: t ? t.name : s.taskId,
           candidateId: s.candidateId || '',
-          submittedAt: s.submittedAt,
+          candidateName: cand ? cand.name : '',
+          candidateExamNumber: cand ? (cand.examNumber || cand.id) : (s.candidateId || ''),
+          startedAt: s.startedAt || 0,
+          deadline: s.deadline || 0,
+          /* 未交卷时给页面一个可用的状态：作答中 / 已过期（到点未交卷由服务端结算，这里只是投影） */
+          status: s.submitted ? s.status : (Number(s.deadline) > now ? 'inProgress' : 'expired'),
+          submitted: !!s.submitted,
+          submittedAt: s.submittedAt || '',
           autoSubmitted: !!s.autoSubmitted,
-          status: s.status,
           leaveCount: s.leaveCount || 0,
           superseded: s.superseded || 0,
+          caseIds: (t && Array.isArray(t.caseIds)) ? t.caseIds : [],
+          caseCount: items.length,
+          answeredCount: Object.keys(s.answers || {}).length,
+          finalScore: total ? total.finalScore : null,
+          finalMax: total ? total.finalMax : null,
+          passLine: total ? total.passLine : null,
+          passed: total ? total.passed : null,
           items,
           total,
           error: s.error || ''
         }
       })
-      .sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)))
+      .sort((a, b) => String(b.submittedAt || b.startedAt).localeCompare(String(a.submittedAt || a.startedAt)))
     return ok(res, { scores: rows })
   }
 
@@ -285,7 +325,11 @@ async function handle(req, res) {
       enqueue(s.sessionId)
       return fail(res, 409, 'SESSION_EXPIRED', '考试时间已到，已自动交卷')
     }
-    if (body.answers && typeof body.answers === 'object') s.answers = body.answers
+    /* 空对象视为"无更新"：客户端可能已用 PATCH 自动保存过草稿，
+       不带全文的请求不能把已答内容清空（否则会按空报告评分 = 假 0 分） */
+    if (body.answers && typeof body.answers === 'object' && Object.keys(body.answers).length) {
+      s.answers = body.answers
+    }
     if (typeof body.leaveCount === 'number') s.leaveCount = body.leaveCount
     if (body.clientId) s.clientId = body.clientId
     putSession(s)
@@ -302,8 +346,11 @@ async function handle(req, res) {
     if (s.submitted) {
       return ok(res, { submittedAt: s.submittedAt, status: s.status, alreadySubmitted: true })
     }
-    /* ① 先锁定答卷入库（**先落库再评阅**，考生关页也不丢） */
-    if (body.answers && typeof body.answers === 'object') s.answers = body.answers
+    /* ① 先锁定答卷入库（**先落库再评阅**，考生关页也不丢）。
+       同样：空 answers 不清空 —— 交卷只做最后补写，已保存的草稿必须留住 */
+    if (body.answers && typeof body.answers === 'object' && Object.keys(body.answers).length) {
+      s.answers = body.answers
+    }
     if (typeof body.leaveCount === 'number') s.leaveCount = body.leaveCount
     s.submitted = true
     s.submittedAt = nowIso()
