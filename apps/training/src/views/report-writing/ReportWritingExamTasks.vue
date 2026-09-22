@@ -35,7 +35,8 @@
           <div class="et-card-side">
             <span class="et-state is-practice">练习考</span>
             <div class="et-score">
-              <span v-if="r.status === 'failed'" class="text-error" style="font-size:12px">评分失败</span>
+              <span v-if="r.status === 'pending'" class="text-secondary" style="font-size:12px;font-style:italic">评阅中…</span>
+              <span v-else-if="r.status === 'failed'" class="text-error" style="font-size:12px">评分失败</span>
               <span v-else class="et-score-val">{{ r.score }} / {{ r.scoreableMax }}</span>
             </div>
             <button class="btn btn-sm" :disabled="r.status !== 'done'" @click="openPracticeRecord(r.rec)">
@@ -126,13 +127,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf, getImagingSample } from '@ai-sp/shared/imaging'
 import { loadSession, sessionStateOf, saveSession, examApi, ScoreReportModal } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
 import { readExamRecords, loadDemoExamRecords } from '@/composables/useExamRecords'
+import { onExamRecordScored, resumeExamScoring } from '@/composables/useExamScoring'
 
 const route = useRoute()
 const router = useRouter()
@@ -366,13 +368,18 @@ const SOURCE_LABEL = {
 }
 const sourceLabel = computed(() => `${SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo} · 考生 ${examNumber.value || '—'}`)
 
+let offScored = null
 onMounted(async () => {
   // 从练习考成绩报告「去查看」过来时带 ?tab=done，落到已考（练习考记录就在里面）
   if (route.query.tab && TABS.some(t => t.key === route.query.tab)) tab.value = route.query.tab
   refreshPractice()
   await loadTasks()
   if (dataSource.value !== 'server') refresh()
+  // 练习考交卷后台评阅：评完刷新列表；进页面时补评上次没评完的（关页/切走也不丢）
+  offScored = onExamRecordScored(() => refreshPractice())
+  resumeExamScoring()
 })
+onUnmounted(() => { if (offScored) offScored() })
 </script>
 
 <style scoped>

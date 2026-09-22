@@ -125,14 +125,9 @@
             交卷后<b>不提供参考报告对照</b> —— 交卷即给参考报告等于泄题给下一批。
             要对照学习请回「影像报告书写训练」再练一遍。
           </div>
-          <!-- 练习考的成绩会落进「考试记录」，这里给个明确交代 + 回看入口，否则学员不知道记录留下来了 -->
-          <div v-if="!task" class="ex-saved-tip">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>本次练习考成绩已存入「考试记录」</span>
-            <button class="ex-saved-link" @click="goRecords">去查看 →</button>
-          </div>
-          <button v-if="!task || task.retake !== 'single'" class="btn ex-start" style="margin-top:14px" @click="restart">
-            <i class="fa-solid fa-rotate-right"></i> {{ task ? '重做本题' : '再来一份' }}
+          <!-- 练习考没有交卷页（交卷即回列表），这里只服务正式考核 -->
+          <button v-if="task.retake !== 'single'" class="btn ex-start" style="margin-top:14px" @click="restart">
+            <i class="fa-solid fa-rotate-right"></i> 重做本题
           </button>
           <button v-else class="btn ex-start" style="margin-top:14px" @click="goTasks">
             <i class="fa-solid fa-list-check"></i> 返回我的考核任务
@@ -168,7 +163,7 @@ import { startOrResume, saveSession, submitSession, loadSession, clearSession, c
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
 import { useTrainingStore } from '@/stores/training'
-import { addPracticeExamRecord } from '@/composables/useExamRecords'
+import { enqueuePracticeExam } from '@/composables/useExamScoring'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -514,29 +509,42 @@ function autoSubmit() {
 }
 
 async function doSubmit() {
-  phase.value = 'done'
   submitting.value = true
   submittedAt.value = new Date().toISOString().slice(0, 16).replace('T', ' ')
   exitFullscreenSafe()
-  // ① **先锁定答卷**：本地立刻记"已交卷"，同时上报服务端（服务端先落库再异步评阅）。
+
+  // ① 练习考：交卷即落 pending 考试记录，评分交给**后台队列**（离开页面也能评完），
+  //    随后直接回列表 —— 练习考没有"交卷页"，成绩生成后到「已考」里看。
+  if (!task.value) {
+    for (let i = 0; i < paper.value.length; i++) {
+      const q = paper.value[i]
+      enqueuePracticeExam({ sample: q.sample, draft: { ...draftOf(i) } })
+    }
+    clearSession(sessionKey.value)   // 下次进来从"考试须知"重新开始，不再落回已交卷页
+    submitting.value = false
+    toast.show('已交卷。成绩生成需要一点时间，稍后可在「已考」查看', 'warning', 4000)
+    router.push({ name: 'reportWritingExamTasks', query: { tab: 'done' } })
+    return
+  }
+
+  phase.value = 'done'
+  // ② 正式考核：**先锁定答卷**：本地立刻记"已交卷"，同时上报服务端（服务端先落库再异步评阅）。
   //    评阅是异步的，评分失败/中途关页都不能让"已交卷"这件事本身丢掉。
   const submitted = await submitSession(sessionKey.value, {
     answers, leaveCount: leaveCount.value, deadline: deadline.value
   })
-  // ②a 服务端可用 → 交给服务端评阅，前端只轮询出分（**关页也不丢分**）
+  // ③a 服务端可用 → 交给服务端评阅，前端只轮询出分（**关页也不丢分**）
   if (submitted.server && submitted.serverSessionId) {
     pollServerScore(submitted.serverSessionId)
     return
   }
-  // ②b 服务端不可达 → 回落前端评分（原路径，保证没起服务也能用）
+  // ③b 服务端不可达 → 回落前端评分（原路径，保证没起服务也能用）
   if (submitted.serverError) {
     toast.show('评阅服务不可达，已改用本机评分', 'warning', 3000)
   }
   const collected = {}
   for (let i = 0; i < paper.value.length; i++) {
     const q = paper.value[i]
-    // 考核口径取严（含红线校验）；练习考走训练口径。
-    // 达标线 / 满分口径取**考务设定**（练习考没有，传 null 走难度标定）。
     const res = await score({
       sample: q.sample,
       reportText: { ...draftOf(i) },
@@ -549,28 +557,12 @@ async function doSubmit() {
   }
   submitting.value = false
   submitSession(sessionKey.value, { results: collected })
-  // ③ 练习考：把成绩落进**考试记录**（独立存储，与训练记录隔离）—— 否则出分即散、回头找不到。
-  //    正式考核不进本机记录 —— 它的成绩由考核服务落库，看「我的考核任务」与成绩管理。
-  if (!task.value) persistExamRecords()
   // ④ 出分即弹成绩报告（与训练工作台一致）
   if (showDetail.value && resultOf(reportIndex.value)) reportModal.value = true
 }
 
-/** 练习考交卷后落考试记录（每题一条） */
-function persistExamRecords() {
-  for (let i = 0; i < paper.value.length; i++) {
-    const q = paper.value[i]
-    addPracticeExamRecord({
-      sample: q.sample,
-      draft: { ...draftOf(i) },
-      result: results[q.id] || null
-    })
-  }
-}
 function openReport(i) { reportIndex.value = i }   // 多题切换/直达某题
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
-/** 回看考试记录（练习考记录在「我的考核任务 → 已考」里，靠「练习考」标记区分） */
-function goRecords() { router.push({ name: 'reportWritingExamTasks', query: { tab: 'done' } }) }
 function restart() {
   clearSession(sessionKey.value)
   stopPoll()
@@ -680,16 +672,6 @@ onUnmounted(() => {
 .ex-rules { margin: 0 0 22px; padding-left: 20px; font-size: 13px; line-height: 2.1; color: #4b5563; }
 .ex-start { width: 100%; justify-content: center; }
 .ex-hint { margin-top: 12px; font-size: 11.5px; color: #9ca3af; line-height: 1.8; }
-/* 练习考成绩已入库的交代条 */
-.ex-saved-tip {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin-top: 12px; padding: 9px 14px; border-radius: 8px;
-  font-size: 12.5px; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0;
-}
-.ex-saved-link {
-  background: none; border: none; padding: 0; cursor: pointer;
-  color: var(--primary); font-size: 12.5px; text-decoration: underline;
-}
 
 /* 考试状态并入了顶部栏的 center 插槽（插槽内容仍属本组件作用域，样式照旧生效） */
 :deep(.topbar-center) { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }

@@ -204,8 +204,12 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
     items.push({ label: lang === 'zh' ? '我的考核任务' : 'My Exams', to: null })
   } else if (name === 'reportWritingExam') {
+    // 考试室有两种来源，路径不同：老师派发的考核 / 自己发起的练习考。
+    // 原来一律写成「在线考试 / 影像报告书写考核」，练习考就错成了"考核"。
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
-    items.push({ label: lang === 'zh' ? '影像报告书写考核' : 'Report Exam', to: null })
+    items.push({ label: lang === 'zh' ? '我的考核任务' : 'My Exams', to: { name: 'reportWritingExamTasks' } })
+    const examTaskId = route.query && route.query.task
+    items.push({ label: examTaskId ? (lang === 'zh' ? '考核作答' : 'Exam') : (lang === 'zh' ? '练习考' : 'Practice'), to: null })
   } else if (name === 'examCenter') {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: null })
   } else if (name === 'moocModule') {

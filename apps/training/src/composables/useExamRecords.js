@@ -61,21 +61,24 @@ export function loadDemoExamRecords() {
  *
  * 记录字段与训练记录保持同构（成绩报告弹窗两端共用同一套 props），但**独立存储、独立列表**：
  * 练习考记录只在「考试记录」里出现，训练记录里不会混入。
+ *
+ * `status` 可显式指定：交卷时先落 `pending`（评阅中），后台评完再回填 `done`/`failed` ——
+ * 这样"交卷后直接回列表"也不会丢分（评分队列见 `useExamScoring.js`）。
  */
-export function addPracticeExamRecord({ sample, draft, result, error = '' }) {
+export function addPracticeExamRecord({ sample, draft, result, error = '', status = '' }) {
   const s = sample || {}
   const caseId = s.id || ''
   if (!caseId) return null
 
   const rec = {
-    id: `exam-${caseId}-${Date.now()}`,
+    id: `exam-${caseId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     caseId,
     title: s.title || caseId,
     bodyPart: s.bodyPart || '',
     modality: s.modality || '',
     level: s.level || '',
     submittedAt: nowStamp(),
-    status: result ? 'done' : 'failed',
+    status: status || (result ? 'done' : (error ? 'failed' : 'pending')),
     score: result ? result.rawTotal : null,
     scoreableMax: result ? result.scoreableMax : null,
     result: result || null,
@@ -89,4 +92,14 @@ export function addPracticeExamRecord({ sample, draft, result, error = '' }) {
   list.unshift(rec)
   writeJson(RECORDS_KEY, list)
   return rec
+}
+
+/** 回填某条记录（评分完成后用） */
+export function updateExamRecord(id, patch) {
+  const list = readExamRecords()
+  const i = list.findIndex(r => r.id === id)
+  if (i < 0) return null
+  list[i] = { ...list[i], ...patch }
+  writeJson(RECORDS_KEY, list)
+  return list[i]
 }
