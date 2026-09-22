@@ -106,46 +106,6 @@ export function clearPracticeRecords() {
 }
 
 /**
- * **练习考**（考核侧 A 路）交卷后落一条练习记录。
- *
- * 为什么要有它：练习考原先只把成绩写进考试会话（`__practice__`），出分即散 ——
- * 「练习记录」列表里看不到，考完就找不回来了。这里写的是**与训练工作台同一份记录**
- * （同一个 localStorage key），所以练习考的成绩报告以后还能回看；`source: 'exam'` 用于
- * 列表里区分「练习考」与「训练」，列表对这类记录**不给报告对照**（红线 R1）。
- *
- * 正式考核**不进**这里：它的成绩在考核服务与「成绩管理」里。
- */
-export function addExamPracticeRecord({ sample, draft, result, error = '' }) {
-  const s = sample || {}
-  const caseId = s.id || ''
-  if (!caseId) return null
-
-  // 轮次沿用该病例已有记录数（练习考也算一轮练习）
-  const prevRounds = readPracticeRecords().filter(r => r.caseId === caseId).length
-  const stats = readPracticeStats()
-  stats[caseId] = { completedRounds: prevRounds + 1, lastPracticedAt: nowStamp() }
-  writeJson(STATS_KEY, stats)
-
-  return upsertPracticeRecord({
-    id: `${caseId}-exam-${Date.now()}`,
-    caseId,
-    title: s.title || caseId,
-    bodyPart: s.bodyPart || '',
-    modality: s.modality || '',
-    level: s.level || '',
-    round: prevRounds + 1,
-    submittedAt: nowStamp(),
-    status: result ? 'done' : 'failed',
-    score: result ? result.rawTotal : null,
-    scoreableMax: result ? result.scoreableMax : null,
-    result: result || null,
-    error: result ? '' : error,
-    draft: { ...(draft || {}) },
-    source: 'exam'
-  })
-}
-
-/**
  * 同一病例的会话**全局只建一份**。
  * 工作台与成绩报告是两个路由、两个组件实例；若各自 `useReportSession`，
  * 提交时在工作台实例上发起的评分结果永远传不到成绩页（成绩页停在"尚未评分"）。

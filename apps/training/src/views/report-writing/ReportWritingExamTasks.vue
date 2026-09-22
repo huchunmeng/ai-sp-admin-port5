@@ -13,16 +13,56 @@
 
     <!-- ══ 筛选：列表内**不再另起分组标题**（会和这里重复）══ -->
     <div class="et-tabs">
-      <button v-for="t in TABS" :key="t.key" class="et-tab" :class="{ active: tab === t.key }" @click="tab = t.key">
+      <button v-for="t in TABS" :key="t.key" class="et-tab" :class="{ active: tab === t.key }" @click="switchTab(t.key)">
         {{ t.label }}<span class="et-tab-n">{{ countOf(t.key) }}</span>
       </button>
       <span class="et-source">{{ sourceLabel }}</span>
     </div>
 
-    <div v-if="filteredRows.length" class="et-list">
+    <!-- ══ 考试记录：练习考（**独立于训练记录**，不与训练记录混在一个列表里）══ -->
+    <div v-if="tab === 'practice'" class="card" style="padding: 0;">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:110px">来源</th>
+              <th style="width:150px">提交时间</th>
+              <th>病例</th>
+              <th style="width:150px">部位 · 模态</th>
+              <th style="width:80px">难度</th>
+              <th style="width:120px">得分</th>
+              <th class="sticky-right" style="right:0;width:130px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="rec in practiceRecords" :key="rec.id">
+              <td><span class="et-src">练习考</span></td>
+              <td>{{ rec.submittedAt }}</td>
+              <td>
+                {{ rec.title }}
+                <code class="et-code">{{ rec.caseId }}</code>
+              </td>
+              <td>{{ rec.bodyPart }} · {{ rec.modality }}</td>
+              <td>{{ rec.level }}</td>
+              <td>
+                <span v-if="rec.status === 'failed'" class="text-error">评分失败</span>
+                <template v-else><b class="et-score-num">{{ rec.score }}</b> / {{ rec.scoreableMax }}</template>
+              </td>
+              <td class="sticky-right" style="right:0">
+                <button class="btn btn-sm" :disabled="rec.status !== 'done'" @click="openPracticeRecord(rec)">成绩报告</button>
+              </td>
+            </tr>
+            <tr v-if="!practiceRecords.length">
+              <td colspan="7" class="text-center py-8 text-secondary">还没有练习考记录</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div v-else-if="filteredRows.length" class="et-list">
       <article v-for="r in filteredRows" :key="r.task.id" class="card et-card"
-               :class="{ 'is-done': r.state.key === 'submitted' }">
-        <div class="et-card-main">
+               :class="{ 'is-done': r.state.key === 'submitted' }">        <div class="et-card-main">
           <div class="et-card-title">{{ r.task.name }}</div>
           <div class="et-scheme">{{ r.task.scheme }}</div>
 
@@ -86,20 +126,38 @@
         <i class="fa-solid fa-pen-to-square"></i> 去做练习考
       </button>
     </div>
+
+    <!-- 练习考记录的成绩报告：**不给报告对照**（红线 R1：考核侧不发金标准） -->
+    <ScoreReportModal v-if="activeRecord"
+                      :scoring="{ status: 'done', result: activeRecord.result, error: activeRecord.error || '', attempts: 1, appeal: null }"
+                      :draft="activeRecord.draft || {}"
+                      :sample="activeRecordSample"
+                      :title="activeRecord.title"
+                      :submitted-at="activeRecord.submittedAt"
+                      hide-compare
+                      :allow-rescore="false"
+                      @close="activeRecord = null"
+                      @score="() => {}" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf } from '@ai-sp/shared/imaging'
-import { loadSession, sessionStateOf, saveSession, examApi } from '@ai-sp/shared/imaging-ui'
+import { useRoute, useRouter } from 'vue-router'
+import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf, getImagingSample } from '@ai-sp/shared/imaging'
+import { loadSession, sessionStateOf, saveSession, examApi, ScoreReportModal } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
+import { readExamRecords } from '@/composables/useExamRecords'
 
+const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const sessions = ref({})
+/** 考试记录（练习考）：独立存储，与训练记录互不相干 */
+const practiceRecords = ref([])
+const activeRecord = ref(null)
+const activeRecordSample = computed(() => (activeRecord.value ? (getImagingSample(activeRecord.value.caseId) || {}) : {}))
 /** 任务列表：管理端创建的考核优先，读不到才用演示数据兜底 */
 const tasks = ref(EXAM_TASKS)
 const dataSource = ref('demo')
@@ -187,6 +245,7 @@ const rows = computed(() => visibleTasks.value.map(task => {
 const TABS = [
   { key: 'todo', label: '待考' },
   { key: 'done', label: '已考' },
+  { key: 'practice', label: '考试记录' },
   { key: 'all', label: '全部' }
 ]
 const tab = ref('all')
@@ -198,8 +257,17 @@ const doneRows = computed(() => rows.value.filter(isDone))
 function countOf(key) {
   if (key === 'todo') return todoRows.value.length
   if (key === 'done') return doneRows.value.length
+  if (key === 'practice') return practiceRecords.value.length
   return rows.value.length
 }
+
+/** 切到「考试记录」时重新读一次（刚考完回来能看到） */
+function refreshPractice() { practiceRecords.value = readExamRecords() }
+function switchTab(key) {
+  tab.value = key
+  if (key === 'practice') refreshPractice()
+}
+function openPracticeRecord(rec) { activeRecord.value = rec }
 
 /** 排序：可操作的（作答中 / 待作答 / 未开始）在前，已交卷/已结束在后；组内保持原顺序 */
 const STATE_ORDER = { inProgress: 0, pending: 1, notStarted: 2, submitted: 3, expired: 4 }
@@ -287,6 +355,9 @@ const SOURCE_LABEL = {
 const sourceLabel = computed(() => `${SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo} · 考生 ${examNumber.value || '—'}`)
 
 onMounted(async () => {
+  // 从练习考成绩报告「去查看」过来时带 ?tab=practice，直接落到考试记录页签
+  if (route.query.tab === 'practice') tab.value = 'practice'
+  refreshPractice()
   await loadTasks()
   if (dataSource.value !== 'server') refresh()
 })
@@ -324,6 +395,11 @@ onMounted(async () => {
 .et-tab-n { font-size: 11px; color: #9ca3af; }
 .et-tab.active .et-tab-n { color: #6366f1; }
 .et-source { margin-left: auto; font-size: 11.5px; color: var(--text-tertiary); }
+
+/* ── 考试记录（练习考）表格 ── */
+.et-src { font-size: 11.5px; border-radius: 8px; padding: 2px 8px; color: #3730a3; background: #eef2ff; }
+.et-code { background: #F5F7FA; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-size: 11.5px; }
+.et-score-num { color: var(--primary); font-variant-numeric: tabular-nums; }
 
 /* ── 任务卡：左信息 + 右操作（状态徽标在右列顶部）── */
 .et-list { display: flex; flex-direction: column; gap: 10px; }

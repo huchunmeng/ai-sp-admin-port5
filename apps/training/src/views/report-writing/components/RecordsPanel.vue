@@ -35,7 +35,7 @@
               <th style="width:150px">部位 · 模态</th>
               <th style="width:80px">难度</th>
               <th style="width:120px">得分</th>
-              <th style="width:110px">来源</th>
+              <th style="width:110px">轮次</th>
               <th class="sticky-right" style="right:0;width:170px">操作</th>
             </tr>
           </thead>
@@ -58,10 +58,7 @@
                   <span class="text-secondary"> / {{ r.scoreableMax }}</span>
                 </template>
               </td>
-              <td>
-                <span v-if="r.source === 'exam'" class="rp-src">练习考</span>
-                <span v-else class="text-secondary">第 {{ r.round }} 轮</span>
-              </td>
+              <td class="text-secondary">第 {{ r.round }} 轮</td>
               <td class="sticky-right" style="right:0">
                 <div class="flex gap-2">
                   <button class="btn btn-sm" @click="openRecord(r)">成绩报告</button>
@@ -82,14 +79,12 @@
       </div>
     </div>
 
-    <!-- 练习考记录**不给报告对照**（红线 R1：考核侧的答卷不给金标准）；训练记录照旧可对照 -->
     <ScoreReportModal v-if="active"
                       :scoring="activeScoring"
                       :draft="active.draft || {}"
                       :sample="activeSample"
                       :title="active.title"
                       :submitted-at="active.submittedAt"
-                      :hide-compare="active.source === 'exam'"
                       @close="active = null"
                       @edit="editActive"
                       @restart="restartActive" />
@@ -217,6 +212,4 @@ function redo(r) {
 .rwr-filter-left { display: flex; gap: 8px; flex-wrap: wrap; }
 .rwr-filter-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .rwr-count { font-size: 12px; color: #9ca3af; }
-/* 来源标注：练习考的记录与训练记录同列表，靠它区分（练习考不给报告对照，见模板 hide-compare） */
-.rp-src { font-size: 11.5px; border-radius: 8px; padding: 2px 8px; color: #3730a3; background: #eef2ff; }
 </style>

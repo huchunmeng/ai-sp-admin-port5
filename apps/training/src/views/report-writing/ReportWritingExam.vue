@@ -125,10 +125,10 @@
             交卷后<b>不提供参考报告对照</b> —— 交卷即给参考报告等于泄题给下一批。
             要对照学习请回「影像报告书写训练」再练一遍。
           </div>
-          <!-- 练习考的成绩会落进「训练记录」，这里给个明确交代 + 回看入口，否则学员不知道记录留下来了 -->
+          <!-- 练习考的成绩会落进「考试记录」，这里给个明确交代 + 回看入口，否则学员不知道记录留下来了 -->
           <div v-if="!task" class="ex-saved-tip">
             <i class="fa-solid fa-circle-check"></i>
-            <span>本次练习考成绩已存入「训练记录」</span>
+            <span>本次练习考成绩已存入「考试记录」</span>
             <button class="ex-saved-link" @click="goRecords">去查看 →</button>
           </div>
           <button v-if="!task || task.retake !== 'single'" class="btn ex-start" style="margin-top:14px" @click="restart">
@@ -155,7 +155,7 @@ import { startOrResume, saveSession, submitSession, loadSession, clearSession, c
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
 import { useTrainingStore } from '@/stores/training'
-import { addExamPracticeRecord } from '@/composables/useReportSession'
+import { addPracticeExamRecord } from '@/composables/useExamRecords'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -533,16 +533,16 @@ async function doSubmit() {
   }
   submitting.value = false
   submitSession(sessionKey.value, { results: collected })
-  // ③ 练习考：把成绩落进「练习记录」（与训练工作台同一份记录），否则出分即散、回头找不到。
-  //    正式考核不进练习记录 —— 它的成绩在考核服务与「成绩管理」里。
-  if (!task.value) persistPracticeRecords()
+  // ③ 练习考：把成绩落进**考试记录**（独立存储，与训练记录隔离）—— 否则出分即散、回头找不到。
+  //    正式考核不进本机记录 —— 它的成绩由考核服务落库，看「我的考核任务」与成绩管理。
+  if (!task.value) persistExamRecords()
 }
 
-/** 练习考交卷后落练习记录（每题一条） */
-function persistPracticeRecords() {
+/** 练习考交卷后落考试记录（每题一条） */
+function persistExamRecords() {
   for (let i = 0; i < paper.value.length; i++) {
     const q = paper.value[i]
-    addExamPracticeRecord({
+    addPracticeExamRecord({
       sample: q.sample,
       draft: { ...draftOf(i) },
       result: results[q.id] || null
@@ -551,8 +551,8 @@ function persistPracticeRecords() {
 }
 function openReport(i) { reportIndex.value = i }   // 多题切换/直达某题
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
-/** 回看练习记录（练习考的成绩落在训练记录里） */
-function goRecords() { router.push({ name: 'reportWritingTrain', query: { tab: 'records' } }) }
+/** 回看考试记录（练习考的成绩落在「我的考核任务」的考试记录页签里） */
+function goRecords() { router.push({ name: 'reportWritingExamTasks', query: { tab: 'practice' } }) }
 function restart() {
   clearSession(sessionKey.value)
   stopPoll()
