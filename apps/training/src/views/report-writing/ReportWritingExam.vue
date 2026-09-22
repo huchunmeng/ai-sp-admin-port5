@@ -551,8 +551,8 @@ function persistExamRecords() {
 }
 function openReport(i) { reportIndex.value = i }   // 多题切换/直达某题
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
-/** 回看考试记录（练习考的成绩落在「我的考核任务」的考试记录页签里） */
-function goRecords() { router.push({ name: 'reportWritingExamTasks', query: { tab: 'practice' } }) }
+/** 回看考试记录（练习考记录在「我的考核任务 → 已考」里，靠「练习考」标记区分） */
+function goRecords() { router.push({ name: 'reportWritingExamTasks', query: { tab: 'done' } }) }
 function restart() {
   clearSession(sessionKey.value)
   stopPoll()

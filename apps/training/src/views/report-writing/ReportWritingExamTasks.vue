@@ -19,50 +19,31 @@
       <span class="et-source">{{ sourceLabel }}</span>
     </div>
 
-    <!-- ══ 考试记录：练习考（**独立于训练记录**，不与训练记录混在一个列表里）══ -->
-    <div v-if="tab === 'practice'" class="card" style="padding: 0;">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width:110px">来源</th>
-              <th style="width:150px">提交时间</th>
-              <th>病例</th>
-              <th style="width:150px">部位 · 模态</th>
-              <th style="width:80px">难度</th>
-              <th style="width:120px">得分</th>
-              <th class="sticky-right" style="right:0;width:130px">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="rec in practiceRecords" :key="rec.id">
-              <td><span class="et-src">练习考</span></td>
-              <td>{{ rec.submittedAt }}</td>
-              <td>
-                {{ rec.title }}
-                <code class="et-code">{{ rec.caseId }}</code>
-              </td>
-              <td>{{ rec.bodyPart }} · {{ rec.modality }}</td>
-              <td>{{ rec.level }}</td>
-              <td>
-                <span v-if="rec.status === 'failed'" class="text-error">评分失败</span>
-                <template v-else><b class="et-score-num">{{ rec.score }}</b> / {{ rec.scoreableMax }}</template>
-              </td>
-              <td class="sticky-right" style="right:0">
-                <button class="btn btn-sm" :disabled="rec.status !== 'done'" @click="openPracticeRecord(rec)">成绩报告</button>
-              </td>
-            </tr>
-            <tr v-if="!practiceRecords.length">
-              <td colspan="7" class="text-center py-8 text-secondary">还没有练习考记录</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <div v-if="filteredRows.length" class="et-list">
+      <article v-for="r in filteredRows" :key="r.kind === 'practice' ? r.id : r.task.id" class="card et-card"
+               :class="{ 'is-done': r.kind === 'practice' || r.state.key === 'submitted' }">
 
-    <div v-else-if="filteredRows.length" class="et-list">
-      <article v-for="r in filteredRows" :key="r.task.id" class="card et-card"
-               :class="{ 'is-done': r.state.key === 'submitted' }">        <div class="et-card-main">
+        <!-- 练习考记录：与正式考核同列表，靠「练习考」标记区分（不单独开页签） -->
+        <template v-if="r.kind === 'practice'">
+          <div class="et-card-main">
+            <div class="et-card-title">{{ r.title }}</div>
+            <div class="et-scheme">{{ r.sub }}<template v-if="r.level"> · {{ r.level }}</template></div>
+            <div class="et-window">练习考 · 提交于 {{ r.submittedAt }}</div>
+          </div>
+          <div class="et-card-side">
+            <span class="et-state is-practice">练习考</span>
+            <div class="et-score">
+              <span v-if="r.status === 'failed'" class="text-error" style="font-size:12px">评分失败</span>
+              <span v-else class="et-score-val">{{ r.score }} / {{ r.scoreableMax }}</span>
+            </div>
+            <button class="btn btn-sm" :disabled="r.status !== 'done'" @click="openPracticeRecord(r.rec)">
+              <i class="fa-solid fa-file-lines"></i> 成绩报告
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+        <div class="et-card-main">
           <div class="et-card-title">{{ r.task.name }}</div>
           <div class="et-scheme">{{ r.task.scheme }}</div>
 
@@ -115,6 +96,7 @@
             <i class="fa-solid fa-triangle-exclamation"></i> 该考次在别处继续过 {{ r.session.superseded }} 次
           </span>
         </div>
+        </template>
       </article>
     </div>
 
@@ -245,7 +227,6 @@ const rows = computed(() => visibleTasks.value.map(task => {
 const TABS = [
   { key: 'todo', label: '待考' },
   { key: 'done', label: '已考' },
-  { key: 'practice', label: '考试记录' },
   { key: 'all', label: '全部' }
 ]
 const tab = ref('all')
@@ -254,28 +235,52 @@ const isDone = r => r.state.key === 'submitted'
 const todoRows = computed(() => rows.value.filter(r => !isDone(r)))
 const doneRows = computed(() => rows.value.filter(isDone))
 
+/** 练习考记录 → 与考核任务同列表的行（靠「练习考」标记与正式考核区分，不单独开页签） */
+const practiceRows = computed(() => practiceRecords.value.map(rec => ({
+  kind: 'practice',
+  id: rec.id,
+  rec,
+  title: rec.title,
+  sub: [rec.bodyPart, rec.modality].filter(Boolean).join(' · '),
+  level: rec.level,
+  submittedAt: rec.submittedAt,
+  score: rec.score,
+  scoreableMax: rec.scoreableMax,
+  status: rec.status
+})))
+
+/** 已完成项：正式考核（按交卷时间）+ 练习考记录，混排后按时间倒序 */
+const doneList = computed(() => {
+  const tasks = doneRows.value.map(r => ({ ...r, kind: 'task', sortAt: (r.session && r.session.submittedAt) || '' }))
+  const practices = practiceRows.value.map(r => ({ ...r, sortAt: r.submittedAt }))
+  return [...tasks, ...practices].sort((a, b) => String(b.sortAt).localeCompare(String(a.sortAt)))
+})
+
 function countOf(key) {
   if (key === 'todo') return todoRows.value.length
-  if (key === 'done') return doneRows.value.length
-  if (key === 'practice') return practiceRecords.value.length
-  return rows.value.length
+  if (key === 'done') return doneList.value.length
+  return rows.value.length + practiceRows.value.length
 }
 
-/** 切到「考试记录」时重新读一次（刚考完回来能看到） */
+/** 切页签时重新读一次考试记录（刚考完回来能看到） */
 function refreshPractice() { practiceRecords.value = readExamRecords() }
 function switchTab(key) {
   tab.value = key
-  if (key === 'practice') refreshPractice()
+  refreshPractice()
 }
 function openPracticeRecord(rec) { activeRecord.value = rec }
 
 /** 排序：可操作的（作答中 / 待作答 / 未开始）在前，已交卷/已结束在后；组内保持原顺序 */
 const STATE_ORDER = { inProgress: 0, pending: 1, notStarted: 2, submitted: 3, expired: 4 }
+/** 列表行：待考（按状态排序）在前；已考（正式考核 + 练习考混排，按时间倒序）在后 */
 const filteredRows = computed(() => {
-  let list = rows.value
-  if (tab.value === 'todo') list = todoRows.value
-  else if (tab.value === 'done') list = doneRows.value
-  return [...list].sort((a, b) => (STATE_ORDER[a.state.key] ?? 9) - (STATE_ORDER[b.state.key] ?? 9))
+  if (tab.value === 'todo') {
+    return [...todoRows.value].sort((a, b) => (STATE_ORDER[a.state.key] ?? 9) - (STATE_ORDER[b.state.key] ?? 9))
+  }
+  if (tab.value === 'done') return doneList.value
+  const todo = [...todoRows.value].sort((a, b) => (STATE_ORDER[a.state.key] ?? 9) - (STATE_ORDER[b.state.key] ?? 9))
+      .map(r => ({ ...r, kind: 'task' }))
+  return [...todo, ...doneList.value]
 })
 
 /** 作答中的场次给剩余时间，帮学员判断先做哪个 */
@@ -355,8 +360,8 @@ const SOURCE_LABEL = {
 const sourceLabel = computed(() => `${SOURCE_LABEL[dataSource.value] || SOURCE_LABEL.demo} · 考生 ${examNumber.value || '—'}`)
 
 onMounted(async () => {
-  // 从练习考成绩报告「去查看」过来时带 ?tab=practice，直接落到考试记录页签
-  if (route.query.tab === 'practice') tab.value = 'practice'
+  // 从练习考成绩报告「去查看」过来时带 ?tab=done，落到已考（练习考记录就在里面）
+  if (route.query.tab && TABS.some(t => t.key === route.query.tab)) tab.value = route.query.tab
   refreshPractice()
   await loadTasks()
   if (dataSource.value !== 'server') refresh()
@@ -396,10 +401,8 @@ onMounted(async () => {
 .et-tab.active .et-tab-n { color: #6366f1; }
 .et-source { margin-left: auto; font-size: 11.5px; color: var(--text-tertiary); }
 
-/* ── 考试记录（练习考）表格 ── */
-.et-src { font-size: 11.5px; border-radius: 8px; padding: 2px 8px; color: #3730a3; background: #eef2ff; }
-.et-code { background: #F5F7FA; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-size: 11.5px; }
-.et-score-num { color: var(--primary); font-variant-numeric: tabular-nums; }
+/* ── 练习考标记：与正式考核同列表，靠它区分 ── */
+.et-state.is-practice { color: #3730a3; background: #eef2ff; }
 
 /* ── 任务卡：左信息 + 右操作（状态徽标在右列顶部）── */
 .et-list { display: flex; flex-direction: column; gap: 10px; }
