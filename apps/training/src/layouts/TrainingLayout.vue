@@ -144,8 +144,14 @@ const isStationRoute = computed(function() {
   return stationRoutes.includes(route.name)
 })
 
-/** 隐藏全局页头 + 面包屑（站内页 与 影像报告书写工作台/成绩报告页） */
+/**
+ * 隐藏全局页头 + 面包屑。
+ * 优先看页面自己声明的 `store.shellMode`（考试室按状态切换：作答中无壳、须知/成绩报告有壳），
+ * 页面没声明（'auto'）时才按路由白名单判断。
+ */
 const isChromeless = computed(function() {
+  if (store.shellMode === 'chromeless') return true
+  if (store.shellMode === 'shell') return false
   return chromelessRoutes.includes(route.name)
 })
 

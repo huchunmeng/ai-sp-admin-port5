@@ -1,13 +1,13 @@
 <template>
-  <div class="ex-page">
+  <!-- 作答中无壳（顶部栏承载考试状态行）；须知与成绩报告恢复全局页头 + 面包屑 -->
+  <div class="ex-page" :class="{ 'is-shell': phase !== 'exam' }">
     <!-- 考试状态**整行并入顶部栏**：计时走顶部栏自带的计时器，
          题号/部位/方式/自动保存/离开记录走 center 插槽，「交卷」用顶部栏的结束按钮 -->
     <TrainingTopBar
-      :station-name="phase === 'intro' ? pageTitle : (task ? '考核进行中' : '练习考进行中')"
+      v-if="phase === 'exam'"
+      :station-name="task ? '考核进行中' : '练习考进行中'"
       :formatted-time="'剩余 ' + remainText"
       :timer-class="timerClass"
-      :hide-timer="phase !== 'exam'"
-      :hide-end="phase !== 'exam'"
       end-label="交卷"
       end-icon="fa-paper-plane"
       @end="askSubmit">
@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { confirm, toast } from '@ai-sp/shared'
 import { TRAINING_CASES, WRITABLE_SEGMENTS, DEIDENTIFY_ROWS, studentTitleOf, COMMENT_SCOPE } from '@ai-sp/shared/imaging'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
@@ -148,6 +148,7 @@ import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
 import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, examApi } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
+import { useTrainingStore } from '@/stores/training'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -171,6 +172,7 @@ import { useUserStore } from '@/stores/user'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const store = useTrainingStore()
 const task = ref(taskById(route.query.task))
 const PRACTICE_SIZE = 1
 const PRACTICE_MIN = 30            // 练习考预设时长；正式考核对齐 S03 = 20 分钟（写在任务配置里）
@@ -410,7 +412,9 @@ function buildPaper() {
 }
 
 /* ── 成绩可见性：按任务的 §5.0 配置（1a 时机 × 1b 内容）── */
-const scoreCfg = computed(() => (task.value && task.value.scoreVisible) || { when: 'afterSubmit', content: 'total' })
+/* 无任务 = 练习考（考核侧 A 路 =「课后练习」预设）：交卷即可见 + **给逐要点明细**
+   （原默认 content 是 total，于是练习考的成绩报告里看不到评分表，只剩一句"不展示明细"） */
+const scoreCfg = computed(() => (task.value && task.value.scoreVisible) || { when: 'afterSubmit', content: 'detail' })
 const scoreOpen = computed(() => {
   if (scoreCfg.value.when === 'afterSubmit') return true
   if (scoreCfg.value.when === 'afterWindow') return !task.value || windowStateOf(task.value) === 'expired'
@@ -566,6 +570,10 @@ async function restoreFromServer() {
   }
 }
 
+/* 外壳按考试阶段切换：作答中无壳（顶部栏承载考试状态行）；须知与成绩报告要有全局页头 + 面包屑，
+   否则考完出分后考生在成绩报告页找不到导航（页内顶部栏在非作答态本来也是空的） */
+watch(phase, p => { store.shellMode = p === 'exam' ? 'chromeless' : 'shell' }, { immediate: true })
+
 onMounted(async () => {
   await ensureTaskLoaded()
   if (!restoreSession() && !(await restoreFromServer())) buildPaper()
@@ -574,6 +582,7 @@ onMounted(async () => {
   if (phase.value === 'exam') startTick()
 })
 onUnmounted(() => {
+  store.shellMode = 'auto'   // 必须复位，否则会影响后续路由的外壳
   stopTick()
   stopPoll()
   document.removeEventListener('visibilitychange', onVisible)
@@ -584,6 +593,8 @@ onUnmounted(() => {
 
 <style scoped>
 .ex-page { position: relative; min-height: 100vh; padding: 60px 24px 24px; }
+/* 有壳态（须知 / 成绩报告）：全局页头与面包屑由 TrainingLayout 提供，页面不再留顶部栏的位置 */
+.ex-page.is-shell { min-height: 0; padding: 20px 24px 48px; }
 .ex-intro { max-width: 720px; margin: 40px auto; }
 /* 已交卷页内联展示成绩报告，所以跟考试页同宽（原来 720px 放不下明细） */
 .ex-done { max-width: 1400px; margin: 24px auto; }

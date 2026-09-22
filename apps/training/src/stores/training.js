@@ -35,6 +35,15 @@ export const useTrainingStore = defineStore('training', () => {
   // 隐藏工具面板开关（点击机构名切换）：控制 评审/需求/重新生成 等仅对维护者可见的按钮
   const showHiddenControls = ref(false)
 
+  /**
+   * 页面外壳模式（由页面自己按状态设置，TrainingLayout 读它）：
+   *   'auto'       默认 —— 按路由白名单决定是否无壳
+   *   'chromeless' 强制无壳（如考试作答中：顶部栏承载考试状态行）
+   *   'shell'      强制有壳（如考试须知 / 成绩报告：需要全局页头与面包屑导航）
+   * 页面必须在 onUnmounted 里复位成 'auto'，否则会影响后续路由。
+   */
+  const shellMode = ref('auto')
+
   // LLM 配置
   const llmConfig = ref({
     available: true,
@@ -612,5 +621,6 @@ export const useTrainingStore = defineStore('training', () => {
     clearScoringCache, resetForNewSession,
     setLlmAvailable,
     sessionEpoch, trainingVersion, showHiddenControls,
+    shellMode,
   }
 })
