@@ -596,9 +596,10 @@ const suggestedPassLine = computed(() => {
   if (!cal || !cal.passRate) return null
   if (imagingCfg.scoreScale === 'raw') {
     const max = scoreableOf(sample.id, sample.capabilities).max
-    return max ? Math.round(cal.passRate * max * 10) / 10 : null
+    // 分值最小粒度 0.5：达标线也归到 0.5 的整数倍
+    return max ? Math.round(cal.passRate * max * 2) / 2 : null
   }
-  return Math.round(cal.passRate * 100 * 10) / 10
+  return Math.round(cal.passRate * 100 * 2) / 2
 })
 
 // 病例或满分口径变化 → 刷新建议值；老师手改过就不覆盖（清空视为未定，仍刷新）

@@ -182,10 +182,13 @@ export function composeScore(parsed, rubric, sample, scope = COMMENT_SCOPE.EXAM)
     const judged = (parsed.byItem && parsed.byItem[item.code]) || []
     // 逐要点计分：得数 = Σ(该要点命中档 × 要点分值)
     const byId = Object.fromEntries(assessable.map(p => [p.id, p]))
-    const got = Math.round(judged.reduce((a, p) => {
+    // ⚠️ **分值最小粒度 0.5**：要点分值可能是 2.5 / 1.5，乘上半档(0.5)会算出 1.25 这类值，
+    //    所以条目得分统一四舍五入到 0.5 的整数倍（总分 = Σ条目得分，自然也是 0.5 粒度）
+    const gotRaw = judged.reduce((a, p) => {
       const rp = byId[p.id]
       return a + (rp ? Number(rp.score) * Number(p.score) : 0)
-    }, 0) * 10) / 10
+    }, 0)
+    const got = Math.round(gotRaw * 2) / 2
 
     const points = judged.map(p => {
       // 出站安全：点评语不得泄漏标准报告（PRD §5.9.1 白名单 + §9.5 红线）
@@ -321,7 +324,8 @@ export function applyExamScale(result, passLine, scoreScale) {
   let finalMax = scoreableMax
   if (scoreScale === 'normalize' && scoreableMax > 0) {
     finalMax = 100
-    finalScore = Math.round(rawTotal / scoreableMax * 1000) / 10
+    // ⚠️ **分值最小粒度 0.5**：折算百分制会产生 86.3 这类小数，同样要归到 0.5 的整数倍
+    finalScore = Math.round(rawTotal / scoreableMax * 100 * 2) / 2
   }
   const hasExamLine = passLine !== null && passLine !== undefined && passLine !== '' && !isNaN(Number(passLine))
   const rubricPassLine = typeof result.passLine === 'number' ? result.passLine : null

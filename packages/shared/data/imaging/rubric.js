@@ -540,7 +540,8 @@ export function resolveRubric(caseId, capabilities, itemsOverride) {
   const scoreableMax = Math.round(items.reduce((a, i) => a + i.scoreableFull, 0) * 10) / 10
   // 及格线：占**本卷可评满分**的比例（难度分层标定，见 r1-table.js 的 LEVEL_CALIBRATION）
   const passRate = typeof cal.passRate === 'number' ? cal.passRate : 0.8
-  const passLine = Math.round(scoreableMax * passRate * 10) / 10
+  // ⚠️ 分值最小粒度 0.5：0.8 × 84 = 67.2 这类小数不外露
+  const passLine = Math.round(scoreableMax * passRate * 2) / 2
 
   const unassessable = items
     .filter(i => i.scoreableFull < i.full)
