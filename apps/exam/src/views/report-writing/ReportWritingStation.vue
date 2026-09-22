@@ -105,6 +105,7 @@
                       :title="studentTitleOf(paper[reportIndex].sample)"
                       :submitted-at="submittedAt"
                       hide-compare
+                      :allow-rescore="false"
                       @close="reportIndex = null" @score="() => {}" />
   </div>
 </template>

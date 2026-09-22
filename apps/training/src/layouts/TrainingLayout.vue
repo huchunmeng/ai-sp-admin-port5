@@ -135,9 +135,9 @@ function switchVersion(v) {
 const stationRoutes = ['historyTaking', 'physicalExam', 'ancillaryTests', 'diagnosis', 'treatmentPlan', 'medicalRecord', 'caseAnalysis', 'humanisticComm', 'mentalExam']
 
 // 「无壳页」：隐藏全局页头与面包屑，页面自带 TrainingTopBar（与病史采集/体格检查同一套框架）。
-// 影像报告书写的**作答与考核页**都按站内页处理，但不渲染全局 AI伴学抽屉（本模块自带 AI伴学面板）。
-// 考核侧同样无壳：我的考核任务 / 考试室都自带 TrainingTopBar，否则会出现"全局页头 + 页面 TopBar"双层头。
-const reportWritingStationRoutes = ['reportWritingWorkbench', 'reportWritingExamTasks', 'reportWritingExam']
+// 影像报告书写：**只有"考试操作页"与训练工作台**无壳（它们自带 TrainingTopBar）；
+// 列表类页面（我的考核任务、训练列表）**保留**全局页头与面包屑。
+const reportWritingStationRoutes = ['reportWritingWorkbench', 'reportWritingExam']
 const chromelessRoutes = [...stationRoutes, ...reportWritingStationRoutes]
 
 const isStationRoute = computed(function() {
@@ -194,6 +194,9 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'reportWritingTrain' } })
     items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
+  } else if (name === 'reportWritingExamTasks') {
+    items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
+    items.push({ label: lang === 'zh' ? '我的考核任务' : 'My Exams', to: null })
   } else if (name === 'reportWritingExam') {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
     items.push({ label: lang === 'zh' ? '影像报告书写考核' : 'Report Exam', to: null })

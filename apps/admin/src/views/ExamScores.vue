@@ -100,6 +100,7 @@
                       :title="detail.title"
                       :submitted-at="detail.submittedAt"
                       hide-compare
+                      :allow-rescore="false"
                       @close="detail = null"
                       @score="() => {}" />
   </div>

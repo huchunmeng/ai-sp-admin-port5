@@ -77,27 +77,47 @@
             {{ gradingState === 'failed' ? '评阅失败，请联系考务' : '答卷已提交，正在评阅…' }}
           </div>
 
-          <div v-if="!scoreOpen" class="ex-locked">
+          <div v-if="submitting || gradingState === 'grading'" class="ex-grading">
+            <i class="fa-solid fa-spinner fa-spin"></i> 答卷已提交，正在评阅…
+          </div>
+
+          <div v-else-if="!scoreOpen" class="ex-locked">
             <i class="fa-solid fa-lock"></i> {{ scoreHiddenText }}
           </div>
 
-          <div class="ex-scores">
-            <div v-for="(q, i) in paper" :key="q.id" class="ex-score-row">
-              <span class="ex-score-idx">{{ i + 1 }}</span>
-              <span class="ex-score-title">{{ studentTitleOf(q.sample) }}</span>
-              <span class="ex-score-val">
-                <i v-if="(submitting || gradingState === 'grading') && !resultOf(i)" class="fa-solid fa-spinner fa-spin"></i>
-                <template v-else-if="resultOf(i) && scoreOpen">{{ scoreTextOf(i) }}</template>
-                <template v-else>—</template>
-              </span>
-              <span v-if="resultOf(i) && scoreOpen" class="ex-pass" :class="passed(i) ? 'is-ok' : 'is-no'">
-                {{ passed(i) ? '达标' : '未达标' }}（{{ passLineLabel(i) }}）
-              </span>
-              <span v-else-if="!scoreOpen" class="text-secondary" style="font-size:12px">—</span>
-              <span v-else class="text-secondary" style="font-size:12px">{{ (submitting || gradingState === 'grading') ? '评阅中' : '评分失败' }}</span>
-              <button v-if="showDetail" class="btn btn-sm" :disabled="!resultOf(i)" @click="openReport(i)">成绩报告</button>
-            </div>
+          <!-- 多题时给一个题目切换；单题不显示 -->
+          <div v-if="scoreOpen && paper.length > 1" class="ex-qnav">
+            <button v-for="(q, i) in paper" :key="q.id" class="ex-qnav-btn"
+                    :class="{ active: i === reportIndex }" @click="reportIndex = i">
+              <span class="ex-qnav-idx">{{ i + 1 }}</span>
+              <span class="ex-qnav-name">{{ studentTitleOf(q.sample) }}</span>
+              <b class="ex-qnav-score">{{ scoreTextOf(i) }}</b>
+            </button>
           </div>
+
+          <!-- 成绩报告**直接内联**：不再"详情页 → 再点成绩报告"，两件事本来就是一回事 -->
+          <template v-if="scoreOpen && resultOf(reportIndex)">
+            <div class="ex-sum">
+              <div class="ex-sum-score">
+                {{ scoreTextOf(reportIndex) }}
+                <span class="ex-sum-label">得分</span>
+              </div>
+              <div class="ex-sum-meta">
+                <span class="ex-pass" :class="passed(reportIndex) ? 'is-ok' : 'is-no'">
+                  {{ passed(reportIndex) ? '达标' : '未达标' }}（{{ passLineLabel(reportIndex) }}）
+                </span>
+                <span class="ex-sum-sub">{{ studentTitleOf(paper[reportIndex].sample) }} · 交卷 {{ submittedAt }}</span>
+              </div>
+            </div>
+            <ScoreResultPanel v-if="showDetail"
+                              :scoring="{ status: 'done', result: resultOf(reportIndex), error: '', attempts: 1, appeal: null }"
+                              :allow-rescore="false" />
+            <div v-else class="ex-hint">
+              <i class="fa-solid fa-circle-info"></i> 本场只公布总分与达标结果，不展示逐要点明细。
+            </div>
+          </template>
+          <div v-else-if="scoreOpen" class="ex-hint">本题未取到评分结果。</div>
+
           <div class="ex-hint">
             <i class="fa-solid fa-circle-info"></i>
             交卷后<b>不提供参考报告对照</b> —— 交卷即给参考报告等于泄题给下一批。
@@ -112,15 +132,6 @@
         </div>
       </div>
     </template>
-
-    <ScoreReportModal v-if="reportIndex !== null && resultOf(reportIndex)"
-                      :scoring="{ status: 'done', result: resultOf(reportIndex), error: '', attempts: 1, appeal: null }"
-                      :draft="draftOf(reportIndex)"
-                      :sample="paper[reportIndex].sample"
-                      :title="studentTitleOf(paper[reportIndex].sample)"
-                      :submitted-at="submittedAt"
-                      hide-compare
-                      @close="reportIndex = null" @score="() => {}" />
   </div>
 </template>
 
@@ -129,7 +140,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { confirm, toast } from '@ai-sp/shared'
 import { TRAINING_CASES, WRITABLE_SEGMENTS, DEIDENTIFY_ROWS, studentTitleOf, COMMENT_SCOPE } from '@ai-sp/shared/imaging'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
-import { ImagePanel, SegmentForm, ScoreReportModal, useReportScoring } from '@ai-sp/shared/imaging-ui'
+import { ImagePanel, SegmentForm, ScoreResultPanel, useReportScoring } from '@ai-sp/shared/imaging-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
 import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, examApi } from '@ai-sp/shared/imaging-ui'
@@ -205,7 +216,7 @@ const paper = ref([])
 const answers = reactive({})
 const results = reactive({})
 const currentIndex = ref(0)
-const reportIndex = ref(null)
+const reportIndex = ref(0)   // 内联成绩报告：默认展示第 1 题（多题时可切换）
 const submitting = ref(false)
 const submittedAt = ref('')
 const deadline = ref(0)
@@ -508,7 +519,7 @@ async function doSubmit() {
   submitting.value = false
   submitSession(sessionKey.value, { results: collected })
 }
-function openReport(i) { reportIndex.value = i }
+function openReport(i) { reportIndex.value = i }   // 多题切换/直达某题
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
 function restart() {
   clearSession(sessionKey.value)
@@ -518,7 +529,7 @@ function restart() {
   Object.keys(answers).forEach(k => delete answers[k])
   Object.keys(results).forEach(k => delete results[k])
   currentIndex.value = 0
-  reportIndex.value = null
+  reportIndex.value = 0
   submittedAt.value = ''
   leaveCount.value = 0
   superseded.value = 0
@@ -527,9 +538,33 @@ function restart() {
   buildPaper()
 }
 
+/**
+ * **服务端优先恢复**：换设备 / 清了本地存储时，只有服务端知道"这场我考过没有、出分没有"。
+ * 深链直接进 `?task=` 时如果没有这一步，已交卷的考生会看到"考试须知"而不是成绩。
+ * 做法：从服务端取回会话落到本地，再复用 restoreSession() 的状态机（已交卷→成绩页 / 未到点→续答）。
+ */
+async function restoreFromServer() {
+  if (!task.value) return false
+  try {
+    const remote = await examApi.sessionOf(task.value.id, userStore.examNumber || '')
+    if (!remote || !remote.session) return false
+    const rs = remote.session
+    saveSession(sessionKey.value, {
+      server: true, serverSessionId: rs.sessionId, taskId: task.value.id,
+      startedAt: rs.startedAt, deadline: rs.deadline,
+      answers: rs.answers || {}, leaveCount: rs.leaveCount || 0, superseded: rs.superseded || 0,
+      submitted: !!rs.submitted, submittedAt: rs.submittedAt || '', status: rs.status,
+      results: (remote.score && remote.score.results) || undefined
+    })
+    return restoreSession()
+  } catch (e) {
+    return false   // 服务不可达 → 按本地处理
+  }
+}
+
 onMounted(async () => {
   await ensureTaskLoaded()
-  if (!restoreSession()) buildPaper()
+  if (!restoreSession() && !(await restoreFromServer())) buildPaper()
   document.addEventListener('visibilitychange', onVisible)
   window.addEventListener('blur', onBlur)
   if (phase.value === 'exam') startTick()
@@ -545,10 +580,39 @@ onUnmounted(() => {
 
 <style scoped>
 .ex-page { position: relative; min-height: 100vh; padding: 60px 24px 24px; }
-.ex-intro, .ex-done { max-width: 720px; margin: 40px auto; }
+.ex-intro { max-width: 720px; margin: 40px auto; }
+/* 已交卷页内联展示成绩报告，所以跟考试页同宽（原来 720px 放不下明细） */
+.ex-done { max-width: 1400px; margin: 24px auto; }
 .ex-card { padding: 24px 28px; }
 .ex-title { margin: 0 0 16px; font-size: 19px; display: flex; align-items: center; gap: 10px; }
 .ex-title i { color: var(--primary); }
+
+/* ── 已交卷：评阅中 / 题目切换 / 总分条 ── */
+.ex-grading {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; margin-bottom: 12px; border-radius: 8px;
+  font-size: 12.5px; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;
+}
+.ex-qnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.ex-qnav-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: #fff; font-size: 12.5px; color: #4b5563;
+}
+.ex-qnav-btn:hover { border-color: var(--primary); }
+.ex-qnav-btn.active { border-color: var(--primary); background: #eef2ff; color: #3730a3; font-weight: 600; }
+.ex-qnav-idx { color: #9ca3af; }
+.ex-qnav-btn.active .ex-qnav-idx { color: #6366f1; }
+.ex-qnav-score { font-variant-numeric: tabular-nums; }
+.ex-sum {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  padding: 14px 18px; margin-bottom: 14px; border-radius: 10px;
+  background: #f8fafc; border: 1px solid var(--border);
+}
+.ex-sum-score { font-size: 26px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ex-sum-label { font-size: 11.5px; font-weight: 400; color: #9ca3af; margin-left: 6px; }
+.ex-sum-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ex-sum-sub { font-size: 12px; color: #6b7280; }
 .ex-warn {
   display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin-bottom: 18px;
   border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e;

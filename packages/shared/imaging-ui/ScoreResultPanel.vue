@@ -92,7 +92,9 @@
           </span>
         </div>
         <div class="flex gap-2">
-          <button class="btn btn-sm" @click="$emit('score')">重新评分</button>
+          <!-- 考试场景**不给"重新评分"**：能反复重评等于能一直重掷到过线（诚信漏洞）。
+               复核（申诉）保留并留痕，符合 R3。 -->
+          <button v-if="allowRescore" class="btn btn-sm" @click="$emit('score')">重新评分</button>
           <button v-if="!scoring.appeal" class="btn btn-sm" @click="appealOpen = true">申请复核</button>
         </div>
       </div>
@@ -126,7 +128,9 @@ import { toast } from '@ai-sp/shared'
 
 const props = defineProps({
   /** { status, result, error, attempts, appeal } */
-  scoring: { type: Object, required: true }
+  scoring: { type: Object, required: true },
+  /** 是否允许"重新评分"。训练侧默认允许；**考核侧必须传 false**（反复重评 = 重掷到过线） */
+  allowRescore: { type: Boolean, default: true }
 })
 const emit = defineEmits(['score', 'retry', 'appeal'])
 

@@ -52,7 +52,7 @@
 
       <div class="sr-body">
         <div v-show="tab === 'points'" class="sr-pane">
-          <ScoreResultPanel :scoring="scoring" @score="$emit('score')" @retry="$emit('score')" @appeal="$emit('appeal', $event)" />
+          <ScoreResultPanel :scoring="scoring" :allow-rescore="allowRescore" @score="$emit('score')" @retry="$emit('score')" @appeal="$emit('appeal', $event)" />
         </div>
         <div v-if="!hideCompare" v-show="tab === 'compare'" class="sr-pane">
           <ComparePanel :draft="draft" :sample="sample" />
@@ -89,7 +89,9 @@ const props = defineProps({
   title: { type: String, default: '' },
   submittedAt: { type: String, default: '' },
   /** 练习考/考核模式：隐藏「报告对照」页签（交卷后给参考报告 = 泄题给下一批） */
-  hideCompare: { type: Boolean, default: false }
+  hideCompare: { type: Boolean, default: false },
+  /** 是否允许「重新评分」；**考核与成绩管理页传 false**（反复重评 = 重掷到过线） */
+  allowRescore: { type: Boolean, default: true }
 })
 defineEmits(['close', 'score', 'appeal', 'edit', 'restart'])
 
