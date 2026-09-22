@@ -78,8 +78,11 @@
             <!-- 真实 DICOM 序列：16-bit 原始像素，窗宽窗位在 canvas 里实时算 -->
             <canvas v-if="hasRaw" ref="canvasEl" class="rwb-pixel"
                     :width="rawMeta.width" :height="rawMeta.height"></canvas>
-            <!-- JPEG 序列：没有像素间距也能量（按像素），所以这里拿自然尺寸做坐标换算 -->
-            <img v-else ref="imgEl" class="rwb-pixel" :src="currentImage" :alt="activeView.name" @load="onImgLoad">
+            <!-- JPEG 序列：没有像素间距也能量（按像素），所以这里拿自然尺寸做坐标换算。
+                 ⚠️ 必须禁用原生拖拽：<img> 上按住拖动会触发浏览器的"拖图片"，
+                 看着就像在平移影像，测量也因此起不来（canvas 无此问题） -->
+            <img v-else ref="imgEl" class="rwb-pixel" :src="currentImage" :alt="activeView.name"
+                 draggable="false" @dragstart.prevent @load="onImgLoad">
 
             <!-- 测量标注：有 PixelSpacing 出毫米，没有则出像素；随影像一起缩放 -->
             <svg v-if="(hasRaw || currentImage) && measures.length" class="rwb-measure"
@@ -508,7 +511,11 @@ function onCanvasWheel(e) {
 
 function onCanvasDown(e) {
   dragMoved.value = false
-  if (measuring.value) { measureStart(e); return }
+  if (measuring.value) {
+    e.preventDefault()   // 阻止原生图片拖拽/选中，否则 JPEG 序列上会变成"拖图片"
+    measureStart(e)
+    return
+  }
   if (zooming.value) panFrom.value = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y }
 }
 function onCanvasMove(e) {
@@ -637,7 +644,9 @@ watch([activeIndex, () => layer[activeView.value && activeView.value.key], curre
 .rwb-rawfallback i { font-size: 18px; }
 /* 缩放 / 平移层：以画面中心为锚点，四角信息与工具栏不受影响 */
 .rwb-stage { position: relative; transform-origin: center center; will-change: transform; }
-.rwb-pixel { max-width: 100%; max-height: 460px; object-fit: contain; display: block; }
+.rwb-pixel { max-width: 100%; max-height: 460px; object-fit: contain; display: block;
+  /* 双重保险：禁用原生图片拖拽与选中（见 <img> 上的 draggable/dragstart） */
+  -webkit-user-drag: none; user-select: none; }
 
 /* 四角叠加信息（真实阅片的固定位置） */
 .rwb-ov {

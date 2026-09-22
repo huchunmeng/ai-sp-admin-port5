@@ -205,7 +205,40 @@ pageerror: 0     三端 build 通过
 pageerror: 0      三端 build 通过
 ```
 
-截图：`15_练习考交卷即回列表_评阅中`、`16_后台评完后列表出分`、`17_补评完成提示`。
+截图：`15_练习考交卷即回列表_评阅中`、`16_后台评完后列表出成绩`、`17_补评完成提示`。
+
+## 0.11 第九批批注 ——「选了测量，按下鼠标却变成拖动图片」
+
+**根因**：不是工具逻辑冲突 —— 测量与缩放**本来就互斥**（开测量会关缩放；`onCanvasDown` 也优先走测量）。
+真正的原因是 **JPEG 序列用 `<img>` 渲染，浏览器默认允许拖拽图片**：按住拖动会弹出那个半透明 ghost 图，
+看着就像在平移影像，测量自然也起不来。canvas（16-bit 路线）没有这个问题，所以只在部分病例上出现。
+
+**修法三件套**（缺一不可）：
+
+```html
+<img class="rwb-pixel" … draggable="false" @dragstart.prevent>
+```
+```css
+.rwb-pixel { -webkit-user-drag: none; user-select: none; }
+```
+```js
+function onCanvasDown(e) {
+  if (measuring.value) { e.preventDefault(); measureStart(e); return }   // 先 preventDefault 再开测
+  …
+}
+```
+
+**实测**（同时确认三件事：出测量线、原生拖拽 0 次、画面没位移）
+
+```
+JPEG（PUB-001，<img>）  : draggable="false" · 拖出 172 px · 原生 dragstart 0 次 · transform 未变
+16-bit（KNEE-001，canvas）: 拖出 150.1 mm（口径不变）· 原生 dragstart 0 次 · transform 未变
+回归：缩放模式下按住拖动**仍能平移**（zoomPan.moved = true）—— 防拖拽没把平移弄坏
+pageerror: 0
+```
+
+截图：`18_JPEG序列_测量不再变成拖图片`。这条坑也已补进
+`04_交付物/阅片器复刻规格_影像报告书写训练.md` §8（坑 4）。
 
 ---
 
