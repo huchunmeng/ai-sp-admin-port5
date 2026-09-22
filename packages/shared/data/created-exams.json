@@ -1,1 +1,147 @@
-[]
+[
+  {
+    "id": "TASK-D1",
+    "name": "2026年住培结业实践技能考核 · 影像报告书写",
+    "scheme": "住培结业实践技能考核 · 放射科（OSCE 第 3 站）",
+    "examMode": "online",
+    "caseIds": [
+      "KNEE-001"
+    ],
+    "durationMin": 20,
+    "passLine": 60,
+    "questionCount": 1,
+    "scoreVisible": {
+      "when": "afterSubmit",
+      "content": "detail"
+    },
+    "retake": "single",
+    "scoreScale": "normalize",
+    "windowStart": "2026-09-18 00:00",
+    "windowEnd": "2026-12-31 23:59",
+    "dispatchedBy": "考务管理员",
+    "dispatchedAt": "2026-09-21 20:00",
+    "candidates": [
+      {
+        "id": "s1",
+        "name": "张三",
+        "examNumber": "001"
+      }
+    ]
+  },
+  {
+    "id": "TASK-D2",
+    "name": "影像报告书写 · 9月月考（放射科）",
+    "scheme": "正式考核（现场考站）",
+    "examMode": "onsite",
+    "caseIds": [
+      "KNEE-001"
+    ],
+    "durationMin": 20,
+    "passLine": 66,
+    "questionCount": 1,
+    "scoreVisible": {
+      "when": "afterSubmit",
+      "content": "detail"
+    },
+    "retake": "single",
+    "scoreScale": "normalize",
+    "windowStart": "2026-09-18 00:00",
+    "windowEnd": "2026-12-31 23:59",
+    "dispatchedBy": "考务管理员",
+    "dispatchedAt": "2026-09-21 20:00",
+    "candidates": [
+      {
+        "id": "s1",
+        "name": "张三",
+        "examNumber": "001"
+      }
+    ]
+  },
+  {
+    "id": "TASK-D3",
+    "name": "影像报告书写 · 随堂测验（膝关节）",
+    "scheme": "随堂测验",
+    "examMode": "online",
+    "caseIds": [
+      "KNEE-001"
+    ],
+    "durationMin": 20,
+    "passLine": 60,
+    "questionCount": 1,
+    "scoreVisible": {
+      "when": "afterSubmit",
+      "content": "detail"
+    },
+    "retake": "single",
+    "scoreScale": "normalize",
+    "windowStart": "2026-09-18 00:00",
+    "windowEnd": "2026-12-31 23:59",
+    "dispatchedBy": "考务管理员",
+    "dispatchedAt": "2026-09-21 20:00",
+    "candidates": [
+      {
+        "id": "s1",
+        "name": "张三",
+        "examNumber": "001"
+      }
+    ]
+  },
+  {
+    "id": "TASK-D4",
+    "name": "影像报告书写 · 10月月考（放射科）",
+    "scheme": "正式考核",
+    "examMode": "online",
+    "caseIds": [
+      "KNEE-001"
+    ],
+    "durationMin": 20,
+    "passLine": 66,
+    "questionCount": 1,
+    "scoreVisible": {
+      "when": "afterSubmit",
+      "content": "detail"
+    },
+    "retake": "single",
+    "scoreScale": "normalize",
+    "windowStart": "2026-09-18 00:00",
+    "windowEnd": "2026-12-31 23:59",
+    "dispatchedBy": "考务管理员",
+    "dispatchedAt": "2026-09-21 20:00",
+    "candidates": [
+      {
+        "id": "s1",
+        "name": "张三",
+        "examNumber": "001"
+      }
+    ]
+  },
+  {
+    "id": "TASK-D5",
+    "name": "2026年住培结业实践技能考核 · 影像报告书写（补考）",
+    "scheme": "住培结业实践技能考核 · 放射科（OSCE 第 3 站）",
+    "examMode": "online",
+    "caseIds": [
+      "KNEE-001"
+    ],
+    "durationMin": 20,
+    "passLine": 60,
+    "questionCount": 1,
+    "scoreVisible": {
+      "when": "afterSubmit",
+      "content": "detail"
+    },
+    "retake": "single",
+    "scoreScale": "normalize",
+    "windowStart": "2026-09-18 00:00",
+    "windowEnd": "2026-12-31 23:59",
+    "dispatchedBy": "考务管理员",
+    "dispatchedAt": "2026-09-21 20:00",
+    "candidates": [
+      {
+        "id": "s1",
+        "name": "张三",
+        "examNumber": "001"
+      }
+    ]
+  }
+]
