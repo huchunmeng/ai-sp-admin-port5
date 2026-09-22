@@ -17,6 +17,8 @@
         {{ t.label }}<span class="et-tab-n">{{ countOf(t.key) }}</span>
       </button>
       <span class="et-source">{{ sourceLabel }}</span>
+      <!-- 演示入口：没有练习考记录时可直接装几条看列表形态（与训练记录的"载入演示记录"同一约定） -->
+      <button v-if="!practiceRecords.length" class="et-load-demo" @click="loadDemo">载入演示练习考记录</button>
     </div>
 
     <div v-if="filteredRows.length" class="et-list">
@@ -130,7 +132,7 @@ import { EXAM_TASKS, EXAM_MODE_LABEL, windowStateOf, getImagingSample } from '@a
 import { loadSession, sessionStateOf, saveSession, examApi, ScoreReportModal } from '@ai-sp/shared/imaging-ui'
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
-import { readExamRecords } from '@/composables/useExamRecords'
+import { readExamRecords, loadDemoExamRecords } from '@/composables/useExamRecords'
 
 const route = useRoute()
 const router = useRouter()
@@ -268,6 +270,11 @@ function switchTab(key) {
   tab.value = key
   refreshPractice()
 }
+/** 载入演示练习考记录（仅演示用） */
+function loadDemo() {
+  practiceRecords.value = loadDemoExamRecords()
+  if (!TABS.some(t => t.key === tab.value)) tab.value = 'done'
+}
 function openPracticeRecord(rec) { activeRecord.value = rec }
 
 /** 排序：可操作的（作答中 / 待作答 / 未开始）在前，已交卷/已结束在后；组内保持原顺序 */
@@ -403,6 +410,10 @@ onMounted(async () => {
 
 /* ── 练习考标记：与正式考核同列表，靠它区分 ── */
 .et-state.is-practice { color: #3730a3; background: #eef2ff; }
+.et-load-demo {
+  margin-left: 12px; background: none; border: none; padding: 0; cursor: pointer;
+  font-size: 11.5px; color: var(--primary); text-decoration: underline;
+}
 
 /* ── 任务卡：左信息 + 右操作（状态徽标在右列顶部）── */
 .et-list { display: flex; flex-direction: column; gap: 10px; }

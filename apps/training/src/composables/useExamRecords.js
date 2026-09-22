@@ -10,6 +10,8 @@
 // 正式考核的成绩**不在这里**：它由考核服务（services/exam-api）落库，
 // 学员端在「我的考核任务」看自己的状态与分数，教师端在「成绩管理」看明细。
 
+import { MOCK_PRACTICE_RECORDS } from '@/data/mockPracticeRecords.js'
+
 const RECORDS_KEY = 'report_writing_exam_records_v1'
 
 function readJson(key, fallback) {
@@ -38,6 +40,20 @@ export function readExamRecord(id) {
 
 export function clearExamRecords() {
   writeJson(RECORDS_KEY, [])
+}
+
+/**
+ * 演示用：装几条**练习考**记录（复用演示病例里真实的评分结果，便于直接看到列表形态）。
+ * 与训练记录的「载入演示记录」是同一套约定，互不影响。
+ */
+export function loadDemoExamRecords() {
+  const list = MOCK_PRACTICE_RECORDS.map((r, i) => ({
+    ...r,
+    id: `exam-demo-${i + 1}`,
+    kind: 'practice'
+  }))
+  writeJson(RECORDS_KEY, list)
+  return list
 }
 
 /**

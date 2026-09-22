@@ -60,10 +60,11 @@
       </div>
 
       <div class="sr-foot">
-        <button class="btn" @click="$emit('edit')">
+        <!-- 考核侧（交卷后不可修改）要能隐藏"返回修改/重练"；训练侧保留 -->
+        <button v-if="!hideEditActions" class="btn" @click="$emit('edit')">
           <i class="fa-solid fa-rotate-left"></i> 返回修改
         </button>
-        <button class="btn" @click="$emit('restart')">
+        <button v-if="!hideEditActions" class="btn" @click="$emit('restart')">
           <i class="fa-solid fa-forward"></i> 重练
         </button>
         <button class="btn btn-primary" @click="$emit('close')">
@@ -91,7 +92,9 @@ const props = defineProps({
   /** 练习考/考核模式：隐藏「报告对照」页签（交卷后给参考报告 = 泄题给下一批） */
   hideCompare: { type: Boolean, default: false },
   /** 是否允许「重新评分」；**考核与成绩管理页传 false**（反复重评 = 重掷到过线） */
-  allowRescore: { type: Boolean, default: true }
+  allowRescore: { type: Boolean, default: true },
+  /** 隐藏底栏的「返回修改 / 重练」；**考核侧必须传 true**（交卷后不可修改，也不该重练） */
+  hideEditActions: { type: Boolean, default: false }
 })
 defineEmits(['close', 'score', 'appeal', 'edit', 'restart'])
 

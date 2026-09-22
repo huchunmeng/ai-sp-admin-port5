@@ -97,7 +97,7 @@
             </button>
           </div>
 
-          <!-- 成绩报告**直接内联**：不再"详情页 → 再点成绩报告"，两件事本来就是一回事 -->
+          <!-- 交卷后只留摘要；**成绩报告与训练一致走弹窗**（不再把报告铺成一个整页） -->
           <template v-if="scoreOpen && resultOf(reportIndex)">
             <div class="ex-sum">
               <div class="ex-sum-score">
@@ -110,11 +110,11 @@
                 </span>
                 <span class="ex-sum-sub">{{ studentTitleOf(paper[reportIndex].sample) }} · 交卷 {{ submittedAt }}</span>
               </div>
+              <button v-if="showDetail" class="btn btn-primary btn-sm ex-sum-btn" @click="reportModal = true">
+                <i class="fa-solid fa-file-lines"></i> 查看成绩报告
+              </button>
             </div>
-            <ScoreResultPanel v-if="showDetail"
-                              :scoring="{ status: 'done', result: resultOf(reportIndex), error: '', attempts: 1, appeal: null }"
-                              :allow-rescore="false" />
-            <div v-else class="ex-hint">
+            <div v-if="!showDetail" class="ex-hint">
               <i class="fa-solid fa-circle-info"></i> 本场只公布总分与达标结果，不展示逐要点明细。
             </div>
           </template>
@@ -140,6 +140,19 @@
         </div>
       </div>
     </template>
+
+    <!-- 成绩报告弹窗（与训练工作台同一套；考核侧：不给报告对照、不给重新评分、不给返回修改/重练） -->
+    <ScoreReportModal v-if="reportModal && resultOf(reportIndex)"
+                      :scoring="{ status: 'done', result: resultOf(reportIndex), error: '', attempts: 1, appeal: null }"
+                      :draft="draftOf(reportIndex)"
+                      :sample="paper[reportIndex].sample"
+                      :title="studentTitleOf(paper[reportIndex].sample)"
+                      :submitted-at="submittedAt"
+                      hide-compare
+                      :allow-rescore="false"
+                      hide-edit-actions
+                      @close="reportModal = false"
+                      @score="() => {}" />
   </div>
 </template>
 
@@ -148,7 +161,7 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { confirm, toast } from '@ai-sp/shared'
 import { TRAINING_CASES, WRITABLE_SEGMENTS, DEIDENTIFY_ROWS, studentTitleOf, COMMENT_SCOPE } from '@ai-sp/shared/imaging'
 import TrainingTopBar from '@/components/TrainingTopBar.vue'
-import { ImagePanel, SegmentForm, ScoreResultPanel, useReportScoring } from '@ai-sp/shared/imaging-ui'
+import { ImagePanel, SegmentForm, ScoreReportModal, useReportScoring } from '@ai-sp/shared/imaging-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { taskById, windowStateOf, EXAM_MODE_LABEL } from '@ai-sp/shared/imaging'
 import { startOrResume, saveSession, submitSession, loadSession, clearSession, currentClientId, examApi } from '@ai-sp/shared/imaging-ui'
@@ -227,7 +240,8 @@ const paper = ref([])
 const answers = reactive({})
 const results = reactive({})
 const currentIndex = ref(0)
-const reportIndex = ref(0)   // 内联成绩报告：默认展示第 1 题（多题时可切换）
+const reportIndex = ref(0)   // 多题时的当前题（报告弹窗按它取分）
+const reportModal = ref(false)   // 成绩报告弹窗（与训练一致；交卷出分后自动打开）
 const submitting = ref(false)
 const submittedAt = ref('')
 const deadline = ref(0)
@@ -347,6 +361,8 @@ function pollServerScore(serverSessionId, { timeoutMs = 5 * 60 * 1000 } = {}) {
       gradingState.value = ''
       submitting.value = false
       stopPoll()
+      // 出分即弹成绩报告（与训练工作台一致），不额外点一次
+      if (showDetail.value && resultOf(reportIndex.value)) reportModal.value = true
       return
     }
     if (s && s.status === 'failed') {
@@ -536,6 +552,8 @@ async function doSubmit() {
   // ③ 练习考：把成绩落进**考试记录**（独立存储，与训练记录隔离）—— 否则出分即散、回头找不到。
   //    正式考核不进本机记录 —— 它的成绩由考核服务落库，看「我的考核任务」与成绩管理。
   if (!task.value) persistExamRecords()
+  // ④ 出分即弹成绩报告（与训练工作台一致）
+  if (showDetail.value && resultOf(reportIndex.value)) reportModal.value = true
 }
 
 /** 练习考交卷后落考试记录（每题一条） */
@@ -562,6 +580,7 @@ function restart() {
   Object.keys(results).forEach(k => delete results[k])
   currentIndex.value = 0
   reportIndex.value = 0
+  reportModal.value = false
   submittedAt.value = ''
   leaveCount.value = 0
   superseded.value = 0
@@ -620,8 +639,8 @@ onUnmounted(() => {
 /* 有壳态（须知 / 成绩报告）：全局页头与面包屑由 TrainingLayout 提供，页面不再留顶部栏的位置 */
 .ex-page.is-shell { min-height: 0; padding: 20px 24px 48px; }
 .ex-intro { max-width: 720px; margin: 40px auto; }
-/* 已交卷页内联展示成绩报告，所以跟考试页同宽（原来 720px 放不下明细） */
-.ex-done { max-width: 1400px; margin: 24px auto; }
+/* 已交卷只留摘要（成绩报告走弹窗），所以收窄到正常阅读宽度 */
+.ex-done { max-width: 860px; margin: 24px auto; }
 .ex-card { padding: 24px 28px; }
 .ex-title { margin: 0 0 16px; font-size: 19px; display: flex; align-items: center; gap: 10px; }
 .ex-title i { color: var(--primary); }
@@ -652,6 +671,7 @@ onUnmounted(() => {
 .ex-sum-label { font-size: 11.5px; font-weight: 400; color: #9ca3af; margin-left: 6px; }
 .ex-sum-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ex-sum-sub { font-size: 12px; color: #6b7280; }
+.ex-sum-btn { margin-left: auto; }
 .ex-warn {
   display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin-bottom: 18px;
   border-radius: 8px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
