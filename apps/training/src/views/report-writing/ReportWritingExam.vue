@@ -125,6 +125,12 @@
             交卷后<b>不提供参考报告对照</b> —— 交卷即给参考报告等于泄题给下一批。
             要对照学习请回「影像报告书写训练」再练一遍。
           </div>
+          <!-- 练习考的成绩会落进「训练记录」，这里给个明确交代 + 回看入口，否则学员不知道记录留下来了 -->
+          <div v-if="!task" class="ex-saved-tip">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>本次练习考成绩已存入「训练记录」</span>
+            <button class="ex-saved-link" @click="goRecords">去查看 →</button>
+          </div>
           <button v-if="!task || task.retake !== 'single'" class="btn ex-start" style="margin-top:14px" @click="restart">
             <i class="fa-solid fa-rotate-right"></i> {{ task ? '重做本题' : '再来一份' }}
           </button>
@@ -149,6 +155,7 @@ import { startOrResume, saveSession, submitSession, loadSession, clearSession, c
 import { createdExamsStore } from '@ai-sp/shared/created-exams'
 import { useUserStore } from '@/stores/user'
 import { useTrainingStore } from '@/stores/training'
+import { addExamPracticeRecord } from '@/composables/useReportSession'
 
 /**
  * 考试室 —— **一个页面同时承担两种考试方式**（不写成两条代码路径）
@@ -526,9 +533,26 @@ async function doSubmit() {
   }
   submitting.value = false
   submitSession(sessionKey.value, { results: collected })
+  // ③ 练习考：把成绩落进「练习记录」（与训练工作台同一份记录），否则出分即散、回头找不到。
+  //    正式考核不进练习记录 —— 它的成绩在考核服务与「成绩管理」里。
+  if (!task.value) persistPracticeRecords()
+}
+
+/** 练习考交卷后落练习记录（每题一条） */
+function persistPracticeRecords() {
+  for (let i = 0; i < paper.value.length; i++) {
+    const q = paper.value[i]
+    addExamPracticeRecord({
+      sample: q.sample,
+      draft: { ...draftOf(i) },
+      result: results[q.id] || null
+    })
+  }
 }
 function openReport(i) { reportIndex.value = i }   // 多题切换/直达某题
 function goTasks() { router.push({ name: 'reportWritingExamTasks' }) }
+/** 回看练习记录（练习考的成绩落在训练记录里） */
+function goRecords() { router.push({ name: 'reportWritingTrain', query: { tab: 'records' } }) }
 function restart() {
   clearSession(sessionKey.value)
   stopPoll()
@@ -636,6 +660,16 @@ onUnmounted(() => {
 .ex-rules { margin: 0 0 22px; padding-left: 20px; font-size: 13px; line-height: 2.1; color: #4b5563; }
 .ex-start { width: 100%; justify-content: center; }
 .ex-hint { margin-top: 12px; font-size: 11.5px; color: #9ca3af; line-height: 1.8; }
+/* 练习考成绩已入库的交代条 */
+.ex-saved-tip {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 12px; padding: 9px 14px; border-radius: 8px;
+  font-size: 12.5px; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0;
+}
+.ex-saved-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--primary); font-size: 12.5px; text-decoration: underline;
+}
 
 /* 考试状态并入了顶部栏的 center 插槽（插槽内容仍属本组件作用域，样式照旧生效） */
 :deep(.topbar-center) { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
