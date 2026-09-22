@@ -28,7 +28,7 @@
       <div class="rwb-tool-sep"></div>
       <div class="rwb-tool-group">
         <button class="rwb-tool-btn" :class="{ active: measuring }" :disabled="!canMeasure"
-                :title="canMeasure ? '在图上按住拖动即可量长度（按层内像素间距换算毫米）' : '本序列没有像素间距信息，无法换算毫米'"
+                :title="measureTitle"
                 @click="toggleMeasure">
           <i class="fa-solid fa-ruler"></i> 测量
         </button>
@@ -78,14 +78,15 @@
             <!-- 真实 DICOM 序列：16-bit 原始像素，窗宽窗位在 canvas 里实时算 -->
             <canvas v-if="hasRaw" ref="canvasEl" class="rwb-pixel"
                     :width="rawMeta.width" :height="rawMeta.height"></canvas>
-            <img v-else class="rwb-pixel" :src="currentImage" :alt="activeView.name">
+            <!-- JPEG 序列：没有像素间距也能量（按像素），所以这里拿自然尺寸做坐标换算 -->
+            <img v-else ref="imgEl" class="rwb-pixel" :src="currentImage" :alt="activeView.name" @load="onImgLoad">
 
-            <!-- 测量标注（有 PixelSpacing 才能出毫米值）；随影像一起缩放 -->
-            <svg v-if="hasRaw && measures.length" class="rwb-measure"
-                 :viewBox="'0 0 ' + rawMeta.width + ' ' + rawMeta.height">
+            <!-- 测量标注：有 PixelSpacing 出毫米，没有则出像素；随影像一起缩放 -->
+            <svg v-if="(hasRaw || currentImage) && measures.length" class="rwb-measure"
+                 :viewBox="'0 0 ' + viewSize.width + ' ' + viewSize.height">
               <g v-for="(m, i) in measures" :key="i">
                 <line :x1="m.x1" :y1="m.y1" :x2="m.x2" :y2="m.y2" />
-                <text :x="(m.x1 + m.x2) / 2 + 8" :y="(m.y1 + m.y2) / 2 - 8">{{ m.mm }} mm</text>
+                <text :x="(m.x1 + m.x2) / 2 + 8" :y="(m.y1 + m.y2) / 2 - 8">{{ m.len }} {{ m.unit }}</text>
               </g>
             </svg>
           </div>
@@ -127,7 +128,7 @@
         <!-- ══ 底部：层面滑动条 ══ -->
         <div class="rwb-slice">
           <span v-if="measures.length" class="rwb-mres">
-            <i class="fa-solid fa-ruler"></i> <b>{{ measures[0].mm }}</b> mm
+            <i class="fa-solid fa-ruler"></i> <b>{{ measures[0].len }}</b> {{ measures[0].unit }}
             <button class="rwb-mres-x" title="清除测量" @click="measures = []">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -213,11 +214,26 @@ const rawMeta = computed(() => {
   const r = (activeView.value && activeView.value.raw) || {}
   return { width: r.width || 512, height: r.height || 512 }
 })
+/** JPEG 序列（无 raw）的原始尺寸：测量坐标换算要用它，不能拿 rawMeta 顶 */
+const imgEl = ref(null)
+const imgNatural = ref({ width: 0, height: 0 })
+function onImgLoad(e) {
+  const t = e && e.target
+  if (t && t.naturalWidth) imgNatural.value = { width: t.naturalWidth, height: t.naturalHeight }
+}
+/** 当前显示画面的原始尺寸（坐标换算与 SVG viewBox 共用） */
+const viewSize = computed(() => (hasRaw.value ? rawMeta.value : (imgNatural.value.width ? imgNatural.value : rawMeta.value)))
+/** 有像素间距 → 毫米；没有 → 像素（**不再禁用测量**，只是单位不同） */
+const measureUnit = computed(() => ((hasRaw.value && activeView.value && activeView.value.raw && activeView.value.raw.pixelSpacing && activeView.value.raw.pixelSpacing[0]) ? 'mm' : 'px'))
+const measureTitle = computed(() => {
+  if (rawUnsupported.value) return '当前浏览器不支持 16 位影像解码，无法测量'
+  if (measureUnit.value === 'mm') return '在图上按住拖动即可量长度（按层内像素间距换算毫米）'
+  return '在图上按住拖动即可量长度（本序列无像素间距，按像素计）'
+})
 /** 有像素间距才能把像素长度换算成毫米 */
 const canMeasure = computed(() => {
   if (rawUnsupported.value) return false
-  const r = (activeView.value && activeView.value.raw) || null
-  return !!(r && r.pixelSpacing && r.pixelSpacing[0])
+  return !!(hasRaw.value || currentImage.value)
 })
 
 const canvasEl = ref(null)
@@ -310,18 +326,22 @@ async function refreshRaw() {
   if (px) drawCanvas(px)
 }
 
-/** 测量：按住拖动 → 记录起止点与毫米长度（像素间距按行/列分别换算） */
+/** 测量：按住拖动 → 记录起止点与长度（有像素间距算毫米，没有算像素） */
 function canvasPoint(e) {
-  const el = canvasEl.value
+  // canvas（16-bit 原始像素）与 img（JPEG 序列）都要支持；两者都按"渲染尺寸 → 原始尺寸"换算
+  const el = hasRaw.value ? canvasEl.value : imgEl.value
   if (!el) return null
   const r = el.getBoundingClientRect()
+  const vs = viewSize.value
+  if (!r.width || !r.height || !vs.width || !vs.height) return null
   return {
-    x: (e.clientX - r.left) / r.width * rawMeta.value.width,
-    y: (e.clientY - r.top) / r.height * rawMeta.value.height
+    x: (e.clientX - r.left) / r.width * vs.width,
+    y: (e.clientY - r.top) / r.height * vs.height
   }
 }
 function mmOf(a, b) {
-  const ps = activeView.value.raw.pixelSpacing || [1, 1]
+  const raw = hasRaw.value ? activeView.value.raw : null
+  const ps = (raw && raw.pixelSpacing) || [1, 1]   // 无间距时按 1 px 计
   const dx = (b.x - a.x) * ps[1]
   const dy = (b.y - a.y) * ps[0]
   return Math.round(Math.sqrt(dx * dx + dy * dy) * 10) / 10
@@ -340,14 +360,15 @@ function measureMove(e) {
   measures.value = [{
     x1: dragFrom.value.x, y1: dragFrom.value.y,
     x2: p.x, y2: p.y,
-    mm: mmOf(dragFrom.value, p)
+    len: mmOf(dragFrom.value, p),
+    unit: measureUnit.value
   }]
 }
 function measureEnd() {
   if (dragFrom.value && measures.value.length) {
     // 保留最后一条测量结果，但清掉拖动中的临时态
     const last = measures.value[measures.value.length - 1]
-    if (last.mm > 0.1) measures.value = [last]
+    if (last.len > 0.1) measures.value = [last]
   }
   dragFrom.value = null
 }

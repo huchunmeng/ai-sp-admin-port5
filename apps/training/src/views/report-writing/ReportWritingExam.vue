@@ -1,6 +1,23 @@
 <template>
   <div class="ex-page">
-    <TrainingTopBar :station-name="phase === 'intro' ? pageTitle : (task ? '考核进行中' : '练习考进行中')" hide-timer hide-end formatted-time="" />
+    <!-- 考试状态**整行并入顶部栏**：计时走顶部栏自带的计时器，
+         题号/部位/方式/自动保存/离开记录走 center 插槽，「交卷」用顶部栏的结束按钮 -->
+    <TrainingTopBar
+      :station-name="phase === 'intro' ? pageTitle : (task ? '考核进行中' : '练习考进行中')"
+      :formatted-time="'剩余 ' + remainText"
+      :timer-class="timerClass"
+      :hide-timer="phase !== 'exam'"
+      :hide-end="phase !== 'exam'"
+      end-label="交卷"
+      end-icon="fa-paper-plane"
+      @end="askSubmit">
+      <template #center>
+        <span class="ex-meta">{{ currentIndex + 1 }} / {{ paper.length }} · {{ currentSample.bodyPart }} · {{ currentSample.modality }}</span>
+        <span class="ex-mode"><i class="fa-solid fa-laptop-medical"></i> {{ modeLabel }}</span>
+        <span v-if="savedAt" class="ex-saved"><i class="fa-solid fa-cloud-arrow-up"></i> 已自动保存</span>
+        <span v-if="leaveCount" class="ex-leave"><i class="fa-solid fa-eye-slash"></i> 离开记录 {{ leaveCount }} 次</span>
+      </template>
+    </TrainingTopBar>
 
     <!-- ══ 开始前：考试须知 ══ -->
     <div v-if="phase === 'intro'" class="ex-intro">
@@ -38,21 +55,6 @@
 
     <!-- ══ 考试中 ══ -->
     <template v-else-if="phase === 'exam'">
-      <div class="ex-bar">
-        <span class="ex-timer" :class="{ 'is-urgent': remainSec <= 300 }">
-          <i class="fa-regular fa-clock"></i> 剩余 {{ remainText }}
-        </span>
-        <span class="ex-meta">
-          {{ currentIndex + 1 }} / {{ paper.length }} · {{ currentSample.bodyPart }} · {{ currentSample.modality }}
-        </span>
-        <span class="ex-mode"><i class="fa-solid fa-laptop-medical"></i> {{ modeLabel }}</span>
-        <span v-if="savedAt" class="ex-saved"><i class="fa-solid fa-cloud-arrow-up"></i> 已自动保存</span>
-        <span v-if="leaveCount" class="ex-leave">
-          <i class="fa-solid fa-eye-slash"></i> 离开记录 {{ leaveCount }} 次
-        </span>
-        <button class="btn btn-sm btn-primary" @click="askSubmit">交卷</button>
-      </div>
-
       <div v-if="superseded" class="ex-takenover">
         <i class="fa-solid fa-triangle-exclamation"></i>
         {{ resumeNotice || '该考次曾在别处继续作答（已留痕）' }}
@@ -237,6 +239,8 @@ const remainText = computed(() => {
   const s = remainSec.value
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 })
+/** 剩余时间告警档位（顶部栏的计时器样式）：≤5 分钟红、≤10 分钟黄 */
+const timerClass = computed(() => (remainSec.value <= 300 ? 'danger' : remainSec.value <= 600 ? 'warning' : ''))
 const totalChars = computed(() => {
   const d = draftOf(currentIndex.value)
   return WRITABLE_SEGMENTS.reduce((a, seg) => a + String(d[seg.key] || '').length, 0)
@@ -622,16 +626,8 @@ onUnmounted(() => {
 .ex-start { width: 100%; justify-content: center; }
 .ex-hint { margin-top: 12px; font-size: 11.5px; color: #9ca3af; line-height: 1.8; }
 
-.ex-bar {
-  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-  padding: 10px 18px; margin-bottom: 14px; border-radius: 10px;
-  background: #fff; border: 1px solid var(--border);
-  position: sticky; top: 60px; z-index: 30;
-  /* 与训练工作台同一基准宽度，宽屏下不横满屏 */
-  max-width: 1400px; margin-left: auto; margin-right: auto;
-}
-.ex-timer { font-size: 16px; font-weight: 700; color: #1f2937; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 6px; }
-.ex-timer.is-urgent { color: #dc2626; }
+/* 考试状态并入了顶部栏的 center 插槽（插槽内容仍属本组件作用域，样式照旧生效） */
+:deep(.topbar-center) { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .ex-meta { font-size: 12.5px; color: #6b7280; }
 .ex-leave { font-size: 12px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 3px 9px; }
 /* 在线/现场考试方式 + 自动保存状态（O1/O2 的可视化） */
@@ -651,7 +647,6 @@ onUnmounted(() => {
 }
 /* 评阅失败：同一位置换警示色，避免考生以为是"还没出分" */
 .ex-locked.is-err { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
-.ex-bar .btn { margin-left: auto; }
 .ex-main { display: flex; flex-direction: column; gap: 16px; max-width: 1400px; margin: 0 auto; }
 
 .ex-scores { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
