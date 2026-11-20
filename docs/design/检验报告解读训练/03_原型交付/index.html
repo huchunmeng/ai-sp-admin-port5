@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>检验报告解读训练 · 高保真原型</title>
+<style>
+/* ── 设计令牌：逐值取自 apps/training/src/styles/variables.css（与影像 E2 原型同源） ── */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-lightest: #dbeafe;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --success-border: #a7f3d0;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --warning-border: #fde68a;
+  --error: #ef4444;
+  --error-light: #fef2f2;
+  --error-border: #fecaca;
+  --text-main: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #fff;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --background: #f8fafc;
+  --card-bg: #fff;
+  --card-radius: 12px;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
+  --btn-radius: 8px;
+  --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  --header-height: 60px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--text-main);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; }
+textarea { font-family: inherit; }
+
+/* ── 顶栏 ── */
+.app-header {
+  height: var(--header-height);
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; position: sticky; top: 0; z-index: 50;
+}
+.header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.system-name { font-size: 15px; font-weight: 700; letter-spacing: .2px; white-space: nowrap; }
+.proto-badge {
+  font-size: 11.5px; color: var(--primary-dark); background: var(--primary-light);
+  border: 1px solid var(--primary-lightest); border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+}
+.crumb { font-size: 12.5px; color: var(--text-tertiary); white-space: nowrap; }
+.crumb b { color: var(--text-secondary); font-weight: 500; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.user-chip { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+.user-avatar {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+  color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── 主布局 ── */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  gap: 16px;
+  padding: 16px 20px 28px;
+  max-width: 1680px;
+  margin: 0 auto;
+  align-items: start;
+}
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border-light);
+}
+.panel-title { font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.panel-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+.panel-sub { font-size: 12px; color: var(--text-tertiary); }
+
+/* ── 患者条 ── */
+.patient-bar {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0;
+  border-bottom: 1px solid var(--border-light); background: #fbfdff;
+}
+.patient-cell { padding: 10px 14px; border-right: 1px solid var(--border-light); min-width: 0; }
+.patient-cell:last-child { border-right: 0; }
+.patient-k { display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 3px; }
+.patient-v { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.patient-cell.wide { grid-column: span 3; }
+
+/* ── 概览卡 ── */
+.vital-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px 18px 4px; }
+.vital {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: #fff;
+}
+.vital.abn { border-color: var(--error-border); background: var(--error-light); }
+.vital-name { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 4px; }
+.vital-val { font-size: 19px; font-weight: 700; font-family: var(--font-mono); letter-spacing: -.3px; }
+.vital.abn .vital-val { color: #c81e1e; }
+.vital-ref { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* ── 检验表 ── */
+.report-tabs {
+  display: flex; gap: 4px; padding: 14px 18px 0; border-bottom: 1px solid var(--border-light);
+  position: sticky; top: var(--header-height); background: #fff; z-index: 10; border-radius: 12px 12px 0 0;
+}
+.tab {
+  border: 0; background: transparent; padding: 8px 14px 9px; font-size: 13px; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 6px 6px 0 0;
+}
+.tab:hover { background: var(--border-light); color: var(--text-main); }
+.tab.active { color: var(--primary-dark); border-bottom-color: var(--primary); font-weight: 600; background: var(--primary-light); }
+.tab .cnt { font-size: 11px; color: var(--text-tertiary); margin-left: 4px; }
+
+.report-body { padding: 4px 18px 16px; }
+.lab-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.lab-table thead th {
+  text-align: left; font-size: 11.5px; color: var(--text-secondary); font-weight: 600;
+  padding: 9px 8px; border-bottom: 1px solid var(--border); background: #fafbfc;
+}
+.lab-table th.num, .lab-table td.num { text-align: right; font-family: var(--font-mono); }
+.lab-table td { padding: 7px 8px; border-bottom: 1px solid var(--border-light); }
+.lab-table tbody tr:hover { background: #fafcff; }
+.lab-table tr.critical { background: var(--error-light); }
+.lab-table tr.critical:hover { background: #fde8e8; }
+.lab-table .item-name { font-weight: 500; }
+.lab-table .unit { color: var(--text-tertiary); font-size: 11.5px; }
+.lab-table .ref { color: var(--text-tertiary); font-family: var(--font-mono); font-size: 11.5px; }
+.val-high { color: #c2410c; font-weight: 700; }
+.val-low { color: #1d4ed8; font-weight: 700; }
+.arrow { font-size: 11px; margin-left: 2px; }
+.badge-critical {
+  display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; background: var(--error);
+  border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px;
+}
+.row-note { font-size: 11px; color: var(--text-tertiary); }
+.empty-val { color: var(--text-tertiary); }
+
+.report-foot {
+  display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 18px; border-top: 1px solid var(--border-light);
+  font-size: 11.5px; color: var(--text-tertiary); background: #fcfcfd; border-radius: 0 0 12px 12px;
+}
+.legend { display: inline-flex; align-items: center; gap: 4px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+
+/* ── 右侧书写区 ── */
+.write-col { position: sticky; top: calc(var(--header-height) + 16px); display: flex; flex-direction: column; gap: 14px; }
+.write-head { padding: 14px 18px 10px; border-bottom: 1px solid var(--border-light); }
+.write-title { font-size: 14.5px; font-weight: 700; margin-bottom: 4px; }
+.write-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.write-body { padding: 14px 18px; }
+.task-card {
+  border: 1px solid var(--primary-lightest); background: var(--primary-light);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+}
+.task-card .tk { font-size: 11.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 5px; }
+.task-card ul { margin: 0; padding-left: 16px; }
+.task-card li { font-size: 12px; color: #334155; line-height: 1.75; }
+
+.write-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.write-label span:first-child { font-size: 12.5px; font-weight: 600; }
+.write-count { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+#answer {
+  width: 100%; min-height: 300px; resize: vertical; line-height: 1.8; font-size: 13px;
+  padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 10px; color: var(--text-main);
+  outline: none; transition: border-color .15s, box-shadow .15s; background: #fff;
+}
+#answer:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.10); }
+#answer::placeholder { color: #a8b3c2; }
+.hint-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.link-btn {
+  border: 0; background: none; color: var(--primary-dark); font-size: 12px; padding: 2px 0;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.link-btn:hover { text-decoration: underline; }
+.tip-box {
+  margin-top: 10px; border: 1px dashed var(--warning-border); background: var(--warning-light);
+  border-radius: 9px; padding: 10px 12px; display: none;
+}
+.tip-box.open { display: block; }
+.tip-box .tip-t { font-size: 12px; font-weight: 700; color: #92400e; margin-bottom: 5px; }
+.tip-box ul { margin: 0; padding-left: 16px; }
+.tip-box li { font-size: 12px; color: #78350f; line-height: 1.75; }
+
+.write-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px 16px; }
+.btn {
+  height: 36px; padding: 0 16px; border-radius: var(--btn-radius); border: 1px solid var(--border);
+  background: #fff; color: var(--text-main); font-size: 13px; display: inline-flex;
+  align-items: center; justify-content: center; gap: 6px; transition: all .15s;
+}
+.btn:hover { border-color: #cbd5e1; background: #f8fafc; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.btn.primary:hover { background: var(--primary-dark); }
+.btn.primary:disabled { opacity: .55; cursor: not-allowed; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--text-secondary); }
+.btn.ghost:hover { background: var(--border-light); }
+.btn.sm { height: 30px; font-size: 12px; padding: 0 11px; }
+.spin {
+  width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.write-meta {
+  display: flex; gap: 10px; padding: 10px 18px; border-top: 1px solid var(--border-light);
+  font-size: 11.5px; color: var(--text-tertiary); background: #fcfcfd; border-radius: 0 0 12px 12px;
+}
+.write-meta b { color: var(--text-secondary); font-weight: 600; }
+
+.proto-note {
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.7;
+  padding: 10px 14px; border-radius: 9px; background: #f1f5f9;
+}
+.proto-note b { color: var(--text-secondary); }
+
+/* ── 评分弹层 ── */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 200;
+  display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow: auto;
+  animation: fade .18s ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  width: 960px; max-width: 100%; background: #fff; border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(15,23,42,.25); overflow: hidden; animation: rise .22s ease;
+}
+@keyframes rise { from { transform: translateY(10px); opacity: .4; } to { transform: none; opacity: 1; } }
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between; padding: 16px 22px;
+  border-bottom: 1px solid var(--border-light);
+}
+.modal-head h3 { font-size: 15.5px; font-weight: 700; }
+.modal-close { border: 0; background: transparent; font-size: 20px; color: var(--text-tertiary); line-height: 1; padding: 2px 6px; border-radius: 6px; }
+.modal-close:hover { background: var(--border-light); color: var(--text-main); }
+
+.score-hero {
+  display: grid; grid-template-columns: 190px minmax(0,1fr); gap: 22px; padding: 20px 22px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%); border-bottom: 1px solid var(--border-light);
+}
+.score-ring-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.score-ring { position: relative; width: 132px; height: 132px; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-num {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-num b { font-size: 34px; font-family: var(--font-mono); letter-spacing: -1px; line-height: 1; }
+.score-num small { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+.grade-tag { font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.grade-good { background: var(--success-light); color: #047857; border: 1px solid var(--success-border); }
+.grade-mid { background: var(--warning-light); color: #b45309; border: 1px solid var(--warning-border); }
+.grade-bad { background: var(--error-light); color: #b91c1c; border: 1px solid var(--error-border); }
+
+.dim-list { display: flex; flex-direction: column; justify-content: center; gap: 11px; }
+.dim-row { display: grid; grid-template-columns: 96px minmax(0,1fr) 62px; align-items: center; gap: 10px; }
+.dim-name { font-size: 12.5px; color: var(--text-secondary); }
+.dim-bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+.dim-bar i { display: block; height: 100%; border-radius: 999px; transition: width .5s ease; }
+.dim-score { font-size: 12px; font-family: var(--font-mono); text-align: right; color: var(--text-secondary); }
+.dim-score b { color: var(--text-main); font-size: 13px; }
+
+.modal-body { padding: 20px 22px; max-height: 52vh; overflow-y: auto; }
+.sec { margin-bottom: 20px; }
+.sec:last-child { margin-bottom: 0; }
+.sec-t { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; margin-bottom: 9px; }
+.sec-t .line { flex: 1; height: 1px; background: var(--border-light); }
+.sec-sub { font-size: 11.5px; color: var(--text-tertiary); }
+
+.point-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.point {
+  display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px;
+  font-size: 12.2px; line-height: 1.6; border: 1px solid transparent;
+}
+.point.hit { background: var(--success-light); border-color: var(--success-border); }
+.point.miss { background: var(--error-light); border-color: var(--error-border); }
+.point .mk { font-weight: 700; font-size: 12px; line-height: 1.5; }
+.point.hit .mk { color: #047857; }
+.point.miss .mk { color: #b91c1c; }
+.point .pt-dim { font-size: 10.5px; color: var(--text-tertiary); margin-left: 4px; }
+
+.ai-comment {
+  border-left: 3px solid var(--primary); background: #f7faff; border-radius: 0 10px 10px 0;
+  padding: 13px 16px; font-size: 13px; line-height: 1.85; color: #334155;
+}
+.ai-comment b { color: var(--primary-dark); }
+.ai-comment p { margin-bottom: 8px; }
+.ai-comment p:last-child { margin-bottom: 0; }
+
+.ref-answer {
+  border: 1px dashed #cbd5e1; border-radius: 10px; padding: 13px 16px; font-size: 12.8px;
+  line-height: 1.9; color: #374151; background: #fcfcfd;
+}
+.ref-answer b { color: var(--text-main); }
+
+.modal-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 22px; border-top: 1px solid var(--border-light); background: #fcfcfd;
+}
+.modal-foot .left { font-size: 11.5px; color: var(--text-tertiary); }
+
+/* Toast */
+#_toast {
+  position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%);
+  background: #1f2937; color: #f9fafb; font-size: 12.5px; padding: 9px 16px; border-radius: 9px;
+  z-index: 400; box-shadow: 0 10px 28px rgba(0,0,0,.25); max-width: 70vw; text-align: center; display: none;
+}
+
+@media (max-width: 1180px) {
+  .page { grid-template-columns: 1fr; }
+  .write-col { position: static; }
+  .patient-bar { grid-template-columns: repeat(3, 1fr); }
+  .patient-cell.wide { grid-column: span 3; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <span class="system-name">医路慧影（WiseImag）影像智思体</span>
+    <span class="proto-badge">训练端 · 高保真原型</span>
+    <span class="crumb">训练模块 / <b>检验报告解读</b></span>
+  </div>
+  <div class="header-right">
+    <span class="user-chip"><span class="user-avatar">胡</span>胡春蒙</span>
+  </div>
+</header>
+
+<div class="page">
+  <!-- ── 左：检验报告 ── -->
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><span class="dot"></span>检验报告单</div>
+        <div class="panel-sub">报告号 LAB-20261118-0417 · 急诊生化室</div>
+      </div>
+
+      <div class="patient-bar">
+        <div class="patient-cell"><span class="patient-k">姓名</span><span class="patient-v">张建国</span></div>
+        <div class="patient-cell"><span class="patient-k">性别 / 年龄</span><span class="patient-v">男 / 58 岁</span></div>
+        <div class="patient-cell"><span class="patient-k">科室</span><span class="patient-v">急诊内科</span></div>
+        <div class="patient-cell"><span class="patient-k">标本类型</span><span class="patient-v">静脉血 / 动脉血</span></div>
+        <div class="patient-cell"><span class="patient-k">临床诊断</span><span class="patient-v">发热待查</span></div>
+        <div class="patient-cell wide"><span class="patient-k">临床主要信息</span><span class="patient-v">发热 3 天，T 39.2℃，血压 92/56 mmHg，心率 118 次/分；乏力、纳差，皮肤散在瘀点</span></div>
+        <div class="patient-cell"><span class="patient-k">采样时间</span><span class="patient-v">11-18 08:00 / 14:00</span></div>
+        <div class="patient-cell"><span class="patient-k">报告状态</span><span class="patient-v" style="color:#b45309">复查已出</span></div>
+      </div>
+
+      <div class="vital-row">
+        <div class="vital abn">
+          <div class="vital-name">血红蛋白 HGB</div>
+          <div class="vital-val">44 <span class="arrow">↓</span></div>
+          <div class="vital-ref">参考 130–175 g/L · 危急</div>
+        </div>
+        <div class="vital abn">
+          <div class="vital-name">白细胞 WBC</div>
+          <div class="vital-val">18.6 <span class="arrow">↑</span></div>
+          <div class="vital-ref">参考 3.5–9.5 ×10⁹/L</div>
+        </div>
+        <div class="vital abn">
+          <div class="vital-name">血小板 PLT</div>
+          <div class="vital-val">32 <span class="arrow">↓</span></div>
+          <div class="vital-ref">参考 125–350 ×10⁹/L</div>
+        </div>
+        <div class="vital abn">
+          <div class="vital-name">降钙素原 PCT</div>
+          <div class="vital-val">8.6 <span class="arrow">↑</span></div>
+          <div class="vital-ref">参考 &lt; 0.5 ng/mL</div>
+        </div>
+      </div>
+
+      <div class="report-tabs" id="tabs"></div>
+      <div class="report-body" id="reportBody"></div>
+
+      <div class="report-foot">
+        <span class="legend"><i style="background:#c2410c"></i>高于参考区间</span>
+        <span class="legend"><i style="background:#1d4ed8"></i>低于参考区间</span>
+        <span class="legend"><i style="background:#ef4444"></i>危急值</span>
+        <span>检验结果仅作教学训练使用，不用于临床决策。</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── 右：书写解读 ── -->
+  <aside class="write-col">
+    <section class="panel">
+      <div class="write-head">
+        <div class="write-title">我的解读</div>
+        <div class="write-desc">结合患者临床信息与两次检验结果，写出你的报告解读。AI 将从异常识别、临床意义、诊断思路、下一步建议四个维度评价。</div>
+      </div>
+
+      <div class="write-body">
+        <div class="task-card">
+          <div class="tk">解读任务</div>
+          <ul>
+            <li>指出主要异常及其程度，关注危急值</li>
+            <li>说明异常之间的关联与可能的病理生理机制</li>
+            <li>给出诊断方向与需要补充的检查/处置</li>
+          </ul>
+        </div>
+
+        <div class="write-label">
+          <span>解读意见</span>
+          <span class="write-count" id="count">0 / 1200</span>
+        </div>
+        <textarea id="answer" maxlength="1200" placeholder="示例：患者发热 3 天伴低血压，血常规示白细胞及中性粒细胞显著升高、PCT 明显升高，提示严重细菌感染可能……"></textarea>
+
+        <div class="hint-row">
+          <button class="link-btn" id="btnTip" type="button">训练提示</button>
+          <span class="write-count">训练模式 · 不计时</span>
+        </div>
+        <div class="tip-box" id="tipBox">
+          <div class="tip-t">思考方向（不包含答案）</div>
+          <ul>
+            <li>哪些指标达到危急值？复查后是改善还是恶化？</li>
+            <li>炎症指标、贫血、血小板减少、凝血异常彼此是否相关？</li>
+            <li>代谢性酸中毒与乳酸升高的可能原因是什么？</li>
+            <li>结合血压和心率，目前是否存在组织低灌注？</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="write-actions">
+        <button class="btn ghost" id="btnClear" type="button">清空重写</button>
+        <button class="btn primary" id="btnSubmit" type="button">提交 AI 评价</button>
+      </div>
+
+      <div class="write-meta">
+        <span>已写 <b id="metaLen">0</b> 字</span>
+        <span>·</span>
+        <span>建议 200 字以上</span>
+      </div>
+    </section>
+
+    <div class="proto-note">
+      <b>原型说明：</b>本页为演示原型，报告数据为虚构教学病例；AI 评价由本地规则模拟（正式版由服务端模型评分），评价结果仅用于演示交互。
+    </div>
+  </aside>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ───────────── 数据：虚构教学病例 ───────────── */
+  var PATIENT = { name: '张建国' };
+
+  /* 每项：name, unit, ref, first, second, flag 由值自动推导；critical 标记 */
+  var PANELS = [
+    {
+      id: 'cbc', name: '血常规 + 炎症', rows: [
+        { name: '白细胞 WBC', unit: '×10⁹/L', ref: '3.5–9.5', first: '18.6', second: '21.4', lo: 3.5, hi: 9.5 },
+        { name: '中性粒细胞% NEUT%', unit: '%', ref: '40–75', first: '88.2', second: '90.1', lo: 40, hi: 75 },
+        { name: '中性粒细胞# NEUT#', unit: '×10⁹/L', ref: '1.8–6.3', first: '16.4', second: '19.3', lo: 1.8, hi: 6.3 },
+        { name: '红细胞 RBC', unit: '×10¹²/L', ref: '4.3–5.8', first: '2.10', second: '1.79', lo: 4.3, hi: 5.8 },
+        { name: '血红蛋白 HGB', unit: 'g/L', ref: '130–175', first: '52', second: '44', lo: 130, hi: 175, criticalLow: 60 },
+        { name: '红细胞压积 HCT', unit: '%', ref: '40–50', first: '16.2', second: '13.8', lo: 40, hi: 50 },
+        { name: '平均红细胞体积 MCV', unit: 'fL', ref: '80–100', first: '77.1', second: '77.0', lo: 80, hi: 100 },
+        { name: '血小板 PLT', unit: '×10⁹/L', ref: '125–350', first: '45', second: '32', lo: 125, hi: 350 },
+        { name: 'C 反应蛋白 CRP', unit: 'mg/L', ref: '&lt; 10', first: '112', second: '138', hi: 10 },
+        { name: '降钙素原 PCT', unit: 'ng/mL', ref: '&lt; 0.5', first: '8.6', second: '11.2', hi: 0.5 }
+      ]
+    },
+    {
+      id: 'bio', name: '生化', rows: [
+        { name: '丙氨酸氨基转移酶 ALT', unit: 'U/L', ref: '9–50', first: '186', second: '214', lo: 9, hi: 50 },
+        { name: '天门冬氨酸氨基转移酶 AST', unit: 'U/L', ref: '15–40', first: '240', second: '286', lo: 15, hi: 40 },
+        { name: '总胆红素 TBIL', unit: 'μmol/L', ref: '3.4–20.5', first: '38.2', second: '45.6', lo: 3.4, hi: 20.5 },
+        { name: '白蛋白 ALB', unit: 'g/L', ref: '40–55', first: '28', second: '25', lo: 40, hi: 55 },
+        { name: '乳酸脱氢酶 LDH', unit: 'U/L', ref: '120–250', first: '620', second: '702', lo: 120, hi: 250 },
+        { name: '尿素 BUN', unit: 'mmol/L', ref: '3.1–8.0', first: '14.2', second: '18.6', lo: 3.1, hi: 8.0 },
+        { name: '肌酐 Cr', unit: 'μmol/L', ref: '57–111', first: '168', second: '201', lo: 57, hi: 111 },
+        { name: '血钾 K', unit: 'mmol/L', ref: '3.5–5.3', first: '3.1', second: '2.9', lo: 3.5, hi: 5.3 },
+        { name: '血钠 Na', unit: 'mmol/L', ref: '137–147', first: '132', second: '130', lo: 137, hi: 147 },
+        { name: '血糖 GLU', unit: 'mmol/L', ref: '3.9–6.1', first: '9.8', second: '7.6', lo: 3.9, hi: 6.1 }
+      ]
+    },
+    {
+      id: 'coag', name: '凝血', rows: [
+        { name: '凝血酶原时间 PT', unit: 's', ref: '11.0–14.5', first: '18.5', second: '20.1', lo: 11, hi: 14.5 },
+        { name: '活化部分凝血活酶时间 APTT', unit: 's', ref: '28.0–42.0', first: '42.3', second: '46.8', lo: 28, hi: 42 },
+        { name: '纤维蛋白原 FIB', unit: 'g/L', ref: '2.0–4.0', first: '1.2', second: '0.9', lo: 2, hi: 4 },
+        { name: 'D-二聚体 D-Dimer', unit: 'mg/L FEU', ref: '&lt; 0.55', first: '6.8', second: '9.4', hi: 0.55 },
+        { name: '国际标准化比值 INR', unit: '', ref: '0.8–1.2', first: '1.62', second: '1.78', lo: 0.8, hi: 1.2 }
+      ]
+    },
+    {
+      id: 'gas', name: '血气 + 乳酸', rows: [
+        { name: '酸碱度 pH', unit: '', ref: '7.35–7.45', first: '7.31', second: '7.26', lo: 7.35, hi: 7.45 },
+        { name: '二氧化碳分压 PaCO₂', unit: 'mmHg', ref: '35–45', first: '28', second: '25', lo: 35, hi: 45 },
+        { name: '氧分压 PaO₂', unit: 'mmHg', ref: '80–100', first: '78', second: '69', lo: 80, hi: 100 },
+        { name: '碳酸氢根 HCO₃⁻', unit: 'mmol/L', ref: '22–27', first: '14.2', second: '11.8', lo: 22, hi: 27 },
+        { name: '剩余碱 BE', unit: 'mmol/L', ref: '-3–+3', first: '-10.5', second: '-13.2', lo: -3, hi: 3 },
+        { name: '乳酸 Lac', unit: 'mmol/L', ref: '0.5–1.6', first: '4.2', second: '5.1', hi: 1.6 }
+      ]
+    }
+  ];
+
+  var TIMES = ['首次 11-18 08:00', '复查 11-18 14:00'];
+
+  /* ───────────── 金标准要点（模拟 AI 的评分依据） ───────────── */
+  var DIMS = {
+    abnormal: { name: '异常识别', full: 30, color: '#2563eb' },
+    meaning: { name: '临床意义', full: 30, color: '#7c3aed' },
+    reasoning: { name: '诊断思路', full: 20, color: '#0891b2' },
+    plan: { name: '下一步建议', full: 20, color: '#059669' }
+  };
+
+  var POINTS = [
+    /* 异常识别 */
+    { id: 'a1', dim: 'abnormal', w: 3, text: '血红蛋白 52→44 g/L，重度贫血且达危急值', kw: ['血红蛋白', 'hgb', 'hb ', 'hb值', '贫血', '52', '44 g', '44g'] },
+    { id: 'a2', dim: 'abnormal', w: 2, text: '血小板 45→32，进行性下降', kw: ['血小板', 'plt', '32'] },
+    { id: 'a3', dim: 'abnormal', w: 2, text: '白细胞、中性粒细胞、CRP、PCT 显著升高', kw: ['白细胞', 'wbc', '中性粒', 'crp', 'c反应蛋白', 'pct', '降钙素原', '炎症指标'] },
+    { id: 'a4', dim: 'abnormal', w: 3, text: '凝血异常：PT/APTT 延长、FIB 降低、D-二聚体升高', kw: ['凝血', 'pt', 'aptt', '纤维蛋白原', 'fib', 'd-二聚体', 'd二聚体', 'ddimer'] },
+    { id: 'a5', dim: 'abnormal', w: 1.5, text: '肝酶升高（ALT 186、AST 240、LDH 620）', kw: ['转氨酶', 'alt', 'ast', '肝酶', '乳酸脱氢酶', 'ldh', '肝功能'] },
+    { id: 'a6', dim: 'abnormal', w: 2, text: '代谢性酸中毒：pH 7.31、HCO₃⁻ 14.2、BE -10.5、乳酸升高', kw: ['酸中毒', 'ph', '碳酸氢根', 'hco3', '剩余碱', '乳酸', 'lac', '代谢性酸'] },
+    { id: 'a7', dim: 'abnormal', w: 1.5, text: '肾功能受损：Cr 168→201、BUN 升高', kw: ['肌酐', 'cr ', 'cr值', '肾功能', '尿素', 'bun', '氮质血症'] },
+    { id: 'a8', dim: 'abnormal', w: 2, text: '复查指标进行性恶化（Hb、PLT、乳酸、Cr 均变差）', kw: ['复查', '较前', '进行性', '恶化', '下降', '加重', '动态', '进展'] },
+
+    /* 临床意义 */
+    { id: 'm1', dim: 'meaning', w: 3, text: '严重细菌感染/脓毒症：PCT 与 WBC 显著升高，伴低血压、发热', kw: ['感染', '脓毒', '细菌', '败血', 'sepsis', '全身炎症'] },
+    { id: 'm2', dim: 'meaning', w: 2.5, text: '进行性重度贫血：小细胞低色素，需鉴别慢性失血基础上的急性失血或溶血', kw: ['失血', '出血', '溶血', '小细胞', '低色素', 'mcv'] },
+    { id: 'm3', dim: 'meaning', w: 3, text: '血小板进行性减少 + 凝血异常 + 高 D-二聚体，提示脓毒症相关凝血病/DIC 倾向', kw: ['dic', '弥散性血管内凝血', '凝血病', '消耗性', '凝血功能障碍'] },
+    { id: 'm4', dim: 'meaning', w: 2, text: '肝损伤：感染/缺血缺氧/药物等所致（转氨酶及 LDH 明显升高）', kw: ['肝损伤', '肝细胞', '缺血', '缺氧', '药物性', '休克肝'] },
+    { id: 'm5', dim: 'meaning', w: 2.5, text: '高乳酸 + 代酸提示组织低灌注/休克，代偿性呼吸性碱中毒（PaCO₂ 降低）', kw: ['低灌注', '休克', '组织灌注', '代偿', '呼吸性碱中毒', '微循环'] },
+    { id: 'm6', dim: 'meaning', w: 1.5, text: '急性肾损伤（肾前性可能大），BUN/Cr 同步升高', kw: ['急性肾损伤', 'aki', '肾前性', '肾衰', '少尿'] },
+
+    /* 诊断思路 */
+    { id: 'r1', dim: 'reasoning', w: 3, text: '首要考虑脓毒症，需评估感染性休克', kw: ['脓毒', '感染性休克', '败血', 'sepsis', '休克'] },
+    { id: 'r2', dim: 'reasoning', w: 3, text: '需评估 DIC（结合血小板、FIB、D-二聚体、PT 动态变化）', kw: ['dic', '凝血病', '凝血功能'] },
+    { id: 'r3', dim: 'reasoning', w: 2, text: '贫血进展迅速，需警惕活动性出血（如消化道）或溶血', kw: ['活动性出血', '消化道出血', '出血源', '溶血', '失血'] },
+    { id: 'r4', dim: 'reasoning', w: 1.5, text: '合并急性肾损伤与肝损伤，多器官受累', kw: ['多器官', 'mods', '器官功能', '肾功能不全', '肝损伤'] },
+
+    /* 下一步建议 */
+    { id: 'p1', dim: 'plan', w: 3, text: '立即复查血常规、凝血及 DIC 全套，动态监测', kw: ['复查', '动态监测', '监测', 'dic全套', '凝血全套'] },
+    { id: 'p2', dim: 'plan', w: 3, text: '抗菌药物前留取血培养，寻找感染灶（腹部超声/CT、胸片）', kw: ['血培养', '培养', '感染灶', '感染源', '超声', 'ct', '胸片', '影像'] },
+    { id: 'p3', dim: 'plan', w: 2.5, text: '备血/输注红细胞（Hb 44 g/L 且有低灌注表现）', kw: ['输血', '输注红细胞', '备血', '红细胞悬液', '纠正贫血'] },
+    { id: 'p4', dim: 'plan', w: 2.5, text: '液体复苏、抗感染，监测乳酸与尿量', kw: ['液体复苏', '补液', '抗感染', '抗生素', '乳酸清除', '尿量'] },
+    { id: 'p5', dim: 'plan', w: 2, text: '监测电解质（低钾、低钠）并纠正', kw: ['电解质', '补钾', '低钾', '低钠', '纠正'] }
+  ];
+
+  /* 错误表述扣分（每命中的一条扣 2 分，归入对应维度） */
+  var PENALTIES = [
+    { dim: 'abnormal', re: /血小板[^。；\n]{0,6}(正常|无异常|在正常范围)/, text: '称血小板正常（实际 32 且进行性下降）' },
+    { dim: 'abnormal', re: /凝血[^。；\n]{0,6}(正常|无异常|未见异常)/, text: '称凝血功能正常（PT/APTT 延长、FIB 降低）' },
+    { dim: 'abnormal', re: /(血红蛋白|贫血)[^。；\n]{0,6}(正常|无异常|轻度)/, text: '低估贫血程度（Hb 44 g/L，重度）' },
+    { dim: 'reasoning', re: /(无需|不需要|不必)[^。；\n]{0,8}(复查|处理|进一步|检查)/, text: '建议无需进一步检查/复查' },
+    { dim: 'meaning', re: /(代谢性酸中毒|酸中毒)[^。；\n]{0,6}(不存在|可排除|不符合)/, text: '否认代谢性酸中毒（pH 7.26、HCO₃⁻ 11.8）' }
+  ];
+
+  var REF_ANSWER =
+    '患者发热 3 天伴低血压、心率增快，两次检验均示白细胞、中性粒细胞、CRP 与 PCT 显著升高，提示严重细菌感染，临床应考虑脓毒症并评估感染性休克。' +
+    '血红蛋白 52→44 g/L 达危急值，呈重度小细胞低色素性贫血且进行性下降，需警惕慢性贫血基础上的急性失血或溶血；血小板 45→32 进行性下降，伴 PT/APTT 延长、纤维蛋白原降低、D-二聚体显著升高，符合脓毒症相关凝血病/DIC 倾向。' +
+    'ALT、AST、LDH 明显升高提示肝细胞损伤（感染、缺血缺氧或药物因素）；pH 7.31、HCO₃⁻ 14.2、BE -10.5、乳酸 4.2→5.1 提示代谢性酸中毒伴呼吸性碱中毒代偿，存在组织低灌注；肌酐 168→201、尿素升高提示急性肾损伤（肾前性可能大）。' +
+    '建议立即复查血常规、凝血及 DIC 全套动态监测；抗菌药物使用前留取血培养并积极寻找感染灶（腹部超声/CT、胸片）；Hb 44 g/L 且有低灌注表现，应备血并考虑输注红细胞；给予液体复苏与抗感染，监测乳酸清除率及尿量；同时纠正低钾、低钠，保护肾功能。';
+
+  /* ───────────── 渲染：报告单 ───────────── */
+  var H = {
+    esc: function (s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+  };
+
+  function flagOf(row, val) {
+    if (val == null || val === '') return null;
+    var n = parseFloat(val);
+    if (isNaN(n)) return null;
+    if (row.hi != null && n > row.hi) return 'high';
+    if (row.lo != null && n < row.lo) return 'low';
+    return null;
+  }
+  function isCritical(row, val) {
+    if (row.criticalLow == null) return false;
+    var n = parseFloat(val);
+    return !isNaN(n) && n < row.criticalLow;
+  }
+
+  function cellHtml(row, val) {
+    if (val == null || val === '') return '<td class="num empty-val">—</td>';
+    var f = flagOf(row, val);
+    var cls = f === 'high' ? 'val-high' : f === 'low' ? 'val-low' : '';
+    var arrow = f === 'high' ? ' <span class="arrow">↑</span>' : f === 'low' ? ' <span class="arrow">↓</span>' : '';
+    var crit = isCritical(row, val) ? '<span class="badge-critical">危急</span>' : '';
+    return '<td class="num ' + cls + '">' + H.esc(val) + arrow + crit + '</td>';
+  }
+
+  function renderPanel(panelId) {
+    var p = PANELS.filter(function (x) { return x.id === panelId; })[0] || PANELS[0];
+    var head = '<thead><tr>' +
+      '<th>项目</th><th class="num">' + TIMES[0] + '</th><th class="num">' + TIMES[1] + '</th>' +
+      '<th>单位</th><th>参考区间</th></tr></thead>';
+    var body = '<tbody>' + p.rows.map(function (r) {
+      var critFirst = isCritical(r, r.first), critSecond = isCritical(r, r.second);
+      var trCls = (critFirst || critSecond) ? ' class="critical"' : '';
+      return '<tr' + trCls + '>' +
+        '<td class="item-name">' + H.esc(r.name) + '</td>' +
+        cellHtml(r, r.first) + cellHtml(r, r.second) +
+        '<td class="unit">' + H.esc(r.unit) + '</td>' +
+        '<td class="ref">' + r.ref + '</td>' +
+      '</tr>';
+    }).join('') + '</tbody>';
+    document.getElementById('reportBody').innerHTML =
+      '<table class="lab-table">' + head + body + '</table>' +
+      '<div style="margin-top:10px;font-size:11.5px;color:var(--text-tertiary)">' +
+      '复查项目与首次为同一标本类型；参考区间为成人标准，绝经前女性及儿童需按对应区间判读。</div>';
+  }
+
+  function renderTabs() {
+    var activeId = currentTab;
+    document.getElementById('tabs').innerHTML = PANELS.map(function (p) {
+      var abn = p.rows.filter(function (r) { return flagOf(r, r.second) != null; }).length;
+      return '<button class="tab' + (p.id === activeId ? ' active' : '') + '" data-tab="' + p.id + '">' +
+        H.esc(p.name) + '<span class="cnt">' + abn + ' 项异常</span></button>';
+    }).join('');
+  }
+
+  var currentTab = 'cbc';
+  document.getElementById('tabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    currentTab = btn.getAttribute('data-tab');
+    renderTabs();
+    renderPanel(currentTab);
+  });
+
+  /* ───────────── 书写交互 ───────────── */
+  var answerEl = document.getElementById('answer');
+  var countEl = document.getElementById('count');
+  var metaLenEl = document.getElementById('metaLen');
+
+  function updateCount() {
+    var n = answerEl.value.length;
+    countEl.textContent = n + ' / 1200';
+    metaLenEl.textContent = n;
+  }
+  answerEl.addEventListener('input', updateCount);
+
+  document.getElementById('btnTip').addEventListener('click', function () {
+    var box = document.getElementById('tipBox');
+    box.classList.toggle('open');
+    this.textContent = box.classList.contains('open') ? '收起提示' : '训练提示';
+  });
+
+  document.getElementById('btnClear').addEventListener('click', function () {
+    if (!answerEl.value.trim()) return;
+    answerEl.value = '';
+    updateCount();
+    answerEl.focus();
+    toast('已清空，可重新书写');
+  });
+
+  /* 草稿本地保存（原型演示用） */
+  var DRAFT_KEY = 'proto:lab-report-interpretation:draft';
+  try {
+    var saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) { answerEl.value = saved; }
+  } catch (e) {}
+  updateCount();
+  answerEl.addEventListener('input', function () {
+    try { localStorage.setItem(DRAFT_KEY, answerEl.value); } catch (e) {}
+  });
+
+  /* ───────────── 模拟 AI 评分 ───────────── */
+  function normalize(s) {
+    return String(s || '').toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function evaluate(text) {
+    var t = normalize(text);
+    var hits = {}, miss = {};
+    var dimScore = { abnormal: 0, meaning: 0, reasoning: 0, plan: 0 };
+    var dimWeight = { abnormal: 0, meaning: 0, reasoning: 0, plan: 0 };
+    var penaltyLog = [];
+
+    POINTS.forEach(function (pt) {
+      dimWeight[pt.dim] += pt.w;
+      var hit = pt.kw.some(function (k) { return t.indexOf(normalize(k)) >= 0; });
+      if (hit) { hits[pt.id] = true; dimScore[pt.dim] += pt.w; }
+      else { miss[pt.id] = true; }
+    });
+
+    PENALTIES.forEach(function (p) {
+      if (p.re.test(text)) {
+        dimScore[p.dim] = Math.max(0, dimScore[p.dim] - 2);
+        penaltyLog.push(p);
+      }
+    });
+
+    var result = { dims: {}, points: [], penalties: penaltyLog, total: 0 };
+    var total = 0;
+    Object.keys(DIMS).forEach(function (k) {
+      var ratio = dimWeight[k] ? dimScore[k] / dimWeight[k] : 0;
+      ratio = Math.max(0, Math.min(1, ratio));
+      var score = Math.round(DIMS[k].full * ratio * 2) / 2;
+      result.dims[k] = { score: score, full: DIMS[k].full, ratio: ratio };
+      total += score;
+    });
+    result.total = Math.round(total * 2) / 2;
+    result.points = POINTS.map(function (pt) {
+      return { pt: pt, hit: !!hits[pt.id] };
+    });
+    return result;
+  }
+
+  function gradeOf(total) {
+    if (total >= 85) return { label: '优秀', cls: 'grade-good', color: '#10b981' };
+    if (total >= 70) return { label: '良好', cls: 'grade-mid', color: '#f59e0b' };
+    if (total >= 60) return { label: '合格', cls: 'grade-mid', color: '#f59e0b' };
+    return { label: '待提高', cls: 'grade-bad', color: '#ef4444' };
+  }
+
+  function buildComment(res, text) {
+    var hitPts = res.points.filter(function (p) { return p.hit; }).map(function (p) { return p.pt; });
+    var missPts = res.points.filter(function (p) { return !p.hit; }).map(function (p) { return p.pt; });
+    var byDim = {};
+    missPts.forEach(function (p) { (byDim[p.dim] = byDim[p.dim] || []).push(p.text); });
+
+    var paragraphs = [];
+    var strength = hitPts.slice(0, 3).map(function (p) { return '「' + p.text + '」'; }).join('、');
+    if (hitPts.length) {
+      paragraphs.push('你抓住了 ' + hitPts.length + ' 个关键判读点，包括' + strength + '，整体方向是正确的。');
+    } else {
+      paragraphs.push('你的解读尚未触及本例的核心判读点，建议先逐项对照参考区间，找出达到危急值和进行性变化的指标。');
+    }
+
+    var weakOrder = ['abnormal', 'meaning', 'reasoning', 'plan'].filter(function (k) { return byDim[k] && byDim[k].length; });
+    weakOrder.forEach(function (k) {
+      var list = byDim[k];
+      var names = list.slice(0, 2).join('；');
+      paragraphs.push('在<b>' + DIMS[k].name + '</b>上仍有欠缺：' + names + (list.length > 2 ? ' 等 ' + list.length + ' 处未覆盖' : '') + '。');
+    });
+
+    if (res.penalties.length) {
+      paragraphs.push('<b>注意：</b>' + res.penalties.map(function (p) { return p.text; }).join('；') + '，这会直接影响判读结论的安全性和准确性。');
+    }
+
+    if (res.total >= 85) {
+      paragraphs.push('整体解读层次清晰，异常识别与临床推断能够相互印证，建议进一步精简表述、突出处置优先级。');
+    } else if (res.total >= 70) {
+      paragraphs.push('建议按「异常识别 → 机制与临床意义 → 诊断方向 → 处置建议」的顺序补全，尤其关注凝血与低灌注证据链。');
+    } else {
+      paragraphs.push('建议以危急值为线索重写：先列出所有异常及程度，再说明异常之间的关联，最后给出必须立即执行的检查与处置。');
+    }
+    return paragraphs;
+  }
+
+  function renderResult(res, text) {
+    var g = gradeOf(res.total);
+    var pct = Math.max(0, Math.min(100, res.total));
+    var circumference = 2 * Math.PI * 56;
+    var dash = circumference * pct / 100;
+
+    var dimRows = Object.keys(DIMS).map(function (k) {
+      var d = res.dims[k];
+      var p = Math.round(d.ratio * 100);
+      return '<div class="dim-row">' +
+        '<span class="dim-name">' + DIMS[k].name + '</span>' +
+        '<span class="dim-bar"><i style="width:' + p + '%;background:' + DIMS[k].color + '"></i></span>' +
+        '<span class="dim-score"><b>' + d.score + '</b> / ' + d.full + '</span>' +
+      '</div>';
+    }).join('');
+
+    var pointRows = res.points.map(function (p) {
+      var cls = p.hit ? 'hit' : 'miss';
+      var mk = p.hit ? '✓' : '✗';
+      return '<div class="point ' + cls + '"><span class="mk">' + mk + '</span>' +
+        '<span>' + H.esc(p.pt.text) + '<span class="pt-dim">' + DIMS[p.pt.dim].name + '</span></span></div>';
+    }).join('');
+
+    var commentHtml = buildComment(res, text).map(function (p) {
+      return '<p>' + p + '</p>';
+    }).join('');
+
+    var hitCount = res.points.filter(function (p) { return p.hit; }).length;
+
+    document.getElementById('modalRoot').innerHTML =
+      '<div class="modal-mask" data-act="mask">' +
+        '<div class="modal" role="dialog" aria-modal="true">' +
+          '<div class="modal-head"><h3>AI 解读评价</h3>' +
+            '<button class="modal-close" data-act="close" type="button">×</button></div>' +
+
+          '<div class="score-hero">' +
+            '<div class="score-ring-wrap">' +
+              '<div class="score-ring">' +
+                '<svg width="132" height="132">' +
+                  '<circle cx="66" cy="66" r="56" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>' +
+                  '<circle cx="66" cy="66" r="56" fill="none" stroke="' + g.color + '" stroke-width="10" ' +
+                    'stroke-linecap="round" stroke-dasharray="' + dash + ' ' + circumference + '"></circle>' +
+                '</svg>' +
+                '<div class="score-num"><b>' + res.total + '</b><small>总分 100</small></div>' +
+              '</div>' +
+              '<span class="grade-tag ' + g.cls + '">' + g.label + '</span>' +
+            '</div>' +
+            '<div class="dim-list">' + dimRows + '</div>' +
+          '</div>' +
+
+          '<div class="modal-body">' +
+            '<div class="sec">' +
+              '<div class="sec-t">要点对照<span class="sec-sub">命中 ' + hitCount + ' / ' + res.points.length + '</span><span class="line"></span></div>' +
+              '<div class="point-grid">' + pointRows + '</div>' +
+            '</div>' +
+            '<div class="sec">' +
+              '<div class="sec-t">AI 评语<span class="line"></span></div>' +
+              '<div class="ai-comment">' + commentHtml + '</div>' +
+            '</div>' +
+            '<div class="sec">' +
+              '<div class="sec-t">参考解读<span class="sec-sub">训练模式 · 提交后可对照</span><span class="line"></span></div>' +
+              '<div class="ref-answer">' + H.esc(REF_ANSWER) + '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="modal-foot">' +
+            '<span class="left">原型演示 · 评分由本地规则模拟，正式版由服务端模型评分</span>' +
+            '<span style="display:flex;gap:8px">' +
+              '<button class="btn" data-act="revise" type="button">返回修改</button>' +
+              '<button class="btn primary" data-act="close" type="button">完成</button>' +
+            '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.body.style.overflow = 'hidden';
+  }
+
+  document.getElementById('modalRoot').addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el) return;
+    var act = el.getAttribute('data-act');
+    if (act === 'close' || act === 'revise') {
+      document.getElementById('modalRoot').innerHTML = '';
+      document.body.style.overflow = '';
+      if (act === 'revise') { answerEl.focus(); }
+    }
+  });
+
+  var btnSubmit = document.getElementById('btnSubmit');
+  btnSubmit.addEventListener('click', function () {
+    var text = answerEl.value.trim();
+    if (text.length < 30) {
+      toast('解读内容过短，请至少写 30 字再提交');
+      answerEl.focus();
+      return;
+    }
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spin"></span>AI 评价中…';
+    setTimeout(function () {
+      var res = evaluate(text);
+      renderResult(res, text);
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = '重新提交评价';
+    }, 1100);
+  });
+
+  /* ───────────── Toast ───────────── */
+  var toastTimer = null;
+  function toast(msg) {
+    var el = document.getElementById('_toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = '_toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.style.display = 'none'; }, 2200);
+  }
+
+  /* 初始化 */
+  renderTabs();
+  renderPanel(currentTab);
+})();
+</script>
+</body>
+</html>

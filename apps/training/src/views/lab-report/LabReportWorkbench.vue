@@ -1,0 +1,179 @@
+<template>
+  <div v-if="caseItem" class="labr-page">
+    <div class="labr-top">
+      <button class="back" type="button" @click="goList"><i class="fa-solid fa-arrow-left"></i> 返回列表</button>
+      <div class="title-wrap">
+        <h2>{{ caseItem.title }}</h2>
+        <div class="meta">
+          <span v-for="t in caseItem.reportTypes" :key="t" class="chip">{{ t }}</span>
+          <span class="chip">{{ caseItem.specimen }}</span>
+        </div>
+      </div>
+      <span class="level-tag" :class="levelKey">{{ getCaseLevelLabel(caseItem.level) }}</span>
+    </div>
+
+    <div class="labr-grid">
+      <LabReportSheet :case-item="caseItem" />
+
+      <aside class="write-col">
+        <section class="write-card">
+          <div class="write-head">
+            <div class="write-title">我的解读</div>
+            <div class="write-desc">结合患者临床信息与两次检验结果，写出你的报告解读。AI 将从异常识别、临床意义、诊断思路、下一步建议四个维度评价。</div>
+          </div>
+
+          <div class="write-body">
+            <div class="task-card">
+              <div class="tk">解读任务</div>
+              <ul>
+                <li>指出主要异常及其程度，关注危急值</li>
+                <li>说明异常之间的关联与可能的病理生理机制</li>
+                <li>给出诊断方向与需要补充的检查/处置</li>
+              </ul>
+            </div>
+
+            <div class="write-label">
+              <span>解读意见</span>
+              <span class="count">{{ text.length }} / 1200</span>
+            </div>
+            <textarea v-model="text" maxlength="1200" class="answer"
+                      placeholder="示例：患者发热 3 天伴低血压，血常规示白细胞及中性粒细胞显著升高、PCT 明显升高，提示严重细菌感染可能……"></textarea>
+
+            <div class="hint-row">
+              <button class="link-btn" type="button" @click="tipOpen = !tipOpen">{{ tipOpen ? '收起提示' : '训练提示' }}</button>
+              <span class="count">训练模式 · 不计时</span>
+            </div>
+            <div v-if="tipOpen" class="tip-box">
+              <div class="tip-t">思考方向（不包含答案）</div>
+              <ul>
+                <li>哪些指标达到危急值？复查后是改善还是恶化？</li>
+                <li>炎症指标、贫血、血小板减少、凝血异常彼此是否相关？</li>
+                <li>代谢性酸中毒与乳酸升高的可能原因是什么？</li>
+                <li>结合血压和心率，目前是否存在组织低灌注？</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="write-actions">
+            <button class="btn btn-sm" type="button" @click="onReset">清空重写</button>
+            <span class="actions-right">
+              <button v-if="scoring" class="btn btn-sm" type="button" @click="modalOpen = true">查看评价</button>
+              <button class="btn btn-primary btn-sm" type="button" :disabled="!canSubmit || scoringRunning" @click="onSubmit">
+                <i v-if="scoringRunning" class="fa-solid fa-circle-notch fa-spin"></i>
+                {{ scoringRunning ? 'AI 评价中…' : (scoring ? '重新提交评价' : '提交 AI 评价') }}
+              </button>
+            </span>
+          </div>
+
+          <div class="write-meta">
+            <span>已写 <b>{{ text.trim().length }}</b> 字</span>
+            <span>·</span>
+            <span>至少 30 字，建议 200 字以上</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <LabScoreModal v-if="modalOpen && scoring" :result="scoring" :case-item="caseItem"
+                   :submitted-at="submittedAt" @close="modalOpen = false" @revise="modalOpen = false" />
+  </div>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toast, getCaseLevelLabel, LEVEL_TO_CASE_LEVEL } from '@ai-sp/shared'
+import { getLabCase } from '@ai-sp/shared/lab'
+import { useLabReportSession } from '@/composables/useLabReportSession'
+import LabReportSheet from './components/LabReportSheet.vue'
+import LabScoreModal from './components/LabScoreModal.vue'
+
+const route = useRoute()
+const router = useRouter()
+
+const caseItem = getLabCase(route.params.caseId)
+const levelKey = computed(() => (caseItem ? LEVEL_TO_CASE_LEVEL[caseItem.level] || '' : ''))
+
+const { text, scoring, scoringRunning, submittedAt, canSubmit, submit, reset } = useLabReportSession(caseItem || { id: '' })
+
+const tipOpen = ref(false)
+const modalOpen = ref(false)
+
+if (!caseItem) {
+  toast.show('未找到该检验病例', 'error')
+  router.replace({ name: 'labReportTrain' })
+}
+
+function goList() {
+  router.push({ name: 'labReportTrain' })
+}
+
+async function onSubmit() {
+  if (!canSubmit.value) {
+    toast.show('解读内容过短，请至少写 30 字再提交', 'warning')
+    return
+  }
+  const result = await submit()
+  if (result) modalOpen.value = true
+}
+
+function onReset() {
+  if (!text.value.trim()) return
+  reset()
+  toast.show('已清空，可重新书写')
+}
+</script>
+
+<style scoped>
+.labr-page { max-width: 1480px; margin: 0 auto; padding: 18px 24px 48px; }
+.labr-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.back { border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; height: 32px; padding: 0 12px; font-size: 12.5px; color: #4b5563; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+.back:hover { border-color: #cbd5e1; background: #f8fafc; }
+.title-wrap { flex: 1; min-width: 0; }
+.title-wrap h2 { margin: 0; font-size: 18px; font-weight: 800; color: #111827; }
+.meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.chip { font-size: 11px; color: #6b7280; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; }
+.level-tag { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+.level-tag.basic { background: #ecfdf5; color: #047857; }
+.level-tag.advanced { background: #fffbeb; color: #b45309; }
+.level-tag.difficult { background: #fef2f2; color: #b91c1c; }
+
+.labr-grid { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 16px; align-items: start; }
+.write-col { position: sticky; top: 14px; }
+.write-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.write-head { padding: 14px 18px 10px; border-bottom: 1px solid #f3f4f6; }
+.write-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.write-desc { font-size: 12px; color: #6b7280; line-height: 1.65; }
+.write-body { padding: 14px 18px; }
+.task-card { border: 1px solid #dbeafe; background: #eff6ff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+.tk { font-size: 11.5px; font-weight: 700; color: #1d4ed8; margin-bottom: 5px; }
+.task-card ul { margin: 0; padding-left: 16px; }
+.task-card li { font-size: 12px; color: #334155; line-height: 1.75; }
+
+.write-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.write-label span:first-child { font-size: 12.5px; font-weight: 600; }
+.count { font-size: 11px; color: #9ca3af; font-family: 'Consolas', monospace; }
+.answer { width: 100%; min-height: 300px; resize: vertical; line-height: 1.8; font-size: 13px; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 10px; color: #1f2937; outline: none; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
+.answer:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.10); }
+.answer::placeholder { color: #a8b3c2; }
+
+.hint-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.link-btn { border: 0; background: none; color: #1d4ed8; font-size: 12px; padding: 2px 0; cursor: pointer; font-family: inherit; }
+.link-btn:hover { text-decoration: underline; }
+.tip-box { margin-top: 10px; border: 1px dashed #fde68a; background: #fffbeb; border-radius: 9px; padding: 10px 12px; }
+.tip-t { font-size: 12px; font-weight: 700; color: #92400e; margin-bottom: 5px; }
+.tip-box ul { margin: 0; padding-left: 16px; }
+.tip-box li { font-size: 12px; color: #78350f; line-height: 1.75; }
+
+.write-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px 14px; }
+.actions-right { display: flex; gap: 8px; }
+.write-actions .btn { font-family: inherit; cursor: pointer; }
+.write-actions .btn:disabled { opacity: .55; cursor: not-allowed; }
+.write-meta { display: flex; gap: 8px; padding: 10px 18px; border-top: 1px solid #f3f4f6; font-size: 11.5px; color: #9ca3af; background: #fcfcfd; border-radius: 0 0 12px 12px; }
+.write-meta b { color: #6b7280; }
+
+@media (max-width: 1180px) {
+  .labr-grid { grid-template-columns: 1fr; }
+  .write-col { position: static; }
+}
+</style>

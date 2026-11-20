@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#faf1ec"/>
+  <!-- 红细胞背景 -->
+  <g fill="#e9a8a0" stroke="#c97f78" stroke-width="2">
+    <circle cx="70" cy="70" r="24"/><circle cx="150" cy="55" r="22"/><circle cx="250" cy="80" r="25"/>
+    <circle cx="360" cy="60" r="23"/><circle cx="470" cy="75" r="26"/><circle cx="580" cy="60" r="22"/>
+    <circle cx="95" cy="170" r="25"/><circle cx="555" cy="150" r="24"/>
+    <circle cx="60" cy="300" r="23"/><circle cx="160" cy="345" r="25"/><circle cx="300" cy="355" r="23"/>
+    <circle cx="470" cy="350" r="26"/><circle cx="585" cy="300" r="22"/><circle cx="555" cy="360" r="20"/>
+    <circle cx="120" cy="255" r="21"/><circle cx="590" cy="210" r="23"/>
+  </g>
+  <g fill="#f3c7c0" opacity="0.55">
+    <circle cx="70" cy="70" r="11"/><circle cx="150" cy="55" r="10"/><circle cx="250" cy="80" r="11"/>
+    <circle cx="360" cy="60" r="10"/><circle cx="470" cy="75" r="12"/><circle cx="580" cy="60" r="10"/>
+    <circle cx="95" cy="170" r="11"/><circle cx="555" cy="150" r="11"/>
+    <circle cx="60" cy="300" r="10"/><circle cx="160" cy="345" r="11"/><circle cx="300" cy="355" r="10"/>
+    <circle cx="470" cy="350" r="12"/><circle cx="585" cy="300" r="10"/><circle cx="555" cy="360" r="9"/>
+    <circle cx="120" cy="255" r="9"/><circle cx="590" cy="210" r="10"/>
+  </g>
+
+  <!-- 杆状核中性粒细胞（核左移，两个） -->
+  <g>
+    <ellipse cx="205" cy="175" rx="62" ry="52" fill="#f6e6e2" stroke="#d9b4ab" stroke-width="2.5"/>
+    <path d="M170 190 Q165 140 205 140 Q245 140 240 185" fill="none" stroke="#6b4a9e" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="170" cy="190" r="9" fill="#6b4a9e"/><circle cx="240" cy="185" r="9" fill="#6b4a9e"/>
+  </g>
+  <g>
+    <ellipse cx="415" cy="205" rx="60" ry="50" fill="#f6e6e2" stroke="#d9b4ab" stroke-width="2.5"/>
+    <path d="M385 165 Q378 215 410 228 Q442 215 435 165" fill="none" stroke="#6b4a9e" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="385" cy="165" r="9" fill="#6b4a9e"/><circle cx="435" cy="165" r="9" fill="#6b4a9e"/>
+  </g>
+
+  <!-- 分叶核中性粒细胞（一个，对照） -->
+  <g>
+    <ellipse cx="315" cy="115" rx="58" ry="48" fill="#f6e6e2" stroke="#d9b4ab" stroke-width="2.5"/>
+    <g fill="#6b4a9e">
+      <circle cx="295" cy="108" r="14"/><circle cx="317" cy="98" r="14"/><circle cx="340" cy="112" r="14"/>
+      <circle cx="300" cy="126" r="12"/>
+    </g>
+    <path d="M295 108 L317 98 L340 112" fill="none" stroke="#6b4a9e" stroke-width="8"/>
+  </g>
+
+  <!-- 小淋巴细胞 -->
+  <g>
+    <circle cx="500" cy="150" r="26" fill="#f6e6e2" stroke="#d9b4ab" stroke-width="2"/>
+    <circle cx="500" cy="150" r="18" fill="#6b4a9e"/>
+    <circle cx="494" cy="144" r="6" fill="#8d72b8"/>
+  </g>
+</svg>

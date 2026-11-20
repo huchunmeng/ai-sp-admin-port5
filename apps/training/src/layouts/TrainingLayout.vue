@@ -200,6 +200,18 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '影像报告书写训练' : 'Report Writing', to: null })
     items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'reportWritingTrain' } })
     items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
+  } else if (name === 'labReportTrain') {
+    items.push({ label: lang === 'zh' ? '检验报告解读训练' : 'Lab Report', to: null })
+    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: null })
+  } else if (name === 'labReportWorkbench') {
+    items.push({ label: lang === 'zh' ? '检验报告解读训练' : 'Lab Report', to: null })
+    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'labReportTrain' } })
+    items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
+  } else if (name === 'labMorphTrain') {
+    items.push({ label: lang === 'zh' ? '形态学与图谱判读训练' : 'Morphology', to: null })
+  } else if (name === 'labMorphQuiz') {
+    items.push({ label: lang === 'zh' ? '形态学与图谱判读训练' : 'Morphology', to: { name: 'labMorphTrain' } })
+    items.push({ label: lang === 'zh' ? '判读练习' : 'Quiz', to: null })
   } else if (name === 'reportWritingExamTasks') {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: { name: 'examCenter' } })
     items.push({ label: lang === 'zh' ? '我的考核任务' : 'My Exams', to: null })

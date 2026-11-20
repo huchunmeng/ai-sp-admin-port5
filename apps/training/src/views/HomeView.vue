@@ -98,6 +98,32 @@
               </div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
+            <div class="entry-card entry-lab" @click="goLabReport">
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #ecfeff;">
+                  <i class="fa-solid fa-flask entry-icon" style="color: #0891b2;"></i>
+                </div>
+                <div class="entry-badge" style="background: #cffafe; color: #0e7490;">训练模式</div>
+              </div>
+              <div class="entry-info">
+                <div class="entry-title">检验报告解读训练</div>
+                <div class="entry-desc">自由书写 · AI 评价</div>
+              </div>
+              <i class="fa-solid fa-chevron-right entry-arrow"></i>
+            </div>
+            <div class="entry-card entry-morph" @click="goMorphTrain">
+              <div class="entry-card-top">
+                <div class="entry-icon-wrapper" style="background: #f5f3ff;">
+                  <i class="fa-solid fa-microscope entry-icon" style="color: #7c3aed;"></i>
+                </div>
+                <div class="entry-badge" style="background: #ede9fe; color: #6d28d9;">训练模式</div>
+              </div>
+              <div class="entry-info">
+                <div class="entry-title">形态学与图谱判读训练</div>
+                <div class="entry-desc">看图辨认 · 客观判分</div>
+              </div>
+              <i class="fa-solid fa-chevron-right entry-arrow"></i>
+            </div>
             <div class="entry-card entry-mdt" @click="goMDT">
               <div class="entry-card-top">
                 <div class="entry-icon-wrapper" style="background: #f0fdf4;">
@@ -460,6 +486,14 @@ function goExamCenter() {
 
 function goReportWriting() {
   router.push({ name: 'reportWritingTrain' })
+}
+
+function goLabReport() {
+  router.push({ name: 'labReportTrain' })
+}
+
+function goMorphTrain() {
+  router.push({ name: 'labMorphTrain' })
 }
 
 // 角标 = 各分类下导师病例示例总数
