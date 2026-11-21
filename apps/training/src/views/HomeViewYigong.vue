@@ -187,21 +187,8 @@
               </div>
               <i class="fa-solid fa-chevron-right elite-arrow"></i>
             </div>
-            <div class="elite-card elite-vr" @click="openVRLab">
-              <div class="elite-card-top">
-                <div class="elite-icon-wrap" style="background:linear-gradient(135deg,#0d9488,#14b8a6);">
-                  <i class="fa-solid fa-vr-cardboard"></i>
-                </div>
-                <span class="elite-count">国家级一流课程</span>
-              </div>
-              <div class="elite-card-body">
-                <div class="elite-title">VR研习空间</div>
-                <div class="elite-desc">磁共振成像虚拟仿真 · VR脑解剖图谱教学</div>
-              </div>
-              <i class="fa-solid fa-arrow-up-right-from-square elite-arrow"></i>
-            </div>
           </div>
-          <!-- 医工慧检不展示 MOOC 影像课模块（影像基础/专业/交叉/虚拟仿真一流课程） -->
+          <!-- 医工慧检不展示 MOOC 影像课模块（影像基础/专业/交叉/虚拟仿真一流课程）与 VR研习空间（磁共振成像虚拟仿真） -->
         </div>
       </section>
 
@@ -497,10 +484,6 @@ function goNationalCenterCases() {
 
 function goAdaptiveLearning() {
   router.push({ name: 'adaptiveLearning' })
-}
-
-function openVRLab() {
-  router.push({ name: 'vrLab' })
 }
 
 function goRecords() {
@@ -886,7 +869,8 @@ onMounted(() => {
 .entry-card:hover .entry-arrow { color: #6b7280; }
 
 /* ─── 名医名课研习 ─── */
-.elite-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+/* 医工慧检：院士精讲 / 金牌导师 / 国家级质控中心 三张，排满一行（VR、MOOC 已去掉） */
+.elite-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .elite-card {
   background: #fafbfc; border-radius: 12px; padding: 16px;
   border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s; position: relative;
@@ -910,8 +894,6 @@ onMounted(() => {
 .elite-desc { font-size: 12px; color: #6b7280; line-height: 1.5; }
 .elite-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: all .2s; }
 .elite-card:hover .elite-arrow { color: #6b7280; }
-
-.elite-vr:hover { border-color: #0d9488; }
 
 /* ─── 按人体系统推荐（医工慧检） ─── */
 .system-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px; }
