@@ -88,10 +88,12 @@ const EXTERNAL_HOME_URL = 'https://ydxt.njzdyy.com:20881/training-web/index'
 const isYigong = computed(() => store.homeVariant === 'yigong')
 const homeRouteName = computed(() => (isYigong.value ? 'homeYigong' : 'home'))
 const onHomeRoute = computed(() => route.name === 'home' || route.name === 'homeYigong')
-const brandName = computed(() => (isYigong.value ? '医工慧检 检验智思体' : '医路慧影（WiseImag）影像智思体'))
+// 医工慧检版本对外叫法：客户（学堂在线）认的是「AI问诊训练系统」，
+// 医工慧检是内部项目名，两者固定成「医工慧检 · AI问诊训练系统」一个口径，别在页面里各叫各的。
+const brandName = computed(() => (isYigong.value ? '医工慧检 · AI问诊训练系统' : '医路慧影（WiseImag）影像智思体'))
 const brandTitle = computed(() => {
   if (!onHomeRoute.value) return '回到首页'
-  return isYigong.value ? '点击切换首页：医路慧影（影像）' : '点击切换首页：医工慧检（检验）'
+  return isYigong.value ? '点击切换首页：医路慧影（影像）' : '点击切换首页：医工慧检 · AI问诊训练系统'
 })
 
 function onBrandClick() {

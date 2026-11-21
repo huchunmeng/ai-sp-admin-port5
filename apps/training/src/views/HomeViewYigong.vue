@@ -624,7 +624,7 @@ const recentRecords = computed(() => {
 
 // ─── 系统通知 ───
 const notifications = ref([
-  { id: 1, title: '系统升级通知', desc: '医工慧检平台v2.0已上线，新增检验报告解读与形态学图谱判读训练，点击体验', time: '07-20', unread: true },
+  { id: 1, title: '系统升级通知', desc: '医工慧检 · AI问诊训练系统 v2.0 已上线，新增检验报告解读与形态学图谱判读训练，点击体验', time: '07-20', unread: true },
   { id: 2, title: '病例库更新', desc: '病例已按人体系统整理上线，可按消化、循环、神经等系统直接进入学习', time: '07-18', unread: true },
   { id: 3, title: '考核提醒', desc: '本月住培考核将于7月28日进行，请提前完成模拟训练', time: '07-15', unread: false },
 ])
