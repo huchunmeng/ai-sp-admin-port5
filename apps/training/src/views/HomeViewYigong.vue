@@ -9,7 +9,7 @@
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <div class="welcome-name">张梓墨</div>
+        <div class="welcome-name">{{ userStore.name }}</div>
         <div class="welcome-greeting">{{ greetingText }}，{{ encouragement }}</div>
         <div class="welcome-meta">
           <span class="streak-badge" v-if="streakDays > 0">
@@ -295,6 +295,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
+import { useUserStore } from '@/stores/user'
 import { resolveAppUrls } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
@@ -304,6 +305,8 @@ import { BODY_SYSTEMS, classifyCaseSystem, isTestCase } from '@/data/bodySystems
 
 const router = useRouter()
 const store = useTrainingStore()
+// 左侧学员卡的姓名取登录身份（user store），不再写死名字——改了账号名这里跟着变
+const userStore = useUserStore()
 
 const urls = resolveAppUrls()
 

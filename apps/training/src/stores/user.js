@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 export const useUserStore = defineStore('user', () => {
   // 原型演示：无需登录，固定演示身份
-  const name = ref('演示学员')
+  const name = ref('徐晨慧')
   const institution = ref('东南大学附属中大医院')
   const isLoggedIn = ref(true)
   /**
