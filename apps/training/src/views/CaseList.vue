@@ -41,6 +41,11 @@
         </button>
       </div>
       <div class="active-filters" v-if="hasActiveFilters">
+        <!-- 从医工慧检首页「按系统推荐病例」进来时带的系统筛选 -->
+        <span class="filter-badge" v-if="activeSystem" style="background:#ecfeff;color:#0e7490;border-color:#a5f3fc;">
+          {{ lang === 'zh' ? '系统' : 'System' }}: {{ activeSystem.name }}
+          <i class="fa-solid fa-xmark" @click="clearSystemFilter" style="cursor:pointer;margin-left:4px"></i>
+        </span>
         <span class="filter-badge" v-if="difficultyFilter">
           {{ lang === 'zh' ? '阶段' : 'Phase' }}: {{ phaseLabel(difficultyFilter) }}
           <i class="fa-solid fa-xmark" @click="difficultyFilter = ''" style="cursor:pointer;margin-left:4px"></i>
@@ -160,6 +165,7 @@ import { useTrainingStore } from '@/stores/training'
 import { useCaseLoader } from '@/composables/useCaseLoader'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { getDifficultyLabel, getCaseLevel, getCaseLevelLabel } from '@ai-sp/shared'
+import { classifyCaseSystem, getBodySystem } from '@/data/bodySystems'
 
 const route = useRoute()
 const router = useRouter()
@@ -172,6 +178,9 @@ const difficultyFilter = ref('')
 const caseLevelFilter = ref('')
 const statusFilter = ref('')
 const sourceFilter = ref('')
+// 人体系统筛选（医工慧检首页「按系统推荐病例」带 ?system=xxx 进来；不传则无此筛选）
+const systemFilter = ref('')
+const activeSystem = computed(() => getBodySystem(systemFilter.value))
 const currentPage = ref(1)
 const jumpPage = ref(1)
 const pageSize = 12
@@ -212,7 +221,7 @@ const filteredSpecialties = computed(() =>
 const currentSpecialty = computed(() => route.params.specialty || store.specialty || '')
 
 const hasActiveFilters = computed(() =>
-  !!(searchQuery.value.trim() || difficultyFilter.value || caseLevelFilter.value || statusFilter.value || sourceFilter.value)
+  !!(searchQuery.value.trim() || difficultyFilter.value || caseLevelFilter.value || statusFilter.value || sourceFilter.value || systemFilter.value)
 )
 
 function getTrainingStatus(caseId) {
@@ -228,6 +237,7 @@ const allCases = computed(() =>
       id: c.id,
       title: c.title,
       specialty: c.specialty,
+      category: c.category || '',
       disease: c.disease,
       difficulty: c.difficulty || c.training_phase || '',
       phase: c.training_phase || '',
@@ -249,8 +259,13 @@ const allCases = computed(() =>
 const filteredCases = computed(() => {
   let list = allCases.value
 
-  // 按专业过滤
-  if (currentSpecialty.value) {
+  // 系统筛选优先：按人体系统看病例时不叠加专业限制（跨专业的系统病例都要露出来）
+  if (systemFilter.value) {
+    list = list.filter(c => {
+      const sys = classifyCaseSystem(c)
+      return sys && sys.key === systemFilter.value
+    })
+  } else if (currentSpecialty.value) {
     list = list.filter(c => c.specialty === currentSpecialty.value)
   }
 
@@ -326,6 +341,17 @@ function doReset() {
   statusFilter.value = ''
   sourceFilter.value = ''
   currentPage.value = 1
+  clearSystemFilter()
+}
+
+/** 取消系统筛选（同时把地址栏的 ?system= 去掉，刷新后不再生效） */
+function clearSystemFilter() {
+  systemFilter.value = ''
+  if (route.query.system) {
+    const q = { ...route.query }
+    delete q.system
+    router.replace({ name: 'caseList', params: route.params, query: q })
+  }
 }
 
 function doJump() {
@@ -359,12 +385,15 @@ async function fetchCases() {
   }
 }
 
-watch([searchQuery, difficultyFilter, caseLevelFilter, statusFilter, sourceFilter], () => { currentPage.value = 1 })
+watch([searchQuery, difficultyFilter, caseLevelFilter, statusFilter, sourceFilter, systemFilter], () => { currentPage.value = 1 })
 
 onMounted(() => {
   if (route.params.specialty) {
     store.setSpecialty(route.params.specialty)
   }
+  // 医工慧检首页「按系统推荐病例」带过来的系统筛选（非法值忽略）
+  const sysKey = String(route.query.system || '')
+  if (getBodySystem(sysKey)) systemFilter.value = sysKey
   specPhase.value = store.phase === 'specialist' ? 'F' : 'R'
   // 从首页精品病例入口携带的筛选参数
   const filterMap = { academician: '院士精讲', mentor: '金牌导师', national_center: '国家级质控中心' }
@@ -372,7 +401,8 @@ onMounted(() => {
     sourceFilter.value = filterMap[route.query.filter]
   }
   fetchCases()
-  if (!currentSpecialty.value) {
+  // 按系统进来时不再强制弹「选择专业」（系统已跨专业，专业选择没有意义）
+  if (!currentSpecialty.value && !systemFilter.value) {
     showSpecModal.value = true
   }
 })

@@ -2,8 +2,11 @@
   <div class="training-container" style="position:relative;min-height:100vh;">
     <header class="app-header" v-if="!isChromeless">
       <div class="header-left">
-        <img class="brand-emblem" src="/logo-seu.png" alt="东南大学医学院">
-        <span class="system-name" @click="goHome" title="回到首页">医路慧影（WiseImag）影像智思体</span>
+        <div class="brand" @click="onBrandClick" :title="brandTitle">
+          <img class="brand-emblem" src="/logo-seu.png" alt="东南大学医学院">
+          <span class="system-name">{{ brandName }}</span>
+          <i class="fa-solid fa-right-left brand-switch-icon" :class="{ 'is-home': onHomeRoute }"></i>
+        </div>
         <div class="mode-badge" @click="openAdmin" v-if="false">管理端</div>
         <div class="version-btns" v-if="store.showHiddenControls">
           <button class="ver-btn" @click="openAdmin">管理端</button>
@@ -80,6 +83,25 @@ const userStore = useUserStore()
 // 面包屑「首页」跳转的外部站点（MDT 路径 + 名医名课内页）
 const EXTERNAL_HOME_URL = 'https://ydxt.njzdyy.com:20881/training-web/index'
 
+// ─── 首页版本：医路慧影（影像）/ 医工慧检（检验）───────────────
+// 两套首页共用同一套训练功能，页头 logo 点击即切换；版本存 store（持久化到 localStorage）。
+const isYigong = computed(() => store.homeVariant === 'yigong')
+const homeRouteName = computed(() => (isYigong.value ? 'homeYigong' : 'home'))
+const onHomeRoute = computed(() => route.name === 'home' || route.name === 'homeYigong')
+const brandName = computed(() => (isYigong.value ? '医工慧检 检验智思体' : '医路慧影（WiseImag）影像智思体'))
+const brandTitle = computed(() => {
+  if (!onHomeRoute.value) return '回到首页'
+  return isYigong.value ? '点击切换首页：医路慧影（影像）' : '点击切换首页：医工慧检（检验）'
+})
+
+function onBrandClick() {
+  // 在首页：点 logo 换另一套首页；在内页：点 logo 回自己那套首页（保留「回首页」习惯）
+  if (!onHomeRoute.value) { router.push({ name: homeRouteName.value }); return }
+  const next = isYigong.value ? 'yilu' : 'yigong'
+  store.setHomeVariant(next)
+  router.push({ name: next === 'yigong' ? 'homeYigong' : 'home' })
+}
+
 function handleCrumbClick(cr) {
   if (typeof cr.to === 'string') {
     window.location.href = cr.to
@@ -103,10 +125,6 @@ const ttsModelLabel = computed(() => {
   if (id && id.startsWith('cosyvoice')) return 'CosyVoice V3'
   return 'Qwen-TTS'
 })
-
-function goHome() {
-  router.push({ name: 'home' })
-}
 
 function openAdmin() {
   window.location.href = urls.admin
@@ -160,10 +178,10 @@ const crumbs = computed(function() {
   const name = route.name
   const lang = store.lang || 'zh'
 
-  if (name !== 'home') {
+  if (name !== 'home' && name !== 'homeYigong') {
     // MDT 路径 + 名医名课内页的「首页」统一跳外部站点
     const useExternalHome = name.startsWith('mdt') || (name === 'caseDetail' && route.query.from === 'mdt') || name === 'mentorCases'
-    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: useExternalHome ? EXTERNAL_HOME_URL : { name: 'home' } })
+    items.push({ label: lang === 'zh' ? '首页' : 'Home', to: useExternalHome ? EXTERNAL_HOME_URL : { name: homeRouteName.value } })
   }
 
   if (name === 'caseList') {
@@ -226,7 +244,7 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '在线考试' : 'Online Exam', to: null })
   } else if (name === 'moocModule') {
     const mmod = MOOC_MODULES.find(m => m.key === route.params.module)
-    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: 'home' } })
+    items.push({ label: lang === 'zh' ? '名医名课研习' : 'Elite Study', to: { name: homeRouteName.value } })
     items.push({ label: mmod ? mmod.title : (lang === 'zh' ? '慕课' : 'MOOC'), to: null })
   } else if (name === 'mentorCases') {
     const mcat = MENTOR_CATEGORIES[route.params.category]
@@ -266,10 +284,22 @@ onUnmounted(() => {
 
 watch(() => route.name, (name) => {
   if (name) review.setViewName(name)
+  // 直接打开某个首页地址（刷新 / 收藏链接）时，把首页版本对齐到当前路由
+  if (name === 'homeYigong' && store.homeVariant !== 'yigong') store.setHomeVariant('yigong')
+  if (name === 'home' && store.homeVariant !== 'yilu') store.setHomeVariant('yilu')
 })
 </script>
 
 <style scoped>
+/* 品牌区：logo + 产品名，点击切换首页（医路慧影 / 医工慧检） */
+.brand { display: flex; align-items: center; cursor: pointer; user-select: none; }
+.brand-switch-icon {
+  font-size: 10px; margin-left: 8px; padding: 2px 5px; border-radius: 5px;
+  color: #94a3b8; background: #f1f5f9; opacity: 0; transition: opacity .15s, color .15s;
+}
+.brand:hover .brand-switch-icon { opacity: 1; color: #2563eb; }
+.brand-switch-icon.is-home { opacity: .75; }
+
 /* 东南大学医学院校徽：放在产品名前面（2026-09-20 批注） */
 .brand-emblem { width: 28px; height: 28px; flex-shrink: 0; object-fit: contain; margin-right: 9px; }
 .fade-enter-active { transition: opacity .3s .15s, transform .3s .15s; }

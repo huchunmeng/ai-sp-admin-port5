@@ -25,6 +25,14 @@ export const useTrainingStore = defineStore('training', () => {
   const currentRecord = ref(null)
   const appVersion = ref('2.0')
 
+  /**
+   * 首页版本：两套首页共用同一套训练功能，靠首页 logo 一键切换。
+   *   'yilu'   医路慧影（WiseImag）影像智思体 —— 含影像报告书写训练，原有首页
+   *   'yigong' 医工慧检 检验智思体          —— 去掉影像报告相关入口，按人体系统推荐病例
+   * 只影响首页与页头品牌名，进病例后的训练流程两套完全一致。
+   */
+  const homeVariant = ref('yilu')
+
   // 考站流程
   const stationFlow = ref(null)
   const stationScheme = ref(null)
@@ -63,6 +71,7 @@ export const useTrainingStore = defineStore('training', () => {
         phase: phase.value,
         specialty: specialty.value,
         appVersion: appVersion.value,
+        homeVariant: homeVariant.value,
         currentCase: currentCase.value,
         currentRecord: currentRecord.value
       }))
@@ -77,6 +86,7 @@ export const useTrainingStore = defineStore('training', () => {
         if (s.phase) phase.value = s.phase
         if (s.specialty) specialty.value = s.specialty
         if (s.appVersion) appVersion.value = s.appVersion
+        if (s.homeVariant) homeVariant.value = s.homeVariant
         if (s.currentCase) currentCase.value = s.currentCase
         if (s.currentRecord) currentRecord.value = s.currentRecord
       }
@@ -532,6 +542,12 @@ export const useTrainingStore = defineStore('training', () => {
   function setSpecialty(s) { specialty.value = s; saveState() }
   function setVersion(v) { appVersion.value = v; saveState() }
 
+  /** 切换首页版本（'yilu' | 'yigong'），其它值一律落回医疗影像主版本 */
+  function setHomeVariant(v) {
+    homeVariant.value = v === 'yigong' ? 'yigong' : 'yilu'
+    saveState()
+  }
+
   function startStationFlow(stations) {
     stationScheme.value = stations
     currentFlowIndex.value = 0
@@ -607,10 +623,10 @@ export const useTrainingStore = defineStore('training', () => {
 
   return {
     phase, specialty, lang, currentStation, trainingSession, selectedStations,
-    currentCase, currentRecord, appVersion,
+    currentCase, currentRecord, appVersion, homeVariant,
     stationFlow, stationScheme, currentFlowIndex, llmConfig,
     currentStationConfig,
-    setPhase, setSpecialty, setVersion,
+    setPhase, setSpecialty, setVersion, setHomeVariant,
     startStationFlow, advanceStation,
     saveSessionStage, clearSession,
     saveState, saveTrainingSession,

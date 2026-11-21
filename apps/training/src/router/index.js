@@ -7,6 +7,9 @@ const routes = [
     component: TrainingLayout,
     children: [
       { path: '', name: 'home', component: () => import('@/views/HomeView.vue') },
+      // 医工慧检首页：与「home」同一套训练功能，去掉影像报告入口、按人体系统推荐病例。
+      // 两套首页靠页头 logo 切换（见 TrainingLayout），这里只是两个路由。
+      { path: 'home-yigong', name: 'homeYigong', component: () => import('@/views/HomeViewYigong.vue') },
       { path: 'case-list/:specialty?', name: 'caseList', component: () => import('@/views/CaseList.vue') },
       { path: 'case-detail/:caseId', name: 'caseDetail', component: () => import('@/views/CaseDetail.vue') },
       { path: 'station-loading', name: 'stationLoading', component: () => import('@/views/StationLoading.vue') },

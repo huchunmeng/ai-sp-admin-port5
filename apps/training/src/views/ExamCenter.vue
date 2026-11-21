@@ -3,16 +3,16 @@
     <div class="ec-hero">
       <div class="ec-hero-left">
         <h2><i class="fa-solid fa-file-circle-check"></i> 在线考试</h2>
-        <p>三项考核并行，按统一标准评定成绩</p>
+        <p>{{ examCountText }}，按统一标准评定成绩</p>
       </div>
       <div class="ec-hero-stats">
-        <div class="ec-hero-stat"><strong>3</strong><span>考核项目</span></div>
+        <div class="ec-hero-stat"><strong>{{ examItems.length }}</strong><span>考核项目</span></div>
         <div class="ec-hero-stat"><strong>考核模式</strong><span>不给提示</span></div>
       </div>
     </div>
 
     <div class="ec-grid">
-      <div v-for="item in EXAM_ITEMS" :key="item.key" class="ec-card" @click="open(item)">
+      <div v-for="item in examItems" :key="item.key" class="ec-card" @click="open(item)">
         <div class="ec-card-top">
           <div class="ec-icon-wrap" :style="{ background: item.tint, color: item.color }">
             <i class="fa-solid" :class="item.icon"></i>
@@ -31,11 +31,14 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTrainingStore } from '@/stores/training'
 
 const router = useRouter()
+const store = useTrainingStore()
 
-const EXAM_ITEMS = [
+const ALL_EXAM_ITEMS = [
   {
     key: 'interview',
     title: 'AI问诊考核',
@@ -71,6 +74,19 @@ const EXAM_ITEMS = [
   }
 ]
 
+/**
+ * 医工慧检首页版本（store.homeVariant === 'yigong'）不含任何影像报告相关考核，
+ * 这里滤掉「影像报告书写考核」，剩问诊考核 + 理论考试两项；
+ * 医路慧影首页版本保持原三项考核不变。
+ */
+const examItems = computed(() => (
+  store.homeVariant === 'yigong'
+    ? ALL_EXAM_ITEMS.filter(item => item.key !== 'report')
+    : ALL_EXAM_ITEMS
+))
+
+const examCountText = computed(() => (examItems.value.length === 3 ? '三项考核并行' : '两项考核并行'))
+
 function open(item) {
   if (item.external) {
     window.open(item.url, '_blank', 'noopener,noreferrer')
@@ -97,7 +113,8 @@ function open(item) {
 .ec-hero-stat strong { display: block; font-size: 18px; font-weight: 700; }
 .ec-hero-stat span { font-size: 11px; opacity: 0.75; }
 
-.ec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+/* 3 项时排 3 列，医工慧检只有 2 项时自动铺满整行 */
+.ec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .ec-card {
   background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
   padding: 18px; cursor: pointer; transition: all .2s;
