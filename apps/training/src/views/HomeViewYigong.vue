@@ -201,22 +201,7 @@
               <i class="fa-solid fa-arrow-up-right-from-square elite-arrow"></i>
             </div>
           </div>
-          <div class="mooc-grid">
-            <div class="mooc-card" v-for="m in MOOC_MODULES" :key="m.key" @click="goMoocModule(m.key)">
-              <span class="mooc-bar" :style="{ background: m.color }"></span>
-              <div class="mooc-card-top">
-                <span class="mooc-icon" :style="{ background: m.gradient }">
-                  <i class="fa-solid" :class="m.icon"></i>
-                </span>
-                <span class="mooc-count">{{ m.courses.length }} 门</span>
-              </div>
-              <div class="mooc-body">
-                <div class="mooc-title">MOOC {{ m.title }}</div>
-                <div class="mooc-course">{{ platformText(m) }}</div>
-              </div>
-              <i class="fa-solid fa-chevron-right mooc-arrow"></i>
-            </div>
-          </div>
+          <!-- 医工慧检不展示 MOOC 影像课模块（影像基础/专业/交叉/虚拟仿真一流课程） -->
         </div>
       </section>
 
@@ -314,7 +299,6 @@ import { resolveAppUrls } from '@ai-sp/shared'
 import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
-import { MOOC_MODULES } from '@/data/moocModules'
 import { useCaseLoader } from '@/composables/useCaseLoader'
 import { BODY_SYSTEMS, classifyCaseSystem, isTestCase } from '@/data/bodySystems'
 
@@ -514,16 +498,6 @@ function goAdaptiveLearning() {
 
 function openVRLab() {
   router.push({ name: 'vrLab' })
-}
-
-function goMoocModule(key) {
-  router.push({ name: 'moocModule', params: { module: key } })
-}
-
-// 模块卡副标题：课程平台（去重、去掉 SPOC 后缀）；课程门数移到卡片右上角标
-function platformText(m) {
-  const names = [...new Set(m.courses.map(c => c.platform.split(' · ')[0]))]
-  return names.join(' / ')
 }
 
 function goRecords() {
@@ -790,7 +764,7 @@ onMounted(() => {
 }
 
 /* ─── 标题统一黑体 ─── */
-.zone-title, .card-title, .entry-title, .elite-title, .mooc-title,
+.zone-title, .card-title, .entry-title, .elite-title,
 .system-card-title, .record-name, .notify-title, .welcome-name {
   font-family: 'SimHei', 'Heiti SC', 'Microsoft YaHei', sans-serif;
 }
@@ -927,32 +901,6 @@ onMounted(() => {
 .elite-card:hover .elite-arrow { color: #6b7280; }
 
 .elite-vr:hover { border-color: #0d9488; }
-
-/* ─── 慕课四个模块 ─── */
-.mooc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
-.mooc-card {
-  position: relative; display: flex; flex-direction: column; gap: 12px;
-  padding: 16px; border-radius: 12px; cursor: pointer;
-  background: #fafbfc; border: 1px solid #f0f2f5; overflow: hidden;
-  transition: all .2s;
-}
-.mooc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); background: #fff; }
-.mooc-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-.mooc-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.mooc-icon {
-  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; font-size: 20px;
-  display: flex; align-items: center; justify-content: center; color: #fff;
-}
-.mooc-count {
-  font-size: 13px; font-weight: 700; color: #1f2937;
-  background: #f3f4f6; padding: 4px 10px; border-radius: 8px; flex-shrink: 0;
-}
-.mooc-body { flex: 1; }
-.mooc-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
-/* 副标题补足两行高度，使卡片与上方「名医名课研习」四卡等高 */
-.mooc-course { font-size: 12px; color: #6b7280; line-height: 1.5; min-height: 36px; }
-.mooc-arrow { position: absolute; right: 16px; bottom: 16px; color: #d1d5db; font-size: 12px; transition: color .2s; }
-.mooc-card:hover .mooc-arrow { color: #6b7280; }
 
 /* ─── 按人体系统推荐（医工慧检） ─── */
 .system-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px; }

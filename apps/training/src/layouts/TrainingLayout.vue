@@ -284,10 +284,11 @@ onUnmounted(() => {
 
 watch(() => route.name, (name) => {
   if (name) review.setViewName(name)
-  // 直接打开某个首页地址（刷新 / 收藏链接）时，把首页版本对齐到当前路由
+  // 直接打开某个首页地址（刷新 / 收藏链接）时，把首页版本对齐到当前路由。
+  // immediate：首屏就是 #/home-yigong 时路由不会再「变化」，不加 immediate 页头会留着另一套品牌名
   if (name === 'homeYigong' && store.homeVariant !== 'yigong') store.setHomeVariant('yigong')
   if (name === 'home' && store.homeVariant !== 'yilu') store.setHomeVariant('yilu')
-})
+}, { immediate: true })
 </script>
 
 <style scoped>
