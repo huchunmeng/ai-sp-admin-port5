@@ -211,6 +211,176 @@ export const MORPH_SETS = [
         explanation: '抗酸染色中分枝杆菌细胞壁含分枝菌酸，能抵抗酸性酒精脱色而保留红色，是结核分枝杆菌的重要染色特征。'
       }
     ]
+  },
+  {
+    id: 'MORPH-URINE-01',
+    title: '尿液有形成分判读',
+    level: 'U2',
+    category: '尿液形态',
+    tags: ['尿沉渣', '管型', '结晶'],
+    desc: '依据尿沉渣中的管型与结晶形态判断病变部位与代谢背景，覆盖肾小球源性血尿、肾小管损伤、结石与脂质尿。',
+    questions: [
+      {
+        id: 'Q1',
+        type: 'single',
+        stem: '尿沉渣镜检见管型内充满形态一致的红细胞（红细胞管型），最提示？',
+        image: '/images/lab-morph/c1-rbc-cast.svg',
+        imageCaption: '尿沉渣 · 红细胞管型（示意图）',
+        options: [
+          { key: 'A', text: '肾小球源性血尿' },
+          { key: 'B', text: '膀胱炎所致下尿路出血' },
+          { key: 'C', text: '输尿管结石机械性损伤' },
+          { key: 'D', text: '剧烈运动后的生理性血尿' }
+        ],
+        answer: ['A'],
+        explanation: '管型在肾小管内形成，红细胞管型说明红细胞来自肾小球（经肾小管时被蛋白基质包裹），是肾小球源性血尿的重要依据；下尿路出血不会形成红细胞管型。'
+      },
+      {
+        id: 'Q2',
+        type: 'single',
+        stem: '尿沉渣见大量颗粒管型，最提示哪种病变？',
+        image: '/images/lab-morph/c2-granular-cast.svg',
+        imageCaption: '尿沉渣 · 颗粒管型（示意图）',
+        options: [
+          { key: 'A', text: '肾小管损伤（急性肾小管坏死、间质性肾炎等）' },
+          { key: 'B', text: '急性膀胱炎' },
+          { key: 'C', text: '肾结石' },
+          { key: 'D', text: '正常尿液（无临床意义）' }
+        ],
+        answer: ['A'],
+        explanation: '颗粒管型由脱落变性的肾小管上皮细胞碎片聚集而成，提示肾小管损伤，常见于急性肾小管坏死、间质性肾炎及慢性肾脏病；健康人剧烈运动后可偶见少量，但大量出现有病理意义。'
+      },
+      {
+        id: 'Q3',
+        type: 'single',
+        stem: '尿沉渣见多个无色"信封状/八面体"结晶，最可能提示？',
+        image: '/images/lab-morph/c3-ca-oxalate.svg',
+        imageCaption: '尿沉渣 · 草酸钙结晶（八面体，示意图）',
+        options: [
+          { key: 'A', text: '高草酸尿，草酸钙结石风险增加' },
+          { key: 'B', text: '高尿酸尿（痛风）' },
+          { key: 'C', text: '胱氨酸尿症' },
+          { key: 'D', text: '尿路感染' }
+        ],
+        answer: ['A'],
+        explanation: '草酸钙结晶典型呈八面体（信封状），可见于高草酸饮食、乙二醇中毒、原发性高草酸尿等，是草酸钙结石最常见的成分；大量出现且有症状时应评估结石风险与代谢因素。'
+      },
+      {
+        id: 'Q4',
+        type: 'single',
+        stem: '尿沉渣见黄褐色菱形、玫瑰花状结晶，多见于酸性尿，最可能提示？',
+        image: '/images/lab-morph/c4-uric-acid.svg',
+        imageCaption: '尿沉渣 · 尿酸结晶（菱形/玫瑰花状，示意图）',
+        options: [
+          { key: 'A', text: '高尿酸尿（痛风、肿瘤溶解）伴酸性尿' },
+          { key: 'B', text: '碱性尿环境下的磷酸盐结晶' },
+          { key: 'C', text: '糖尿病酮症酸中毒' },
+          { key: 'D', text: '肾病综合征' }
+        ],
+        answer: ['A'],
+        explanation: '尿酸结晶在酸性尿中析出，形态多样（菱形、桶状、玫瑰花状），黄褐色有诊断提示性；常见于痛风、高嘌呤饮食、肿瘤溶解综合征及脱水状态，碱化尿液可减少析出。'
+      },
+      {
+        id: 'Q5',
+        type: 'single',
+        stem: '尿沉渣见管型内含折光性卵圆脂肪体（可见"马耳他十字"双折光），最提示？',
+        image: '/images/lab-morph/c5-fatty-cast.svg',
+        imageCaption: '尿沉渣 · 脂肪管型与卵圆脂肪体（示意图）',
+        options: [
+          { key: 'A', text: '肾病综合征（脂质尿）' },
+          { key: 'B', text: '急性肾盂肾炎' },
+          { key: 'C', text: '肾结石' },
+          { key: 'D', text: '膀胱肿瘤' }
+        ],
+        answer: ['A'],
+        explanation: '脂肪管型/卵圆脂肪体源于大量蛋白尿时肾小管上皮对脂蛋白的重吸收，是肾病综合征的典型尿沉渣表现，常伴大量蛋白尿与低白蛋白血症。'
+      }
+    ]
+  },
+  {
+    id: 'MORPH-MICRO-01',
+    title: '微生物形态判读',
+    level: 'R2',
+    category: '微生物形态',
+    tags: ['革兰染色', '真菌', '细菌形态'],
+    desc: '依据革兰染色与真菌涂片的形态特征识别常见病原体，覆盖革兰阳性/阴性球菌与杆菌、假菌丝与芽孢。',
+    questions: [
+      {
+        id: 'Q1',
+        type: 'single',
+        stem: '革兰染色见红色（革兰阴性）中等大小杆菌，散在分布，最可能为？',
+        image: '/images/lab-morph/d1-gnb.svg',
+        imageCaption: '革兰染色 · 革兰阴性杆菌（红色，示意图）',
+        options: [
+          { key: 'A', text: '大肠埃希菌' },
+          { key: 'B', text: '金黄色葡萄球菌' },
+          { key: 'C', text: '肺炎链球菌' },
+          { key: 'D', text: '白念珠菌' }
+        ],
+        answer: ['A'],
+        explanation: '大肠埃希菌为革兰阴性杆菌，染色呈红色/粉色；金黄色葡萄球菌为革兰阳性球菌呈葡萄串状，肺炎链球菌为革兰阳性矛头状双球菌，白念珠菌为真菌（酵母与假菌丝）。'
+      },
+      {
+        id: 'Q2',
+        type: 'single',
+        stem: '革兰染色见紫色（革兰阳性）矛头状球菌、成双排列，最可能为？',
+        image: '/images/lab-morph/d2-gpc-diplo.svg',
+        imageCaption: '革兰染色 · 革兰阳性矛头状双球菌（示意图）',
+        options: [
+          { key: 'A', text: '肺炎链球菌' },
+          { key: 'B', text: '大肠埃希菌' },
+          { key: 'C', text: '鲍曼不动杆菌' },
+          { key: 'D', text: '铜绿假单胞菌' }
+        ],
+        answer: ['A'],
+        explanation: '肺炎链球菌为革兰阳性、矛头状（lanceolate）双球菌，常成对或短链排列，是社区获得性肺炎的常见病原；其余三项均为革兰阴性杆菌/球杆菌。'
+      },
+      {
+        id: 'Q3',
+        type: 'single',
+        stem: '涂片见革兰阳性酵母细胞，并可见相连的假菌丝与芽生孢子，最可能为？',
+        image: '/images/lab-morph/d3-candida.svg',
+        imageCaption: '革兰染色 · 酵母细胞与假菌丝（示意图）',
+        options: [
+          { key: 'A', text: '白念珠菌' },
+          { key: 'B', text: '金黄色葡萄球菌' },
+          { key: 'C', text: '结核分枝杆菌' },
+          { key: 'D', text: '大肠埃希菌' }
+        ],
+        answer: ['A'],
+        explanation: '白念珠菌为革兰阳性酵母，可形成假菌丝与芽生孢子，假菌丝的出现常提示组织侵袭而非单纯定植；细菌不会形成假菌丝。'
+      },
+      {
+        id: 'Q4',
+        type: 'single',
+        stem: '革兰染色见红色（革兰阴性）球杆菌，大小不一、常成对排列，最可能为？',
+        image: '/images/lab-morph/d4-coccobacilli.svg',
+        imageCaption: '革兰染色 · 革兰阴性球杆菌（示意图）',
+        options: [
+          { key: 'A', text: '鲍曼不动杆菌' },
+          { key: 'B', text: '金黄色葡萄球菌' },
+          { key: 'C', text: '结核分枝杆菌' },
+          { key: 'D', text: '白念珠菌' }
+        ],
+        answer: ['A'],
+        explanation: '鲍曼不动杆菌为革兰阴性球杆菌，常呈多形性、成对或短链排列，是院内感染（尤其 ICU 与呼吸机相关肺炎）的重要病原；结核分枝杆菌需抗酸染色，呈红色细长杆菌。'
+      },
+      {
+        id: 'Q5',
+        type: 'single',
+        stem: '革兰染色见紫色（革兰阳性）粗大杆菌，两端平齐、呈竹节状链状排列，中央可见芽孢，最可能为？',
+        image: '/images/lab-morph/d5-anthrax.svg',
+        imageCaption: '革兰染色 · 革兰阳性粗大杆菌呈竹节状（示意图）',
+        options: [
+          { key: 'A', text: '炭疽芽孢杆菌' },
+          { key: 'B', text: '大肠埃希菌' },
+          { key: 'C', text: '肺炎链球菌' },
+          { key: 'D', text: '白念珠菌' }
+        ],
+        answer: ['A'],
+        explanation: '炭疽芽孢杆菌为革兰阳性粗大杆菌，两端平齐、呈竹节状长链排列，中央芽孢为其典型形态；临床需按高致病性病原体防护流程处理并上报。'
+      }
+    ]
   }
 ]
 

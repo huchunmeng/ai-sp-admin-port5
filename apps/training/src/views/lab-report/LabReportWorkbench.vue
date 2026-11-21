@@ -46,10 +46,7 @@
             <div v-if="tipOpen" class="tip-box">
               <div class="tip-t">思考方向（不包含答案）</div>
               <ul>
-                <li>哪些指标达到危急值？复查后是改善还是恶化？</li>
-                <li>炎症指标、贫血、血小板减少、凝血异常彼此是否相关？</li>
-                <li>代谢性酸中毒与乳酸升高的可能原因是什么？</li>
-                <li>结合血压和心率，目前是否存在组织低灌注？</li>
+                <li v-for="(t, i) in (caseItem.tips || [])" :key="i">{{ t }}</li>
               </ul>
             </div>
           </div>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <defs><clipPath id="castClip"><rect x="206" y="48" width="156" height="304" rx="78"/></clipPath></defs>
+  <rect width="640" height="400" fill="#eef6fb"/>
+  <g stroke="#cdd8e2" stroke-width="1.4" fill="none">
+    <circle cx="86" cy="96" r="12"/><circle cx="120" cy="312" r="10"/><circle cx="548" cy="86" r="11"/><circle cx="566" cy="318" r="13"/>
+  </g>
+  
+  <rect x="200" y="42" width="168" height="316" rx="84" fill="#e9e2d3" stroke="#b9ae99" stroke-width="3.5"/>
+  <rect x="216" y="58" width="136" height="284" rx="68" fill="#f6f2e8" stroke="#b9ae99" stroke-width="1.2" opacity=".7"/>
+  <g clip-path="url(#castClip)">
+
+    <g fill="#b5544a" stroke="#8f3c34" stroke-width="1.2">
+      <circle cx="252" cy="92" r="15"/><circle cx="292" cy="86" r="14"/><circle cx="328" cy="96" r="15"/>
+      <circle cx="262" cy="132" r="14"/><circle cx="302" cy="128" r="15"/><circle cx="340" cy="138" r="14"/>
+      <circle cx="250" cy="174" r="15"/><circle cx="290" cy="170" r="14"/><circle cx="330" cy="180" r="15"/>
+      <circle cx="264" cy="216" r="14"/><circle cx="304" cy="212" r="15"/><circle cx="342" cy="222" r="14"/>
+      <circle cx="252" cy="258" r="15"/><circle cx="292" cy="254" r="14"/><circle cx="330" cy="264" r="15"/>
+      <circle cx="268" cy="300" r="14"/><circle cx="306" cy="296" r="15"/>
+    </g>
+  </g>
+  <path d="M186 72 Q186 42 220 42 M382 72 Q382 42 348 42" fill="none" stroke="#6aa3c9" stroke-width="2" stroke-dasharray="6 5"/>
+</svg>

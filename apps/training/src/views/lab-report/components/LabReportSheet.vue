@@ -85,11 +85,17 @@ function isCritical(row, val) {
   return !isNaN(n) && n < row.criticalLow
 }
 function valClass(row, val) {
+  if (val === '' || val == null) return ''
+  // 定性项目（如尿糖 4+、尿酮体 3+）没有数值区间，由数据里标 abn: true 直接判异常
+  if (row.abn) return 'val-high'
   const f = flagOf(row, val)
   return f === 'high' ? 'val-high' : f === 'low' ? 'val-low' : ''
 }
 function abnCount(panel) {
-  return panel.rows.filter(r => flagOf(r, r.second !== '' && r.second != null ? r.second : r.first) != null).length
+  return panel.rows.filter(r => {
+    const v = r.second !== '' && r.second != null ? r.second : r.first
+    return r.abn || flagOf(r, v) != null
+  }).length
 }
 </script>
 

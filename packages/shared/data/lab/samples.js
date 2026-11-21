@@ -74,6 +74,12 @@ export const LAB_CASES = [
         ]
       }
     ],
+    tips: [
+      '哪些指标达到危急值？复查后是改善还是恶化？',
+      '炎症指标、贫血、血小板减少与凝血异常彼此是否相关？',
+      '代谢性酸中毒与乳酸升高的可能原因是什么？',
+      '结合血压和心率，目前是否存在组织低灌注？'
+    ],
     gold: {
       points: [
         { id: 'a1', dim: 'abnormal', w: 3, text: '血红蛋白 52→44 g/L，重度贫血且达危急值', kw: ['血红蛋白', 'hgb', 'hb ', '贫血', '52', '44 g'] },
@@ -175,6 +181,12 @@ export const LAB_CASES = [
         ]
       }
     ],
+    tips: [
+      '胰酶升高到正常上限几倍？是否达到急性胰腺炎的诊断阈值？',
+      '血钙降低提示什么？与病情严重度有什么关系？',
+      '复查后哪些指标在改善、哪些仍在恶化？',
+      '结合饮酒史与胆囊结石，病因可能往哪几个方向找？'
+    ],
     gold: {
       points: [
         { id: 'a1', dim: 'abnormal', w: 3, text: '淀粉酶 890、脂肪酶 620 显著升高（>3 倍正常上限）', kw: ['淀粉酶', 'amy', '脂肪酶', 'lip', '胰酶'] },
@@ -209,6 +221,312 @@ export const LAB_CASES = [
         { dim: 'reasoning', re: /(无需|不需要|不必)[^。；\n]{0,8}(住院|复查|影像|ct)/, text: '建议无需影像/复查（需评估胰腺与胆道）' }
       ],
       refAnswer: '患者饮酒后出现持续性上腹痛并向腰背部放射，伴恶心呕吐，上腹压痛，结合淀粉酶 890 U/L、脂肪酶 620 U/L 显著升高（均超过正常上限 3 倍以上），首先考虑急性胰腺炎。白细胞、中性粒细胞及 CRP 升高提示明显炎症反应，复查 CRP 由 86 升至 142 mg/L，需警惕病情进展；血钙 1.92→1.84 mmol/L 降低，提示脂肪皂化及重症倾向，应进行严重度评估。血糖 9.2 mmol/L、甘油三酯 3.6 mmol/L 升高，结合饮酒史与胆囊结石，病因需鉴别酒精性、高甘油三酯性及胆源性。肝酶及胆红素轻度升高可能与胆道因素或炎症波及有关；HCO₃⁻ 18.4 mmol/L、乳酸 2.4 mmol/L 提示轻度代谢性酸中毒，与呕吐、脱水及有效循环血量不足有关。建议完善腹部 CT 及超声明确胰腺与胆道情况，禁食、胃肠减压、积极液体复苏并镇痛；复查血钙、CRP 及胰酶动态评估严重度；查血脂及肝功能明确病因，必要时针对胆源性因素处理；监测血糖，必要时应用胰岛素。'
+    }
+  },
+  {
+    id: 'LAB-20261120-0508',
+    title: '乏力、面色苍白 3 月',
+    status: 'published',
+    level: 'U2',
+    reportTypes: ['血常规', '铁代谢', '生化'],
+    specimen: '静脉血',
+    department: '血液内科',
+    times: ['门诊 11-20 09:30', '补铁 4 周复查 12-18 09:10'],
+    patient: {
+      name: '王淑芬',
+      sex: '女',
+      age: '42 岁',
+      chiefComplaint: '乏力 3 月，加重 2 周',
+      clinical: '近 3 月乏力、活动后心悸气短，面色苍白，指尖发凉；月经量多 2 年余（每次 7-9 天）。T 36.5℃，血压 105/68 mmHg，心率 96 次/分；睑结膜苍白，指甲呈反甲改变，舌乳头萎缩。'
+    },
+    tips: [
+      '贫血按形态学怎么分类？MCV、MCH、MCHC 各自说明什么？',
+      '铁代谢这几项指标互相印证还是互相矛盾？哪个最敏感？',
+      '网织红细胞不高说明骨髓的反应如何？',
+      '缺铁的病因该往哪些方向找？本例最可能的失铁途径是什么？'
+    ],
+    highlights: [
+      { name: '血红蛋白 HGB', value: '78', unit: 'g/L', ref: '115–150', abn: true },
+      { name: '平均红细胞体积 MCV', value: '71.2', unit: 'fL', ref: '82–100', abn: true },
+      { name: '血清铁蛋白 SF', value: '4', unit: 'μg/L', ref: '13–150', abn: true },
+      { name: '网织红细胞% RET%', value: '0.8', unit: '%', ref: '0.5–1.5', abn: false }
+    ],
+    panels: [
+      {
+        id: 'cbc', name: '血常规 + 网织红', rows: [
+          { name: '白细胞 WBC', unit: '×10⁹/L', ref: '3.5–9.5', first: '5.6', second: '6.1', lo: 3.5, hi: 9.5 },
+          { name: '中性粒细胞% NEUT%', unit: '%', ref: '40–75', first: '58.2', second: '60.4', lo: 40, hi: 75 },
+          { name: '红细胞 RBC', unit: '×10¹²/L', ref: '3.80–5.10', first: '3.42', second: '3.96', lo: 3.8, hi: 5.1 },
+          { name: '血红蛋白 HGB', unit: 'g/L', ref: '115–150', first: '78', second: '96', lo: 115, hi: 150 },
+          { name: '红细胞压积 HCT', unit: '%', ref: '35–45', first: '26.5', second: '32.1', lo: 35, hi: 45 },
+          { name: '平均红细胞体积 MCV', unit: 'fL', ref: '82–100', first: '71.2', second: '75.8', lo: 82, hi: 100 },
+          { name: '平均血红蛋白量 MCH', unit: 'pg', ref: '27–34', first: '22.8', second: '24.2', lo: 27, hi: 34 },
+          { name: '平均血红蛋白浓度 MCHC', unit: 'g/L', ref: '316–354', first: '294', second: '299', lo: 316, hi: 354 },
+          { name: '红细胞分布宽度 RDW-CV', unit: '%', ref: '11.5–14.5', first: '16.8', second: '17.2', lo: 11.5, hi: 14.5 },
+          { name: '血小板 PLT', unit: '×10⁹/L', ref: '125–350', first: '268', second: '255', lo: 125, hi: 350 },
+          { name: '网织红细胞% RET%', unit: '%', ref: '0.5–1.5', first: '0.8', second: '2.6', lo: 0.5, hi: 1.5 }
+        ]
+      },
+      {
+        id: 'iron', name: '铁代谢', rows: [
+          { name: '血清铁 SI', unit: 'μmol/L', ref: '9.0–27.0', first: '4.2', second: '12.8', lo: 9, hi: 27 },
+          { name: '血清铁蛋白 SF', unit: 'μg/L', ref: '13–150', first: '4', second: '26', lo: 13, hi: 150 },
+          { name: '总铁结合力 TIBC', unit: 'μmol/L', ref: '45–66', first: '78', second: '62', lo: 45, hi: 66 },
+          { name: '转铁蛋白饱和度 TSAT', unit: '%', ref: '20–50', first: '5', second: '21', lo: 20, hi: 50 },
+          { name: '可溶性转铁蛋白受体 sTfR', unit: 'mg/L', ref: '1.8–4.6', first: '7.2', second: '4.1', lo: 1.8, hi: 4.6 }
+        ]
+      },
+      {
+        id: 'bio', name: '生化 + 造血原料', rows: [
+          { name: '丙氨酸氨基转移酶 ALT', unit: 'U/L', ref: '7–40', first: '18', second: '21', lo: 7, hi: 40 },
+          { name: '肌酐 Cr', unit: 'μmol/L', ref: '41–81', first: '52', second: '54', lo: 41, hi: 81 },
+          { name: '尿素 BUN', unit: 'mmol/L', ref: '2.6–7.5', first: '4.2', second: '4.6', lo: 2.6, hi: 7.5 },
+          { name: 'C 反应蛋白 CRP', unit: 'mg/L', ref: '< 10', first: '2.1', second: '1.8', hi: 10 },
+          { name: '维生素 B12', unit: 'pmol/L', ref: '133–675', first: '420', second: '—', lo: 133, hi: 675 },
+          { name: '叶酸 FA', unit: 'nmol/L', ref: '10.4–42.4', first: '12.6', second: '—', lo: 10.4, hi: 42.4 },
+          { name: '促甲状腺激素 TSH', unit: 'mIU/L', ref: '0.27–4.20', first: '2.10', second: '—', lo: 0.27, hi: 4.2 }
+        ]
+      }
+    ],
+    gold: {
+      points: [
+        { id: 'a1', dim: 'abnormal', w: 3, text: '血红蛋白 78 g/L，中度贫血', kw: ['血红蛋白', 'hgb', 'hb ', '贫血', '78'] },
+        { id: 'a2', dim: 'abnormal', w: 2.5, text: '小细胞低色素：MCV 71.2、MCH 22.8、MCHC 294', kw: ['mcv', '小细胞', '低色素', 'mch', 'mchc'] },
+        { id: 'a3', dim: 'abnormal', w: 2.5, text: '铁蛋白 4 μg/L 显著降低，血清铁降低、总铁结合力升高、转铁蛋白饱和度 5%', kw: ['铁蛋白', '血清铁', '总铁结合力', 'tibc', '转铁蛋白饱和'] },
+        { id: 'a4', dim: 'abnormal', w: 1.5, text: '网织红细胞 0.8% 不高，提示骨髓代偿不足', kw: ['网织红', 'ret'] },
+        { id: 'a5', dim: 'abnormal', w: 2, text: '补铁 4 周后 Hb 78→96、网织红细胞升至 2.6%，呈治疗反应', kw: ['复查', '较前', '上升', '回升', '好转', '治疗反应'] },
+        { id: 'a6', dim: 'abnormal', w: 1, text: '维生素 B12、叶酸正常，排除巨幼细胞性贫血', kw: ['b12', '叶酸', '巨幼'] },
+
+        { id: 'm1', dim: 'meaning', w: 3, text: '符合缺铁性贫血：小细胞低色素 + 铁蛋白降低', kw: ['缺铁性贫血', '缺铁', 'ida'] },
+        { id: 'm2', dim: 'meaning', w: 2.5, text: '铁蛋白是储存铁最敏感指标，<15 μg/L 诊断价值高；sTfR 升高提示铁缺乏', kw: ['铁蛋白', '敏感', '储存铁', 'sTFR', '15'] },
+        { id: 'm3', dim: 'meaning', w: 2, text: '需寻找失铁原因：月经过多或消化道慢性失血', kw: ['月经', '失血', '消化道', '病因', '慢性失血'] },
+        { id: 'm4', dim: 'meaning', w: 1.5, text: '需与地中海贫血（HbA2 升高、铁蛋白正常）及慢性病贫血鉴别', kw: ['地中海', '地贫', '慢性病贫血', '鉴别', 'hba2'] },
+        { id: 'm5', dim: 'meaning', w: 1, text: '反甲、舌乳头萎缩为缺铁的组织改变表现', kw: ['反甲', '舌乳头', '组织改变', '体征'] },
+
+        { id: 'r1', dim: 'reasoning', w: 3, text: '诊断缺铁性贫血，结合形态学与铁代谢', kw: ['缺铁性贫血', '缺铁'] },
+        { id: 'r2', dim: 'reasoning', w: 2, text: '病因诊断：以妇科月经过多为主，需排除消化道失血', kw: ['病因', '月经', '妇科', '消化道', '失血', '隐血'] },
+        { id: 'r3', dim: 'reasoning', w: 1.5, text: '非造血系统疾病与营养因素（如素食、吸收不良）也需一并评估', kw: ['营养', '吸收不良', '素食', '饮食'] },
+
+        { id: 'p1', dim: 'plan', w: 2.5, text: '口服铁剂（琥珀酸亚铁/多糖铁）+ 维生素 C，餐后服用', kw: ['铁剂', '补铁', '口服铁', '硫酸亚铁', '琥珀酸亚铁', '多糖铁', '维生素c'] },
+        { id: 'p2', dim: 'plan', w: 2, text: '补铁后 2–4 周复查血常规与网织红细胞评估疗效', kw: ['复查', '网织红', '2-4周', '疗效', '评估反应'] },
+        { id: 'p3', dim: 'plan', w: 2, text: '查大便隐血、必要时胃肠镜；妇科评估月经量并处理原因', kw: ['大便隐血', '便隐血', '胃肠镜', '妇科', '月经', '止血'] },
+        { id: 'p4', dim: 'plan', w: 1.5, text: 'Hb 正常后继续补铁 3–6 个月补足储存铁，避免复发', kw: ['继续', '3-6个月', '储存铁', '维持', '补足'] }
+      ],
+      penalties: [
+        { dim: 'abnormal', re: /(血红蛋白|贫血)[^。；\n]{0,6}(正常|无异常|轻度)/, text: '低估贫血程度（Hb 78 g/L，中度贫血）' },
+        { dim: 'meaning', re: /(铁蛋白|血清铁)[^。；\n]{0,6}(升高|正常|偏高)/, text: '把铁蛋白/血清铁判为升高或正常（实际明显降低）' },
+        { dim: 'reasoning', re: /(不需要|无需)[^。；\n]{0,8}(找病因|查病因|妇科|胃肠镜|隐血)/, text: '认为无需追查缺铁病因' }
+      ],
+      refAnswer: '患者以乏力、活动后心悸气短为主要表现，体征见睑结膜苍白、反甲与舌乳头萎缩，提示慢性贫血。血常规示血红蛋白 78 g/L（中度贫血），MCV 71.2 fL、MCH 22.8 pg、MCHC 294 g/L、RDW-CV 16.8%，呈典型小细胞低色素性贫血；网织红细胞 0.8% 不高，说明骨髓红系代偿不足。铁代谢示血清铁 4.2 μmol/L、铁蛋白 4 μg/L 显著降低，总铁结合力 78 μmol/L 升高，转铁蛋白饱和度仅 5%，可溶性转铁蛋白受体升高，符合绝对性铁缺乏；维生素 B12、叶酸正常，不支持巨幼细胞性贫血。结合月经量多 2 年余，首先考虑慢性失血所致缺铁性贫血，但仍需排除消化道慢性失血。建议口服铁剂联合维生素 C，餐后服用；补铁后 2–4 周复查血常规与网织红细胞评估疗效；查大便隐血、必要时行胃肠镜，并由妇科评估月经量、处理月经过多；血红蛋白恢复后继续补铁 3–6 个月以补足储存铁。'
+    }
+  },
+  {
+    id: 'LAB-20261121-0116',
+    title: '多饮多尿伴恶心呕吐 2 天',
+    status: 'published',
+    level: 'R2',
+    reportTypes: ['血常规', '生化', '血气', '尿常规'],
+    specimen: '静脉血 / 动脉血 / 中段尿',
+    department: '内分泌科',
+    times: ['急诊 11-21 01:16', '补液后复查 11-21 07:00'],
+    patient: {
+      name: '陈志强',
+      sex: '男',
+      age: '24 岁',
+      chiefComplaint: '多饮多尿 2 周，恶心呕吐 2 天',
+      clinical: '近 2 周多饮多尿、体重下降 4 kg；2 天来恶心、呕吐伴上腹隐痛，呼吸深快，呼气有烂苹果味。T 37.2℃，血压 98/60 mmHg，心率 122 次/分，BMI 21.3；既往未诊断糖尿病，无明确感染史。'
+    },
+    tips: [
+      '血糖、血酮/尿酮、血气三者放在一起说明什么问题？',
+      '阴离子间隙怎么算？升高提示哪一类酸中毒？',
+      '血钾偏高时最容易被忽略的风险是什么？补液降糖后会怎样变化？',
+      '恶心、呕吐、腹痛能否用一元论解释，还需要排除什么？'
+    ],
+    highlights: [
+      { name: '血糖 GLU', value: '28.6', unit: 'mmol/L', ref: '3.9–6.1', abn: true },
+      { name: 'β-羟丁酸', value: '5.8', unit: 'mmol/L', ref: '0.03–0.30', abn: true },
+      { name: '酸碱度 pH', value: '7.16', unit: '', ref: '7.35–7.45', abn: true, critical: true },
+      { name: '碳酸氢根 HCO₃⁻', value: '7.6', unit: 'mmol/L', ref: '22–27', abn: true }
+    ],
+    panels: [
+      {
+        id: 'cbc', name: '血常规 + 炎症', rows: [
+          { name: '白细胞 WBC', unit: '×10⁹/L', ref: '3.5–9.5', first: '16.8', second: '12.4', lo: 3.5, hi: 9.5 },
+          { name: '中性粒细胞% NEUT%', unit: '%', ref: '40–75', first: '82.0', second: '76.5', lo: 40, hi: 75 },
+          { name: '血红蛋白 HGB', unit: 'g/L', ref: '130–175', first: '152', second: '146', lo: 130, hi: 175 },
+          { name: '红细胞压积 HCT', unit: '%', ref: '40–50', first: '46.8', second: '42.1', lo: 40, hi: 50 },
+          { name: '血小板 PLT', unit: '×10⁹/L', ref: '125–350', first: '268', second: '241', lo: 125, hi: 350 },
+          { name: 'C 反应蛋白 CRP', unit: 'mg/L', ref: '< 10', first: '6.2', second: '8.4', hi: 10 },
+          { name: '降钙素原 PCT', unit: 'ng/mL', ref: '< 0.5', first: '0.3', second: '0.4', hi: 0.5 }
+        ]
+      },
+      {
+        id: 'bio', name: '生化 + 血酮', rows: [
+          { name: '血糖 GLU', unit: 'mmol/L', ref: '3.9–6.1', first: '28.6', second: '16.8', lo: 3.9, hi: 6.1 },
+          { name: 'β-羟丁酸 β-HB', unit: 'mmol/L', ref: '0.03–0.30', first: '5.8', second: '1.2', hi: 0.3 },
+          { name: '碳酸氢根 HCO₃⁻', unit: 'mmol/L', ref: '22–29', first: '8.2', second: '14.2', lo: 22, hi: 29 },
+          { name: '阴离子间隙 AG', unit: 'mmol/L', ref: '8–16', first: '27', second: '19', lo: 8, hi: 16 },
+          { name: '血钾 K', unit: 'mmol/L', ref: '3.5–5.3', first: '5.4', second: '4.1', lo: 3.5, hi: 5.3 },
+          { name: '血钠 Na', unit: 'mmol/L', ref: '137–147', first: '130', second: '136', lo: 137, hi: 147 },
+          { name: '血氯 Cl', unit: 'mmol/L', ref: '99–110', first: '98', second: '104', lo: 99, hi: 110 },
+          { name: '肌酐 Cr', unit: 'μmol/L', ref: '57–111', first: '118', second: '96', lo: 57, hi: 111 },
+          { name: '尿素 BUN', unit: 'mmol/L', ref: '3.1–8.0', first: '9.8', second: '6.2', lo: 3.1, hi: 8 },
+          { name: '淀粉酶 AMY', unit: 'U/L', ref: '30–110', first: '96', second: '72', lo: 30, hi: 110 },
+          { name: '渗透压（计算）', unit: 'mOsm/L', ref: '280–300', first: '305', second: '296', lo: 280, hi: 300 }
+        ]
+      },
+      {
+        id: 'gas', name: '血气 + 乳酸', rows: [
+          { name: '酸碱度 pH', unit: '', ref: '7.35–7.45', first: '7.16', second: '7.28', lo: 7.35, hi: 7.45 },
+          { name: '二氧化碳分压 PaCO₂', unit: 'mmHg', ref: '35–45', first: '22', second: '30', lo: 35, hi: 45 },
+          { name: '氧分压 PaO₂', unit: 'mmHg', ref: '80–100', first: '96', second: '92', lo: 80, hi: 100 },
+          { name: '碳酸氢根 HCO₃⁻', unit: 'mmol/L', ref: '22–27', first: '7.6', second: '13.8', lo: 22, hi: 27 },
+          { name: '剩余碱 BE', unit: 'mmol/L', ref: '-3–+3', first: '-19.5', second: '-10.2', lo: -3, hi: 3 },
+          { name: '乳酸 Lac', unit: 'mmol/L', ref: '0.5–1.6', first: '2.6', second: '1.4', hi: 1.6 }
+        ]
+      },
+      {
+        id: 'urine', name: '尿常规', rows: [
+          { name: '尿糖 GLU', unit: '', ref: '阴性', first: '4+', second: '2+', abn: true },
+          { name: '尿酮体 KET', unit: '', ref: '阴性', first: '3+', second: '1+', abn: true },
+          { name: '尿蛋白 PRO', unit: '', ref: '阴性', first: '±', second: '阴性', abn: true },
+          { name: '尿白细胞 WBC', unit: '/HP', ref: '0–5', first: '3', second: '2', lo: 0, hi: 5 },
+          { name: '尿亚硝酸盐 NIT', unit: '', ref: '阴性', first: '阴性', second: '阴性' },
+          { name: '尿比重 SG', unit: '', ref: '1.003–1.030', first: '1.032', second: '1.018', lo: 1.003, hi: 1.03 }
+        ]
+      }
+    ],
+    gold: {
+      points: [
+        { id: 'a1', dim: 'abnormal', w: 3, text: '血糖 28.6 mmol/L 显著升高', kw: ['血糖', 'glu', '28.6', '高血糖'] },
+        { id: 'a2', dim: 'abnormal', w: 3, text: '血酮 5.8 mmol/L、尿酮体 3+、尿糖 4+', kw: ['酮体', '血酮', 'β-羟丁酸', '羟丁酸', '尿酮', '尿糖'] },
+        { id: 'a3', dim: 'abnormal', w: 2.5, text: '高阴离子间隙代谢性酸中毒：pH 7.16、HCO₃⁻ 7.6、BE -19.5、AG 27', kw: ['酸中毒', 'ph', '碳酸氢根', 'hco3', '剩余碱', '阴离子间隙', 'ag ', '阴离子'] },
+        { id: 'a4', dim: 'abnormal', w: 2, text: '白细胞 16.8、中性粒细胞 82% 升高，需排查感染诱因', kw: ['白细胞', 'wbc', '中性粒'] },
+        { id: 'a5', dim: 'abnormal', w: 1.5, text: '血钾 5.4 偏高、血钠 130 偏低', kw: ['血钾', '高钾', '血钠', '低钠'] },
+        { id: 'a6', dim: 'abnormal', w: 1.5, text: '肾前性氮质血症：Cr 118、BUN 9.8、尿比重 1.032', kw: ['肌酐', '尿素', '氮质', '尿比重', '脱水'] },
+        { id: 'a7', dim: 'abnormal', w: 1.5, text: '复查后 pH 7.28、HCO₃⁻ 13.8、血糖 16.8、血钾 4.1，酸中毒与高血糖改善', kw: ['复查', '较前', '改善', '好转', '下降'] },
+
+        { id: 'm1', dim: 'meaning', w: 3, text: '符合糖尿病酮症酸中毒（DKA）：高血糖 + 酮体阳性 + 高 AG 代酸', kw: ['酮症酸中毒', 'dka'] },
+        { id: 'm2', dim: 'meaning', w: 2.5, text: '深大呼吸（Kussmaul 呼吸）是对代谢性酸中毒的代偿性呼吸性碱中毒', kw: ['kussmaul', '库斯莫尔', '深大呼吸', '呼吸性碱中毒', '代偿'] },
+        { id: 'm3', dim: 'meaning', w: 2, text: '血钾升高为酸中毒与脱水所致，补液降糖后迅速下降，需及时补钾', kw: ['血钾', '转移', '补钾', '下降', '细胞内'] },
+        { id: 'm4', dim: 'meaning', w: 1.5, text: '呕吐、腹痛与 DKA 有关，淀粉酶正常有助于排除合并胰腺炎', kw: ['呕吐', '腹痛', '淀粉酶', '胰腺炎'] },
+        { id: 'm5', dim: 'meaning', w: 1.5, text: '白细胞升高既可为应激反应，也需警惕感染作为诱因', kw: ['应激', '感染', '诱因'] },
+
+        { id: 'r1', dim: 'reasoning', w: 3, text: '诊断糖尿病酮症酸中毒（DKA）', kw: ['dka', '酮症酸中毒'] },
+        { id: 'r2', dim: 'reasoning', w: 2.5, text: '需明确分型：查胰岛功能（C 肽）、糖尿病自身抗体', kw: ['分型', '胰岛功能', 'c肽', 'c-肽', '自身抗体', '1型', '2型'] },
+        { id: 'r3', dim: 'reasoning', w: 2, text: '评估诱因：感染、胰岛素中断、初发糖尿病', kw: ['诱因', '感染', '初发', '停药', '中断'] },
+        { id: 'r4', dim: 'reasoning', w: 1.5, text: '需与高渗高血糖综合征、乳酸酸中毒、饥饿性酮症鉴别', kw: ['高渗', 'hhs', '乳酸酸中毒', '饥饿性酮症', '鉴别'] },
+
+        { id: 'p1', dim: 'plan', w: 3, text: '补液为首要措施，先快后慢（生理盐水）', kw: ['补液', '生理盐水', '液体复苏', '0.9%', '盐水'] },
+        { id: 'p2', dim: 'plan', w: 3, text: '小剂量胰岛素持续静滴，血糖降至 13.9 mmol/L 时加用葡萄糖', kw: ['胰岛素', '小剂量', '静滴', '13.9', '葡萄糖'] },
+        { id: 'p3', dim: 'plan', w: 2.5, text: '监测血钾并及时补钾（尿量恢复后）', kw: ['补钾', '血钾', '监测', '尿量'] },
+        { id: 'p4', dim: 'plan', w: 2, text: '每小时监测血糖、每 2–4 小时复查血气电解质并计算阴离子间隙', kw: ['每小时', '复查', '血气', '电解质', '阴离子间隙'] },
+        { id: 'p5', dim: 'plan', w: 1.5, text: '寻找诱因（血/尿培养、胸片）；碳酸氢钠不作为常规使用', kw: ['培养', '感染灶', '胸片', '碳酸氢钠', '诱因'] }
+      ],
+      penalties: [
+        { dim: 'abnormal', re: /(血糖)[^。；\n]{0,6}(正常|无异常)/, text: '称血糖正常（28.6 mmol/L，显著升高）' },
+        { dim: 'meaning', re: /(酮体)[^。；\n]{0,6}(阴性|正常)/, text: '称酮体阴性（血酮 5.8、尿酮体 3+）' },
+        { dim: 'plan', re: /(碳酸氢钠|碱剂|纠酸)[^。；\n]{0,8}(常规|首选|立即使用)/, text: '把碳酸氢钠作为常规纠酸手段（DKA 一般不需常规补碱）' }
+      ],
+      refAnswer: '患者青年男性，多饮多尿 2 周伴体重下降，2 天来恶心呕吐、腹痛，查体见深大呼吸与呼气烂苹果味，既往未诊断糖尿病。检验示血糖 28.6 mmol/L、β-羟丁酸 5.8 mmol/L、尿糖 4+、尿酮体 3+；血气 pH 7.16、HCO₃⁻ 7.6 mmol/L、BE -19.5 mmol/L，生化阴离子间隙 27 mmol/L，为典型高阴离子间隙代谢性酸中毒；计算渗透压 305 mOsm/L，无明显高渗；白细胞 16.8×10⁹/L、中性粒细胞 82%，可能与应激有关，也需排查感染诱因；血钾 5.4 mmol/L（酸中毒与脱水所致，补液降糖后将下降）、血钠 130 mmol/L，肌酐 118 μmol/L、尿素 9.8 mmol/L、尿比重 1.032 提示脱水与肾前性氮质血症；淀粉酶正常，腹痛更可能为 DKA 本身所致。综合符合糖尿病酮症酸中毒（DKA）。建议以补液（生理盐水）为首要措施，先快后慢；小剂量胰岛素持续静滴，血糖降至 13.9 mmol/L 时加用葡萄糖；监测血钾并在尿量恢复后及时补钾；每小时监测血糖、每 2–4 小时复查血气与电解质并计算阴离子间隙；同时寻找诱因（血/尿培养、胸片），碳酸氢钠不作常规使用；病情稳定后查 C 肽与糖尿病自身抗体明确分型，并转入糖尿病教育。'
+    }
+  },
+  {
+    id: 'LAB-20261121-0722',
+    title: '胸痛 2 小时伴大汗',
+    status: 'published',
+    level: 'R3',
+    reportTypes: ['心肌标志物', '血常规', '生化', '凝血'],
+    specimen: '静脉血',
+    department: '心血管内科',
+    times: ['急诊 11-21 07:22', '6 小时后复查 11-21 13:20'],
+    patient: {
+      name: '赵国强',
+      sex: '男',
+      age: '62 岁',
+      chiefComplaint: '持续性胸骨后疼痛 2 小时',
+      clinical: '持续性胸骨后压榨样疼痛 2 小时，向左肩及下颌放射，伴大汗、恶心。T 36.6℃，血压 138/86 mmHg，心率 96 次/分；既往高血压 10 年，吸烟 30 年，未规律服药。心电图提示 V2–V5 ST 段抬高。'
+    },
+    tips: [
+      '肌钙蛋白两次结果如何解读？为什么必须看动态变化？',
+      'CK-MB 首次正常能否排除心肌梗死？',
+      'D-二聚体正常在本例的鉴别诊断中有什么价值？',
+      '哪些检验与临床信息决定是否需要立即再灌注治疗？'
+    ],
+    highlights: [
+      { name: '高敏肌钙蛋白 hs-cTnI', value: '0.06→3.85', unit: 'ng/mL', ref: '0–0.04', abn: true },
+      { name: 'CK-MB', value: '4.2→68', unit: 'ng/mL', ref: '0–5', abn: true },
+      { name: '白细胞 WBC', value: '11.8', unit: '×10⁹/L', ref: '3.5–9.5', abn: true },
+      { name: 'LDL-C', value: '3.8', unit: 'mmol/L', ref: '< 3.4', abn: true }
+    ],
+    panels: [
+      {
+        id: 'cardiac', name: '心肌标志物', rows: [
+          { name: '高敏肌钙蛋白 hs-cTnI', unit: 'ng/mL', ref: '0–0.04', first: '0.06', second: '3.85', hi: 0.04 },
+          { name: '肌酸激酶同工酶 CK-MB', unit: 'ng/mL', ref: '0–5', first: '4.2', second: '68', hi: 5 },
+          { name: '肌红蛋白 MYO', unit: 'ng/mL', ref: '0–70', first: '78', second: '186', hi: 70 },
+          { name: 'N 端脑钠肽前体 NT-proBNP', unit: 'pg/mL', ref: '0–125', first: '320', second: '486', hi: 125 },
+          { name: '肌钙蛋白 T', unit: 'ng/mL', ref: '0–0.014', first: '0.021', second: '1.86', hi: 0.014 }
+        ]
+      },
+      {
+        id: 'cbc', name: '血常规', rows: [
+          { name: '白细胞 WBC', unit: '×10⁹/L', ref: '3.5–9.5', first: '11.8', second: '13.2', lo: 3.5, hi: 9.5 },
+          { name: '中性粒细胞% NEUT%', unit: '%', ref: '40–75', first: '78.4', second: '80.1', lo: 40, hi: 75 },
+          { name: '血红蛋白 HGB', unit: 'g/L', ref: '130–175', first: '156', second: '152', lo: 130, hi: 175 },
+          { name: '血小板 PLT', unit: '×10⁹/L', ref: '125–350', first: '232', second: '218', lo: 125, hi: 350 }
+        ]
+      },
+      {
+        id: 'bio', name: '生化 + 血脂', rows: [
+          { name: '血糖 GLU', unit: 'mmol/L', ref: '3.9–6.1', first: '8.6', second: '7.9', lo: 3.9, hi: 6.1 },
+          { name: '肌酐 Cr', unit: 'μmol/L', ref: '57–111', first: '92', second: '96', lo: 57, hi: 111 },
+          { name: '尿素 BUN', unit: 'mmol/L', ref: '3.1–8.0', first: '5.6', second: '6.1', lo: 3.1, hi: 8 },
+          { name: '血钾 K', unit: 'mmol/L', ref: '3.5–5.3', first: '4.0', second: '3.8', lo: 3.5, hi: 5.3 },
+          { name: '丙氨酸氨基转移酶 ALT', unit: 'U/L', ref: '9–50', first: '32', second: '38', lo: 9, hi: 50 },
+          { name: '总胆固醇 TC', unit: 'mmol/L', ref: '< 5.2', first: '6.2', second: '—', hi: 5.2 },
+          { name: '低密度脂蛋白 LDL-C', unit: 'mmol/L', ref: '< 3.4', first: '3.8', second: '—', hi: 3.4 }
+        ]
+      },
+      {
+        id: 'coag', name: '凝血', rows: [
+          { name: '凝血酶原时间 PT', unit: 's', ref: '11.0–14.5', first: '12.1', second: '12.4', lo: 11, hi: 14.5 },
+          { name: '活化部分凝血活酶时间 APTT', unit: 's', ref: '28.0–42.0', first: '32.0', second: '33.6', lo: 28, hi: 42 },
+          { name: '纤维蛋白原 FIB', unit: 'g/L', ref: '2.0–4.0', first: '3.6', second: '4.1', lo: 2, hi: 4 },
+          { name: 'D-二聚体 D-Dimer', unit: 'mg/L FEU', ref: '< 0.55', first: '0.32', second: '0.48', hi: 0.55 }
+        ]
+      }
+    ],
+    gold: {
+      points: [
+        { id: 'a1', dim: 'abnormal', w: 3, text: 'hs-cTnI 0.06→3.85 ng/mL 动态显著升高，肌钙蛋白 T 亦升高', kw: ['肌钙蛋白', 'ctni', 'tni', 'ctnt', 'tnt', '0.06', '3.85', '升高'] },
+        { id: 'a2', dim: 'abnormal', w: 2.5, text: 'CK-MB 由 4.2 升至 68、肌红蛋白升高，符合心肌损伤标志物的时间曲线', kw: ['ck-mb', 'ckmb', '肌红蛋白', 'myo', '时间曲线', '68'] },
+        { id: 'a3', dim: 'abnormal', w: 2, text: '白细胞 11.8、中性粒细胞 78% 升高，血糖 8.6 升高（应激反应）', kw: ['白细胞', 'wbc', '中性粒', '血糖', '应激'] },
+        { id: 'a4', dim: 'abnormal', w: 2, text: 'NT-proBNP 320→486 pg/mL 升高，提示心功能受累', kw: ['bnp', '脑钠肽', '心功能', '心衰'] },
+        { id: 'a5', dim: 'abnormal', w: 1.5, text: 'LDL-C 3.8 mmol/L、总胆固醇 6.2 mmol/L 升高（危险因素）', kw: ['ldl', '胆固醇', '血脂', 'tc', '危险因素'] },
+        { id: 'a6', dim: 'abnormal', w: 1.5, text: '凝血基本正常、D-二聚体 0.32 未升高', kw: ['d-二聚体', 'd二聚体', '凝血', '正常'] },
+
+        { id: 'm1', dim: 'meaning', w: 3, text: '心肌标志物动态升高提示急性心肌损伤/梗死', kw: ['心肌损伤', '心肌梗死', '心梗', 'ami'] },
+        { id: 'm2', dim: 'meaning', w: 2.5, text: '高敏肌钙蛋白在症状早期即可升高，诊断依赖 0/1h 或 0/3h 动态变化', kw: ['动态', '高敏', '0/1h', '0/3h', '早期', '随访检测'] },
+        { id: 'm3', dim: 'meaning', w: 2, text: '需结合心电图 ST 段抬高与导联定位判断梗死部位与范围', kw: ['心电图', 'st段', 'st 段', '定位', '导联'] },
+        { id: 'm4', dim: 'meaning', w: 1.5, text: '血糖、白细胞升高多为应激反应，同时提示预后风险较高', kw: ['应激', '预后', '风险'] },
+
+        { id: 'r1', dim: 'reasoning', w: 3, text: '诊断急性心肌梗死（本例心电图 ST 抬高，考虑 STEMI）', kw: ['心肌梗死', '心梗', 'stemi', 'st段抬高'] },
+        { id: 'r2', dim: 'reasoning', w: 2.5, text: '按胸痛中心流程评估再灌注时间窗（急诊 PCI 优先）', kw: ['再灌注', '时间窗', '胸痛中心', '溶栓', 'pci', '介入'] },
+        { id: 'r3', dim: 'reasoning', w: 2, text: '需鉴别主动脉夹层、肺栓塞、心包炎；D-二聚体正常有助于降低其可能', kw: ['夹层', '肺栓塞', '心包炎', '鉴别', 'd-二聚体'] },
+
+        { id: 'p1', dim: 'plan', w: 3, text: '10 分钟内完成心电图并启动胸痛中心，评估急诊 PCI 或溶栓', kw: ['心电图', '胸痛中心', 'pci', '溶栓', '再灌注', '介入'] },
+        { id: 'p2', dim: 'plan', w: 2.5, text: '双联抗血小板（阿司匹林 + 替格瑞洛/氯吡格雷）联合抗凝', kw: ['阿司匹林', '替格瑞洛', '氯吡格雷', '抗血小板', '抗凝', '肝素'] },
+        { id: 'p3', dim: 'plan', w: 2, text: '3–6 小时复查 hs-cTn 动态观察', kw: ['复查', '3小时', '3-6小时', '6小时', '动态'] },
+        { id: 'p4', dim: 'plan', w: 1.5, text: '心电监护、吸氧、镇痛（吗啡）与强化他汀治疗', kw: ['监护', '吸氧', '吗啡', '他汀', '镇痛'] },
+        { id: 'p5', dim: 'plan', w: 1.5, text: '管理危险因素：控制血压、血脂，戒烟', kw: ['血压', '血脂', '戒烟', '危险因素'] }
+      ],
+      penalties: [
+        { dim: 'abnormal', re: /(肌钙蛋白|ctni|ctnt)[^。；\n]{0,6}(正常|阴性)/, text: '称肌钙蛋白正常/阴性（0.06→3.85 ng/mL 明显升高）' },
+        { dim: 'reasoning', re: /(不需要|无需)[^。；\n]{0,8}(心电图|再灌注|pci|介入)/, text: '认为无需心电图或再灌注评估' },
+        { dim: 'plan', re: /(等|待)[^。；\n]{0,8}(肌钙蛋白|化验|结果)[^。；\n]{0,8}(再|才)/, text: '等待化验结果再处理（胸痛需先按流程处置）' }
+      ],
+      refAnswer: '患者老年男性，持续性胸骨后压榨样疼痛 2 小时并向左肩、下颌放射，伴大汗，有高血压与吸烟史，心电图 V2–V5 ST 段抬高，首先考虑急性 ST 段抬高型心肌梗死。检验示高敏肌钙蛋白 I 由 0.06 升至 3.85 ng/mL，肌钙蛋白 T 由 0.021 升至 1.86 ng/mL，CK-MB 由 4.2 升至 68 ng/mL、肌红蛋白升高，呈典型心肌损伤标志物时间曲线；NT-proBNP 320→486 pg/mL 升高提示心功能受累；白细胞 11.8×10⁹/L、血糖 8.6 mmol/L 升高多为应激反应，也提示预后风险；LDL-C 3.8 mmol/L、总胆固醇 6.2 mmol/L 升高为重要危险因素；凝血基本正常、D-二聚体 0.32 mg/L 未升高，有助于降低主动脉夹层与肺栓塞的可能，但仍需结合影像判断。处置上应立即（10 分钟内）完成心电图并启动胸痛中心，评估急诊 PCI，若无法及时 PCI 则评估溶栓；给予双联抗血小板（阿司匹林 + 替格瑞洛/氯吡格雷）联合抗凝；3–6 小时复查肌钙蛋白动态观察；同时心电监护、吸氧、镇痛（吗啡）并强化他汀治疗；后续管理血压、血脂与戒烟。'
     }
   }
 ]
