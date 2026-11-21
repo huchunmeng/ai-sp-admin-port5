@@ -98,19 +98,7 @@
               </div>
               <i class="fa-solid fa-chevron-right entry-arrow"></i>
             </div>
-            <div class="entry-card entry-morph" @click="goMorphTrain">
-              <div class="entry-card-top">
-                <div class="entry-icon-wrapper" style="background: #f5f3ff;">
-                  <i class="fa-solid fa-microscope entry-icon" style="color: #7c3aed;"></i>
-                </div>
-                <div class="entry-badge" style="background: #ede9fe; color: #6d28d9;">训练模式</div>
-              </div>
-              <div class="entry-info">
-                <div class="entry-title">形态学与图谱判读训练</div>
-                <div class="entry-desc">看图辨认 · 客观判分</div>
-              </div>
-              <i class="fa-solid fa-chevron-right entry-arrow"></i>
-            </div>
+            <!-- 形态学与图谱判读训练：先隐藏入口（路由 lab-report/morphology 与题库都保留，恢复时把这张卡放回来即可） -->
             <div class="entry-card entry-mdt" @click="goMDT">
               <div class="entry-card-top">
                 <div class="entry-icon-wrapper" style="background: #f0fdf4;">
@@ -456,6 +444,7 @@ function goLabReport() {
   router.push({ name: 'labReportTrain' })
 }
 
+// 形态学与图谱判读训练：首页入口先隐藏，函数保留，恢复入口时把入口卡放回来即可
 function goMorphTrain() {
   router.push({ name: 'labMorphTrain' })
 }
@@ -618,7 +607,7 @@ const recentRecords = computed(() => {
 
 // ─── 系统通知 ───
 const notifications = ref([
-  { id: 1, title: '系统升级通知', desc: '医工慧检 · AI问诊训练系统 v2.0 已上线，新增检验报告解读与形态学图谱判读训练，点击体验', time: '07-20', unread: true },
+  { id: 1, title: '系统升级通知', desc: '医工慧检 · AI问诊训练系统 v2.0 已上线，新增检验报告解读训练，点击体验', time: '07-20', unread: true },
   { id: 2, title: '病例库更新', desc: '病例已按人体系统整理上线，可按消化、循环、神经等系统直接进入学习', time: '07-18', unread: true },
   { id: 3, title: '考核提醒', desc: '本月住培考核将于7月28日进行，请提前完成模拟训练', time: '07-15', unread: false },
 ])
@@ -845,7 +834,8 @@ onMounted(() => {
 
 /* ─── 快速入口 ─── */
 /* 医工慧检：去掉影像报告书写后剩 5 个入口，排一行 */
-.quick-entries { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+/* 医工慧检：当前 4 个入口（问诊 / 检验解读 / MDT / 在线考试），形态学判读入口先隐藏 */
+.quick-entries { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .entry-card {
   background: #fafbfc; border-radius: 12px; padding: 16px;
   border: 1px solid #f0f2f5; cursor: pointer; transition: all .2s; position: relative;
