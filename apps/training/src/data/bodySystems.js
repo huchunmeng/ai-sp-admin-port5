@@ -142,6 +142,30 @@ const MATCH_ORDER = [
   'emergency',
 ]
 
+/**
+ * 首页「按系统推荐病例」的展示顺序（2026-11-21 客户口径）：
+ * 常见系统疾病排在前面——呼吸、消化、循环、神经、内分泌；泌尿/血液/免疫/运动居中；
+ * 生殖、感染、急诊这类专科性强的靠后。
+ * 注意：这是**展示顺序**，与上面的 MATCH_ORDER（判系统用）是两回事，别混用。
+ */
+export const HOME_SYSTEM_ORDER = [
+  'respiratory',
+  'digestive',
+  'circulation',
+  'nervous',
+  'endocrine',
+  'urinary',
+  'hematology',
+  'immune',
+  'musculoskeletal',
+  'reproduction',
+  'infection',
+  'emergency',
+]
+
+/** 首页不展示的系统（病例仍在，走「全部病例」还能看）：精神心理不做首页推荐位 */
+export const HOME_HIDDEN_SYSTEMS = ['mental']
+
 /** 演示/测试病例编号前缀，不计入系统推荐与统计（病例列表仍可见） */
 const TEST_CASE_PREFIX = 'TEST-'
 

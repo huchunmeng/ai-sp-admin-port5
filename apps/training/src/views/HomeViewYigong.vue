@@ -213,16 +213,16 @@
         </div>
         <div class="zone-body">
           <div class="system-grid" v-if="systemCards.length">
-            <div v-for="s in systemCards" :key="s.key" class="system-card" @click="goSystemCases(s)">
+            <div v-for="s in systemCards" :key="s.key" class="system-card" :class="{ 'is-empty': !s.available }" @click="goSystemCases(s)">
               <div class="system-card-icon" :style="{ background: s.bg, color: s.color }">
                 <i class="fa-solid" :class="s.icon"></i>
               </div>
               <div class="system-card-body">
                 <div class="system-card-title">{{ s.name }}</div>
-                <div class="system-card-count">{{ s.count }} 例可用</div>
+                <div class="system-card-count" :class="{ pending: !s.available }">{{ s.count }} 例可用</div>
                 <div class="system-card-sample" :title="s.samples.join('、')">{{ s.sampleText }}</div>
               </div>
-              <i class="fa-solid fa-chevron-right system-card-arrow"></i>
+              <i v-if="s.available" class="fa-solid fa-chevron-right system-card-arrow"></i>
             </div>
           </div>
           <div class="system-empty" v-else>
@@ -301,7 +301,7 @@ import { matchPatientImage } from '@/composables/usePatientImage'
 import { fmtScore } from '@/composables/useUtils'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
 import { useCaseLoader } from '@/composables/useCaseLoader'
-import { BODY_SYSTEMS, classifyCaseSystem, isTestCase } from '@/data/bodySystems'
+import { HOME_SYSTEM_ORDER, HOME_HIDDEN_SYSTEMS, classifyCaseSystem, getBodySystem, isTestCase } from '@/data/bodySystems'
 
 const router = useRouter()
 const store = useTrainingStore()
@@ -568,24 +568,30 @@ const systemCards = computed(() => {
     if (isTestCase(c)) return // 演示/测试病例不进推荐
     const system = classifyCaseSystem(c)
     if (!system) return
-    const b = bucket[system.key] || (bucket[system.key] = { system, count: 0, diseases: [] })
+    if (HOME_HIDDEN_SYSTEMS.indexOf(system.key) >= 0) return // 精神心理不在首页展示
+    const b = bucket[system.key] || (bucket[system.key] = { count: 0, diseases: [] })
     b.count += 1
     const d = shortDisease(c)
     if (d && b.diseases.indexOf(d) < 0) b.diseases.push(d)
   })
-  return Object.values(bucket)
-    .sort((a, b) => b.count - a.count) // 病例多的系统排前面，读起来像「推荐」
-    .map(({ system, count, diseases }) => ({
+  // 固定按「常见系统优先」的顺序出卡（呼吸/消化/循环/神经/内分泌…），
+  // 不是按病例数排序——否则现在会是生殖、精神心理打头，客户第一眼看不到常见系统。
+  return HOME_SYSTEM_ORDER.map(key => {
+    const system = getBodySystem(key)
+    const b = bucket[key] || { count: 0, diseases: [] }
+    return {
       key: system.key,
       name: system.name,
       icon: system.icon,
       color: system.color,
       bg: system.bg,
-      count,
-      samples: diseases.slice(0, 3),
+      count: b.count,
+      available: b.count > 0,
+      samples: b.diseases.slice(0, 3),
       // 卡片只有一行宽的位置，取两个病种用顿号连起来最不容易被省略号截断
-      sampleText: diseases.slice(0, 2).join('、'),
-    }))
+      sampleText: b.diseases.slice(0, 2).join('、') || '即将上线',
+    }
+  })
 })
 
 async function loadSystemCases() {
@@ -600,6 +606,8 @@ async function loadSystemCases() {
 }
 
 function goSystemCases(s) {
+  // 暂无病例的系统（呼吸/泌尿/血液/运动…）只占位展示，点了没意义
+  if (!s.available) return
   // 带系统参数进病例列表，列表页按同一套规则过滤（见 CaseList 的 ?system=）
   router.push({ name: 'caseList', query: { system: s.key } })
 }
@@ -920,9 +928,13 @@ onMounted(() => {
 .system-card-body { flex: 1; min-width: 0; }
 .system-card-title { font-size: 13px; font-weight: 600; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .system-card-count { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.system-card-count.pending { color: #b45309; }
 .system-card-sample { font-size: 10px; color: #9ca3af; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .system-card-arrow { font-size: 11px; color: #d1d5db; transition: all .2s; }
 .system-card:hover .system-card-arrow { color: #6b7280; transform: translateX(2px); }
+/* 暂无病例的系统：占位展示、不可点（顺序里要占位，否则常见系统排不到前面） */
+.system-card.is-empty { cursor: default; opacity: .7; }
+.system-card.is-empty:hover { background: #fafbfc; border-color: #f0f2f5; box-shadow: none; transform: none; }
 .system-empty { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 22px 0; color: #9ca3af; font-size: 13px; }
 
 .diff-U { background: #dbeafe; color: #1d4ed8; }
