@@ -194,7 +194,7 @@ function buildReport(c, panel) {
     cardTitle: c.title + ' · ' + panel.name,
     level: c.level,
     department: c.department,
-    specimen: panel.specimen || c.specimen,
+    specimen: panel.specimen || PANEL_SPECIMEN[panel.id] || c.specimen,
     patient: c.patient,
     /* 主表只有一个时点；既往与其他报告的时间只写在背景块标题上 */
     timeLabel: cur.at,
@@ -218,6 +218,10 @@ function buildReport(c, panel) {
 /* 报告类型（列表筛选用）：页签原名太花（'生化（含胰酶）'/'生化 + 血脂'），
    筛选按大类，卡面仍显示原名 */
 const PANEL_TYPE = { cbc: '血常规', bio: '生化', coag: '凝血', gas: '血气', iron: '铁代谢', urine: '尿常规', cardiac: '心肌标志物' }
+
+/* 标本类型按报告给：一份报告单只对应一种标本（血气是动脉血、尿常规是中段尿），
+   病例级的 '静脉血 / 动脉血 / 中段尿' 是这次就诊的合计，不适合摆在单份报告单上 */
+const PANEL_SPECIMEN = { cbc: '静脉血', bio: '静脉血', coag: '静脉血', iron: '静脉血', cardiac: '静脉血', gas: '动脉血', urine: '中段尿' }
 
 export const LAB_REPORTS = []
 LAB_CASES.forEach(c => c.panels.forEach(p => LAB_REPORTS.push(buildReport(c, p))))

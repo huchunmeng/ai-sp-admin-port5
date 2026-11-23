@@ -131,6 +131,11 @@ async function snap(page, name) {
   await p.waitForTimeout(500)
   const urine = await p.locator('.table-wrap').first().innerText()
   ok('尿常规定性项（4+ / 3+）仍按异常标色', urine.includes('4+') && urine.includes('3+'))
+  const urineSpec = await p.locator('.patient-bar .p-cell').nth(5).innerText()
+  ok('标本类型跟着报告走（尿常规 = 中段尿）', urineSpec.includes('中段尿'), urineSpec.replace(/\s+/g, ' '))
+  const clipped = await p.locator('.patient-bar .p-cell:not(.wide) .p-v').evaluateAll(
+    els => els.filter(e => e.scrollWidth > e.clientWidth + 1).length)
+  ok('首行六格无截断', clipped === 0, `${clipped} 格被截断`)
   ok('尿常规本场只出尿常规要点',
     (await p.locator('.write-meta').innerText()).includes('个判读点计分'))
   await snap(p, '16-尿常规-定性项')
@@ -150,9 +155,14 @@ async function snap(page, name) {
   ok('批注1+2：字段顺序为 姓名/性别年龄/科室/主诉/采样时间/标本类型/临床主要信息',
     keys.join(',') === '姓名,性别,科室,主诉,采样时间,标本类型,临床主要信息', keys.join(' → '))
   const row1 = await p.locator('.patient-bar .p-cell').evaluateAll(
-    els => els.slice(0, 5).map(e => Math.round(e.getBoundingClientRect().top)))
-  ok('采样时间与标本类型都排在主诉之后（同一行顺序）',
-    new Set(row1).size === 1, '首行 5 格顶边一致')
+    els => els.slice(0, 6).map(e => Math.round(e.getBoundingClientRect().top)))
+  ok('姓名到标本类型六格排在同一行', new Set(row1).size === 1, `首行 6 格顶边一致（${row1[0]}px）`)
+  const geo = await p.locator('.patient-bar .p-cell').evaluateAll(
+    els => els.map(e => { const r = e.getBoundingClientRect(); return { top: Math.round(r.top), w: Math.round(r.width) } }))
+  const bar = await p.locator('.patient-bar').evaluate(e => Math.round(e.getBoundingClientRect().width))
+  const clinical = geo[6]
+  ok('临床主要信息单独占一行（第二行、宽度等于整行）',
+    clinical.top > geo[0].top && Math.abs(clinical.w - bar) <= 2, `宽 ${clinical.w}px / 行宽 ${bar}px`)
   ok('批注3：「我的解读」下的整段说明文字已删除', await p.locator('.write-desc').count() === 0)
   ok('批注3：解读卡只剩标题，标题仍在',
     (await p.locator('.write-title').innerText()).includes('我的解读'))

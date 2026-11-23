@@ -117,10 +117,10 @@ function valClass(row, value) {
 .sheet-name { font-size: 13.5px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border-radius: 6px; padding: 2px 9px; }
 .sheet-sub { font-size: 12px; color: #9ca3af; }
 
-.patient-bar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #f3f4f6; background: #fbfdff; }
+.patient-bar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-bottom: 1px solid #f3f4f6; background: #fbfdff; }
 .p-cell { padding: 10px 14px; border-right: 1px solid #f3f4f6; min-width: 0; }
-.p-cell.wide { grid-column: span 4; }
-.p-cell.wide.expanded { grid-column: 1 / -1; }
+/* 六格排第一行（含标本类型），临床主要信息单独占整行（11-23 批注） */
+.p-cell.wide { grid-column: 1 / -1; border-right: 0; }
 .p-cell.expanded .p-v { white-space: normal; text-overflow: clip; line-height: 1.85; font-weight: 500; }
 .more-btn { font-family: inherit; font-size: 11px; color: #2563eb; background: none; border: 0; padding: 0 0 0 6px; cursor: pointer; vertical-align: 1px; }
 .more-btn:hover { text-decoration: underline; }
@@ -169,8 +169,7 @@ function valClass(row, value) {
 
 @media (max-width: 1100px) {
   .patient-bar { grid-template-columns: repeat(3, 1fr); }
-  .p-cell.wide { grid-column: span 3; }
-  .p-cell.wide.expanded { grid-column: 1 / -1; }
+  .p-cell.wide { grid-column: 1 / -1; }
   .bg-note { display: none; }
 }
 </style>
