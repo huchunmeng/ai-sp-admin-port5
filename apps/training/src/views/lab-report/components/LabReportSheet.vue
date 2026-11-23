@@ -8,19 +8,20 @@
       <div class="sheet-sub">报告号 {{ report.caseId }} · {{ report.department }} · 本次 {{ report.timeLabel }}</div>
     </div>
 
+    <!-- 字段顺序（11-23 批注）：姓名 → 性别年龄 → 科室 → 主诉 → 采样时间 → 标本类型 → 临床主要信息 -->
     <div class="patient-bar">
       <div class="p-cell"><span class="p-k">姓名</span><span class="p-v">{{ report.patient.name }}</span></div>
       <div class="p-cell"><span class="p-k">性别 / 年龄</span><span class="p-v">{{ report.patient.sex }} / {{ report.patient.age }}</span></div>
       <div class="p-cell"><span class="p-k">科室</span><span class="p-v">{{ report.department }}</span></div>
-      <div class="p-cell"><span class="p-k">标本类型</span><span class="p-v">{{ report.specimen }}</span></div>
       <div class="p-cell"><span class="p-k">主诉</span><span class="p-v">{{ report.patient.chiefComplaint }}</span></div>
+      <div class="p-cell"><span class="p-k">采样时间</span><span class="p-v">{{ report.timeLabel }}</span></div>
+      <div class="p-cell"><span class="p-k">标本类型</span><span class="p-v">{{ report.specimen }}</span></div>
       <div class="p-cell wide" :class="{ expanded: clinicalOpen }">
         <span class="p-k">临床主要信息
           <button v-if="clinicalLong" class="more-btn" type="button" @click="clinicalOpen = !clinicalOpen">{{ clinicalOpen ? '收起' : '展开更多' }}</button>
         </span>
         <span class="p-v">{{ report.patient.clinical }}</span>
       </div>
-      <div class="p-cell tail"><span class="p-k">采样时间</span><span class="p-v">{{ report.timeLabel }}</span></div>
     </div>
 
     <!-- ══ 本次报告：只有一列结果（批注4：不在这里做前后对照） ══ -->
@@ -117,8 +118,7 @@ function valClass(row, value) {
 
 .patient-bar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #f3f4f6; background: #fbfdff; }
 .p-cell { padding: 10px 14px; border-right: 1px solid #f3f4f6; min-width: 0; }
-.p-cell.wide { grid-column: span 3; }
-.p-cell.tail { grid-column: span 2; }
+.p-cell.wide { grid-column: span 4; }
 .p-cell.wide.expanded { grid-column: 1 / -1; }
 .p-cell.expanded .p-v { white-space: normal; text-overflow: clip; line-height: 1.85; font-weight: 500; }
 .more-btn { font-family: inherit; font-size: 11px; color: #2563eb; background: none; border: 0; padding: 0 0 0 6px; cursor: pointer; vertical-align: 1px; }

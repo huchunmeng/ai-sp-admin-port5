@@ -21,7 +21,6 @@
         <section class="write-card">
           <div class="write-head">
             <div class="write-title">我的解读 · {{ report.reportName }}</div>
-            <div class="write-desc">结合患者临床信息与<b>本次</b>检验结果写出解读。既往检验记录与同期其他检查已在报告单下方作为背景信息给出，只作参考，不要求逐项做前后对照。AI 从异常识别、临床意义、诊断思路、下一步建议四个维度评价。</div>
           </div>
 
           <div class="write-body">
@@ -156,9 +155,8 @@ function onReset() {
 .labr-grid { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 16px; align-items: start; }
 .write-col { position: sticky; top: 14px; }
 .write-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-.write-head { padding: 14px 18px 10px; border-bottom: 1px solid #f3f4f6; }
-.write-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-.write-desc { font-size: 12px; color: #6b7280; line-height: 1.65; }
+.write-head { padding: 14px 18px 12px; border-bottom: 1px solid #f3f4f6; }
+.write-title { font-size: 15px; font-weight: 700; }
 .write-body { padding: 14px 18px; }
 .task-card { border: 1px solid #dbeafe; background: #eff6ff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
 .tk { font-size: 11.5px; font-weight: 700; color: #1d4ed8; margin-bottom: 5px; }

@@ -131,6 +131,20 @@ async function snap(page, name) {
     !(await p.locator('.table-wrap').first().innerText()).includes('甘油三酯'))
   await snap(p, '17-心肌标志物')
 
+  /* ══ 15:22 波：字段顺序 + 删掉解读说明段 ══ */
+  const keys = await p.locator('.patient-bar .p-k').evaluateAll(
+    els => els.map(e => String((e.firstChild && e.firstChild.textContent) || e.textContent).trim().split(/\s/)[0]))
+  ok('批注1+2：字段顺序为 姓名/性别年龄/科室/主诉/采样时间/标本类型/临床主要信息',
+    keys.join(',') === '姓名,性别,科室,主诉,采样时间,标本类型,临床主要信息', keys.join(' → '))
+  const row1 = await p.locator('.patient-bar .p-cell').evaluateAll(
+    els => els.slice(0, 5).map(e => Math.round(e.getBoundingClientRect().top)))
+  ok('采样时间与标本类型都排在主诉之后（同一行顺序）',
+    new Set(row1).size === 1, '首行 5 格顶边一致')
+  ok('批注3：「我的解读」下的整段说明文字已删除', await p.locator('.write-desc').count() === 0)
+  ok('批注3：解读卡只剩标题，标题仍在',
+    (await p.locator('.write-title').innerText()).includes('我的解读'))
+  await snap(p, '18-字段顺序与说明段已删')
+
   /* ══ 批注 1：练习考面包屑 + 交卷后直接回列表 ══ */
   await p.goto(BASE + '/report-writing/exam', { waitUntil: 'networkidle' })
   await p.waitForTimeout(700)
