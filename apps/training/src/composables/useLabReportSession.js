@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue'
-import { evaluateLabCase } from '@ai-sp/shared/lab'
+import { evaluateLabCase, LAB_DEMO_RUNS } from '@ai-sp/shared/lab'
 
 const KEY = 'lab_report_session_v1'
 
@@ -10,15 +10,42 @@ function writeStore(s) {
   try { localStorage.setItem(KEY, JSON.stringify(s)) } catch (e) { /* 忽略配额错误 */ }
 }
 
-/** 列表页用：各病例的练习次数、最近得分 */
+/**
+ * 列表页用：各报告的练习次数、最近得分。
+ * 先铺演示成绩（11-23 批注：报告里做演示数据，要有分数），再用本机真实记录覆盖——
+ * 次数按累计算（演示的历史次数 + 本机练的次数），得分以本机最近一次为准。
+ */
 export function readLabStats() {
   const store = readStore()
   const out = {}
+  LAB_DEMO_RUNS.forEach(d => {
+    out[d.key] = { attempts: d.attempts, score: d.score, lastAt: d.lastAt, demo: true }
+  })
   Object.keys(store).forEach(id => {
     const s = store[id] || {}
-    out[id] = { attempts: s.attempts || 0, score: s.score != null ? s.score : null, lastAt: s.lastAt || '' }
+    const base = out[id] && out[id].demo ? out[id].attempts : 0
+    out[id] = {
+      attempts: base + (s.attempts || 0),
+      score: s.score != null ? s.score : (out[id] ? out[id].score : null),
+      lastAt: s.lastAt || (out[id] ? out[id].lastAt : ''),
+      demo: !(s.attempts > 0)
+    }
   })
   return out
+}
+
+/** 工作台用：这份报告上一次练习的成绩（本机记录优先，其次演示成绩） */
+export function lastLabRun(report) {
+  if (!report) return null
+  const key = report.id
+  const local = readStore()[key]
+  if (local && local.attempts > 0 && local.score != null) {
+    return {
+      key, demo: false, attempts: local.attempts, score: local.score,
+      lastAt: local.lastAt || '', result: local.draft ? evaluateLabCase(report, local.draft) : null
+    }
+  }
+  return LAB_DEMO_RUNS.find(d => d.key === key) || null
 }
 
 export function useLabReportSession(caseItem) {

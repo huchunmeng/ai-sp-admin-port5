@@ -21,6 +21,13 @@
         <section class="write-card">
           <div class="write-head">
             <div class="write-title">我的解读 · {{ report.reportName }}</div>
+            <!-- 演示数据：打开就有上次成绩，点「查看上次评价」直接出带分数的报告（批注 11-23） -->
+            <div v-if="lastRun && lastRun.score != null" class="last-run">
+              <span class="lr-score">上次成绩 <b :class="scoreCls(lastRun.score)">{{ lastRun.score }}</b> 分 · {{ gradeLabel(lastRun.score) }}</span>
+              <span class="lr-meta">{{ lastRun.attempts }} 次练习 · {{ lastRun.lastAt }}</span>
+              <button v-if="lastRun.result" class="link-btn" type="button" @click="showLastRun">查看上次评价</button>
+              <span v-if="lastRun.demo" class="lr-tag">演示数据</span>
+            </div>
           </div>
 
           <div class="write-body">
@@ -55,7 +62,7 @@
           <div class="write-actions">
             <button class="btn btn-sm" type="button" @click="onReset">清空重写</button>
             <span class="actions-right">
-              <button v-if="scoring" class="btn btn-sm" type="button" @click="modalOpen = true">查看评价</button>
+              <button v-if="scoring" class="btn btn-sm" type="button" @click="viewResult = scoring; modalOpen = true">查看评价</button>
               <button class="btn btn-primary btn-sm" type="button" :disabled="!canSubmit || scoringRunning" @click="onSubmit">
                 <i v-if="scoringRunning" class="fa-solid fa-circle-notch fa-spin"></i>
                 {{ scoringRunning ? 'AI 评价中…' : (scoring ? '重新提交评价' : '提交 AI 评价') }}
@@ -74,7 +81,7 @@
       </aside>
     </div>
 
-    <LabScoreModal v-if="modalOpen && scoring" :result="scoring" :report="report"
+    <LabScoreModal v-if="modalOpen && viewResult" :result="viewResult" :report="report"
                    :submitted-at="submittedAt" @close="modalOpen = false" @revise="modalOpen = false" />
   </div>
 </template>
@@ -83,8 +90,8 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast, getCaseLevelLabel, LEVEL_TO_CASE_LEVEL } from '@ai-sp/shared'
-import { getLabReport } from '@ai-sp/shared/lab'
-import { useLabReportSession } from '@/composables/useLabReportSession'
+import { getLabReport, labGradeOf } from '@ai-sp/shared/lab'
+import { useLabReportSession, lastLabRun } from '@/composables/useLabReportSession'
 import LabReportSheet from './components/LabReportSheet.vue'
 import LabScoreModal from './components/LabScoreModal.vue'
 
@@ -98,6 +105,19 @@ const { text, scoring, scoringRunning, submittedAt, canSubmit, submit, reset } =
 
 const tipOpen = ref(false)
 const modalOpen = ref(false)
+const viewResult = ref(null)
+const lastRun = ref(report ? lastLabRun(report) : null)
+
+function gradeLabel(s) { return labGradeOf(s).label }
+function scoreCls(s) { return s >= 85 ? 'sc-good' : s >= 60 ? 'sc-mid' : 'sc-bad' }
+
+/* 演示成绩与本机成绩共用同一个报告弹窗，打开时把 submittedAt 换成那次的时间 */
+function showLastRun() {
+  if (!lastRun.value || !lastRun.value.result) return
+  viewResult.value = lastRun.value.result
+  submittedAt.value = lastRun.value.lastAt
+  modalOpen.value = true
+}
 
 /* 示例句按报告给，避免练凝血时抄着一句血常规的思路写 */
 const PLACEHOLDER_BY_PANEL = {
@@ -127,7 +147,11 @@ async function onSubmit() {
     return
   }
   const result = await submit()
-  if (result) modalOpen.value = true
+  if (result) {
+    viewResult.value = result
+    lastRun.value = lastLabRun(report)   // 交完卷，「上次成绩」就是刚这一份
+    modalOpen.value = true
+  }
 }
 
 function onReset() {
@@ -157,6 +181,13 @@ function onReset() {
 .write-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
 .write-head { padding: 14px 18px 12px; border-bottom: 1px solid #f3f4f6; }
 .write-title { font-size: 15px; font-weight: 700; }
+.last-run { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: #6b7280; }
+.lr-score b { font-size: 13px; }
+.lr-meta { color: #9ca3af; }
+.lr-tag { font-size: 10.5px; color: #92400e; background: #fef3c7; border-radius: 4px; padding: 1px 6px; }
+.sc-good { color: #059669; }
+.sc-mid { color: #d97706; }
+.sc-bad { color: #dc2626; }
 .write-body { padding: 14px 18px; }
 .task-card { border: 1px solid #dbeafe; background: #eff6ff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
 .tk { font-size: 11.5px; font-weight: 700; color: #1d4ed8; margin-bottom: 5px; }

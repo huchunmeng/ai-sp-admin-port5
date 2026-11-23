@@ -77,6 +77,7 @@
       <BgBlock v-for="o in report.others" :key="o.panelId"
                :label="'同期其他检查 · ' + o.reportName"
                :time="o.timeLabel"
+               :prior-time="report.priorTime"
                :rows="o.rows" />
     </div>
 

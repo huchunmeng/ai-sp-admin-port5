@@ -23,7 +23,8 @@
         <thead>
           <tr>
             <th>项目</th>
-            <th class="num">结果</th>
+            <th class="num">{{ time || '本次' }}</th>
+            <th v-if="hasPrior" class="num">既往{{ priorTime ? ' · ' + priorTime : '' }}</th>
             <th>单位</th>
             <th>参考区间</th>
           </tr>
@@ -32,6 +33,7 @@
           <tr v-for="r in rows" :key="r.name" :class="{ critical: isCritical(r, r.value) }">
             <td class="item-name">{{ r.name }}</td>
             <td class="num" :class="valClass(r)">{{ r.value }}<span v-if="flagOf(r, r.value)" class="arrow">{{ flagOf(r, r.value) === 'high' ? ' ↑' : ' ↓' }}</span></td>
+            <td v-if="hasPrior" class="num prior">{{ r.prior || '—' }}</td>
             <td class="unit">{{ r.unit || '—' }}</td>
             <td class="ref">{{ r.ref }}</td>
           </tr>
@@ -49,12 +51,14 @@ const props = defineProps({
   label: { type: String, required: true },
   time: { type: String, default: '' },
   note: { type: String, default: '' },
+  priorTime: { type: String, default: '' },
   rows: { type: Array, default: () => [] }
 })
 
 const open = ref(false)
 const abn = computed(() => abnormalRows(props.rows))
 const abnVisible = computed(() => abn.value.slice(0, 8))
+const hasPrior = computed(() => props.rows.some(r => r.prior))
 
 /* 「平均红细胞体积 MCV」这类长名，摘要行里只留英文符号，一屏能多放几项 */
 function shortName(name) {
@@ -97,6 +101,7 @@ function valClass(r) {
 .lab-table tr.critical { background: #fef2f2; }
 .item-name { font-weight: 500; }
 .unit, .ref { color: #9ca3af; font-size: 11px; }
+.prior { color: #9ca3af; }
 .val-high { color: #c2410c; font-weight: 700; }
 .val-low { color: #1d4ed8; font-weight: 700; }
 .arrow { font-size: 11px; }

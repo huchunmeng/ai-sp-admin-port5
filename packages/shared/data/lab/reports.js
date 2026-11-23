@@ -114,6 +114,17 @@ function shapeRow(row, value) {
 function mapRows(panel, idx) {
   return panel.rows.map(r => shapeRow(r, valueAt(r, idx))).filter(r => r.value !== '')
 }
+/* 背景块里的其他报告：本次值之外再带上它自己的既往值。
+   参考解读是按整例写的，若不把其他报告的既往值放进来，
+   弹窗里出现的数字在页面上就找不到（例如练血气时提到生化的 Cr 168）。 */
+function mapRowsWithPrior(panel, idx) {
+  return panel.rows.map(r => {
+    const row = shapeRow(r, valueAt(r, idx))
+    if (row.value === '') return null
+    row.prior = idx > 0 ? valueAt(r, idx - 1) : ''
+    return row
+  }).filter(Boolean)
+}
 
 /* 时间标签形如「首次 11-18 08:00」「补铁 4 周复查 12-18 09:10」：
    主表表头只取日期时间，前面的说明语（首次/入院/复查…）挪去背景块，免得又被读成前后对照 */
@@ -194,7 +205,7 @@ function buildReport(c, panel) {
     notDone,
     history: hasHistory ? { reportName: panel.name, timeLabel: pre.at, timeNote: pre.note, rows: historyRows } : null,
     others: c.panels.filter(p => p.id !== panel.id).map(p => ({
-      reportName: p.name, panelId: p.id, timeLabel: cur.at, rows: mapRows(p, idx)
+      reportName: p.name, panelId: p.id, timeLabel: cur.at, priorTime: pre.at, rows: mapRowsWithPrior(p, idx)
     })),
     tips: (c.tips || []).slice(),
     gold,
