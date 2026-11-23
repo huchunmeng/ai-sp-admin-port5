@@ -2,7 +2,9 @@
   <div class="mask" @click.self="$emit('close')">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-head">
-        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI 解读评价</h3>
+        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI 解读评价
+          <span class="head-sub">{{ report.cardTitle || report.reportName || '' }}</span>
+        </h3>
         <button class="close" type="button" @click="$emit('close')">×</button>
       </div>
 
@@ -30,7 +32,7 @@
 
       <div class="body">
         <div class="sec">
-          <div class="sec-t">要点对照 <span class="sec-sub">命中 {{ result.hitCount }} / {{ result.pointCount }}</span><span class="line"></span></div>
+          <div class="sec-t">要点对照 <span class="sec-sub">本报告 {{ result.pointCount }} 个判读点，命中 {{ result.hitCount }}</span><span class="line"></span></div>
           <div class="point-grid">
             <div v-for="p in result.points" :key="p.id" class="point" :class="p.hit ? 'hit' : 'miss'">
               <span class="mk">{{ p.hit ? '✓' : '✗' }}</span>
@@ -45,8 +47,8 @@
         </div>
 
         <div class="sec">
-          <div class="sec-t">参考解读 <span class="sec-sub">训练模式 · 提交后可对照</span><span class="line"></span></div>
-          <div class="ref-answer">{{ caseItem.gold.refAnswer }}</div>
+          <div class="sec-t">参考解读 <span class="sec-sub">整例（本次报告 + 背景信息）· 训练模式提交后可对照</span><span class="line"></span></div>
+          <div class="ref-answer">{{ report.gold.refAnswer }}</div>
         </div>
       </div>
 
@@ -67,7 +69,9 @@ import { LAB_DIMS, buildLabComment } from '@ai-sp/shared/lab'
 
 const props = defineProps({
   result: { type: Object, required: true },
-  caseItem: { type: Object, required: true },
+  /* 传进来的是「一次训练 = 一个报告」的展开对象（见 shared/data/lab/reports.js），
+     金标准要点已按本报告筛过，refAnswer 仍是整例的（背景信息里都能看到） */
+  report: { type: Object, required: true },
   submittedAt: { type: String, default: '' }
 })
 defineEmits(['close', 'revise'])
@@ -87,6 +91,7 @@ const gradeColor = computed(() => {
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid #f3f4f6; }
 .modal-head h3 { margin: 0; font-size: 15.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .modal-head h3 i { color: var(--primary, #2563eb); }
+.head-sub { font-size: 12px; font-weight: 400; color: #6b7280; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; margin-left: 4px; }
 .close { border: 0; background: transparent; font-size: 20px; color: #9ca3af; line-height: 1; padding: 2px 6px; border-radius: 6px; cursor: pointer; }
 .close:hover { background: #f3f4f6; color: #1f2937; }
 

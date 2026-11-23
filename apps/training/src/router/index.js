@@ -1,5 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import TrainingLayout from '@/layouts/TrainingLayout.vue'
+import { getLabCase } from '@ai-sp/shared/lab'
+
+/** 旧链接兼容：只带病例号的检验工作台，默认进该病例的第一个报告 */
+function firstLabPanel(caseId) {
+  const c = getLabCase(caseId)
+  return c && c.panels && c.panels[0] ? c.panels[0].id : 'cbc'
+}
 
 const routes = [
   {
@@ -44,10 +51,12 @@ const routes = [
       // 考核侧：老师派发后学生在此看到「我的考核任务」，进入考试室作答
       { path: 'report-writing/exam-tasks', name: 'reportWritingExamTasks', component: () => import('@/views/report-writing/ReportWritingExamTasks.vue') },
       { path: 'report-writing/exam', name: 'reportWritingExam', component: () => import('@/views/report-writing/ReportWritingExam.vue') },
-      // 检验报告解读训练
+      // 检验报告解读训练：一次训练只解读一个报告，所以工作台定位到「病例 + 报告」两级
       { path: 'lab-report', redirect: { name: 'labReportTrain' } },
       { path: 'lab-report/train', name: 'labReportTrain', component: () => import('@/views/lab-report/LabReportTrainList.vue') },
-      { path: 'lab-report/train/:caseId', name: 'labReportWorkbench', component: () => import('@/views/lab-report/LabReportWorkbench.vue') },
+      { path: 'lab-report/train/:caseId/:panelId', name: 'labReportWorkbench', component: () => import('@/views/lab-report/LabReportWorkbench.vue') },
+      // 旧链接只写到病例一级（一个病例含多个报告），落到该病例的第一个报告
+      { path: 'lab-report/train/:caseId', redirect: to => ({ name: 'labReportWorkbench', params: { caseId: to.params.caseId, panelId: firstLabPanel(to.params.caseId) } }) },
       // 形态学与图谱判读训练（与报告解读同一模块，客观题形态）
       { path: 'lab-report/morphology', name: 'labMorphTrain', component: () => import('@/views/lab-report/LabMorphTrainList.vue') },
       { path: 'lab-report/morphology/:setId', name: 'labMorphQuiz', component: () => import('@/views/lab-report/LabMorphQuiz.vue') },

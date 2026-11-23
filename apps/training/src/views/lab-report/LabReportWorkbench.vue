@@ -1,32 +1,34 @@
 <template>
-  <div v-if="caseItem" class="labr-page">
+  <div v-if="report" class="labr-page">
     <div class="labr-top">
       <button class="back" type="button" @click="goList"><i class="fa-solid fa-arrow-left"></i> 返回列表</button>
       <div class="title-wrap">
-        <h2>{{ caseItem.title }}</h2>
+        <h2>{{ report.cardTitle }}</h2>
         <div class="meta">
-          <span v-for="t in caseItem.reportTypes" :key="t" class="chip">{{ t }}</span>
-          <span class="chip">{{ caseItem.specimen }}</span>
+          <span class="chip">{{ report.reportName }}</span>
+          <span class="chip">{{ report.specimen }}</span>
+          <span class="chip">本次 {{ report.timeLabel }}</span>
+          <span class="chip focus">本次训练只解读这一个报告</span>
         </div>
       </div>
-      <span class="level-tag" :class="levelKey">{{ getCaseLevelLabel(caseItem.level) }}</span>
+      <span class="level-tag" :class="levelKey">{{ getCaseLevelLabel(report.level) }}</span>
     </div>
 
     <div class="labr-grid">
-      <LabReportSheet :case-item="caseItem" />
+      <LabReportSheet :report="report" />
 
       <aside class="write-col">
         <section class="write-card">
           <div class="write-head">
-            <div class="write-title">我的解读</div>
-            <div class="write-desc">结合患者临床信息与两次检验结果，写出你的报告解读。AI 将从异常识别、临床意义、诊断思路、下一步建议四个维度评价。</div>
+            <div class="write-title">我的解读 · {{ report.reportName }}</div>
+            <div class="write-desc">结合患者临床信息与<b>本次</b>检验结果写出解读。既往检验记录与同期其他检查已在报告单下方作为背景信息给出，只作参考，不要求逐项做前后对照。AI 从异常识别、临床意义、诊断思路、下一步建议四个维度评价。</div>
           </div>
 
           <div class="write-body">
             <div class="task-card">
               <div class="tk">解读任务</div>
               <ul>
-                <li>指出主要异常及其程度，关注危急值</li>
+                <li>指出本次报告的主要异常及其程度，关注危急值</li>
                 <li>说明异常之间的关联与可能的病理生理机制</li>
                 <li>给出诊断方向与需要补充的检查/处置</li>
               </ul>
@@ -37,7 +39,7 @@
               <span class="count">{{ text.length }} / 1200</span>
             </div>
             <textarea v-model="text" maxlength="1200" class="answer"
-                      placeholder="示例：患者发热 3 天伴低血压，血常规示白细胞及中性粒细胞显著升高、PCT 明显升高，提示严重细菌感染可能……"></textarea>
+                      :placeholder="placeholder"></textarea>
 
             <div class="hint-row">
               <button class="link-btn" type="button" @click="tipOpen = !tipOpen">{{ tipOpen ? '收起提示' : '训练提示' }}</button>
@@ -46,7 +48,7 @@
             <div v-if="tipOpen" class="tip-box">
               <div class="tip-t">思考方向（不包含答案）</div>
               <ul>
-                <li v-for="(t, i) in (caseItem.tips || [])" :key="i">{{ t }}</li>
+                <li v-for="(t, i) in (report.tips || [])" :key="i">{{ t }}</li>
               </ul>
             </div>
           </div>
@@ -66,12 +68,14 @@
             <span>已写 <b>{{ text.trim().length }}</b> 字</span>
             <span>·</span>
             <span>至少 30 字，建议 200 字以上</span>
+            <span>·</span>
+            <span>本场按本报告的 {{ report.gold.points.length }} 个判读点计分</span>
           </div>
         </section>
       </aside>
     </div>
 
-    <LabScoreModal v-if="modalOpen && scoring" :result="scoring" :case-item="caseItem"
+    <LabScoreModal v-if="modalOpen && scoring" :result="scoring" :report="report"
                    :submitted-at="submittedAt" @close="modalOpen = false" @revise="modalOpen = false" />
   </div>
 </template>
@@ -80,7 +84,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast, getCaseLevelLabel, LEVEL_TO_CASE_LEVEL } from '@ai-sp/shared'
-import { getLabCase } from '@ai-sp/shared/lab'
+import { getLabReport } from '@ai-sp/shared/lab'
 import { useLabReportSession } from '@/composables/useLabReportSession'
 import LabReportSheet from './components/LabReportSheet.vue'
 import LabScoreModal from './components/LabScoreModal.vue'
@@ -88,16 +92,29 @@ import LabScoreModal from './components/LabScoreModal.vue'
 const route = useRoute()
 const router = useRouter()
 
-const caseItem = getLabCase(route.params.caseId)
-const levelKey = computed(() => (caseItem ? LEVEL_TO_CASE_LEVEL[caseItem.level] || '' : ''))
+const report = getLabReport(route.params.caseId, route.params.panelId)
+const levelKey = computed(() => (report ? LEVEL_TO_CASE_LEVEL[report.level] || '' : ''))
 
-const { text, scoring, scoringRunning, submittedAt, canSubmit, submit, reset } = useLabReportSession(caseItem || { id: '' })
+const { text, scoring, scoringRunning, submittedAt, canSubmit, submit, reset } = useLabReportSession(report || { id: '' })
 
 const tipOpen = ref(false)
 const modalOpen = ref(false)
 
-if (!caseItem) {
-  toast.show('未找到该检验病例', 'error')
+/* 示例句按报告给，避免练凝血时抄着一句血常规的思路写 */
+const PLACEHOLDER_BY_PANEL = {
+  cbc: '示例：本次血常规示白细胞及中性粒细胞显著升高、PCT 明显升高，血红蛋白与血小板……',
+  bio: '示例：本次生化中肌酐、转氨酶较参考区间明显升高，白蛋白降低，提示……',
+  coag: '示例：本次凝血 PT/APTT 延长、纤维蛋白原降低、D-二聚体升高，需考虑……',
+  gas: '示例：本次血气示 pH 降低、HCO₃⁻ 下降、乳酸升高，酸碱失衡类型为……',
+  iron: '示例：本次铁代谢中血清铁蛋白降低、总铁结合力升高，饱和度……',
+  urine: '示例：本次尿常规尿糖、尿酮体阳性，蛋白……，需结合血糖血酮判断……',
+  cardiac: '示例：本次心肌标志物 hs-cTnI 明显升高，CK-MB……，结合心电图考虑……'
+}
+const placeholder = computed(() => (report && PLACEHOLDER_BY_PANEL[report.panelId]) ||
+  '示例：本次报告主要异常为……，提示……，建议……')
+
+if (!report) {
+  toast.show('未找到该检验报告', 'error')
   router.replace({ name: 'labReportTrain' })
 }
 
@@ -130,6 +147,7 @@ function onReset() {
 .title-wrap h2 { margin: 0; font-size: 18px; font-weight: 800; color: #111827; }
 .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
 .chip { font-size: 11px; color: #6b7280; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; }
+.chip.focus { color: #1d4ed8; background: #eff6ff; }
 .level-tag { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
 .level-tag.basic { background: #ecfdf5; color: #047857; }
 .level-tag.advanced { background: #fffbeb; color: #b45309; }
@@ -166,7 +184,7 @@ function onReset() {
 .actions-right { display: flex; gap: 8px; }
 .write-actions .btn { font-family: inherit; cursor: pointer; }
 .write-actions .btn:disabled { opacity: .55; cursor: not-allowed; }
-.write-meta { display: flex; gap: 8px; padding: 10px 18px; border-top: 1px solid #f3f4f6; font-size: 11.5px; color: #9ca3af; background: #fcfcfd; border-radius: 0 0 12px 12px; }
+.write-meta { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 18px; border-top: 1px solid #f3f4f6; font-size: 11.5px; color: #9ca3af; background: #fcfcfd; border-radius: 0 0 12px 12px; }
 .write-meta b { color: #6b7280; }
 
 @media (max-width: 1180px) {

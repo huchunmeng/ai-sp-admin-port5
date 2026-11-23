@@ -70,6 +70,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import { useUserStore } from '@/stores/user'
 import { review, requirement, bottomBar, createDefaultActions, resolveAppUrls } from '@ai-sp/shared'
+import { getLabReport } from '@ai-sp/shared/lab'
 import { getCurrentTtsModel } from '@/composables/useTTS.js'
 import AICompanionDrawer from '@/components/AICompanionDrawer.vue'
 import { MENTOR_CATEGORIES } from '@/data/mentorCategories'
@@ -222,11 +223,11 @@ const crumbs = computed(function() {
     items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
   } else if (name === 'labReportTrain') {
     items.push({ label: lang === 'zh' ? '检验报告解读训练' : 'Lab Report', to: null })
-    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: null })
   } else if (name === 'labReportWorkbench') {
-    items.push({ label: lang === 'zh' ? '检验报告解读训练' : 'Lab Report', to: null })
-    items.push({ label: lang === 'zh' ? '训练病例' : 'Training Cases', to: { name: 'labReportTrain' } })
-    items.push({ label: lang === 'zh' ? '训练工作台' : 'Workbench', to: null })
+    // 一次训练只解读一个报告，末级写报告名而不是"训练工作台"，与列表卡片对得上
+    const rep = getLabReport(route.params.caseId, route.params.panelId)
+    items.push({ label: lang === 'zh' ? '检验报告解读训练' : 'Lab Report', to: { name: 'labReportTrain' } })
+    items.push({ label: rep ? rep.reportName : (lang === 'zh' ? '报告解读' : 'Report'), to: null })
   } else if (name === 'labMorphTrain') {
     items.push({ label: lang === 'zh' ? '形态学与图谱判读训练' : 'Morphology', to: null })
   } else if (name === 'labMorphQuiz') {

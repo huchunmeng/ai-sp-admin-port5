@@ -1,32 +1,33 @@
 <template>
   <section class="lab-sheet">
     <div class="sheet-head">
-      <div class="sheet-title"><i class="fa-solid fa-vial"></i> 检验报告单</div>
-      <div class="sheet-sub">报告号 {{ caseItem.id }} · {{ caseItem.department }}</div>
+      <div class="sheet-title">
+        <i class="fa-solid fa-vial"></i> 检验报告单
+        <span class="sheet-name">{{ report.reportName }}</span>
+      </div>
+      <div class="sheet-sub">报告号 {{ report.caseId }} · {{ report.department }} · 本次 {{ report.timeLabel }}</div>
     </div>
 
     <div class="patient-bar">
-      <div class="p-cell"><span class="p-k">姓名</span><span class="p-v">{{ caseItem.patient.name }}</span></div>
-      <div class="p-cell"><span class="p-k">性别 / 年龄</span><span class="p-v">{{ caseItem.patient.sex }} / {{ caseItem.patient.age }}</span></div>
-      <div class="p-cell"><span class="p-k">科室</span><span class="p-v">{{ caseItem.department }}</span></div>
-      <div class="p-cell"><span class="p-k">标本类型</span><span class="p-v">{{ caseItem.specimen }}</span></div>
-      <div class="p-cell"><span class="p-k">主诉</span><span class="p-v">{{ caseItem.patient.chiefComplaint }}</span></div>
-      <div class="p-cell wide"><span class="p-k">临床主要信息</span><span class="p-v">{{ caseItem.patient.clinical }}</span></div>
-      <div class="p-cell"><span class="p-k">采样时间</span><span class="p-v">{{ caseItem.times.join(' / ') }}</span></div>
-    </div>
-
-    <div class="hl-row">
-      <div v-for="h in caseItem.highlights" :key="h.name" class="hl" :class="{ abn: h.abn }">
-        <div class="hl-name">{{ h.name }}</div>
-        <div class="hl-val">{{ h.value }}<span v-if="h.abn" class="hl-arrow">!</span></div>
-        <div class="hl-ref">参考 {{ h.ref }} {{ h.unit }}<template v-if="h.critical"> · 危急</template></div>
+      <div class="p-cell"><span class="p-k">姓名</span><span class="p-v">{{ report.patient.name }}</span></div>
+      <div class="p-cell"><span class="p-k">性别 / 年龄</span><span class="p-v">{{ report.patient.sex }} / {{ report.patient.age }}</span></div>
+      <div class="p-cell"><span class="p-k">科室</span><span class="p-v">{{ report.department }}</span></div>
+      <div class="p-cell"><span class="p-k">标本类型</span><span class="p-v">{{ report.specimen }}</span></div>
+      <div class="p-cell"><span class="p-k">主诉</span><span class="p-v">{{ report.patient.chiefComplaint }}</span></div>
+      <div class="p-cell wide" :class="{ expanded: clinicalOpen }">
+        <span class="p-k">临床主要信息
+          <button v-if="clinicalLong" class="more-btn" type="button" @click="clinicalOpen = !clinicalOpen">{{ clinicalOpen ? '收起' : '展开更多' }}</button>
+        </span>
+        <span class="p-v">{{ report.patient.clinical }}</span>
       </div>
+      <div class="p-cell tail"><span class="p-k">采样时间</span><span class="p-v">{{ report.timeLabel }}</span></div>
     </div>
 
-    <div class="tabs">
-      <button v-for="p in caseItem.panels" :key="p.id" class="tab" :class="{ active: p.id === currentTab }" @click="currentTab = p.id">
-        {{ p.name }}<span class="tab-cnt">{{ abnCount(p) }} 项异常</span>
-      </button>
+    <!-- ══ 本次报告：只有一列结果（批注4：不在这里做前后对照） ══ -->
+    <div class="cur-head">
+      <span class="cur-t">本次结果</span>
+      <span class="cur-time">{{ report.timeLabel }}{{ report.timeNote ? ' · ' + report.timeNote : '' }}</span>
+      <span class="cur-abn">共 {{ report.rows.length }} 项，<b>{{ report.abn }}</b> 项异常</span>
     </div>
 
     <div class="table-wrap">
@@ -34,22 +35,48 @@
         <thead>
           <tr>
             <th>项目</th>
-            <th class="num">{{ caseItem.times[0] }}</th>
-            <th class="num">{{ caseItem.times[1] || '—' }}</th>
+            <th class="num">结果</th>
             <th>单位</th>
             <th>参考区间</th>
+            <th>提示</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in activePanel.rows" :key="row.name" :class="{ critical: isCritical(row, row.first) || isCritical(row, row.second) }">
+          <tr v-for="row in report.rows" :key="row.name" :class="{ critical: isCritical(row, row.value) }">
             <td class="item-name">{{ row.name }}</td>
-            <td class="num" :class="valClass(row, row.first)">{{ row.first || '—' }}<span v-if="flagOf(row, row.first)" class="arrow">{{ flagOf(row, row.first) === 'high' ? ' ↑' : ' ↓' }}</span><span v-if="isCritical(row, row.first)" class="badge-critical">危急</span></td>
-            <td class="num" :class="valClass(row, row.second)">{{ row.second || '—' }}<span v-if="flagOf(row, row.second)" class="arrow">{{ flagOf(row, row.second) === 'high' ? ' ↑' : ' ↓' }}</span><span v-if="isCritical(row, row.second)" class="badge-critical">危急</span></td>
+            <td class="num" :class="valClass(row, row.value)">{{ row.value }}<span v-if="flagOf(row, row.value)" class="arrow">{{ flagOf(row, row.value) === 'high' ? ' ↑' : ' ↓' }}</span></td>
             <td class="unit">{{ row.unit || '—' }}</td>
             <td class="ref">{{ row.ref }}</td>
+            <td class="flag-cell">
+              <span v-if="isCritical(row, row.value)" class="badge-critical">危急</span>
+              <span v-else-if="isAbnormal(row, row.value)" class="badge-abn">异常</span>
+              <span v-else class="badge-ok">—</span>
+            </td>
           </tr>
         </tbody>
       </table>
+      <div v-if="report.notDone && report.notDone.length" class="not-done">
+        <i class="fa-solid fa-circle-info"></i> 本次未开展：{{ report.notDone.join('、') }}（可在下方既往检验记录中查看上次结果）
+      </div>
+    </div>
+
+    <!-- ══ 背景信息（批注4、5：既往记录与同期其他检查都只作背景） ══ -->
+    <div class="bg-wrap">
+      <div class="bg-title">
+        <i class="fa-solid fa-folder-open"></i> 背景信息
+        <span class="bg-note">供判读参考，不是本次要解读的报告，不要求逐项做前后对照</span>
+      </div>
+
+      <BgBlock v-if="report.history"
+               :label="'既往检验记录 · ' + report.reportName"
+               :time="report.history.timeLabel"
+               :note="report.history.timeNote"
+               :rows="report.history.rows" />
+
+      <BgBlock v-for="o in report.others" :key="o.panelId"
+               :label="'同期其他检查 · ' + o.reportName"
+               :time="o.timeLabel"
+               :rows="o.rows" />
     </div>
 
     <div class="sheet-foot">
@@ -63,39 +90,20 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { flagOf, isCritical, isAbnormal, abnormalRows } from '@ai-sp/shared/lab'
+import BgBlock from './LabBgBlock.vue'
 
 const props = defineProps({
-  caseItem: { type: Object, required: true }
+  report: { type: Object, required: true }
 })
 
-const currentTab = ref(props.caseItem.panels[0].id)
-const activePanel = computed(() => props.caseItem.panels.find(p => p.id === currentTab.value) || props.caseItem.panels[0])
+/* 临床信息现在写满背景（现病史/既往史/用药/查体），默认只占一行，点开才铺开（批注2） */
+const clinicalOpen = ref(false)
+const clinicalLong = computed(() => String(props.report.patient.clinical || '').length > 60)
 
-function flagOf(row, val) {
-  if (val === '' || val == null) return null
-  const n = parseFloat(val)
-  if (isNaN(n)) return null
-  if (row.hi != null && n > row.hi) return 'high'
-  if (row.lo != null && n < row.lo) return 'low'
-  return null
-}
-function isCritical(row, val) {
-  if (row.criticalLow == null || val === '' || val == null) return false
-  const n = parseFloat(val)
-  return !isNaN(n) && n < row.criticalLow
-}
-function valClass(row, val) {
-  if (val === '' || val == null) return ''
-  // 定性项目（如尿糖 4+、尿酮体 3+）没有数值区间，由数据里标 abn: true 直接判异常
-  if (row.abn) return 'val-high'
-  const f = flagOf(row, val)
-  return f === 'high' ? 'val-high' : f === 'low' ? 'val-low' : ''
-}
-function abnCount(panel) {
-  return panel.rows.filter(r => {
-    const v = r.second !== '' && r.second != null ? r.second : r.first
-    return r.abn || flagOf(r, v) != null
-  }).length
+function valClass(row, value) {
+  if (isAbnormal(row, value)) return flagOf(row, value) === 'low' && !row.abn ? 'val-low' : 'val-high'
+  return ''
 }
 </script>
 
@@ -104,30 +112,27 @@ function abnCount(panel) {
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid #f3f4f6; }
 .sheet-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .sheet-title i { color: var(--primary, #2563eb); }
+.sheet-name { font-size: 13.5px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border-radius: 6px; padding: 2px 9px; }
 .sheet-sub { font-size: 12px; color: #9ca3af; }
 
 .patient-bar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #f3f4f6; background: #fbfdff; }
 .p-cell { padding: 10px 14px; border-right: 1px solid #f3f4f6; min-width: 0; }
 .p-cell.wide { grid-column: span 3; }
+.p-cell.tail { grid-column: span 2; }
+.p-cell.wide.expanded { grid-column: 1 / -1; }
+.p-cell.expanded .p-v { white-space: normal; text-overflow: clip; line-height: 1.85; font-weight: 500; }
+.more-btn { font-family: inherit; font-size: 11px; color: #2563eb; background: none; border: 0; padding: 0 0 0 6px; cursor: pointer; vertical-align: 1px; }
+.more-btn:hover { text-decoration: underline; }
 .p-k { display: block; font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
 .p-v { display: block; font-size: 12.5px; font-weight: 600; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.hl-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px 18px 4px; }
-.hl { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; }
-.hl.abn { border-color: #fecaca; background: #fef2f2; }
-.hl-name { font-size: 11.5px; color: #6b7280; margin-bottom: 4px; }
-.hl-val { font-size: 19px; font-weight: 700; font-family: 'Consolas', monospace; letter-spacing: -.3px; }
-.hl.abn .hl-val { color: #c81e1e; }
-.hl-arrow { font-size: 13px; margin-left: 3px; }
-.hl-ref { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.cur-head { display: flex; align-items: baseline; gap: 10px; padding: 13px 18px 8px; }
+.cur-t { font-size: 13px; font-weight: 700; color: #111827; }
+.cur-time { font-size: 11.5px; color: #6b7280; }
+.cur-abn { margin-left: auto; font-size: 11.5px; color: #6b7280; }
+.cur-abn b { color: #c2410c; }
 
-.tabs { display: flex; gap: 4px; padding: 14px 18px 0; border-bottom: 1px solid #f3f4f6; }
-.tab { border: 0; background: transparent; padding: 8px 14px 9px; font-size: 13px; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 6px 6px 0 0; font-family: inherit; cursor: pointer; }
-.tab:hover { background: #f3f4f6; color: #1f2937; }
-.tab.active { color: #1d4ed8; border-bottom-color: #2563eb; font-weight: 600; background: #eff6ff; }
-.tab-cnt { font-size: 11px; color: #9ca3af; margin-left: 4px; }
-
-.table-wrap { padding: 4px 18px 12px; overflow-x: auto; }
+.table-wrap { padding: 0 18px 12px; overflow-x: auto; }
 .lab-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .lab-table th { text-align: left; font-size: 11.5px; color: #6b7280; font-weight: 600; padding: 9px 8px; border-bottom: 1px solid #e5e7eb; background: #fafbfc; }
 .lab-table th.num, .lab-table td.num { text-align: right; font-family: 'Consolas', monospace; }
@@ -141,7 +146,17 @@ function abnCount(panel) {
 .val-high { color: #c2410c; font-weight: 700; }
 .val-low { color: #1d4ed8; font-weight: 700; }
 .arrow { font-size: 11px; }
-.badge-critical { display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; background: #ef4444; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; }
+.flag-cell { white-space: nowrap; }
+.badge-critical { display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; background: #ef4444; border-radius: 4px; padding: 1px 5px; }
+.badge-abn { display: inline-block; font-size: 10.5px; color: #b45309; background: #fef3c7; border-radius: 4px; padding: 1px 5px; }
+.badge-ok { color: #d1d5db; }
+.not-done { margin-top: 8px; font-size: 11.5px; color: #6b7280; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px; padding: 7px 10px; }
+.not-done i { color: #94a3b8; margin-right: 4px; }
+
+.bg-wrap { margin: 4px 18px 14px; border: 1px solid #eef2f7; background: #fcfdfe; border-radius: 10px; padding: 10px 12px 4px; }
+.bg-title { display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px; }
+.bg-title i { color: #94a3b8; }
+.bg-note { margin-left: auto; font-size: 11px; font-weight: 400; color: #9ca3af; }
 
 .sheet-foot { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 18px; border-top: 1px solid #f3f4f6; font-size: 11.5px; color: #9ca3af; background: #fcfcfd; }
 .legend { display: inline-flex; align-items: center; gap: 4px; }
@@ -154,6 +169,7 @@ function abnCount(panel) {
 @media (max-width: 1100px) {
   .patient-bar { grid-template-columns: repeat(3, 1fr); }
   .p-cell.wide { grid-column: span 3; }
-  .hl-row { grid-template-columns: repeat(2, 1fr); }
+  .p-cell.wide.expanded { grid-column: 1 / -1; }
+  .bg-note { display: none; }
 }
 </style>
